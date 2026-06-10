@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <meta name="theme-color" content="#080d1e" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>ThePieCraft CRM</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      background: #080d1e;
+      color: #f0f4ff;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      overflow: hidden;
+      height: 100vh; height: 100dvh;
+      width: 100vw;
+      user-select: none;
+    }
+    .slides-container {
+      display: flex; height: 100%; width: 100%;
+      transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+      will-change: transform;
+    }
+    .slide {
+      min-width: 100vw; min-height: 100vh; min-height: 100dvh;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 3rem 2rem; position: relative;
+    }
+    .slide-graphic { width: 130px; height: 130px; margin-bottom: 2.5rem; flex-shrink: 0; }
+    @media (min-width: 480px) { .slide-graphic { width: 150px; height: 150px; } }
+    .slide h2 {
+      font-size: 1.55rem; font-weight: 800; text-align: center; line-height: 1.25; margin-bottom: 0.85rem;
+      background: linear-gradient(180deg, #f0f4ff 0%, #8fa8f7 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .slide p {
+      font-size: 0.9rem; color: #7b8fc4; text-align: center; line-height: 1.65; max-width: 340px;
+      opacity: 0; animation: fadeUp 0.5s ease-out 0.3s forwards;
+    }
+    @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } from { opacity: 0; transform: translateY(12px); } }
+    .dots {
+      position: fixed; bottom: 96px; left: 50%; transform: translateX(-50%);
+      display: flex; gap: 8px; z-index: 10;
+    }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: #1e2f87; transition: all 0.3s ease; cursor: pointer; }
+    .dot.active { background: #3a58e8; width: 24px; border-radius: 4px; }
+    .btn-row {
+      position: fixed; bottom: 36px; left: 0; right: 0; padding: 0 2rem;
+      display: flex; justify-content: space-between; align-items: center; z-index: 10;
+    }
+    .btn-skip { background: none; border: none; color: #5f7ef1; font-size: 0.9rem; font-weight: 600; padding: 12px 16px; cursor: pointer; opacity: 0.7; transition: opacity 0.2s; }
+    .btn-skip:active { opacity: 1; }
+    .btn-next {
+      background: linear-gradient(135deg, #3a58e8, #5f7ef1); border: none; color: #fff;
+      font-size: 0.9rem; font-weight: 600; padding: 14px 32px; border-radius: 12px; cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 20px rgba(58, 88, 232, 0.35);
+    }
+    .btn-next:active { transform: scale(0.96); }
+    .deco { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0; }
+    .deco-1 { width: 400px; height: 400px; background: radial-gradient(circle, rgba(58,88,232,0.12), transparent 70%); top: -120px; right: -100px; }
+    .deco-2 { width: 300px; height: 300px; background: radial-gradient(circle, rgba(20,184,166,0.08), transparent 70%); bottom: -80px; left: -80px; }
+    .slide-content { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; }
+  </style>
+</head>
+<body>
+  <div class="deco deco-1"></div>
+  <div class="deco deco-2"></div>
+
+  <div class="slides-container" id="slidesContainer">
+    <!-- Slide 1: Welcome -->
+    <div class="slide">
+      <div class="slide-content">
+        <div class="slide-graphic">
+          <svg viewBox="0 0 140 140" fill="none" style="width:100%;height:100%">
+            <circle cx="70" cy="70" r="60" stroke="#3A58E8" stroke-width="2" stroke-opacity="0.3" />
+            <path d="M70,70 L70,20 C97.6,20 120,42.4 120,70 Z" fill="#3A58E8" />
+            <path d="M70,70 L120,70 C120,97.6 97.6,120 70,120 Z" fill="#5F7EF1" />
+            <path d="M70,70 L70,120 C42.4,120 20,97.6 20,70 Z" fill="#8FA8F7" />
+            <path d="M70,70 L20,70 C20,42.4 42.4,20 70,20 Z" fill="#BCCDFB" />
+            <circle cx="70" cy="70" r="14" fill="#080D1E" />
+          </svg>
+        </div>
+        <h2>Welcome to<br />ThePieCraft CRM</h2>
+        <p>One operating system for your entire marketing agency. Manage clients, projects, team, and finances — no more scattered tools.</p>
+      </div>
+    </div>
+    <!-- Slide 2: Clients & Projects -->
+    <div class="slide">
+      <div class="slide-content">
+        <div class="slide-graphic">
+          <svg viewBox="0 0 120 120" fill="none" style="width:100%;height:100%">
+            <circle cx="60" cy="60" r="54" stroke="#3A58E8" stroke-width="1.5" stroke-opacity="0.2" />
+            <rect x="28" y="44" width="20" height="28" rx="2" fill="#3A58E8" opacity="0.85" />
+            <rect x="31" y="48" width="4" height="4" rx="0.5" fill="#080D1E" opacity="0.5" />
+            <rect x="38" y="48" width="4" height="4" rx="0.5" fill="#080D1E" opacity="0.5" />
+            <rect x="31" y="55" width="4" height="4" rx="0.5" fill="#080D1E" opacity="0.5" />
+            <rect x="38" y="55" width="4" height="4" rx="0.5" fill="#080D1E" opacity="0.5" />
+            <rect x="56" y="40" width="38" height="26" rx="3" fill="#1e2f87" opacity="0.6" />
+            <rect x="60" y="46" width="14" height="3" rx="1.5" fill="#3A58E8" />
+            <rect x="60" y="52" width="10" height="3" rx="1.5" fill="#5F7EF1" />
+            <rect x="60" y="58" width="12" height="3" rx="1.5" fill="#8FA8F7" />
+            <circle cx="84" cy="58" r="8" fill="#14B8A6" opacity="0.2" />
+            <path d="M80,58 L83,61 L88,55" stroke="#14B8A6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </div>
+        <h2>Clients &amp;<br />Projects</h2>
+        <p>Onboard client brands, track project pipelines, assign leads, and monitor progress from kickoff to launch — all in one place.</p>
+      </div>
+    </div>
+    <!-- Slide 3: Team & Attendance -->
+    <div class="slide">
+      <div class="slide-content">
+        <div class="slide-graphic">
+          <svg viewBox="0 0 120 120" fill="none" style="width:100%;height:100%">
+            <circle cx="60" cy="60" r="54" stroke="#3A58E8" stroke-width="1.5" stroke-opacity="0.2" />
+            <rect x="24" y="36" width="28" height="18" rx="3" fill="#3A58E8" opacity="0.85" />
+            <rect x="28" y="42" width="6" height="2" rx="1" fill="#080D1E" opacity="0.5" />
+            <rect x="28" y="47" width="6" height="2" rx="1" fill="#080D1E" opacity="0.5" />
+            <circle cx="44" cy="43" r="5" fill="#14B8A6" opacity="0.5" />
+            <path d="M42,43 L44,45 L47,41" stroke="#080D1E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.6" />
+            <circle cx="80" cy="46" r="9" fill="#5F7EF1" opacity="0.85" />
+            <circle cx="80" cy="46" r="3.5" fill="#080D1E" opacity="0.5" />
+            <path d="M68,66 C68,58.27 73.36,54 80,54 C86.64,54 92,58.27 92,66" fill="#5F7EF1" opacity="0.85" />
+            <rect x="28" y="64" width="62" height="2" rx="1" fill="#8FA8F7" opacity="0.5" />
+            <rect x="28" y="70" width="48" height="2" rx="1" fill="#8FA8F7" opacity="0.4" />
+          </svg>
+        </div>
+        <h2>Team &amp;<br />Attendance</h2>
+        <p>Log hours, punch in/out, request leave, and assign tasks. Know who's working on what with real-time team visibility.</p>
+      </div>
+    </div>
+    <!-- Slide 4: Finance & Reporting -->
+    <div class="slide">
+      <div class="slide-content">
+        <div class="slide-graphic">
+          <svg viewBox="0 0 120 120" fill="none" style="width:100%;height:100%">
+            <circle cx="60" cy="60" r="54" stroke="#3A58E8" stroke-width="1.5" stroke-opacity="0.2" />
+            <rect x="30" y="32" width="24" height="32" rx="3" fill="#3A58E8" opacity="0.85" />
+            <rect x="34" y="38" width="16" height="2" rx="1" fill="#080D1E" opacity="0.5" />
+            <rect x="34" y="44" width="12" height="2" rx="1" fill="#080D1E" opacity="0.5" />
+            <rect x="34" y="50" width="14" height="2" rx="1" fill="#080D1E" opacity="0.5" />
+            <rect x="34" y="56" width="8" height="2" rx="1" fill="#14B8A6" opacity="0.5" />
+            <rect x="62" y="44" width="6" height="20" rx="1.5" fill="#3A58E8" opacity="0.7" />
+            <rect x="72" y="38" width="6" height="26" rx="1.5" fill="#5F7EF1" opacity="0.8" />
+            <rect x="82" y="48" width="6" height="16" rx="1.5" fill="#8FA8F7" opacity="0.9" />
+            <text x="74" y="84" text-anchor="middle" fill="#14B8A6" font-size="14" font-weight="bold">$</text>
+            <polyline points="62,68 72,62 82,66" stroke="#14B8A6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </div>
+        <h2>Finance &amp;<br />Reporting</h2>
+        <p>Create invoices, track expenses, approve timesheets, and view profit reports. Your agency's financial pulse at a glance.</p>
+      </div>
+    </div>
+    <!-- Slide 5: Get Started -->
+    <div class="slide">
+      <div class="slide-content">
+        <div class="slide-graphic">
+          <svg viewBox="0 0 120 120" fill="none" style="width:100%;height:100%">
+            <circle cx="60" cy="60" r="54" stroke="#14B8A6" stroke-width="1.5" stroke-opacity="0.2" />
+            <path d="M60,24 L72,44 L70,46 L60,36 L50,46 L48,44 Z" fill="#14B8A6" opacity="0.9" />
+            <path d="M58,22 L62,22 L62,32 L58,32 Z" fill="#5F7EF1" />
+            <path d="M55,32 L65,32 L68,66 L52,66 Z" fill="#3A58E8" />
+            <path d="M54,66 L66,66 L68,80 L52,80 Z" fill="#14B8A6" opacity="0.7" />
+            <path d="M52,80 Q56,92 60,96 Q64,92 68,80 Z" fill="#8FA8F7" />
+            <path d="M55,80 Q58,88 60,92 Q62,88 65,80 Z" fill="#BCCDFB" />
+            <circle cx="60" cy="46" r="6" fill="#080D1E" />
+            <circle cx="60" cy="46" r="3" fill="#5F7EF1" opacity="0.6" />
+            <rect x="14" y="50" width="10" height="14" rx="2" fill="#1e2f87" opacity="0.4" />
+            <rect x="96" y="44" width="10" height="14" rx="2" fill="#1e2f87" opacity="0.4" />
+          </svg>
+        </div>
+        <h2>Your Agency,<br />One Dashboard</h2>
+        <p>Sign in and start running your agency smarter. ThePieCraft CRM — built for agencies that mean business.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="dots" id="dots">
+    <div class="dot active" data-index="0"></div>
+    <div class="dot" data-index="1"></div>
+    <div class="dot" data-index="2"></div>
+    <div class="dot" data-index="3"></div>
+    <div class="dot" data-index="4"></div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn-skip" id="skipBtn">Skip</button>
+    <button class="btn-next" id="nextBtn">Next</button>
+  </div>
+
+  <script>
+    (function() {
+      var current = 0, total = 5;
+      var container = document.getElementById('slidesContainer');
+      var dots = document.querySelectorAll('.dot');
+      var skipBtn = document.getElementById('skipBtn');
+      var nextBtn = document.getElementById('nextBtn');
+
+      if (localStorage.getItem('tpc_onboarding_done') === 'true') { finish(); return; }
+
+      function go(i) {
+        current = i;
+        container.style.transform = 'translateX(-' + (i * 100) + '%)';
+        dots.forEach(function(d, idx) { d.classList.toggle('active', idx === i); });
+        nextBtn.textContent = i === total - 1 ? 'Get Started' : 'Next';
+      }
+
+      function finish() {
+        localStorage.setItem('tpc_onboarding_done', 'true');
+        var serverUrl = '%%CAP_SERVER_URL%%';
+        if (!serverUrl || serverUrl === 'undefined') { serverUrl = 'http://' + (location.hostname || 'localhost') + ':3000'; }
+        window.location.replace(serverUrl);
+      }
+
+      nextBtn.addEventListener('click', function() {
+        if (current < total - 1) { go(current + 1); } else { finish(); }
+      });
+      skipBtn.addEventListener('click', finish);
+
+      var touchStartX = 0, touchEndX = 0;
+      document.addEventListener('touchstart', function(e) { touchStartX = e.changedTouches[0].screenX; }, { passive: true });
+      document.addEventListener('touchend', function(e) {
+        touchEndX = e.changedTouches[0].screenX;
+        var diff = touchStartX - touchEndX;
+        if (Math.abs(diff) > 60) {
+          if (diff > 0 && current < total - 1) { go(current + 1); }
+          else if (diff < 0 && current > 0) { go(current - 1); }
+        }
+      }, { passive: true });
+
+      dots.forEach(function(dot) {
+        dot.addEventListener('click', function() { go(parseInt(this.dataset.index)); });
+      });
+    })();
+  </script>
+</body>
+</html>

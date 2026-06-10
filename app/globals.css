@@ -1,0 +1,198 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: #f4f6fd;
+    --foreground: #0c1130;
+    --card: #ffffff;
+    --card-foreground: #0c1130;
+    --muted: #e8edf8;
+    --muted-foreground: #5a6a9a;
+    --border: #d0d9f0;
+    --ring: #263aa7;
+  }
+
+  .dark {
+    --background: #080d1e;
+    --foreground: #f0f4ff;
+    --card: #0d1230;
+    --card-foreground: #f0f4ff;
+    --muted: #141c42;
+    --muted-foreground: #7b8fc4;
+    --border: #1e2b5e;
+    --ring: #3a58e8;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+    font-feature-settings: "cv11", "ss01";
+  }
+
+  *:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+}
+
+/* Dark mode gradient background blobs */
+.dark body::before {
+  content: "";
+  position: fixed;
+  top: -20%;
+  right: -10%;
+  width: 60vw;
+  height: 60vw;
+  max-width: 700px;
+  max-height: 700px;
+  background: radial-gradient(ellipse at center, rgba(38, 58, 167, 0.18) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+  filter: blur(60px);
+}
+
+.dark body::after {
+  content: "";
+  position: fixed;
+  bottom: -10%;
+  left: -5%;
+  width: 45vw;
+  height: 45vw;
+  max-width: 500px;
+  max-height: 500px;
+  background: radial-gradient(ellipse at center, rgba(58, 88, 232, 0.1) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+  filter: blur(80px);
+}
+
+/* Scrollbar — desktop only */
+@media (min-width: 768px) {
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #c0cbea;
+    border-radius: 4px;
+  }
+  .dark ::-webkit-scrollbar-thumb {
+    background: #1e2b5e;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #8fa8f7;
+  }
+}
+
+/* Mobile: hide all scrollbars for native app feel */
+@media (max-width: 767px) {
+  * {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  *::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Bento card */
+.bento {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  box-shadow: 0 1px 2px 0 rgb(15 23 42 / 0.04);
+}
+
+/* Glass card — used in dark mode panels */
+.glass {
+  background: rgba(13, 18, 48, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(38, 58, 167, 0.25);
+}
+
+.dot-grid {
+  background-image: radial-gradient(circle, rgba(38, 58, 167, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.dark .dot-grid {
+  background-image: radial-gradient(circle, rgba(58, 88, 232, 0.18) 1px, transparent 1px);
+}
+
+/* Gradient text */
+.text-gradient-brand {
+  background: linear-gradient(135deg, #263aa7 0%, #3a58e8 50%, #5f7ef1 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.text-gradient-portal {
+  background: linear-gradient(135deg, #0D9488 0%, #14B8A6 50%, #263aa7 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Capacitor safe area insets */
+:root {
+  --sat: env(safe-area-inset-top, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+}
+
+/* Prevent text selection in Capacitor WebView */
+body {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Allow text selection on inputs and textareas */
+input, textarea, [contenteditable] {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* Disable pull-to-refresh in Capacitor */
+html, body {
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Prevent iOS zoom on input focus */
+@supports (-webkit-touch-callout: none) {
+  input, textarea, select {
+    font-size: 16px !important;
+  }
+}
+
+/* Mobile viewport height fix for address bar */
+.min-h-screen-mobile {
+  min-height: 100vh;
+  min-height: calc(var(--vh, 1vh) * 100);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

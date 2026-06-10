@@ -1,0 +1,50 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="1080dp"
+    android:height="1920dp"
+    android:viewportWidth="1080"
+    android:viewportHeight="1920">
+    <!-- Dark navy background -->
+    <path
+        android:fillColor="#080D1E"
+        android:pathData="M0,0h1080v1920h-1080z" />
+    <!-- Decorative glowing circle top -->
+    <path
+        android:fillColor="#1E2F87"
+        android:fillAlpha="0.3"
+        android:pathData="M540,480m-320,0a320,320 0,1 1,640 0a320,320 0,1 1,-640 0" />
+    <!-- Decorative glowing circle bottom -->
+    <path
+        android:fillColor="#3A58E8"
+        android:fillAlpha="0.08"
+        android:pathData="M540,1400m-450,0a450,450 0,1 1,900 0a450,450 0,1 1,-900 0" />
+    <!-- Outer ring of logo -->
+    <path
+        android:fillColor="#3A58E8"
+        android:fillAlpha="0.15"
+        android:pathData="M540,740m-90,0a90,90 0,1 1,180 0a90,90 0,1 1,-180 0" />
+    <!-- Pie slice 1 -->
+    <path
+        android:fillColor="#3A58E8"
+        android:pathData="M540,740L540,670C578.64,670 612,693.44 623.16,726.52Z" />
+    <!-- Pie slice 2 -->
+    <path
+        android:fillColor="#5F7EF1"
+        android:pathData="M540,740L623.16,726.52C630,755.56 620.12,786.44 600,800Z" />
+    <!-- Pie slice 3 -->
+    <path
+        android:fillColor="#8FA8F7"
+        android:pathData="M540,740L600,800C575.68,817 545.36,818 520,802Z" />
+    <!-- Pie slice 4 -->
+    <path
+        android:fillColor="#BCCDFB"
+        android:pathData="M540,740L520,802C502.64,788.44 490,767.96 490,745Z" />
+    <!-- Center dot -->
+    <path
+        android:fillColor="#080D1E"
+        android:pathData="M540,740m-20,0a20,20 0,1 1,40 0a20,20 0,1 1,-40 0" />
+    <!-- Brand name text area -->
+    <path
+        android:fillColor="#3A58E8"
+        android:fillAlpha="0.08"
+        android:pathData="M320,870h440v4h-440z" />
+</vector>
