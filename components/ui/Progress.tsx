@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { cn } from "./cn";
 
 interface ProgressProps {
@@ -8,7 +11,13 @@ interface ProgressProps {
 }
 
 export function Progress({ value, className, barClassName, size = "md" }: ProgressProps) {
-  const v = Math.min(100, Math.max(0, value));
+  const [displayValue, setDisplayValue] = useState(0);
+
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setDisplayValue(Math.min(100, Math.max(0, value))));
+    return () => cancelAnimationFrame(id);
+  }, [value]);
+
   return (
     <div
       className={cn(
@@ -17,16 +26,16 @@ export function Progress({ value, className, barClassName, size = "md" }: Progre
         className
       )}
       role="progressbar"
-      aria-valuenow={v}
+      aria-valuenow={displayValue}
       aria-valuemin={0}
       aria-valuemax={100}
     >
       <div
         className={cn(
-          "h-full rounded-full bg-gradient-to-r from-brand-500 to-brand-600 transition-all duration-500",
+          "h-full rounded-full bg-gradient-to-r from-brand-500 to-brand-600 transition-[width] duration-700 ease-out",
           barClassName
         )}
-        style={{ width: `${v}%` }}
+        style={{ width: `${displayValue}%` }}
       />
     </div>
   );
