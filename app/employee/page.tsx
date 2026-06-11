@@ -23,6 +23,7 @@ import {
   punchIn,
   punchOut,
 } from "@/app/actions/crm";
+import { getValidatedLocation } from "@/lib/getLocation";
 
 export default function EmployeeDashboardPage() {
   const { toast } = useToast();
@@ -98,15 +99,20 @@ export default function EmployeeDashboardPage() {
   const handlePunchInAction = async () => {
     setIsPunching(true);
     try {
-      const res = await punchIn();
+      const loc = await getValidatedLocation();
+      if (!loc.ok) {
+        toast(loc.message, "error", 2500);
+        return;
+      }
+      const res = await punchIn(loc.lat, loc.lng);
       if (res.success) {
         setAttMessage("Punched in successfully! Have a great shift!");
         loadDashboardData();
       } else {
-        toast(res.error || "Failed to punch in", "error");
+        toast(res.error || "Failed to punch in", "error", 2500);
       }
     } catch (err: any) {
-      toast("Error: " + err.message, "error");
+      toast("Error: " + err.message, "error", 2500);
     } finally {
       setIsPunching(false);
     }
@@ -116,15 +122,20 @@ export default function EmployeeDashboardPage() {
   const handlePunchOutAction = async () => {
     setIsPunching(true);
     try {
-      const res = await punchOut();
+      const loc = await getValidatedLocation();
+      if (!loc.ok) {
+        toast(loc.message, "error", 2500);
+        return;
+      }
+      const res = await punchOut(loc.lat, loc.lng);
       if (res.success) {
         setAttMessage("Punched out successfully! Shift logged.");
         loadDashboardData();
       } else {
-        toast(res.error || "Failed to punch out", "error");
+        toast(res.error || "Failed to punch out", "error", 2500);
       }
     } catch (err: any) {
-      toast("Error: " + err.message, "error");
+      toast("Error: " + err.message, "error", 2500);
     } finally {
       setIsPunching(false);
     }

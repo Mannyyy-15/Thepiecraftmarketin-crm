@@ -327,7 +327,6 @@ export default function DocumentsPage() {
       <PageHeader
         eyebrow="Workspace"
         title="Documents"
-        description="Centralized files and assets across all client engagements."
         actions={
           <div className="flex gap-2">
             <Button variant="outline" size="md" onClick={() => setShowProposalModal(true)} className="border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/50 font-semibold text-xs">

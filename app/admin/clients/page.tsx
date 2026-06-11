@@ -356,7 +356,6 @@ export default function ClientsPage() {
       <PageHeader
         eyebrow="CRM"
         title="Client Accounts"
-        description="Manage client profiles, onboarding pipeline, and invoices."
         actions={
           <div className="flex items-center gap-2">
             {activeTab === "invoices" && (

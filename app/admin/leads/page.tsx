@@ -435,7 +435,6 @@ export default function LeadsPage() {
         <div>
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Sales</p>
           <h1 className="text-xl font-extrabold text-slate-900 dark:text-white">Leads Pipeline</h1>
-          <p className="text-xs text-slate-400 mt-0.5">Leads collected automatically from your website, Instagram & forms</p>
         </div>
         <div className="flex items-center gap-2">
           <input value={search} onChange={e => setSearch(e.target.value)}

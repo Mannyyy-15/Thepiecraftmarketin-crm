@@ -118,7 +118,6 @@ export default function StudioAIPage() {
       <PageHeader
         eyebrow="Studio AI Workspace"
         title="AI Campaign Pitch & Strategy Planner"
-        description="Unlock high-conversion marketing roadmaps, SEO keyword clusters, and Meta copy variations in real-time."
         actions={
           <Badge variant="brand" className="px-3 py-1 font-bold text-xs">
             <Sparkles className="h-3.5 w-3.5 mr-1 text-indigo-500 animate-spin" /> Unlocked Studio Access

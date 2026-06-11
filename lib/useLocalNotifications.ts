@@ -14,6 +14,20 @@ export function useLocalNotifications() {
 
     let cleanupFn: (() => void) | undefined;
 
+    // Ask for location permission up-front (alongside notifications) so the
+    // geofenced punch in/out works without prompting mid-action.
+    const initLocationPermission = async () => {
+      try {
+        const { Geolocation } = await import("@capacitor/geolocation");
+        const status = await Geolocation.checkPermissions();
+        if (status.location === "prompt" || status.location === "prompt-with-rationale") {
+          await Geolocation.requestPermissions({ permissions: ["location"] });
+        }
+      } catch (err) {
+        console.error("Error requesting location permission:", err);
+      }
+    };
+
     const initPush = async () => {
       try {
         const { PushNotifications } = await import("@capacitor/push-notifications");
@@ -109,6 +123,7 @@ export function useLocalNotifications() {
       }
     };
 
+    initLocationPermission();
     initPush();
 
     return () => {

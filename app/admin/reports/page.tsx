@@ -179,7 +179,6 @@ export default function ReportsPage() {
       <PageHeader
         eyebrow="Insights"
         title="Reports"
-        description="Auto-generated audits, custom analytics decks, and real-time agency metrics."
         actions={
           <div className="flex gap-2">
             <Button variant="outline" size="md" onClick={handleTriggerAISummary} className="border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-900 font-semibold text-xs flex items-center gap-1.5">

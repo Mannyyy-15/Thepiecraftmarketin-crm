@@ -82,7 +82,6 @@ export default function DashboardPage() {
       <PageHeader
         eyebrow="Dashboard"
         title={`Good morning, ${userName} 👋`}
-        description="Here's a snapshot of your agency for the last 30 days."
       />
 
       {/* KPI grid */}
@@ -131,9 +130,6 @@ export default function DashboardPage() {
           <CardHeader>
             <div>
               <CardTitle>Revenue & Ad Spend</CardTitle>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                Comparing managed budgets vs collected revenue
-              </p>
             </div>
             <div className="flex items-center gap-2">
               <div className="hidden sm:flex items-center gap-3 text-xs">

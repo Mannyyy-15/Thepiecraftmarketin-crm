@@ -254,7 +254,6 @@ export default function AdsPage() {
       <PageHeader
         eyebrow="Performance Marketing"
         title="Meta Ads Engine"
-        description={isUsingMock ? "Currently displaying rich mock data (database returned 0 active ad campaigns)." : "Live campaign performance across every managed account."}
         actions={
           <div className="flex items-center gap-2">
             <Button

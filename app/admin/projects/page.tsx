@@ -592,7 +592,6 @@ export default function ProjectsPage() {
       <PageHeader
         eyebrow="Operations"
         title="Projects"
-        description="Track active campaigns and development deliverables."
         actions={
           <Button onClick={openDrawer} className="bg-brand-600 hover:bg-brand-700 text-white font-bold shadow-glow">
             <Plus className="h-4 w-4 mr-1" /> New Project

@@ -239,7 +239,6 @@ export default function WebsiteDevPage() {
       <PageHeader
         eyebrow="Engineering"
         title="Web Operations"
-        description={isUsingMock ? "Currently displaying rich mock data (database returned 0 active web dev projects)." : "Monitor sites under management and track active engineering tasks."}
         actions={
           <Button 
             size="md" 

@@ -7,6 +7,7 @@ import path from "path";
 import * as schema from "@/lib/schema";
 import { eq, and, or, inArray, desc, gte } from "drizzle-orm";
 import { decrypt, getCurrentUser } from "./auth";
+import { validateGeofence } from "@/lib/geofence";
 import { revalidatePath } from "next/cache";
 
 // Helper to check user session and get authenticated profile
@@ -868,11 +869,18 @@ export async function getUnreadNotificationCount() {
 }
 
 // Punch In for the day
-export async function punchIn() {
+export async function punchIn(lat?: number, lng?: number) {
   try {
     const session = await getAuthSession();
     if (!session) return { success: false, error: "Unauthorized" };
     if (!db) return { success: false, error: "Database not connected" };
+
+    // Geofence + office Wi-Fi gate — coordinates are required.
+    if (typeof lat !== "number" || typeof lng !== "number") {
+      return { success: false, error: "Location required. Enable GPS and retry." };
+    }
+    const geo = await validateGeofence(lat, lng);
+    if (!geo.ok) return { success: false, error: geo.message };
 
     const todayStr = new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD in local time
 
@@ -903,6 +911,18 @@ export async function punchIn() {
       });
     }
 
+    // Audit log for the geofenced punch
+    if (geo.locationId) {
+      try {
+        await db.insert(schema.attendanceLogs).values({
+          userId: session.id as number,
+          locationId: geo.locationId,
+          punchType: "IN",
+          verifiedIp: geo.verifiedIp || "unknown",
+        });
+      } catch (e) { console.error("attendanceLogs IN insert error:", e); }
+    }
+
     revalidatePath("/employee");
     revalidatePath("/admin/team");
     await notifyAdmins("punch_in", "Team Check-in", `${session.name || session.email} is in for the day`, "/admin/team");
@@ -915,11 +935,18 @@ export async function punchIn() {
 }
 
 // Punch Out for the day
-export async function punchOut() {
+export async function punchOut(lat?: number, lng?: number) {
   try {
     const session = await getAuthSession();
     if (!session) return { success: false, error: "Unauthorized" };
     if (!db) return { success: false, error: "Database not connected" };
+
+    // Geofence + office Wi-Fi gate — coordinates are required.
+    if (typeof lat !== "number" || typeof lng !== "number") {
+      return { success: false, error: "Location required. Enable GPS and retry." };
+    }
+    const geo = await validateGeofence(lat, lng);
+    if (!geo.ok) return { success: false, error: geo.message };
 
     const todayStr = new Date().toLocaleDateString("en-CA");
 
@@ -953,6 +980,18 @@ export async function punchOut() {
         status: finalStatus
       })
       .where(eq(schema.attendance.id, existing[0].id));
+
+    // Audit log for the geofenced punch
+    if (geo.locationId) {
+      try {
+        await db.insert(schema.attendanceLogs).values({
+          userId: session.id as number,
+          locationId: geo.locationId,
+          punchType: "OUT",
+          verifiedIp: geo.verifiedIp || "unknown",
+        });
+      } catch (e) { console.error("attendanceLogs OUT insert error:", e); }
+    }
 
     revalidatePath("/employee");
     revalidatePath("/admin/team");

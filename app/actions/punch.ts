@@ -5,6 +5,7 @@ import { sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import * as schema from "@/lib/schema";
 import { decrypt } from "./auth";
+import { extractClientIp } from "@/lib/geofence";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -15,25 +16,6 @@ export interface PunchResult {
   message: string;
   /** Only present when success is true */
   logId?: number;
-}
-
-// ---------------------------------------------------------------------------
-// IP extraction
-// ---------------------------------------------------------------------------
-
-function extractClientIp(headerMap: Headers): string {
-  // x-forwarded-for may be a comma-separated list; leftmost is the original client
-  const forwarded = headerMap.get("x-forwarded-for");
-  if (forwarded) {
-    const first = forwarded.split(",")[0].trim();
-    if (first) return first;
-  }
-  return (
-    headerMap.get("x-real-ip") ??
-    headerMap.get("cf-connecting-ip") ?? // Cloudflare
-    headerMap.get("true-client-ip") ??   // Akamai / Cloudflare Enterprise
-    "unknown"
-  );
 }
 
 // ---------------------------------------------------------------------------
