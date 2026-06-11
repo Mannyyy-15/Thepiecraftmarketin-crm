@@ -47,7 +47,7 @@ export default function AdsPage() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
-        <KpiCard title="Total Spend" value="$124.5k" change="+12.5%" changeType="positive" accent="brand" icon={<DollarSign className="h-5 w-5" />} />
+        <KpiCard title="Total Spend" value="₹124.5k" change="+12.5%" changeType="positive" accent="brand" icon={<DollarSign className="h-5 w-5" />} />
         <KpiCard title="Impressions" value="5.3M" change="+18.2%" changeType="positive" accent="amber" icon={<Eye className="h-5 w-5" />} />
         <KpiCard title="Clicks" value="115.9k" change="+9.4%" changeType="positive" accent="emerald" icon={<MousePointerClick className="h-5 w-5" />} />
         <KpiCard title="Avg. ROAS" value="3.2×" change="-0.4×" changeType="negative" accent="rose" icon={<Target className="h-5 w-5" />} />

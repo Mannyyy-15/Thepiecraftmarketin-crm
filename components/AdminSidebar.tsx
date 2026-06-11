@@ -5,9 +5,10 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import {
   LayoutDashboard,
-  Users,
+  Building2,
   FolderKanban,
   BarChart3,
+  Target,
   Code2,
   UsersRound,
   FilePieChart,
@@ -27,9 +28,10 @@ import { getCurrentUser, logout } from "@/app/actions/auth";
 
 const navigation = [
   { name: "Overview",     href: "/admin",              icon: LayoutDashboard },
-  { name: "Clients",      href: "/admin/clients",      icon: Users },
+  { name: "Clients",      href: "/admin/clients",      icon: Building2 },
   { name: "Team",         href: "/admin/team",         icon: UsersRound },
   { name: "Projects",     href: "/admin/projects",     icon: FolderKanban },
+  { name: "Leads",        href: "/admin/leads",        icon: Target },
   { name: "Meta Ads",     href: "/admin/ads",          icon: BarChart3 },
   { name: "Website Dev",  href: "/admin/website-dev",  icon: Code2 },
   { name: "Messages",     href: "/admin/messages",     icon: MessageSquareText },

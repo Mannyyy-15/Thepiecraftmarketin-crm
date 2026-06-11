@@ -44,53 +44,62 @@ interface Task {
 
 type Pill = "week" | "month" | "lastMonth";
 
+// Use local timezone date string to match server-stored dates (which use toLocaleDateString)
+function toLocalDateStr(d: Date): string {
+  return [
+    d.getFullYear(),
+    String(d.getMonth() + 1).padStart(2, "0"),
+    String(d.getDate()).padStart(2, "0"),
+  ].join("-");
+}
+
 function getWeekBounds() {
   const today = new Date();
   const dow = today.getDay();
   const monday = new Date(today);
   monday.setDate(today.getDate() - (dow === 0 ? 6 : dow - 1));
-  monday.setHours(0, 0, 0, 0);
   const sunday = new Date(monday);
   sunday.setDate(monday.getDate() + 6);
   return {
-    start: monday.toISOString().split("T")[0],
-    end: sunday.toISOString().split("T")[0],
+    start: toLocalDateStr(monday),
+    end: toLocalDateStr(sunday),
   };
 }
 
 function getMonthBounds(offset: number) {
   const now = new Date();
-  const d = new Date(now.getFullYear(), now.getMonth() + offset, 1);
-  const start = new Date(d.getFullYear(), d.getMonth(), 1);
-  const end = new Date(d.getFullYear(), d.getMonth() + 1, 0);
+  const start = new Date(now.getFullYear(), now.getMonth() + offset, 1);
+  const end = new Date(now.getFullYear(), now.getMonth() + offset + 1, 0);
   return {
-    start: start.toISOString().split("T")[0],
-    end: end.toISOString().split("T")[0],
+    start: toLocalDateStr(start),
+    end: toLocalDateStr(end),
   };
 }
 
 function addDays(dateStr: string, days: number) {
-  const d = new Date(dateStr + "T00:00:00");
-  d.setDate(d.getDate() + days);
-  return d.toISOString().split("T")[0];
+  const [y, m, d] = dateStr.split("-").map(Number);
+  const date = new Date(y, m - 1, d);
+  date.setDate(date.getDate() + days);
+  return toLocalDateStr(date);
 }
 
 function computeHoursFromAttendance(attendance: any[], startStr: string, endStr: string) {
   const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const result: { day: string; hours: number; isWeekend: boolean; absent: boolean }[] = [];
-  const start = new Date(startStr + "T00:00:00");
-  const end = new Date(endStr + "T00:00:00");
+  const [sy, sm, sd] = startStr.split("-").map(Number);
+  const [ey, em, ed] = endStr.split("-").map(Number);
+  const start = new Date(sy, sm - 1, sd);
+  const end = new Date(ey, em - 1, ed);
   if (isNaN(start.getTime()) || isNaN(end.getTime()) || start > end) return result;
-  const todayStr = new Date().toISOString().split("T")[0];
+  const todayStr = toLocalDateStr(new Date());
   const cur = new Date(start);
   while (cur <= end) {
-    const dateStr = cur.toISOString().split("T")[0];
+    const dateStr = toLocalDateStr(cur);
     const dow = cur.getDay();
     const isWeekend = dow === 0 || dow === 6;
-    const dayAtt = attendance.find((a: any) => a.date === dateStr);
+    const dayAtt = attendance.find((a: any) => String(a.date).trim() === dateStr);
     let hours = 0;
-    // Count hours: if punched out use that end time; if still working (today, no punch-out) use now
-    if (dayAtt && dayAtt.punchInTime) {
+    if (dayAtt?.punchInTime) {
       const pin = new Date(dayAtt.punchInTime).getTime();
       const pout = dayAtt.punchOutTime
         ? new Date(dayAtt.punchOutTime).getTime()
@@ -101,7 +110,6 @@ function computeHoursFromAttendance(attendance: any[], startStr: string, endStr:
       day: dayNames[dow],
       hours: Number(hours.toFixed(1)),
       isWeekend,
-      // absent = no attendance record at all (not just no punch-out)
       absent: !isWeekend && !dayAtt,
     });
     cur.setDate(cur.getDate() + 1);
@@ -112,12 +120,14 @@ function computeHoursFromAttendance(attendance: any[], startStr: string, endStr:
 function computeHoursChart(timesheets: any[], startStr: string, endStr: string) {
   const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const result: { day: string; hours: number; isWeekend: boolean; absent: boolean }[] = [];
-  const start = new Date(startStr + "T00:00:00");
-  const end = new Date(endStr + "T00:00:00");
+  const [sy, sm, sd] = startStr.split("-").map(Number);
+  const [ey, em, ed] = endStr.split("-").map(Number);
+  const start = new Date(sy, sm - 1, sd);
+  const end = new Date(ey, em - 1, ed);
   if (isNaN(start.getTime()) || isNaN(end.getTime()) || start > end) return result;
   const cur = new Date(start);
   while (cur <= end) {
-    const dateStr = cur.toISOString().split("T")[0];
+    const dateStr = toLocalDateStr(cur);
     const dow = cur.getDay();
     const isWeekend = dow === 0 || dow === 6;
     const hrs = timesheets
@@ -186,13 +196,22 @@ export default function EmployeeOverview() {
       setTasks(mappedTasks);
 
       setAllTimesheets(timesheets);
-      const todayStr = new Date().toISOString().split("T")[0];
-      const todayHours = timesheets
-        .filter((t: any) => t.date === todayStr)
-        .reduce((s: number, t: any) => s + t.durationMinutes / 60, 0);
-      setTotalHoursToday(Number(todayHours.toFixed(1)));
-
       setAllAttendance(attendance);
+
+      // Today's hours: prefer attendance punch times (most accurate), fall back to timesheets
+      const todayStr = toLocalDateStr(new Date());
+      const todayAtt = attendance.find((a: any) => a.date === todayStr);
+      let todayHoursVal = 0;
+      if (todayAtt?.punchInTime) {
+        const pin = new Date(todayAtt.punchInTime).getTime();
+        const pout = todayAtt.punchOutTime ? new Date(todayAtt.punchOutTime).getTime() : Date.now();
+        todayHoursVal = Math.max(0, (pout - pin) / 3600000);
+      } else {
+        todayHoursVal = timesheets
+          .filter((t: any) => t.date === todayStr)
+          .reduce((s: number, t: any) => s + t.durationMinutes / 60, 0);
+      }
+      setTotalHoursToday(Number(todayHoursVal.toFixed(1)));
     } catch (err) {
       console.error("Error loading overview data:", err);
     } finally {
@@ -277,6 +296,7 @@ export default function EmployeeOverview() {
   };
 
   const pendingTasksCount = tasks.filter((t) => !t.done).length;
+  const completedTasksCount = tasks.filter((t) => t.done).length;
   const filteredTasks = tasks.filter((t) => {
     if (taskFilter === "pending") return !t.done;
     if (taskFilter === "completed") return t.done;
@@ -285,6 +305,40 @@ export default function EmployeeOverview() {
 
   const totalWeekHours = weeklyHours.reduce((s, d) => s + (d.hours || 0), 0);
   const isMonthView = weeklyHours.length > 9;
+
+  // Compute weekly target from user's shift hours and working days
+  const weeklyTarget = (() => {
+    if (!user?.shiftStartTime || !user?.shiftEndTime) return 40;
+    const parseHHMM = (t: string) => {
+      const [time, period] = t.split(" ");
+      const [h, m] = time.split(":").map(Number);
+      const hour = period === "PM" && h !== 12 ? h + 12 : period === "AM" && h === 12 ? 0 : h;
+      return hour * 60 + (m || 0);
+    };
+    const dailyMins = parseHHMM(user.shiftEndTime) - parseHHMM(user.shiftStartTime);
+    if (dailyMins <= 0) return 40;
+    const workDays = (user.workingDays || "1,2,3,4,5").split(",").filter(Boolean).length;
+    return Math.round((dailyMins / 60) * workDays * 10) / 10;
+  })();
+  const dailyTarget = (() => {
+    if (!user?.shiftStartTime || !user?.shiftEndTime) return 8;
+    const parseHHMM = (t: string) => {
+      const [time, period] = t.split(" ");
+      const [h, m] = time.split(":").map(Number);
+      const hour = period === "PM" && h !== 12 ? h + 12 : period === "AM" && h === 12 ? 0 : h;
+      return hour * 60 + (m || 0);
+    };
+    const dailyMins = parseHHMM(user.shiftEndTime) - parseHHMM(user.shiftStartTime);
+    return dailyMins > 0 ? Math.round((dailyMins / 60) * 10) / 10 : 8;
+  })();
+
+  // Spark lines from real data
+  const todayStr = toLocalDateStr(new Date());
+  const dueTodayCount = tasks.filter((t) => !t.done && t.dueDate === todayStr).length;
+  // Last 7 days of actual hours for the weekly hours spark
+  const weeklySparkData = weeklyHours.slice(-7).map((d) => d.hours);
+  // Active (not completed) vs all projects spark
+  const activeProjectsCount = employeeProjects.filter((p) => p.status !== "completed").length;
 
   // max end date for date inputs (start + 31)
   const maxEndDate = rangeStart ? addDays(rangeStart, 31) : undefined;
@@ -335,39 +389,39 @@ export default function EmployeeOverview() {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <KpiCard
               title="Weekly Hours"
-              value={`${totalWeekHours.toFixed(1)} / 40h`}
-              change={totalWeekHours >= 40 ? "Goal reached!" : `${(40 - totalWeekHours).toFixed(1)}h left`}
-              changeType={totalWeekHours >= 40 ? "positive" : "neutral"}
+              value={`${totalWeekHours.toFixed(1)}h / ${weeklyTarget}h`}
+              change={totalWeekHours >= weeklyTarget ? "Goal reached!" : `${(weeklyTarget - totalWeekHours).toFixed(1)}h remaining`}
+              changeType={totalWeekHours >= weeklyTarget ? "positive" : "neutral"}
               accent="brand"
               icon={<Clock className="h-5 w-5" />}
-              spark={[30, 31, 32.5, 33, 34, 35, totalWeekHours]}
+              spark={weeklySparkData.length > 0 ? weeklySparkData : undefined}
             />
             <KpiCard
               title="Pending Tasks"
               value={`${pendingTasksCount} Tasks`}
-              change="-3 today"
-              changeType="positive"
+              change={dueTodayCount > 0 ? `${dueTodayCount} due today` : completedTasksCount > 0 ? `${completedTasksCount} completed` : "Nothing due today"}
+              changeType={dueTodayCount > 0 ? "negative" : "positive"}
               accent="amber"
               icon={<CheckCircle2 className="h-5 w-5" />}
-              spark={[8, 7, 7, 6, 5, 5, pendingTasksCount]}
+              spark={pendingTasksCount > 0 ? Array.from({ length: 7 }, (_, i) => Math.max(0, pendingTasksCount - (6 - i) * 0.5)) : undefined}
             />
             <KpiCard
               title="Projects"
-              value={`${employeeProjects.length} Active`}
-              change="Assigned"
-              changeType="neutral"
+              value={`${activeProjectsCount} Active`}
+              change={employeeProjects.length > activeProjectsCount ? `${employeeProjects.length - activeProjectsCount} completed` : `${employeeProjects.length} assigned`}
+              changeType={employeeProjects.length > activeProjectsCount ? "positive" : "neutral"}
               accent="emerald"
               icon={<Users className="h-5 w-5" />}
-              spark={[0, 0, 0, 0, 0, 0, employeeProjects.length]}
+              spark={Array.from({ length: 7 }, () => activeProjectsCount)}
             />
             <KpiCard
               title="Hours Today"
-              value={`${totalHoursToday}h / 8h`}
-              change={totalHoursToday >= 8 ? "Goal reached!" : "Keep going"}
-              changeType={totalHoursToday >= 8 ? "positive" : "neutral"}
+              value={`${totalHoursToday.toFixed(1)}h / ${dailyTarget}h`}
+              change={totalHoursToday >= dailyTarget ? "Shift complete!" : totalHoursToday > 0 ? `${(dailyTarget - totalHoursToday).toFixed(1)}h left` : "Not started"}
+              changeType={totalHoursToday >= dailyTarget ? "positive" : "neutral"}
               accent="rose"
               icon={<Activity className="h-5 w-5" />}
-              spark={[0, 1, 2, 3, 4, 5, totalHoursToday]}
+              spark={Array.from({ length: 7 }, (_, i) => i < 6 ? 0 : totalHoursToday)}
             />
           </div>
         </div>
@@ -626,9 +680,13 @@ export default function EmployeeOverview() {
                     {user?.shiftStartTime || "09:00 AM"} — {user?.shiftEndTime || "05:00 PM"}
                   </span>
                 </div>
+                <div className="flex justify-between items-center py-1.5 border-b border-slate-50 dark:border-brand-950/40">
+                  <span>Daily Target:</span>
+                  <span className="text-slate-800 dark:text-slate-200 tabular-nums">{dailyTarget}h</span>
+                </div>
                 <div className="flex justify-between items-center py-1.5">
                   <span>Weekly Target:</span>
-                  <span className="text-slate-800 dark:text-slate-200 tabular-nums">40h</span>
+                  <span className="text-slate-800 dark:text-slate-200 tabular-nums">{weeklyTarget}h</span>
                 </div>
               </div>
             </CardContent>

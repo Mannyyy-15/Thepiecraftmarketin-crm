@@ -7,12 +7,11 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
-  Clock,
 } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { CalendarSkeleton, Skeleton } from "@/components/ui/Skeleton";
 import { Button } from "@/components/ui/Button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import {
   getAttendancePageData,
   requestLeave,
@@ -445,39 +444,8 @@ export default function EmployeeAttendancePage() {
           </Card>
         </div>
 
-        {/* Right Column: Context Details & Leave Form */}
+        {/* Right Column: Leave Form */}
         <div className="lg:col-span-1 space-y-4">
-          {/* Shift Schedule Card */}
-          <Card className="border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-950 shadow-soft rounded-2xl overflow-hidden">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-bold flex items-center gap-2">
-                <Clock className="h-4 w-4 text-brand-600" />
-                My Shift Schedule
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
-                  <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Working Days</span>
-                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                    {(user?.workingDays || "1,2,3,4,5").split(",").map((d: string) => ({ "1": "Mon", "2": "Tue", "3": "Wed", "4": "Thu", "5": "Fri", "6": "Sat", "7": "Sun" }[d] || d)).join(", ")}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
-                  <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Shift Hours</span>
-                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                    {user?.shiftStartTime || "09:00 AM"} - {user?.shiftEndTime || "05:00 PM"}
-                  </span>
-                </div>
-                {user?.activeShiftProfile && (
-                  <div className="p-2 rounded-lg bg-brand-50 dark:bg-brand-950/20 border border-brand-200/50 dark:border-brand-800/50">
-                    <p className="text-[10px] font-bold text-brand-600 dark:text-brand-400 text-center">{user.activeShiftProfile}</p>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
           <Card className="border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-950 shadow-soft rounded-2xl overflow-hidden relative">
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 to-brand-500" />
             
@@ -494,83 +462,8 @@ export default function EmployeeAttendancePage() {
             </CardHeader>
             
             <CardContent className="space-y-4">
-              {/* Agenda descriptions */}
-              {activeSelectedMeta && (
-                <div className="p-3.5 bg-slate-50/50 dark:bg-slate-900/30 rounded-xl border border-slate-100 dark:border-slate-900 text-xs space-y-2">
-                  <p className="font-extrabold uppercase text-[9px] tracking-wider text-slate-400">Attendance Details</p>
-                  
-                  {activeSelectedMeta.statusType === "holiday" && (
-                    <p className="text-slate-600 dark:text-slate-300 font-bold leading-relaxed">
-                      🎉 Declared holiday: <strong>{activeSelectedMeta.holidayName}</strong>
-                    </p>
-                  )}
-
-                  {activeSelectedMeta.statusType === "leave-approved" && (
-                    <p className="text-slate-650 dark:text-slate-300 font-bold leading-relaxed">
-                      ⛱ Approved Leave
-                    </p>
-                  )}
-
-                  {activeSelectedMeta.statusType === "leave-pending" && (
-                    <p className="text-slate-500 font-medium italic leading-relaxed">
-                      ⏳ Leave request pending approval
-                    </p>
-                  )}
-
-                  {activeSelectedMeta.statusType === "half-day" && (
-                    <div className="space-y-1.5 text-slate-700 dark:text-slate-300 font-medium">
-                      <p className="font-bold text-orange-600 dark:text-orange-400">🟠 Half Day Shift</p>
-                      {activeSelectedMeta.attRecord?.punchInTime && (
-                        <p>• Punched in: <strong className="tabular-nums">{new Date(activeSelectedMeta.attRecord.punchInTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</strong></p>
-                      )}
-                      {activeSelectedMeta.attRecord?.punchOutTime && (
-                        <p>• Punched out: <strong className="tabular-nums">{new Date(activeSelectedMeta.attRecord.punchOutTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</strong></p>
-                      )}
-                    </div>
-                  )}
-
-                  {activeSelectedMeta.statusType === "present" && (
-                    <div className="space-y-1.5 text-slate-700 dark:text-slate-300 font-medium">
-                      <p className="font-bold text-emerald-600 dark:text-emerald-400">🟢 Present Day</p>
-                      {activeSelectedMeta.attRecord?.punchInTime && (
-                        <p>• Punched in: <strong className="tabular-nums">{new Date(activeSelectedMeta.attRecord.punchInTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</strong></p>
-                      )}
-                      {activeSelectedMeta.attRecord?.punchOutTime ? (
-                        <p>• Punched out: <strong className="tabular-nums">{new Date(activeSelectedMeta.attRecord.punchOutTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</strong></p>
-                      ) : (
-                        <p className="text-[10px] text-slate-400 italic">• Active shift, pending check-out</p>
-                      )}
-                    </div>
-                  )}
-
-                  {activeSelectedMeta.statusType === "absent" && (
-                    <p className="text-rose-600 dark:text-rose-400 font-bold leading-relaxed">
-                      🔴 Absent (No shift check-in logs recorded)
-                    </p>
-                  )}
-
-                  {activeSelectedMeta.statusType === "week-off" && (
-                    <p className="text-slate-500 font-bold leading-relaxed">
-                      🔘 Off Duty (Weekly Off)
-                    </p>
-                  )}
-
-                  {activeSelectedMeta.statusType === "scheduled" && (
-                    <p className="text-slate-600 dark:text-slate-350 font-bold leading-relaxed">
-                      📅 Scheduled core shift hours: {user?.shiftStartTime || "10:00 AM"} — {user?.shiftEndTime || "07:30 PM"}
-                    </p>
-                  )}
-
-                  {activeSelectedMeta.statusType === "today-unpunched" && (
-                    <p className="text-indigo-650 dark:text-indigo-400 font-bold leading-relaxed">
-                      👋 Scheduled shift today. Please punch present on the employee Home dashboard.
-                    </p>
-                  )}
-                </div>
-              )}
-
               {/* Leave Form */}
-              <form onSubmit={handleRequestLeave} className="space-y-3.5 border-t border-slate-100 dark:border-slate-800 pt-4">
+              <form onSubmit={handleRequestLeave} className="space-y-3.5">
                 <span className="text-[9px] font-extrabold uppercase tracking-widest text-slate-400 block mb-1">
                   Apply for Leave
                 </span>

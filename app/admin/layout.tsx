@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -11,6 +12,7 @@ import {
   MoreHorizontal,
   Sparkles,
   BarChart3,
+  Target,
   Code2,
   FilePieChart,
   CircleDollarSign,
@@ -18,7 +20,6 @@ import {
   Settings,
   X,
   ChevronRight,
-  MessageSquareText,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import AdminSidebar from "@/components/AdminSidebar";
@@ -27,6 +28,7 @@ import { useLocalNotifications } from "@/lib/useLocalNotifications";
 
 const drawerOptions = [
   { name: "Studio AI", href: "/admin/studio-ai", icon: Sparkles, desc: "AI Assistant" },
+  { name: "Leads", href: "/admin/leads", icon: Target, desc: "Sales Pipeline" },
   { name: "Meta Ads", href: "/admin/ads", icon: BarChart3, desc: "Ad Campaigns" },
   { name: "Website Dev", href: "/admin/website-dev", icon: Code2, desc: "Dev Projects" },
   { name: "Reports", href: "/admin/reports", icon: FilePieChart, desc: "Analytics" },
@@ -40,7 +42,6 @@ const mainNavTabs = [
   { name: "Clients", href: "/admin/clients", icon: Building2, exact: false },
   { name: "Overview", href: "/admin", icon: LayoutDashboard, exact: true, isCenter: true },
   { name: "Projects", href: "/admin/projects", icon: FolderKanban, exact: false },
-  { name: "Messages", href: "/admin/messages", icon: MessageSquareText, exact: false },
 ];
 
 export default function DashboardLayout({
@@ -54,6 +55,13 @@ export default function DashboardLayout({
   const isOthersActive = drawerOptions.some(opt => pathname.startsWith(opt.href));
 
   useLocalNotifications();
+
+  // Auto-refresh server components every 30 s so data stays live
+  const router = useRouter();
+  useEffect(() => {
+    const interval = setInterval(() => router.refresh(), 30_000);
+    return () => clearInterval(interval);
+  }, [router]);
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">

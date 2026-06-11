@@ -12,16 +12,65 @@ if (typeof window !== "undefined" && isCapacitor()) {
   });
 }
 
+// Friendly channel ID → label mapping for Android notification channels
+const CHANNEL_ID = "thepiecraft-crm";
+const CHANNEL_NAME = "ThePieCraft CRM";
+
+async function ensureChannelAndPermission() {
+  if (!LocalNotifications) return false;
+  try {
+    // Request permission (required on Android 13+ / iOS)
+    const { display } = await LocalNotifications.requestPermissions();
+    if (display !== "granted") return false;
+
+    // Create a named notification channel so Android shows our app name + icon
+    await LocalNotifications.createChannel({
+      id: CHANNEL_ID,
+      name: CHANNEL_NAME,
+      description: "CRM activity updates — clients, leads, expenses, messages",
+      importance: 4, // HIGH
+      visibility: 1, // PUBLIC
+      vibration: true,
+      lights: true,
+      lightColor: "#3a58e8",
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// Map notification type → friendly icon key
+function iconForType(type: string): string {
+  if (type.includes("message")) return "ic_stat_message";
+  if (type.includes("expense") || type.includes("payment")) return "ic_stat_payment";
+  if (type.includes("leave")) return "ic_stat_event";
+  if (type.includes("punch")) return "ic_stat_access_time";
+  return "ic_stat_notification";
+}
+
 export function useLocalNotifications() {
   const lastMaxId = useRef<number>(0);
+  const channelReady = useRef<boolean>(false);
 
   useEffect(() => {
     if (!isCapacitor()) return;
 
+    const init = async () => {
+      channelReady.current = await ensureChannelAndPermission();
+    };
+    init();
+
     const checkAndNotify = async () => {
+      if (!channelReady.current) {
+        channelReady.current = await ensureChannelAndPermission();
+        if (!channelReady.current) return;
+      }
+
       const res = await getMyNotifications();
       if (!res.success || !res.data || res.data.length === 0) return;
 
+      // On first load, snapshot the highest ID without firing any notifications
       if (lastMaxId.current === 0) {
         lastMaxId.current = Math.max(...res.data.map((n: Notification) => n.id));
         return;
@@ -40,12 +89,15 @@ export function useLocalNotifications() {
             notifications: [
               {
                 id: n.id,
+                channelId: CHANNEL_ID,
                 title: n.title,
                 body: n.message || "",
-                smallIcon: "ic_stat_notification",
-                iconColor: "#6366f1",
+                smallIcon: iconForType(n.type),
+                iconColor: "#3a58e8",
                 vibrate: true,
-                sound: "default",
+                sound: undefined, // use system default
+                autoCancel: true,
+                extra: { link: n.link || "/" },
               },
             ],
           });
@@ -55,8 +107,12 @@ export function useLocalNotifications() {
       }
     };
 
-    checkAndNotify();
-    const interval = setInterval(checkAndNotify, 10000);
-    return () => clearInterval(interval);
+    // Check immediately after init, then every 15 seconds
+    const delay = setTimeout(checkAndNotify, 2000);
+    const interval = setInterval(checkAndNotify, 15000);
+    return () => {
+      clearTimeout(delay);
+      clearInterval(interval);
+    };
   }, []);
 }

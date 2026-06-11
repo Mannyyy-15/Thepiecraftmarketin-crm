@@ -1,4 +1,4 @@
-import { mysqlTable, int, varchar, mysqlEnum, timestamp, text } from "drizzle-orm/mysql-core";
+import { mysqlTable, int, varchar, mysqlEnum, timestamp, text, double } from "drizzle-orm/mysql-core";
 
 // 1. Users Table
 export const users = mysqlTable("users", {
@@ -49,6 +49,7 @@ export const projects = mysqlTable("projects", {
   clientContactPhone: varchar("client_contact_phone", { length: 50 }),      // WhatsApp / phone
   accessGranted: int("access_granted").notNull().default(0),                // 1 = agency has platform access
   contractLink: varchar("contract_link", { length: 500 }),                  // signed SOW / contract URL
+  githubRepo: varchar("github_repo", { length: 255 }),                      // e.g. 'facebook/react' or full URL
   leadId: int("lead_id").references(() => users.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
@@ -161,6 +162,52 @@ export const notifications = mysqlTable("notifications", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// 12. Documents Table
+export const documents = mysqlTable("documents", {
+  id: int("id").primaryKey().autoincrement(),
+  name: varchar("name", { length: 255 }).notNull(),
+  clientId: int("client_id").references(() => clients.id, { onDelete: "cascade" }),
+  clientName: varchar("client_name", { length: 255 }),
+  type: varchar("type", { length: 50 }).notNull().default("PDF"), // 'PDF' | 'DOCX' | 'XLSX' | 'CSV' | 'FIG'
+  size: varchar("size", { length: 50 }).notNull().default("0 KB"),
+  folder: varchar("folder", { length: 255 }).notNull().default("Client Briefs"), // 'Brand Assets' | 'Client Briefs' | 'Contracts' | 'Reports'
+  ownerName: varchar("owner_name", { length: 255 }).notNull().default("Admin"),
+  url: varchar("url", { length: 500 }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// 13. Meta Campaigns Table
+export const metaCampaigns = mysqlTable("meta_campaigns", {
+  id: int("id").primaryKey().autoincrement(),
+  projectId: int("project_id").references(() => projects.id, { onDelete: "cascade" }),
+  name: varchar("name", { length: 255 }).notNull(),
+  platform: varchar("platform", { length: 50 }).notNull().default("Meta Ads"),
+  spend: int("spend").notNull().default(0),
+  impressions: int("impressions").notNull().default(0),
+  clicks: int("clicks").notNull().default(0),
+  ctr: double("ctr").notNull().default(0),
+  roas: double("roas").notNull().default(0),
+  status: varchar("status", { length: 20 }).notNull().default("active"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Leads Table
+export const leads = mysqlTable("leads", {
+  id: int("id").primaryKey().autoincrement(),
+  name: varchar("name", { length: 255 }).notNull(),
+  contactName: varchar("contact_name", { length: 255 }),
+  contactPhone: varchar("contact_phone", { length: 50 }),
+  contactEmail: varchar("contact_email", { length: 255 }),
+  source: varchar("source", { length: 100 }),
+  service: varchar("service", { length: 50 }),
+  stage: varchar("stage", { length: 50 }).notNull().default("new"),
+  estimatedValue: int("estimated_value").notNull().default(0),
+  notes: text("notes"),
+  assignedTo: int("assigned_to").references(() => users.id, { onDelete: "set null" }),
+  followUpDate: varchar("follow_up_date", { length: 255 }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Types Export
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
@@ -198,4 +245,11 @@ export type NewActivityLog = typeof activityLog.$inferInsert;
 
 export type Invoice = typeof invoices.$inferSelect;
 export type NewInvoice = typeof invoices.$inferInsert;
+
+export type Document = typeof documents.$inferSelect;
+export type NewDocument = typeof documents.$inferInsert;
+
+export type MetaCampaign = typeof metaCampaigns.$inferSelect;
+export type NewMetaCampaign = typeof metaCampaigns.$inferInsert;
+
 

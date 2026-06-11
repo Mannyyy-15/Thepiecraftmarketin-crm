@@ -270,7 +270,7 @@ export default function EmployeeDashboardPage() {
                 ))}
               </div>
 
-              {/* Shift schedule pill */}
+              {/* Shift schedule pill — inside clock card */}
               <div className="flex items-center gap-2 flex-wrap justify-center">
                 <div className="flex items-center gap-2 bg-slate-800/70 dark:bg-slate-800/50 border border-slate-700/40 rounded-xl px-3.5 py-1.5">
                   <Clock className="h-3 w-3 text-slate-400" />
@@ -391,17 +391,6 @@ export default function EmployeeDashboardPage() {
                         Pending
                       </span>
                     )}
-                  </div>
-
-                  {/* Shift schedule */}
-                  <div className="flex items-center justify-between bg-slate-50 dark:bg-slate-800/40 rounded-2xl px-4 py-3 border border-slate-100 dark:border-slate-700/30">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-3.5 w-3.5 text-slate-400" />
-                      <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Shift</span>
-                    </div>
-                    <span className="text-xs font-bold text-slate-700 dark:text-slate-200 font-mono">
-                      {user?.shiftStartTime || "10:00 AM"} — {user?.shiftEndTime || "07:30 PM"}
-                    </span>
                   </div>
 
                   {/* Event cards */}

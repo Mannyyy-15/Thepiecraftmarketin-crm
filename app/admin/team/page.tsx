@@ -2,11 +2,12 @@
 import { useToast } from "@/providers/ToastProvider";
 
 import { useState, useEffect, useRef } from "react";
+import { useSearchParams } from "next/navigation";
 import { createUser } from "@/app/actions/auth";
 import { getTeamUsers, getAttendance, bulkUpdateAttendance, deleteUser, updateUserRole, updateUserShiftSchedule, getUserTasks, createTask, toggleTaskStatus, deleteTask, getProjects, assignProjectLead, getPendingLeaves, approveLeave, rejectLeave } from "@/app/actions/crm";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { getMemberStatusVariant, getMemberStatusLabel } from "@/lib/statusHelpers";
-import { MemberGridSkeleton, CalendarSkeleton } from "@/components/ui/Skeleton";
+import { MemberGridSkeleton, CalendarSkeleton, Skeleton, TaskListSkeleton } from "@/components/ui/Skeleton";
 import {
   Mail,
   MoreHorizontal,
@@ -43,9 +44,12 @@ import { cn } from "@/components/ui/cn";
 
 export default function TeamPage() {
   const { toast, confirmDialog } = useToast();
+  const searchParams = useSearchParams();
 
   const [activeTab, setActiveTab] = useState<"directory" | "attendance">("directory");
-  const [selectedEmployeeDetailId, setSelectedEmployeeDetailId] = useState<string | null>(null);
+  const [selectedEmployeeDetailId, setSelectedEmployeeDetailId] = useState<string | null>(
+    searchParams.get("member")
+  );
   const [searchQuery, setSearchQuery] = useState("");
 
   // Stateful members list loaded from the database
@@ -450,7 +454,13 @@ export default function TeamPage() {
         const overrides = new Map<string, "present" | "half-day" | "vacation" | "sick" | "off">();
         attendanceRes.data.forEach((att: any) => {
           if (att.date) {
-            const key = `${att.userId}-${att.date}`;
+            let dateStr = att.date;
+            if (att.date instanceof Date) {
+              dateStr = `${att.date.getFullYear()}-${String(att.date.getMonth() + 1).padStart(2, "0")}-${String(att.date.getDate()).padStart(2, "0")}`;
+            } else if (typeof att.date === "string") {
+              dateStr = att.date.split("T")[0].split(" ")[0];
+            }
+            const key = `${att.userId}-${dateStr}`;
             let uiStatus: "present" | "half-day" | "vacation" | "sick" | "off" = "present";
             if (att.status === "checked_in" || att.status === "present") uiStatus = "present";
             else if (att.status === "half-day") uiStatus = "half-day";
@@ -1432,8 +1442,24 @@ export default function TeamPage() {
                   </CardHeader>
                   <CardContent className="p-6">
                     {isWorkloadLoading ? (
-                      <div className="flex items-center justify-center py-10">
-                        <Loader2 className="h-6 w-6 animate-spin text-indigo-500" />
+                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div className="space-y-3">
+                          <Skeleton className="h-4 w-28" />
+                          {Array.from({ length: 3 }).map((_, i) => (
+                            <div key={i} className="flex items-center justify-between p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
+                              <div className="space-y-1.5 flex-1">
+                                <Skeleton className="h-3.5 w-28" />
+                                <Skeleton className="h-3 w-16" />
+                              </div>
+                              <Skeleton className="h-5 w-12 rounded" />
+                            </div>
+                          ))}
+                        </div>
+                        <div className="lg:col-span-2 space-y-3">
+                          <Skeleton className="h-4 w-36" />
+                          <Skeleton className="h-20 w-full rounded-xl" />
+                          <TaskListSkeleton count={4} />
+                        </div>
                       </div>
                     ) : (
                       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

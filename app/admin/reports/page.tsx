@@ -1,7 +1,7 @@
 "use client";
 import { useToast } from "@/providers/ToastProvider";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Calendar,
   Download,
@@ -13,8 +13,9 @@ import {
   X,
   Check,
   Trash2,
-  Cpu
+  Cpu,
 } from "lucide-react";
+import { ReportsPageSkeleton } from "@/components/ui/Skeleton";
 import {
   Bar,
   BarChart,
@@ -30,23 +31,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
 import { PageHeader } from "@/components/ui/PageHeader";
-
-const monthlyData = [
-  { month: "Dec", clients: 8, projects: 14, hours: 320 },
-  { month: "Jan", clients: 9, projects: 18, hours: 412 },
-  { month: "Feb", clients: 10, projects: 16, hours: 388 },
-  { month: "Mar", clients: 11, projects: 22, hours: 504 },
-  { month: "Apr", clients: 12, projects: 24, hours: 540 },
-  { month: "May", clients: 14, projects: 26, hours: 580 },
-];
-
-const initialReports = [
-  { id: "r1", title: "Acme Corp — May 2026 Performance", type: "Monthly", client: "Acme Corp", generated: "May 20, 2026", size: "2.4 MB" },
-  { id: "r2", title: "Q2 Agency Health Report", type: "Quarterly", client: "Internal", generated: "May 18, 2026", size: "8.1 MB" },
-  { id: "r3", title: "Stark Industries — Ad ROAS Deep Dive", type: "Custom", client: "Stark Industries", generated: "May 17, 2026", size: "1.2 MB" },
-  { id: "r4", title: "Wayne Enterprises — SEO Audit", type: "Audit", client: "Wayne Enterprises", generated: "May 14, 2026", size: "3.6 MB" },
-  { id: "r5", title: "Hooli — Conversion Funnel Analysis", type: "Custom", client: "Hooli", generated: "May 10, 2026", size: "1.8 MB" },
-];
+import { getReports, createReport, deleteDocument, getReportsTrendAndAI } from "@/app/actions/crm";
 
 interface ToastMessage {
   id: string;
@@ -57,7 +42,10 @@ interface ToastMessage {
 export default function ReportsPage() {
   const { toast, confirmDialog } = useToast();
 
-  const [reports, setReports] = useState(initialReports);
+  const [reports, setReports] = useState<any[]>([]);
+  const [monthlyData, setMonthlyData] = useState<any[]>([]);
+  const [liveAiSummary, setLiveAiSummary] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("All");
 
@@ -83,40 +71,64 @@ export default function ReportsPage() {
     }, 3500);
   };
 
-  const handleCreateReport = (e: React.FormEvent) => {
+  const fetchReportsData = async () => {
+    setIsLoading(true);
+    const repRes = await getReports();
+    const trendRes = await getReportsTrendAndAI();
+    
+    if (repRes && repRes.success && repRes.data) {
+      setReports(repRes.data);
+    }
+    if (trendRes && trendRes.success && trendRes.data) {
+      setMonthlyData(trendRes.data.monthlyData);
+      setLiveAiSummary(trendRes.data.aiSummary);
+    }
+    setIsLoading(false);
+  };
+
+  useEffect(() => {
+    fetchReportsData();
+  }, []);
+
+  const handleCreateReport = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTitle.trim()) return;
 
-    const newReport = {
-      id: `r-${Date.now()}`,
-      title: newTitle.trim(),
-      type: newType,
-      client: newClient,
-      generated: "Today",
-      size: "1.4 MB"
-    };
+    const formattedTitle = newTitle.includes(".")
+      ? newTitle.trim()
+      : `${newTitle.trim()}.pdf`;
 
-    setReports([newReport, ...reports]);
-    setNewTitle("");
-    setShowCreateModal(false);
-    addToast(`Successfully generated new "${newType}" report for ${newClient}!`);
+    const res = await createReport(formattedTitle, newType, newClient);
+    if (res && res.success) {
+      setNewTitle("");
+      setShowCreateModal(false);
+      addToast(`Successfully generated new "${newType}" report for ${newClient}!`);
+      fetchReportsData();
+    } else {
+      addToast(res?.error || "Failed to compile report.", "warning");
+    }
   };
 
-  const handleDeleteReport = async (id: string, title: string) => {
+  const handleDeleteReport = async (id: number, title: string) => {
     if (await confirmDialog(`Are you sure you want to permanently delete "${title}"?`)) {
-      setReports(reports.filter(r => r.id !== id));
-      addToast(`Deleted "${title}" from records.`, "info");
+      const res = await deleteDocument(id);
+      if (res && res.success) {
+        addToast(`Deleted "${title}" from records.`, "info");
+        fetchReportsData();
+      } else {
+        addToast(res?.error || "Failed to delete report.", "warning");
+      }
     }
   };
 
   const handleDownloadPDF = (title: string) => {
     addToast(`Initiating secure high-res PDF compile for "${title}"...`, "info");
     setTimeout(() => {
-      addToast(`Successfully downloaded "${title}.pdf"!`);
+      addToast(`Successfully downloaded "${title}"!`);
     }, 1500);
   };
 
-  // Simulate AI Report scanner
+  // Simulate AI Report scanner using live statistics
   const handleTriggerAISummary = () => {
     if (aiGenerating) return;
     setAiGenerating(true);
@@ -139,12 +151,7 @@ export default function ReportsPage() {
       } else {
         clearInterval(interval);
         setAiGenerating(false);
-        setAiResult(
-          `**EXECUTIVE DIGEST (MAY 2026):**\n\n` +
-          `• **Revenue Scaling**: Monthly MRR has surged to **$45,230**, representing an impressive **+20.1%** month-on-month scaling. High-value accounts Wayne Enterprises ($22k) and Stark Industries ($14.2k) represent the strongest revenue anchors.\n` +
-          `• **Marketing Multipliers**: Average ROAS holds strong at **3.2×** with a total managed ad spend of **$124,500**. Acme Corp's Spring Sale Lookalike campaign is leading standard yields at **4.2× ROAS**.\n` +
-          `• **Operational Load**: Aggregate team capacity utilization is sitting at **71%**. Senior Developer Sam Okafor is currently peak allocated at **92%** across Website sprints, suggesting a resource bottleneck on active react deployments.`
-        );
+        setAiResult(liveAiSummary || `**EXECUTIVE DIGEST (CRM SYNTHESIS):**\n\nNo active telemetry found. Please verify project fees and contractor logs.`);
         addToast("Executive AI Summary generated successfully!");
       }
     }, 1000);
@@ -152,11 +159,20 @@ export default function ReportsPage() {
 
   // Filtering logic
   const filteredReports = reports.filter(r => {
-    const matchesSearch = r.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          r.client.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesType = typeFilter === "All" || r.type === typeFilter;
-    return matchesSearch && matchesType;
+    const q = searchQuery.toLowerCase();
+    const titleMatch = (r.name || "").toLowerCase().includes(q);
+    const clientMatch = (r.clientName || "").toLowerCase().includes(q);
+    
+    // Heuristically detect category from name or defaults
+    const type = r.name?.toLowerCase().includes("monthly") ? "Monthly" :
+                 r.name?.toLowerCase().includes("quarterly") ? "Quarterly" :
+                 r.name?.toLowerCase().includes("seo") || r.name?.toLowerCase().includes("audit") ? "Audit" : "Custom";
+
+    const matchesType = typeFilter === "All" || type === typeFilter;
+    return (titleMatch || clientMatch) && matchesType;
   });
+
+  if (isLoading) return <ReportsPageSkeleton />;
 
   return (
     <div className="space-y-6">
@@ -192,8 +208,8 @@ export default function ReportsPage() {
             {aiGenerating ? (
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
-                  <div className="h-2 w-2 rounded-full bg-indigo-600 animate-ping" />
-                  <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                  <div className="h-2 w-2 rounded-full bg-indigo-650 animate-ping" />
+                  <span className="text-xs font-semibold text-slate-700 dark:text-slate-350">
                     {aiStep === 1 && "Querying global impressions, clicks & Meta ad accounts..."}
                     {aiStep === 2 && "Scoping contract parameters & active client milestones..."}
                     {aiStep === 3 && "Aggregating monthly contractor timesheet billables..."}
@@ -201,7 +217,6 @@ export default function ReportsPage() {
                     {aiStep === 5 && "Compiling final executive agency digest..."}
                   </span>
                 </div>
-                {/* Simulated progress indicator */}
                 <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
                   <div 
                     className="bg-indigo-600 h-full rounded-full transition-all duration-300"
@@ -213,11 +228,11 @@ export default function ReportsPage() {
               <div className="relative">
                 <button 
                   onClick={() => setAiResult(null)}
-                  className="absolute top-0 right-0 h-6 w-6 rounded-lg text-slate-400 hover:text-slate-650 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center cursor-pointer"
+                  className="absolute top-0 right-0 h-6 w-6 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center cursor-pointer"
                 >
                   <X className="h-4 w-4" />
                 </button>
-                <div className="text-xs leading-relaxed text-slate-700 dark:text-slate-350 whitespace-pre-line pr-6">
+                <div className="text-xs leading-relaxed text-slate-750 dark:text-slate-350 whitespace-pre-line pr-6">
                   {aiResult}
                 </div>
               </div>
@@ -235,7 +250,7 @@ export default function ReportsPage() {
               Clients, projects, billable hours — last 6 months
             </p>
           </div>
-          <select className="h-8 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 text-xs font-medium text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500/40">
+          <select className="h-8 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 text-xs font-medium text-slate-705 dark:text-slate-255 focus:outline-none focus:ring-2 focus:ring-brand-500/40">
             <option>Last 6 months</option>
             <option>YTD</option>
             <option>Last year</option>
@@ -305,37 +320,42 @@ export default function ReportsPage() {
         </CardHeader>
         
         <div className="divide-y divide-slate-100 dark:divide-slate-800">
-          {filteredReports.map((r) => (
-            <div key={r.id} className="flex items-center gap-4 p-4 sm:p-5 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors duration-150 group">
-              <div className="h-10 w-10 rounded-xl bg-brand-50 dark:bg-brand-500/10 text-brand-600 dark:text-brand-300 flex items-center justify-center shrink-0 shadow-sm">
-                <FileText className="h-5 w-5" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{r.title}</p>
-                <div className="mt-1 flex items-center gap-2 flex-wrap text-xs text-slate-500 dark:text-slate-400">
-                  <Badge variant="brand">{r.type}</Badge>
-                  <span className="font-medium">{r.client}</span>
-                  <span>•</span>
-                  <span>{r.generated}</span>
-                  <span className="hidden sm:inline">•</span>
-                  <span className="hidden sm:inline tabular-nums">{r.size}</span>
+          {filteredReports.map((r) => {
+            const cat = r.name?.toLowerCase().includes("monthly") ? "Monthly" :
+                        r.name?.toLowerCase().includes("quarterly") ? "Quarterly" :
+                        r.name?.toLowerCase().includes("seo") || r.name?.toLowerCase().includes("audit") ? "Audit" : "Custom";
+            return (
+              <div key={r.id} className="flex items-center gap-4 p-4 sm:p-5 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors duration-150 group">
+                <div className="h-10 w-10 rounded-xl bg-brand-50 dark:bg-brand-500/10 text-brand-600 dark:text-brand-300 flex items-center justify-center shrink-0 shadow-sm">
+                  <FileText className="h-5 w-5" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{r.name}</p>
+                  <div className="mt-1 flex items-center gap-2 flex-wrap text-xs text-slate-500 dark:text-slate-400">
+                    <Badge variant="brand">{cat}</Badge>
+                    <span className="font-medium">{r.clientName || "Internal"}</span>
+                    <span>•</span>
+                    <span>{r.createdAt ? new Date(r.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "Today"}</span>
+                    <span className="hidden sm:inline">•</span>
+                    <span className="hidden sm:inline tabular-nums">{r.size || "1.2 MB"}</span>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" onClick={() => handleDownloadPDF(r.name)} className="border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 font-semibold text-xs">
+                    <Download className="h-3.5 w-3.5 mr-1 text-emerald-500" /> <span className="hidden sm:inline">PDF</span>
+                  </Button>
+                  <button
+                    onClick={() => handleDeleteReport(r.id, r.name)}
+                    className="h-8 w-8 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 flex items-center justify-center shrink-0 transition-all cursor-pointer"
+                    title="Delete Report"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
                 </div>
               </div>
-              
-              <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" onClick={() => handleDownloadPDF(r.title)} className="border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 font-semibold text-xs">
-                  <Download className="h-3.5 w-3.5 mr-1 text-emerald-500" /> <span className="hidden sm:inline">PDF</span>
-                </Button>
-                <button
-                  onClick={() => handleDeleteReport(r.id, r.title)}
-                  className="h-8 w-8 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 flex items-center justify-center shrink-0 transition-all cursor-pointer"
-                  title="Delete Report"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
 
           {filteredReports.length === 0 && (
             <EmptyState icon={<FileText className="h-5 w-5" />} title="No reports found" description={searchQuery ? "Try a different search term." : "Create your first report to get started."} />

@@ -9,6 +9,7 @@ import {
   X,
   Briefcase,
   Users,
+  MessageSquareText,
   FileText,
   Check,
   Sparkles,
@@ -35,8 +36,7 @@ import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { getCurrentUser, logout } from "@/app/actions/auth";
 import { LogoutConfirmModal } from "@/components/ui/LogoutConfirmModal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
-import { clients, projects, team } from "@/lib/mock";
-import { getMyNotifications, markAllNotificationsRead, dismissNotification } from "@/app/actions/crm";
+import { getMyNotifications, markAllNotificationsRead, dismissNotification, getGlobalSearchData, quickAddClient, quickAddEmployee, quickAddProject, quickAddTimesheet, quickAddExpense } from "@/app/actions/crm";
 import type { Notification } from "@/lib/schema";
 
 interface SearchItem {
@@ -82,6 +82,15 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
   // Global Search State
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchData, setSearchData] = useState<{ clients: any[], projects: any[], users: any[] }>({ clients: [], projects: [], users: [] });
+
+  useEffect(() => {
+    getGlobalSearchData().then(res => {
+      if (res && res.success && res.data) {
+        setSearchData(res.data);
+      }
+    });
+  }, []);
 
   // Floating Quick Action dropdowns & modals
   const [showQuickActions, setShowQuickActions] = useState(false);
@@ -210,11 +219,11 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
     setNotifications(notifications.filter((n) => n.id !== id));
   };
 
-  // Search Engine Mock Database
+  // Search Engine Database Feed
   const searchItems: SearchItem[] = [
-    ...clients.map((c) => ({ title: c.name, category: "Client" as const, url: `/admin/clients`, details: `${c.industry} • Owner: ${c.owner}` })),
-    ...projects.map((p) => ({ title: p.name, category: "Project" as const, url: `/admin/projects`, details: `${p.type} • Budget: $${p.budget.toLocaleString()}` })),
-    ...team.map((t) => ({ title: t.name, category: "Team" as const, url: `/admin/team`, details: `${t.role} • ${t.email}` })),
+    ...searchData.clients.map((c) => ({ title: c.name, category: "Client" as const, url: `/admin/clients/${c.id}`, details: `${c.industry || "Client"} • ID #${c.id}` })),
+    ...searchData.projects.map((p) => ({ title: p.name, category: "Project" as const, url: `/admin/projects/${p.id}`, details: `${(p.projectType || 'standard').replace('_', ' ').toUpperCase()} • Budget: ₹${(p.budget || 0).toLocaleString()}` })),
+    ...searchData.users.map((u) => ({ title: u.name, category: "Team" as const, url: `/admin/team?member=${u.id}`, details: `${u.systemRole || u.role || 'Member'} • ${u.email}` })),
     { title: "Team & Roster Attendance Tracker", category: "Page", url: "/admin/team", details: "View shifts, log leaves & customize work days" },
     { title: "Onboarding Funnel Board", category: "Page", url: "/admin/clients", details: "Kanban pipeline, checklists & custom clients" },
     { title: "Meta Ads Campaign Manager", category: "Page", url: "/admin/ads", details: "Track campaigns, ROAS, budgets & live charts" },
@@ -231,48 +240,74 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
   );
 
   // Quick Action Submission Handlers
-  const handleQuickClient = (e: React.FormEvent) => {
+  const handleQuickClient = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!qClientName) return;
-    addToast(`Successfully onboarded client "${qClientName}" to active CRM database!`);
-    setQClientName("");
-    setActiveModal(null);
+    const res = await quickAddClient(qClientName, qClientIndustry);
+    if (res.success) {
+      addToast(`Successfully onboarded client "${qClientName}" to active CRM database!`);
+      setQClientName("");
+      setActiveModal(null);
+    } else {
+      addToast(`Failed to onboard client: ${res.error}`, "info");
+    }
   };
 
-  const handleQuickEmployee = (e: React.FormEvent) => {
+  const handleQuickEmployee = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!qEmpName) return;
-    addToast(`Successfully sent professional invite token to ${qEmpName} (${qEmpRole})!`);
-    setQEmpName("");
-    setActiveModal(null);
+    const res = await quickAddEmployee(qEmpName, qEmpRole);
+    if (res.success) {
+      addToast(`Successfully sent professional invite token to ${qEmpName} (${qEmpRole})!`);
+      setQEmpName("");
+      setActiveModal(null);
+    } else {
+      addToast(`Failed to add team member: ${res.error}`, "info");
+    }
   };
 
-  const handleQuickProject = (e: React.FormEvent) => {
+  const handleQuickProject = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!qProjTitle) return;
-    addToast(`Successfully created project "${qProjTitle}" for ${qProjClient}!`);
-    setQProjTitle("");
-    setActiveModal(null);
+    const res = await quickAddProject(qProjTitle, qProjClient, qProjType);
+    if (res.success) {
+      addToast(`Successfully created project "${qProjTitle}" for ${qProjClient}!`);
+      setQProjTitle("");
+      setActiveModal(null);
+    } else {
+      addToast(`Failed to create project: ${res.error}`, "info");
+    }
   };
 
-  const handleQuickHours = (e: React.FormEvent) => {
+  const handleQuickHours = async (e: React.FormEvent) => {
     e.preventDefault();
-    addToast(`Logged ${qHours} billable hours to your active weekly timesheet!`);
-    setActiveModal(null);
+    const res = await quickAddTimesheet(Number(qHours));
+    if (res.success) {
+      addToast(`Logged ${qHours} billable hours to your active weekly timesheet!`);
+      setActiveModal(null);
+    } else {
+      addToast(`Failed to log hours: ${res.error}`, "info");
+    }
   };
 
-  const handleQuickExpense = (e: React.FormEvent) => {
+  const handleQuickExpense = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!qExpenseAmount) return;
-    addToast(`Expense claim for $${qExpenseAmount} submitted and sent for contractor audit!`);
-    setQExpenseAmount("");
-    setQExpenseDesc("");
-    setActiveModal(null);
+    const res = await quickAddExpense(Number(qExpenseAmount), qExpenseDesc || "Quick expense");
+    if (res.success) {
+      addToast(`Expense claim for ₹${qExpenseAmount} submitted successfully.`);
+      setQExpenseAmount("");
+      setQExpenseDesc("");
+      setActiveModal(null);
+    } else {
+      addToast(`Failed to submit expense: ${res.error}`, "info");
+    }
   };
 
   return (
-    <header className="z-30 mx-3 mt-3 sm:mx-4 sm:mt-4 lg:mx-6 lg:mt-5 flex h-14 sm:h-16 shrink-0 items-center gap-3 rounded-2xl border border-slate-200/80 dark:border-brand-900/50 bg-white/85 dark:bg-[#080d1e]/90 backdrop-blur-xl shadow-soft px-3 sm:px-4">
-      {onMenuClick && (
+    <>
+      <header className="z-30 mx-3 mt-3 sm:mx-4 sm:mt-4 lg:mx-6 lg:mt-5 flex h-14 sm:h-16 shrink-0 items-center gap-3 rounded-2xl border border-slate-200/80 dark:border-brand-900/50 bg-white/85 dark:bg-[#080d1e]/90 backdrop-blur-xl shadow-soft px-3 sm:px-4">
+        {onMenuClick && (
         <button
           type="button"
           onClick={onMenuClick}
@@ -290,7 +325,7 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
 
       <div className="flex flex-1 items-center justify-end gap-2 relative">
         
-        {/* Global Search Bar (Trigger) */}
+        {/* Global Search Bar (Trigger) - Hidden on mobile, visible on desktop */}
         <div 
           onClick={() => setShowSearchModal(true)}
           className="relative hidden sm:block w-64 md:w-80 cursor-pointer group"
@@ -303,15 +338,6 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
             <Command className="h-2.5 w-2.5" />K
           </kbd>
         </div>
-
-        <button
-          type="button"
-          onClick={() => setShowSearchModal(true)}
-          className="sm:hidden inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
-          aria-label="Search"
-        >
-          <Search className="h-4 w-4" />
-        </button>
 
         {/* Global Quick Action "+" Toggle Button */}
         <div className="relative">
@@ -377,7 +403,16 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
           )}
         </div>
 
-        <ThemeToggle />
+        {/* Messages Nav Button */}
+        <button
+          type="button"
+          onClick={() => router.push('/admin/messages')}
+          className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-brand-50 dark:hover:bg-brand-500/10 hover:text-brand-600 dark:hover:text-brand-400 transition-colors cursor-pointer"
+          aria-label="Messages"
+          title="Messages"
+        >
+          <MessageSquareText className="h-4 w-4" />
+        </button>
 
         {/* Bell Notifications Toggle Button */}
         <div className="relative">
@@ -524,6 +559,7 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
           )}
         </div>
       </div>
+      </header>
 
       {/* ========================================================================= */}
       {/* 🔍 SEARCH PALETTE / COMMAND DIALOG OVERLAY */}
@@ -740,7 +776,7 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
                       onChange={(e) => setQProjClient(e.target.value)}
                       className="w-full h-10 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-xs focus:ring-2 focus:ring-indigo-500/40"
                     >
-                      {clients.map((c) => (
+                      {searchData.clients.map((c) => (
                         <option key={c.id} value={c.name}>{c.name}</option>
                       ))}
                     </select>
@@ -800,8 +836,8 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
                 <div>
                   <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Associated Engagement</label>
                   <select className="w-full h-10 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-xs focus:ring-2 focus:ring-indigo-500/40">
-                    {projects.map((p) => (
-                      <option key={p.id} value={p.id}>{p.name} ({p.client})</option>
+                    {searchData.projects.map((p) => (
+                      <option key={p.id} value={p.id}>{p.name}</option>
                     ))}
                   </select>
                 </div>
@@ -899,6 +935,6 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
         onConfirm={handleLogout}
         onCancel={() => setShowLogoutModal(false)}
       />
-    </header>
+    </>
   );
 }

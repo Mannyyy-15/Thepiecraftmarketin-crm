@@ -1,6 +1,7 @@
 "use client";
 
-import { Calendar, Download, FileText, Filter, Plus, Sparkles } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Download, FileText, Filter, Calendar, RefreshCw } from "lucide-react";
 import {
   Bar,
   BarChart,
@@ -14,25 +15,46 @@ import {
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
-
-const monthlyData = [
-  { month: "Dec", clients: 8, projects: 14, hours: 320 },
-  { month: "Jan", clients: 9, projects: 18, hours: 412 },
-  { month: "Feb", clients: 10, projects: 16, hours: 388 },
-  { month: "Mar", clients: 11, projects: 22, hours: 504 },
-  { month: "Apr", clients: 12, projects: 24, hours: 540 },
-  { month: "May", clients: 14, projects: 26, hours: 580 },
-];
-
-const recentReports = [
-  { id: "r1", title: "Acme Corp — May 2026 Performance", type: "Monthly", client: "Acme Corp", generated: "May 20, 2026", size: "2.4 MB" },
-  { id: "r2", title: "Q2 Agency Health Report", type: "Quarterly", client: "Internal", generated: "May 18, 2026", size: "8.1 MB" },
-  { id: "r3", title: "Stark Industries — Ad ROAS Deep Dive", type: "Custom", client: "Stark Industries", generated: "May 17, 2026", size: "1.2 MB" },
-  { id: "r4", title: "Wayne Enterprises — SEO Audit", type: "Audit", client: "Wayne Enterprises", generated: "May 14, 2026", size: "3.6 MB" },
-  { id: "r5", title: "Hooli — Conversion Funnel Analysis", type: "Custom", client: "Hooli", generated: "May 10, 2026", size: "1.8 MB" },
-];
+import { getReports, getReportsTrendAndAI } from "@/app/actions/crm";
 
 export default function ReportsPage() {
+  const [reports, setReports] = useState<any[]>([]);
+  const [monthlyData, setMonthlyData] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const fetchReportsData = async () => {
+    setIsLoading(true);
+    const repRes = await getReports();
+    const trendRes = await getReportsTrendAndAI();
+    
+    if (repRes && repRes.success && repRes.data) {
+      setReports(repRes.data);
+    }
+    if (trendRes && trendRes.success && trendRes.data) {
+      setMonthlyData(trendRes.data.monthlyData);
+    }
+    setIsLoading(false);
+  };
+
+  useEffect(() => {
+    fetchReportsData();
+  }, []);
+
+  const handleDownloadPDF = (title: string) => {
+    alert(`Initiating download for: ${title}`);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex h-[80vh] items-center justify-center">
+        <div className="flex flex-col items-center gap-4 text-slate-400">
+          <RefreshCw className="h-8 w-8 animate-spin text-indigo-500" />
+          <p className="text-sm font-semibold tracking-wide uppercase">Compiling Insights...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <Card>
@@ -84,27 +106,32 @@ export default function ReportsPage() {
           </div>
         </CardHeader>
         <div className="divide-y divide-slate-100 dark:divide-slate-800">
-          {recentReports.map((r) => (
-            <div key={r.id} className="flex items-center gap-4 p-4 sm:p-5 hover:bg-slate-50/60 dark:hover:bg-slate-900/40">
-              <div className="h-10 w-10 rounded-xl bg-brand-50 dark:bg-brand-500/10 text-brand-600 dark:text-brand-300 flex items-center justify-center shrink-0">
-                <FileText className="h-5 w-5" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium text-slate-900 dark:text-white truncate">{r.title}</p>
-                <div className="mt-1 flex items-center gap-2 flex-wrap text-xs text-slate-500 dark:text-slate-400">
-                  <Badge variant="brand">{r.type}</Badge>
-                  <span>{r.client}</span>
-                  <span>•</span>
-                  <span>{r.generated}</span>
-                  <span className="hidden sm:inline">•</span>
-                  <span className="hidden sm:inline">{r.size}</span>
+          {reports.map((r) => {
+            const cat = r.name?.toLowerCase().includes("monthly") ? "Monthly" :
+                        r.name?.toLowerCase().includes("quarterly") ? "Quarterly" :
+                        r.name?.toLowerCase().includes("seo") || r.name?.toLowerCase().includes("audit") ? "Audit" : "Custom";
+            return (
+              <div key={r.id} className="flex items-center gap-4 p-4 sm:p-5 hover:bg-slate-50/60 dark:hover:bg-slate-900/40">
+                <div className="h-10 w-10 rounded-xl bg-brand-50 dark:bg-brand-500/10 text-brand-600 dark:text-brand-300 flex items-center justify-center shrink-0">
+                  <FileText className="h-5 w-5" />
                 </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium text-slate-900 dark:text-white truncate">{r.name}</p>
+                  <div className="mt-1 flex items-center gap-2 flex-wrap text-xs text-slate-500 dark:text-slate-400">
+                    <Badge variant="brand">{cat}</Badge>
+                    <span>{r.clientName || "Internal"}</span>
+                    <span>•</span>
+                    <span>{r.createdAt ? new Date(r.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "Today"}</span>
+                    <span className="hidden sm:inline">•</span>
+                    <span className="hidden sm:inline">{r.size || "1.2 MB"}</span>
+                  </div>
+                </div>
+                <Button variant="outline" size="sm" onClick={() => handleDownloadPDF(r.name)}>
+                  <Download className="h-3.5 w-3.5" /> <span className="hidden sm:inline">PDF</span>
+                </Button>
               </div>
-              <Button variant="outline" size="sm">
-                <Download className="h-3.5 w-3.5" /> <span className="hidden sm:inline">PDF</span>
-              </Button>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </Card>
     </div>

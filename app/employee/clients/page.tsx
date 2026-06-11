@@ -82,7 +82,7 @@ export default function EmployeeClientsPage() {
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
         <KpiCard
           title="Portfolio MRR"
-          value={`$${priyaMRR.toLocaleString()}`}
+          value={`₹${priyaMRR.toLocaleString()}`}
           change="+12.4% vs last Q"
           changeType="positive"
           accent="brand"

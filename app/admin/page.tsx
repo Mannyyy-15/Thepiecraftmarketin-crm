@@ -9,9 +9,7 @@ import {
   BarChart3,
   CheckCircle2,
   CircleDollarSign,
-  Download,
   MoreHorizontal,
-  Plus,
   Users,
 } from "lucide-react";
 import {
@@ -36,8 +34,8 @@ import { Progress } from "@/components/ui/Progress";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ActivityFeedSkeleton } from "@/components/ui/Skeleton";
-import { channelData, projects, revenueData } from "@/lib/mock";
-import { getActivityFeed } from "@/app/actions/crm";
+import { channelData, projects as mockProjects, revenueData } from "@/lib/mock";
+import { getActivityFeed, getAdminDashboardData } from "@/app/actions/crm";
 import { getProjectStatusVariant, getProjectStatusLabel } from "@/lib/statusHelpers";
 
 const channelColors = ["#6366F1", "#14B8A6", "#F59E0B", "#F43F5E"];
@@ -46,11 +44,25 @@ export default function DashboardPage() {
   const [userName, setUserName] = useState("Admin");
   const [activities, setActivities] = useState<any[]>([]);
   const [isActivitiesLoading, setIsActivitiesLoading] = useState(true);
+  const [dashboardData, setDashboardData] = useState<{
+    activeClientsCount: number;
+    monthlyRevenue: number;
+    totalAdSpend: number;
+    recentProjects: any[];
+    revenueData: any[];
+    channelData: any[];
+  } | null>(null);
 
   useEffect(() => {
     getActivityFeed(10)
       .then(res => { if (res.success) setActivities(res.data); })
       .finally(() => setIsActivitiesLoading(false));
+
+    getAdminDashboardData().then(res => {
+      if (res.success) {
+        setDashboardData(res.data);
+      }
+    });
   }, []);
 
   useEffect(() => {
@@ -71,25 +83,13 @@ export default function DashboardPage() {
         eyebrow="Dashboard"
         title={`Good morning, ${userName} 👋`}
         description="Here's a snapshot of your agency for the last 30 days."
-        actions={
-          <>
-            <Button variant="outline" size="md">
-              <Download className="h-4 w-4" />
-              Export
-            </Button>
-            <Button size="md">
-              <Plus className="h-4 w-4" />
-              New project
-            </Button>
-          </>
-        }
       />
 
       {/* KPI grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <KpiCard
           title="Monthly Revenue"
-          value="$45,230"
+          value={`₹${(dashboardData?.monthlyRevenue || 0).toLocaleString()}`}
           change="+20.1%"
           changeType="positive"
           accent="brand"
@@ -98,7 +98,7 @@ export default function DashboardPage() {
         />
         <KpiCard
           title="Active Clients"
-          value="124"
+          value={`${dashboardData?.activeClientsCount || 0}`}
           change="+4"
           changeType="positive"
           accent="emerald"
@@ -107,7 +107,7 @@ export default function DashboardPage() {
         />
         <KpiCard
           title="Total Ad Spend"
-          value="$124,500"
+          value={`₹${(dashboardData?.totalAdSpend || 0).toLocaleString()}`}
           change="+12.5%"
           changeType="positive"
           accent="amber"
@@ -154,7 +154,7 @@ export default function DashboardPage() {
           <CardContent className="p-2 sm:p-4">
             <div className="h-72 w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={revenueData} margin={{ top: 12, right: 16, left: -4, bottom: 0 }}>
+                <AreaChart data={dashboardData?.revenueData || revenueData} margin={{ top: 12, right: 16, left: -4, bottom: 0 }}>
                   <defs>
                     <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="#6366F1" stopOpacity={0.4} />
@@ -176,7 +176,7 @@ export default function DashboardPage() {
                     tickLine={false}
                     axisLine={false}
                     tick={{ fill: "currentColor", fontSize: 12, opacity: 0.6 }}
-                    tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`}
+                    tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`}
                   />
                   <Tooltip
                     cursor={{ stroke: "#6366F1", strokeOpacity: 0.2, strokeWidth: 2 }}
@@ -189,7 +189,7 @@ export default function DashboardPage() {
                     }}
                     labelStyle={{ color: "#94a3b8", fontWeight: 500 }}
                     itemStyle={{ color: "#ffffff", fontWeight: 600 }}
-                    formatter={(value: number) => `$${value.toLocaleString()}`}
+                    formatter={(value: number) => `₹${value.toLocaleString()}`}
                   />
                   <Area
                     type="monotone"
@@ -215,7 +215,7 @@ export default function DashboardPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Traffic Channels</CardTitle>
+            <CardTitle>Project Distribution</CardTitle>
             <button className="text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 cursor-pointer">
               <MoreHorizontal className="h-4 w-4" />
             </button>
@@ -225,14 +225,14 @@ export default function DashboardPage() {
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
-                    data={channelData}
+                    data={dashboardData?.channelData || channelData}
                     innerRadius={45}
                     outerRadius={70}
                     paddingAngle={4}
                     dataKey="value"
                     stroke="none"
                   >
-                    {channelData.map((_, i) => (
+                    {(dashboardData?.channelData || channelData).map((_, i) => (
                       <Cell key={i} fill={channelColors[i % channelColors.length]} />
                     ))}
                   </Pie>
@@ -252,7 +252,7 @@ export default function DashboardPage() {
               </ResponsiveContainer>
             </div>
             <ul className="mt-2 space-y-2">
-              {channelData.map((c, i) => (
+              {(dashboardData?.channelData || channelData).map((c: any, i: number) => (
                 <li key={c.name} className="flex items-center justify-between text-sm">
                   <span className="inline-flex items-center gap-2 text-slate-600 dark:text-slate-300">
                     <span
@@ -296,14 +296,14 @@ export default function DashboardPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {projects.slice(0, 5).map((p) => (
+                {(dashboardData?.recentProjects || mockProjects.slice(0, 5)).map((p: any) => (
                   <tr
                     key={p.id}
                     className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors duration-150"
                   >
                     <td className="px-5 sm:px-6 py-3.5">
                       <div className="font-medium text-slate-900 dark:text-white">{p.name}</div>
-                      <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                      <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 capitalize">
                         {p.client} • {p.type}
                       </div>
                     </td>

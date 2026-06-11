@@ -77,13 +77,14 @@ export async function login(state: any, formData: FormData) {
     // Encrypt JWT
     const token = await encrypt(sessionPayload);
 
+    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
     // Save token in secure HTTP-only cookie
     cookies().set("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       path: "/",
-      maxAge: 60 * 60 * 24, // 24 hours
+      expires: expiresAt,
     });
 
     return { 

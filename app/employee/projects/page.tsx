@@ -13,6 +13,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { getProjects, getProjectTasksGrouped, toggleTaskStatus } from "@/app/actions/crm";
 import { getProjectStatusVariant, getProjectStatusLabel } from "@/lib/statusHelpers";
 import { useToast } from "@/providers/ToastProvider";
+import { ProjectBoardSkeleton } from "@/components/ui/Skeleton";
 
 function parseDetails(raw: string | null | undefined) {
   try { return JSON.parse(raw || "{}"); } catch { return {}; }
@@ -73,13 +74,7 @@ export default function EmployeeProjectsPage() {
     return p.name.toLowerCase().includes(q) || (p.clientName || "").toLowerCase().includes(q);
   });
 
-  if (loading) {
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        {[1,2,3].map(i => <div key={i} className="h-64 rounded-2xl bg-slate-100 dark:bg-slate-900/60 animate-pulse border border-slate-200/40 dark:border-slate-800/30" />)}
-      </div>
-    );
-  }
+  if (loading) return <ProjectBoardSkeleton />;
 
   return (
     <div className="space-y-6">
@@ -154,7 +149,7 @@ export default function EmployeeProjectsPage() {
                     <>
                       <div>
                         <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Monthly Fee</p>
-                        <p className="font-semibold text-slate-700 dark:text-slate-300">{p.monthlyFee ? `$${Number(p.monthlyFee).toLocaleString()}/mo` : "—"}</p>
+                        <p className="font-semibold text-slate-700 dark:text-slate-300">{p.monthlyFee ? `₹${Number(p.monthlyFee).toLocaleString()}/mo` : "—"}</p>
                       </div>
                       <div>
                         <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">KPI</p>
@@ -165,7 +160,7 @@ export default function EmployeeProjectsPage() {
                     <>
                       <div>
                         <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Budget</p>
-                        <p className="font-semibold text-slate-700 dark:text-slate-300">{Number(p.budget) > 0 ? `$${Number(p.budget).toLocaleString()}` : "—"}</p>
+                        <p className="font-semibold text-slate-700 dark:text-slate-300">{Number(p.budget) > 0 ? `₹${Number(p.budget).toLocaleString()}` : "—"}</p>
                       </div>
                       <div>
                         <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Stack</p>

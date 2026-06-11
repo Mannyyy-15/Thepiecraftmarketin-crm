@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import {
   ArrowRight,
   Calendar,
@@ -9,6 +10,7 @@ import {
   Search,
   Sparkles,
   TrendingUp,
+  RefreshCw,
 } from "lucide-react";
 import {
   CartesianGrid,
@@ -25,6 +27,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { getClientReports } from "@/app/actions/crm";
 
 const performanceData = [
   { month: "Dec", roas: 2.4, ctr: 1.6 },
@@ -33,15 +36,6 @@ const performanceData = [
   { month: "Mar", roas: 3.6, ctr: 2.8 },
   { month: "Apr", roas: 3.9, ctr: 3.1 },
   { month: "May", roas: 4.2, ctr: 3.4 },
-];
-
-const reports = [
-  { id: "r1", name: "May 2026 — Performance Report", type: "Monthly", date: "Jun 01, 2026", size: "2.4 MB", featured: true },
-  { id: "r2", name: "Q2 Brand Health Snapshot", type: "Quarterly", date: "May 28, 2026", size: "5.8 MB" },
-  { id: "r3", name: "Meta Ads — Q2 Deep Dive", type: "Custom", date: "May 22, 2026", size: "1.2 MB" },
-  { id: "r4", name: "Website Launch — Recap", type: "Project", date: "May 15, 2026", size: "3.6 MB" },
-  { id: "r5", name: "SEO Audit & Roadmap", type: "Audit", date: "May 06, 2026", size: "1.8 MB" },
-  { id: "r6", name: "April 2026 — Performance Report", type: "Monthly", date: "May 01, 2026", size: "2.2 MB" },
 ];
 
 const typeVariant: Record<string, "portal" | "brand" | "warning" | "info" | "neutral"> = {
@@ -53,8 +47,48 @@ const typeVariant: Record<string, "portal" | "brand" | "warning" | "info" | "neu
 };
 
 export default function ClientReportsPage() {
+  const [reports, setReports] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const fetchReports = async () => {
+    setIsLoading(true);
+    const res = await getClientReports();
+    if (res && res.success && res.data) {
+      setReports(res.data);
+    }
+    setIsLoading(false);
+  };
+
+  useEffect(() => {
+    fetchReports();
+  }, []);
+
+  const handleDownloadPDF = (title: string) => {
+    alert(`Downloading ${title}...`);
+  };
+
+  const filteredReports = reports.filter(r => {
+    const q = searchQuery.toLowerCase();
+    const titleMatch = (r.name || "").toLowerCase().includes(q);
+    return titleMatch;
+  });
+
+  const featuredReport = reports[0] || null;
+
+  if (isLoading) {
+    return (
+      <div className="flex h-[80vh] items-center justify-center">
+        <div className="flex flex-col items-center gap-4 text-slate-400">
+          <RefreshCw className="h-8 w-8 animate-spin text-teal-500" />
+          <p className="text-sm font-semibold tracking-wide uppercase">Syncing reports deck...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fadeIn">
       <PageHeader
         eyebrow="Insights"
         title="Reports"
@@ -65,7 +99,7 @@ export default function ClientReportsPage() {
               <Sparkles className="h-4 w-4" />
               Request analysis
             </Button>
-            <Button variant="portal" size="md">
+            <Button variant="portal" size="md" onClick={() => featuredReport && handleDownloadPDF(featuredReport.name)}>
               <Download className="h-4 w-4" />
               Latest PDF
             </Button>
@@ -97,9 +131,9 @@ export default function ClientReportsPage() {
           accent="emerald"
         />
         <KpiCard
-          title="Reports YTD"
+          title="Reports Delivered"
           value={`${reports.length}`}
-          change="6 delivered"
+          change="Available in vault"
           changeType="neutral"
           accent="amber"
           icon={<FileText className="h-5 w-5" />}
@@ -116,10 +150,10 @@ export default function ClientReportsPage() {
           </div>
           <div className="hidden sm:flex items-center gap-3 text-xs">
             <span className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
-              <span className="h-2 w-2 rounded-full bg-portal-500" /> ROAS
+              <span className="h-2 w-2 rounded-full bg-teal-500" /> ROAS
             </span>
             <span className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
-              <span className="h-2 w-2 rounded-full bg-brand-500" /> CTR
+              <span className="h-2 w-2 rounded-full bg-indigo-500" /> CTR
             </span>
           </div>
         </CardHeader>
@@ -147,43 +181,46 @@ export default function ClientReportsPage() {
       {/* Featured + list */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <Card className="lg:col-span-1 overflow-hidden">
-          <div className="relative h-32 bg-portal-hero">
+          <div className="relative h-32 bg-indigo-600 dark:bg-indigo-950/45 p-6 flex flex-col justify-end">
             <div className="absolute -top-6 -right-6 h-24 w-24 rounded-full bg-white/15 blur-2xl" />
-            <div className="absolute bottom-4 left-5">
+            <div className="relative z-10">
               <Badge variant="portal" className="bg-white/15 text-white border border-white/20">
                 Featured this month
               </Badge>
             </div>
           </div>
-          <CardContent>
-            <p className="text-base font-semibold text-slate-900 dark:text-white">
-              {reports[0].name}
-            </p>
-            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-              Delivered {reports[0].date} • {reports[0].size}
-            </p>
-            <ul className="mt-4 space-y-2 text-sm text-slate-600 dark:text-slate-300">
-              <li className="flex items-start gap-2">
-                <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-portal-500 shrink-0" />
-                ROAS climbed to 4.2× (+0.3× MoM)
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-portal-500 shrink-0" />
-                Top campaign: Spring Sale Lookalike — 6.1× ROAS
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-portal-500 shrink-0" />
-                Recommend +18% budget shift to retargeting
-              </li>
-            </ul>
-            <div className="mt-5 flex gap-2">
-              <Button variant="portal" size="sm">
-                <Download className="h-3.5 w-3.5" /> Download
-              </Button>
-              <Button variant="outline" size="sm">
-                Read online <ArrowRight className="h-3.5 w-3.5" />
-              </Button>
-            </div>
+          <CardContent className="p-5">
+            {featuredReport ? (
+              <>
+                <p className="text-base font-semibold text-slate-900 dark:text-white">
+                  {featuredReport.name}
+                </p>
+                <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                  Delivered {featuredReport.createdAt ? new Date(featuredReport.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "Today"} • {featuredReport.size || "1.5 MB"}
+                </p>
+                <ul className="mt-4 space-y-2 text-sm text-slate-600 dark:text-slate-300">
+                  <li className="flex items-start gap-2">
+                    <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-indigo-500 shrink-0" />
+                    ROAS remains healthy at 4.2×
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-indigo-500 shrink-0" />
+                    Top campaign yield lead by lookalike scaling
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-indigo-500 shrink-0" />
+                    Detailed conversion path and ROAS tables attached
+                  </li>
+                </ul>
+                <div className="mt-5 flex gap-2">
+                  <Button variant="portal" size="sm" onClick={() => handleDownloadPDF(featuredReport.name)}>
+                    <Download className="h-3.5 w-3.5" /> Download
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <p className="text-sm text-slate-500 py-6 italic text-center">No reports featured yet.</p>
+            )}
           </CardContent>
         </Card>
 
@@ -191,41 +228,48 @@ export default function ClientReportsPage() {
           <CardHeader>
             <CardTitle>All Reports</CardTitle>
             <div className="flex items-center gap-2">
-              <div className="relative max-w-xs hidden sm:block">
+              <div className="relative max-w-xs">
                 <Search className="pointer-events-none absolute inset-y-0 left-3 h-full w-4 text-slate-400" />
                 <input
                   type="search"
                   placeholder="Search reports…"
-                  className="h-9 w-48 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 pl-9 pr-3 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-portal-500/40 focus:border-portal-500"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="h-9 w-48 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 pl-9 pr-3 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-portal-500/40 text-slate-800 dark:text-white"
                 />
               </div>
-              <Button variant="outline" size="sm">
-                <Filter className="h-3.5 w-3.5" /> Filter
-              </Button>
             </div>
           </CardHeader>
           <div className="divide-y divide-slate-100 dark:divide-slate-800">
-            {reports.slice(1).map((r) => (
-              <div key={r.id} className="flex items-center gap-3 p-4 sm:p-5 hover:bg-slate-50/60 dark:hover:bg-slate-900/40 transition-colors">
-                <div className="h-10 w-10 rounded-xl bg-portal-50 dark:bg-portal-500/10 text-portal-600 dark:text-portal-300 flex items-center justify-center shrink-0">
-                  <FileText className="h-5 w-5" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-slate-900 dark:text-white truncate">{r.name}</p>
-                  <div className="mt-1 flex items-center gap-2 flex-wrap text-xs text-slate-500 dark:text-slate-400">
-                    <Badge variant={typeVariant[r.type] ?? "neutral"}>{r.type}</Badge>
-                    <span className="inline-flex items-center gap-1">
-                      <Calendar className="h-3 w-3" /> {r.date}
-                    </span>
-                    <span className="hidden sm:inline">•</span>
-                    <span className="hidden sm:inline tabular-nums">{r.size}</span>
+            {filteredReports.map((r) => {
+              const cat = r.name?.toLowerCase().includes("monthly") ? "Monthly" :
+                          r.name?.toLowerCase().includes("quarterly") ? "Quarterly" :
+                          r.name?.toLowerCase().includes("seo") || r.name?.toLowerCase().includes("audit") ? "Audit" : "Custom";
+              return (
+                <div key={r.id} className="flex items-center gap-3 p-4 sm:p-5 hover:bg-slate-50/60 dark:hover:bg-slate-900/40 transition-colors">
+                  <div className="h-10 w-10 rounded-xl bg-portal-50 dark:bg-portal-500/10 text-portal-600 dark:text-portal-300 flex items-center justify-center shrink-0">
+                    <FileText className="h-5 w-5" />
                   </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-slate-900 dark:text-white truncate">{r.name}</p>
+                    <div className="mt-1 flex items-center gap-2 flex-wrap text-xs text-slate-500 dark:text-slate-400">
+                      <Badge variant={typeVariant[cat] ?? "neutral"}>{cat}</Badge>
+                      <span className="inline-flex items-center gap-1">
+                        <Calendar className="h-3 w-3" /> {r.createdAt ? new Date(r.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "Today"}
+                      </span>
+                      <span className="hidden sm:inline">•</span>
+                      <span className="hidden sm:inline tabular-nums">{r.size || "1.2 MB"}</span>
+                    </div>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={() => handleDownloadPDF(r.name)}>
+                    <Download className="h-3.5 w-3.5" /> <span className="hidden sm:inline">PDF</span>
+                  </Button>
                 </div>
-                <Button variant="outline" size="sm">
-                  <Download className="h-3.5 w-3.5" /> <span className="hidden sm:inline">PDF</span>
-                </Button>
-              </div>
-            ))}
+              );
+            })}
+            {filteredReports.length === 0 && (
+              <p className="p-8 text-center text-xs text-slate-500 italic">No reports found.</p>
+            )}
           </div>
         </Card>
       </div>

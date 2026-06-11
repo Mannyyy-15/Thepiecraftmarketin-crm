@@ -61,7 +61,7 @@ export default function PortalTopNav({ onMenuClick }: { onMenuClick?: () => void
   const [hasUnread, setHasUnread] = useState(true);
   const [notifications, setNotifications] = useState([
     { id: "cn1", title: "Brand Brief Uploaded", message: "Lena Park uploaded 'Acme - Brand Guidelines v3.pdf'.", time: "10m ago", read: false, icon: <FileText className="h-3.5 w-3.5 text-indigo-500" /> },
-    { id: "cn2", title: "Invoice Released", message: "INV-2026-0144 for $22,000 has been issued.", time: "1h ago", read: false, icon: <DollarSign className="h-3.5 w-3.5 text-emerald-500" /> },
+    { id: "cn2", title: "Invoice Released", message: "INV-2026-0144 for ₹22,000 has been issued.", time: "1h ago", read: false, icon: <DollarSign className="h-3.5 w-3.5 text-emerald-500" /> },
     { id: "cn3", title: "Project Stage Shifted", message: "Website Redesign moved to In-Progress stage.", time: "Yesterday", read: true, icon: <Briefcase className="h-3.5 w-3.5 text-amber-500" /> },
   ]);
 

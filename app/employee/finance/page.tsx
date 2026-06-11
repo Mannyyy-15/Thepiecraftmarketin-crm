@@ -158,7 +158,7 @@ export default function EmployeeFinancePage() {
         />
         <KpiCard
           title="Pending Expenses"
-          value={`$${pendingExpenseTotal.toLocaleString()}`}
+          value={`₹${pendingExpenseTotal.toLocaleString()}`}
           change="Under review"
           changeType="neutral"
           accent="amber"
@@ -320,7 +320,7 @@ export default function EmployeeFinancePage() {
                   </div>
                   <div className="text-right">
                     <p className="text-sm font-semibold tabular-nums text-slate-900 dark:text-white">
-                      ${(claim.amount || 0).toLocaleString()}
+                      ₹{(claim.amount || 0).toLocaleString()}
                     </p>
                     <Badge variant={claimStatus[claim.status as keyof typeof claimStatus] || "neutral"} className="px-1.5 py-0 text-[9px] uppercase font-bold mt-0.5">
                       {claim.status}

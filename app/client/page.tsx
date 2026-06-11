@@ -28,16 +28,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Avatar } from "@/components/ui/Avatar";
 import { Progress } from "@/components/ui/Progress";
 import { getCurrentUser } from "@/app/actions/auth";
-import { getProjects } from "@/app/actions/crm";
+import { getClientDashboardData } from "@/app/actions/crm";
 import { getClientProjectStatusVariant, getProjectStatusLabel } from "@/lib/statusHelpers";
 
-const getProgressByStatus = (status: string) => {
-  if (status === "planning") return 15;
-  if (status === "in_progress" || status === "in-progress") return 55;
-  if (status === "in_review" || status === "review") return 85;
-  if (status === "completed") return 100;
-  return 30;
-};
+// Local helper logic kept intact
 
 const engagementData = [
   { week: "W1", sessions: 4.2, conversions: 1.1 },
@@ -76,55 +70,37 @@ const updates = [
   },
 ];
 
-const actionItems = [
-  {
-    id: "a1",
-    title: "Invoice INV-2026-0144",
-    detail: "$22,000 due in 3 days",
-    cta: "Pay now",
-    tone: "warning" as const,
-  },
-  {
-    id: "a2",
-    title: "Review Q3 ad copies",
-    detail: "Needs your sign-off before launch",
-    cta: "Review",
-    tone: "info" as const,
-  },
-  {
-    id: "a3",
-    title: "Provide brand voice doc",
-    detail: "Requested by Yuki Tanaka",
-    cta: "Upload",
-    tone: "default" as const,
-  },
-];
-
-const upcomingMilestones = [
-  { id: "m1", title: "Landing page dev complete", date: "Jun 04, 2026", project: "Website Redesign" },
-  { id: "m2", title: "Q3 Ads creative review", date: "Jun 11, 2026", project: "Meta Ads Q3" },
-  { id: "m3", title: "Brand book v3 delivery", date: "Jun 18, 2026", project: "Brand Identity" },
-];
-
 export default function ClientOverviewPage() {
   const [user, setUser] = useState<{ name?: string; email?: string } | null>(null);
-  const [projects, setProjects] = useState<any[]>([]);
+  const [dashboardData, setDashboardData] = useState<{ projects: any[], actionItems: any[], upcomingMilestones: any[] } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
       const u = await getCurrentUser();
       if (u) setUser({ name: u.name as string, email: u.email as string });
-      const res = await getProjects();
-      if (res.success) setProjects(res.data ?? []);
+      const res = await getClientDashboardData();
+      if (res.success && res.data) setDashboardData(res.data);
       setLoading(false);
     })();
   }, []);
 
-  const activeProjects = projects.filter((p) => p.status !== "completed").length;
-  const completedProjects = projects.filter((p) => p.status === "completed").length;
+  const projects = dashboardData?.projects || [];
+  const actionItems = dashboardData?.actionItems || [];
+  const upcomingMilestones = dashboardData?.upcomingMilestones || [];
+
+  const activeProjects = projects.filter((p: any) => p.status !== "completed").length;
+  const completedProjects = projects.filter((p: any) => p.status === "completed").length;
   const nextMilestone = upcomingMilestones[0];
   const firstName = (user?.name || "there").split(" ")[0];
+
+  const getProgressByStatus = (status: string) => {
+    if (status === "planning") return 15;
+    if (status === "in_progress" || status === "in-progress") return 55;
+    if (status === "in_review" || status === "review") return 85;
+    if (status === "completed") return 100;
+    return 30;
+  };
 
   return (
     <div className="space-y-6">
@@ -252,18 +228,22 @@ export default function ClientOverviewPage() {
             </Button>
           </CardHeader>
           <CardContent className="space-y-3">
-            {upcomingMilestones.map((m) => (
-              <div key={m.id} className="flex items-start gap-3 rounded-xl border border-slate-200 dark:border-slate-800 p-3">
-                <div className="h-10 w-10 rounded-xl bg-portal-50 dark:bg-portal-500/10 text-portal-600 dark:text-portal-300 flex items-center justify-center shrink-0">
-                  <Target className="h-4 w-4" />
+            {upcomingMilestones.length === 0 ? (
+              <p className="text-xs text-slate-500 py-4 text-center">No upcoming milestones tracked.</p>
+            ) : (
+              upcomingMilestones.map((m: any) => (
+                <div key={m.id} className="flex items-start gap-3 rounded-xl border border-slate-200 dark:border-slate-800 p-3">
+                  <div className="h-10 w-10 rounded-xl bg-portal-50 dark:bg-portal-500/10 text-portal-600 dark:text-portal-300 flex items-center justify-center shrink-0">
+                    <Target className="h-4 w-4" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-slate-900 dark:text-white truncate">{m.title}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{m.project}</p>
+                    <p className="text-xs font-semibold text-portal-600 dark:text-portal-400 mt-1 tabular-nums">{m.date}</p>
+                  </div>
                 </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-slate-900 dark:text-white truncate">{m.title}</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{m.project}</p>
-                  <p className="text-xs font-semibold text-portal-600 dark:text-portal-400 mt-1 tabular-nums">{m.date}</p>
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </CardContent>
         </Card>
       </div>
@@ -323,49 +303,53 @@ export default function ClientOverviewPage() {
             <CardTitle>Pending Action Items</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {actionItems.map((a) => (
-              <div
-                key={a.id}
-                className={
-                  a.tone === "warning"
-                    ? "rounded-xl border border-amber-200 dark:border-amber-500/20 bg-amber-50 dark:bg-amber-500/5 p-3"
-                    : a.tone === "info"
-                    ? "rounded-xl border border-portal-200 dark:border-portal-500/20 bg-portal-50 dark:bg-portal-500/5 p-3"
-                    : "rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 p-3"
-                }
-              >
-                <p
+            {actionItems.length === 0 ? (
+               <p className="text-xs text-slate-500 py-4 text-center">You are all caught up! No pending actions.</p>
+            ) : (
+              actionItems.map((a: any) => (
+                <div
+                  key={a.id}
                   className={
                     a.tone === "warning"
-                      ? "text-sm font-semibold text-amber-900 dark:text-amber-300"
+                      ? "rounded-xl border border-amber-200 dark:border-amber-500/20 bg-amber-50 dark:bg-amber-500/5 p-3"
                       : a.tone === "info"
-                      ? "text-sm font-semibold text-portal-900 dark:text-portal-200"
-                      : "text-sm font-semibold text-slate-900 dark:text-white"
+                      ? "rounded-xl border border-portal-200 dark:border-portal-500/20 bg-portal-50 dark:bg-portal-500/5 p-3"
+                      : "rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 p-3"
                   }
                 >
-                  {a.title}
-                </p>
-                <p
-                  className={
-                    a.tone === "warning"
-                      ? "text-xs text-amber-700 dark:text-amber-400 mt-0.5"
-                      : a.tone === "info"
-                      ? "text-xs text-portal-700 dark:text-portal-300 mt-0.5"
-                      : "text-xs text-slate-500 dark:text-slate-400 mt-0.5"
-                  }
-                >
-                  {a.detail}
-                </p>
-                <div className="mt-2.5">
-                  <Button
-                    size="sm"
-                    variant={a.tone === "warning" ? "primary" : a.tone === "info" ? "portal" : "outline"}
+                  <p
+                    className={
+                      a.tone === "warning"
+                        ? "text-sm font-semibold text-amber-900 dark:text-amber-300"
+                        : a.tone === "info"
+                        ? "text-sm font-semibold text-portal-900 dark:text-portal-200"
+                        : "text-sm font-semibold text-slate-900 dark:text-white"
+                    }
                   >
-                    {a.cta} <ArrowRight className="h-3.5 w-3.5" />
-                  </Button>
+                    {a.title}
+                  </p>
+                  <p
+                    className={
+                      a.tone === "warning"
+                        ? "text-xs text-amber-700 dark:text-amber-400 mt-0.5"
+                        : a.tone === "info"
+                        ? "text-xs text-portal-700 dark:text-portal-300 mt-0.5"
+                        : "text-xs text-slate-500 dark:text-slate-400 mt-0.5"
+                    }
+                  >
+                    {a.detail}
+                  </p>
+                  <div className="mt-2.5">
+                    <Button
+                      size="sm"
+                      variant={a.tone === "warning" ? "primary" : a.tone === "info" ? "portal" : "outline"}
+                    >
+                      {a.cta} <ArrowRight className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </CardContent>
         </Card>
       </div>

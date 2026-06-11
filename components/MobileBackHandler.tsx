@@ -2,18 +2,24 @@
 
 import { useEffect, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
+import { useToast } from '@/providers/ToastProvider';
 
-const DASHBOARD_PATHS = [
-  '/admin',
-  '/employee',
-  '/client',
-  '/login',
-];
+// Section root pages — pressing back here should confirm before exiting
+const SECTION_ROOTS = new Set(['/employee', '/admin', '/client', '/login', '/']);
+
+function getSectionRoot(path: string): string {
+  if (path.startsWith('/admin')) return '/admin';
+  if (path.startsWith('/employee')) return '/employee';
+  if (path.startsWith('/client')) return '/client';
+  return '/';
+}
 
 export default function MobileBackHandler() {
   const pathname = usePathname();
   const router = useRouter();
-  const cleanupRef = useRef<() => void>();
+  const { toast } = useToast();
+  const lastBackTime = useRef<number>(0);
+  const cleanupRef = useRef<(() => void) | undefined>();
 
   useEffect(() => {
     let cancelled = false;
@@ -22,21 +28,32 @@ export default function MobileBackHandler() {
       try {
         const { App } = await import('@capacitor/app');
         if (cancelled) return;
-        const handler = await App.addListener('backButton', ({ canGoBack }) => {
-          if (canGoBack && window.history.length > 1) {
-            router.back();
-          } else if (DASHBOARD_PATHS.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
-            const isDashboard = DASHBOARD_PATHS.includes(pathname);
-            if (isDashboard) {
+
+        cleanupRef.current?.();
+
+        const { remove } = await App.addListener('backButton', ({ canGoBack }) => {
+          const atRoot = SECTION_ROOTS.has(pathname);
+
+          if (atRoot) {
+            const now = Date.now();
+            if (now - lastBackTime.current < 2000) {
               App.exitApp();
             } else {
-              router.back();
+              lastBackTime.current = now;
+              toast('Press back again to exit', 'info', 2000);
             }
+            return;
+          }
+
+          if (canGoBack || window.history.length > 1) {
+            router.back();
           } else {
-            App.exitApp();
+            // No browser history — navigate to section home instead of exiting
+            router.push(getSectionRoot(pathname));
           }
         });
-        cleanupRef.current = () => { handler.remove(); };
+
+        cleanupRef.current = remove;
       } catch {
         // Not running in Capacitor — no-op
       }
@@ -47,8 +64,9 @@ export default function MobileBackHandler() {
     return () => {
       cancelled = true;
       cleanupRef.current?.();
+      cleanupRef.current = undefined;
     };
-  }, [pathname, router]);
+  }, [pathname, router, toast]);
 
   return null;
 }

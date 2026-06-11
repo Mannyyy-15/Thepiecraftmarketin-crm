@@ -18,10 +18,11 @@ import { Avatar } from "@/components/ui/Avatar";
 import { cn } from "@/components/ui/cn";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { CardGridSkeleton } from "@/components/ui/Skeleton";
 import {
   getProjects, createProject, deleteProject, getTeamUsers,
   getProjectTasksGrouped, addProjectTask, deleteTask, toggleTaskStatus,
-  updateProject,
+  updateProject, getClientsEnriched,
 } from "@/app/actions/crm";
 import { getProjectStatusVariant, getProjectStatusLabel } from "@/lib/statusHelpers";
 
@@ -86,7 +87,7 @@ function progressFromStatus(type: string, status: string) {
 
 // ── Blank form ────────────────────────────────────────────────────────────────
 const BLANK: Record<string, any> = {
-  name: "", clientName: "", leadId: "", startDate: "", endDate: "",
+  name: "", clientId: "", clientName: "", leadId: "", startDate: "", endDate: "",
   status: "planning", priority: "medium", notes: "",
   monthlyFee: "", adSpendBudget: "",
   adAccountId: "", businessManagerId: "", pixelId: "",
@@ -296,15 +297,15 @@ function printDocument(project: any, roster: any[], tasks: any[]) {
       ${isMeta ? `
       <div>
         <div class="field-label">Management Retainer</div>
-        <div class="amount">${project.monthlyFee ? "$" + Number(project.monthlyFee).toLocaleString() + "/mo" : "—"}</div>
+        <div class="amount">${project.monthlyFee ? "₹" + Number(project.monthlyFee).toLocaleString() + "/mo" : "—"}</div>
       </div>
       <div>
         <div class="field-label">Ad Spend Budget</div>
-        <div class="amount">${Number(project.adSpendBudget) > 0 ? "$" + Number(project.adSpendBudget).toLocaleString() + "/mo" : "—"}</div>
+        <div class="amount">${Number(project.adSpendBudget) > 0 ? "₹" + Number(project.adSpendBudget).toLocaleString() + "/mo" : "—"}</div>
       </div>` : `
       <div>
         <div class="field-label">Project Budget</div>
-        <div class="amount">${Number(project.budget) > 0 ? "$" + Number(project.budget).toLocaleString() : "—"}</div>
+        <div class="amount">${Number(project.budget) > 0 ? "₹" + Number(project.budget).toLocaleString() : "—"}</div>
       </div>
       <div>
         <div class="field-label">Billing Cycle Start</div>
@@ -346,6 +347,7 @@ export default function ProjectsPage() {
 
   const [projects, setProjects]   = useState<any[]>([]);
   const [roster, setRoster]       = useState<any[]>([]);
+  const [clients, setClients]     = useState<any[]>([]);
   const [taskMap, setTaskMap]     = useState<Record<number, { total: number; done: number; tasks: any[] }>>({});
   const [loading, setLoading]     = useState(true);
   const [deleting, setDeleting]   = useState<number | null>(null);
@@ -379,10 +381,11 @@ export default function ProjectsPage() {
   const load = async () => {
     setLoading(true);
     try {
-      const [pr, tr, tk] = await Promise.all([getProjects(), getTeamUsers(), getProjectTasksGrouped()]);
+      const [pr, tr, tk, cl] = await Promise.all([getProjects(), getTeamUsers(), getProjectTasksGrouped(), getClientsEnriched()]);
       if (pr.success && pr.data) setProjects(pr.data);
       if (tr.success && tr.data) setRoster(tr.data.filter((u: any) => u.role !== "client"));
       if (tk.success && tk.data) setTaskMap(tk.data as any);
+      if (cl.success && cl.data) setClients(cl.data as any[]);
     } catch { /* silent */ }
     finally { setLoading(false); }
   };
@@ -402,6 +405,7 @@ export default function ProjectsPage() {
     setEditProject(p);
     setEditForm({
       name: p.name || "",
+      clientId: p.clientId ? String(p.clientId) : "",
       clientName: p.clientName || "",
       leadId: p.leadId ? String(p.leadId) : "",
       status: p.status || "planning",
@@ -439,6 +443,7 @@ export default function ProjectsPage() {
 
       const fd = new FormData();
       fd.append("name", form.name);
+      fd.append("clientId", form.clientId || "");
       fd.append("clientName", form.clientName);
       fd.append("leadId", form.leadId);
       fd.append("projectType", projectType);
@@ -476,6 +481,7 @@ export default function ProjectsPage() {
     try {
       const fd = new FormData();
       fd.append("name", editForm.name);
+      fd.append("clientId", editForm.clientId || "");
       fd.append("clientName", editForm.clientName);
       fd.append("leadId", editForm.leadId || "");
       fd.append("status", editForm.status);
@@ -638,9 +644,7 @@ export default function ProjectsPage() {
 
       {/* ── Content ─────────────────────────────────────────────────────────── */}
       {loading ? (
-        <div className="flex items-center justify-center py-20">
-          <div className="h-6 w-6 border-2 border-slate-200 dark:border-slate-700 border-t-brand-500 rounded-full animate-spin" />
-        </div>
+        <CardGridSkeleton count={6} />
       ) : projects.length === 0 ? (
         <EmptyState icon={<Target className="h-5 w-5" />} title="No projects yet" description="Create your first project to get started."
           action={<Button onClick={openDrawer} size="sm" className="bg-brand-600 text-white"><Plus className="h-3.5 w-3.5 mr-1" /> New Project</Button>} />
@@ -699,7 +703,7 @@ export default function ProjectsPage() {
                       <div className="mt-4 pt-3.5 border-t border-slate-100 dark:border-slate-800 grid grid-cols-2 gap-3">
                         <div>
                           <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Retainer</p>
-                          <p className="text-sm font-bold text-slate-800 dark:text-white mt-0.5">{p.monthlyFee ? `$${Number(p.monthlyFee).toLocaleString()}/mo` : "—"}</p>
+                          <p className="text-sm font-bold text-slate-800 dark:text-white mt-0.5">{p.monthlyFee ? `₹${Number(p.monthlyFee).toLocaleString()}/mo` : "—"}</p>
                           {Number(p.adSpendBudget) > 0 && <p className="text-[10px] text-indigo-500 font-semibold mt-0.5">+${Number(p.adSpendBudget).toLocaleString()} spend</p>}
                         </div>
                         <div>
@@ -747,7 +751,7 @@ export default function ProjectsPage() {
                   const pct = tp ? tp.pct : progressFromStatus(p.projectType, p.status);
                   const lead = roster.find((u: any) => u.id === p.leadId);
                   return (
-                    <div key={p.id} className="rounded-2xl border-l-4 border-l-emerald-500 border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-950 p-5 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
+                    <div key={p.id} onClick={() => router.push(`/admin/projects/${p.id}`)} className="rounded-2xl border-l-4 border-l-emerald-500 border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-950 p-5 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer">
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <Badge variant={getProjectStatusVariant(p.status)} className="text-[9px] font-bold uppercase tracking-wide px-2 py-0.5">{getProjectStatusLabel(p.status)}</Badge>
@@ -780,7 +784,7 @@ export default function ProjectsPage() {
                       <div className="mt-4 pt-3.5 border-t border-slate-100 dark:border-slate-800 grid grid-cols-2 gap-3">
                         <div>
                           <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Budget</p>
-                          <p className="text-sm font-bold text-slate-800 dark:text-white mt-0.5">{Number(p.budget) > 0 ? `$${Number(p.budget).toLocaleString()}` : "—"}</p>
+                          <p className="text-sm font-bold text-slate-800 dark:text-white mt-0.5">{Number(p.budget) > 0 ? `₹${Number(p.budget).toLocaleString()}` : "—"}</p>
                         </div>
                         <div>
                           <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Lead Dev</p>
@@ -964,8 +968,37 @@ export default function ProjectsPage() {
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className={LABEL}>Client Name</label>
-                      <input value={editForm.clientName} onChange={e => ef({ clientName: e.target.value })} className={INPUT} />
+                      <label className={LABEL}>Client</label>
+                      <select
+                        value={editForm.clientId || "__new__"}
+                        onChange={e => {
+                          const sel = clients.find((c: any) => String(c.id) === e.target.value);
+                          if (sel) {
+                            let contactName = "";
+                            let contactPhone = "";
+                            try {
+                              const det = JSON.parse(sel.details || "{}");
+                              contactName = det.contactName || "";
+                              contactPhone = det.contactPhone || "";
+                            } catch (err) {}
+                            ef({ 
+                              clientId: String(sel.id), 
+                              clientName: sel.name,
+                              clientContactName: contactName,
+                              clientContactPhone: contactPhone
+                            });
+                          } else {
+                            ef({ clientId: "", clientName: editForm.clientName || "", clientContactName: "", clientContactPhone: "" });
+                          }
+                        }}
+                        className={SELECT}>
+                        <option value="__new__">— New / type name —</option>
+                        {clients.map((c: any) => <option key={c.id} value={String(c.id)}>{c.name}</option>)}
+                      </select>
+                      {!editForm.clientId && (
+                        <input value={editForm.clientName} onChange={e => ef({ clientName: e.target.value })}
+                          placeholder="Client name" className={cn(INPUT, "mt-2")} />
+                      )}
                     </div>
                     <div>
                       <label className={LABEL}>Status</label>
@@ -1208,8 +1241,37 @@ export default function ProjectsPage() {
                               <input required value={form.name} onChange={e => f({ name: e.target.value })} placeholder="e.g. Meta Q3 Lead Gen Campaign" className={INPUT} />
                             </div>
                             <div>
-                              <label className={LABEL}>Client Name *</label>
-                              <input required value={form.clientName} onChange={e => f({ clientName: e.target.value })} placeholder="e.g. Apex Corp" className={INPUT} />
+                              <label className={LABEL}>Client *</label>
+                              <select
+                                value={form.clientId || "__new__"}
+                                onChange={e => {
+                                  const sel = clients.find((c: any) => String(c.id) === e.target.value);
+                                  if (sel) {
+                                    let contactName = "";
+                                    let contactPhone = "";
+                                    try {
+                                      const det = JSON.parse(sel.details || "{}");
+                                      contactName = det.contactName || "";
+                                      contactPhone = det.contactPhone || "";
+                                    } catch (err) {}
+                                    f({ 
+                                      clientId: String(sel.id), 
+                                      clientName: sel.name,
+                                      clientContactName: contactName,
+                                      clientContactPhone: contactPhone
+                                    });
+                                  } else {
+                                    f({ clientId: "", clientName: "", clientContactName: "", clientContactPhone: "" });
+                                  }
+                                }}
+                                className={SELECT}>
+                                <option value="__new__">— New client (type name) —</option>
+                                {clients.map((c: any) => <option key={c.id} value={String(c.id)}>{c.name}</option>)}
+                              </select>
+                              {!form.clientId && (
+                                <input required value={form.clientName} onChange={e => f({ clientName: e.target.value })}
+                                  placeholder="New client name" className={cn(INPUT, "mt-2")} />
+                              )}
                             </div>
                           </div>
 
@@ -1391,8 +1453,37 @@ export default function ProjectsPage() {
                               <input required value={form.name} onChange={e => f({ name: e.target.value })} placeholder="e.g. Brand Website Redesign" className={INPUT} />
                             </div>
                             <div>
-                              <label className={LABEL}>Client Name *</label>
-                              <input required value={form.clientName} onChange={e => f({ clientName: e.target.value })} placeholder="e.g. Apex Corp" className={INPUT} />
+                              <label className={LABEL}>Client *</label>
+                              <select
+                                value={form.clientId || "__new__"}
+                                onChange={e => {
+                                  const sel = clients.find((c: any) => String(c.id) === e.target.value);
+                                  if (sel) {
+                                    let contactName = "";
+                                    let contactPhone = "";
+                                    try {
+                                      const det = JSON.parse(sel.details || "{}");
+                                      contactName = det.contactName || "";
+                                      contactPhone = det.contactPhone || "";
+                                    } catch (err) {}
+                                    f({ 
+                                      clientId: String(sel.id), 
+                                      clientName: sel.name,
+                                      clientContactName: contactName,
+                                      clientContactPhone: contactPhone
+                                    });
+                                  } else {
+                                    f({ clientId: "", clientName: "", clientContactName: "", clientContactPhone: "" });
+                                  }
+                                }}
+                                className={SELECT}>
+                                <option value="__new__">— New client (type name) —</option>
+                                {clients.map((c: any) => <option key={c.id} value={String(c.id)}>{c.name}</option>)}
+                              </select>
+                              {!form.clientId && (
+                                <input required value={form.clientName} onChange={e => f({ clientName: e.target.value })}
+                                  placeholder="New client name" className={cn(INPUT, "mt-2")} />
+                              )}
                             </div>
                           </div>
 

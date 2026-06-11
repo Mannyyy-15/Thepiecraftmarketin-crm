@@ -17,6 +17,7 @@ import {
   TrendingUp, Users, X, ArrowLeft, ArrowRight, Code2, Zap,
   FileText, Clock, AlertCircle, BadgeCheck, Send, RefreshCw,
   SlidersHorizontal, Sparkles, CalendarDays, Link as LinkIcon, Edit2,
+  Instagram, User,
 } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -24,6 +25,7 @@ import { Avatar } from "@/components/ui/Avatar";
 import { Progress } from "@/components/ui/Progress";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { CardGridSkeleton } from "@/components/ui/Skeleton";
 import { cn } from "@/components/ui/cn";
 import KpiCard from "@/components/KpiCard";
 
@@ -374,10 +376,10 @@ export default function ClientsPage() {
 
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard title="Monthly MRR" value={`$${totalMRR.toLocaleString()}`} change="+8.3%" changeType="positive" accent="brand" icon={<TrendingUp className="h-5 w-5" />} />
+        <KpiCard title="Monthly MRR" value={`₹${totalMRR.toLocaleString()}`} change="+8.3%" changeType="positive" accent="brand" icon={<TrendingUp className="h-5 w-5" />} />
         <KpiCard title="Live Clients" value={String(liveCount)} change={`+${liveCount}`} changeType="positive" accent="emerald" icon={<BadgeCheck className="h-5 w-5" />} />
-        <KpiCard title="Paid Revenue" value={`$${paidRevenue.toLocaleString()}`} change="All time" changeType="positive" accent="portal" icon={<Receipt className="h-5 w-5" />} />
-        <KpiCard title="Unpaid / Overdue" value={`$${unpaidTotal.toLocaleString()}`} change={overdueCount > 0 ? `${overdueCount} overdue` : "All clear"} changeType={overdueCount > 0 ? "negative" : "positive"} accent="amber" icon={<AlertCircle className="h-5 w-5" />} />
+        <KpiCard title="Paid Revenue" value={`₹${paidRevenue.toLocaleString()}`} change="All time" changeType="positive" accent="portal" icon={<Receipt className="h-5 w-5" />} />
+        <KpiCard title="Unpaid / Overdue" value={`₹${unpaidTotal.toLocaleString()}`} change={overdueCount > 0 ? `${overdueCount} overdue` : "All clear"} changeType={overdueCount > 0 ? "negative" : "positive"} accent="amber" icon={<AlertCircle className="h-5 w-5" />} />
       </div>
 
       {/* Tab switcher */}
@@ -410,9 +412,7 @@ export default function ClientsPage() {
           </div>
 
           {loading ? (
-            <div className="flex items-center justify-center py-20">
-              <div className="h-6 w-6 border-2 border-slate-200 dark:border-slate-700 border-t-brand-500 rounded-full animate-spin" />
-            </div>
+            <CardGridSkeleton count={6} />
           ) : filtered.length === 0 ? (
             <EmptyState icon={<Building2 className="h-5 w-5" />} title={search ? "No matching clients" : "No clients yet"} description={search ? "Try a different search term." : "Add your first client to get started."}
               action={!search ? <Button size="sm" onClick={() => setDrawerOpen(true)} className="bg-brand-600 text-white"><Plus className="h-3.5 w-3.5 mr-1" /> Add Client</Button> : undefined} />
@@ -423,142 +423,142 @@ export default function ClientsPage() {
                 const stage = STAGE_CONFIG[c.stage] || STAGE_CONFIG.contract_signed;
                 const initials = c.name.split(" ").map((w: string) => w[0]).join("").substring(0, 2).toUpperCase();
                 const owner = getOwner(c.ownerId);
+                const projectTypes = c.linkedProjects.map((p: any) => p.projectType);
+                const hasWebDev  = projectTypes.includes("web_dev");
+                const hasMetaAds = projectTypes.includes("meta_ads");
+                const siteUrl = d.websiteUrl ? (d.websiteUrl.startsWith("http") ? d.websiteUrl : `https://${d.websiteUrl}`) : null;
+                const siteLabel = d.websiteUrl ? d.websiteUrl.replace(/^https?:\/\/(www\.)?/, "").split("/")[0] : "";
                 return (
-                  <div key={c.id}
-                    className="group relative rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-950 p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
-                    onClick={() => { setMenuOpenId(null); router.push(`/admin/clients/${c.id}`); }}>
-                    {/* Header */}
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 text-xs font-bold text-white flex items-center justify-center shrink-0 shadow-sm">
-                          {initials || "?"}
-                        </div>
-                        <div className="min-w-0">
-                          <h3 className="text-sm font-bold text-slate-900 dark:text-white truncate leading-tight">{c.name}</h3>
-                          <div className="flex items-center gap-1.5 mt-0.5">
-                            <span className={cn("inline-flex items-center text-[9px] font-bold px-1.5 py-0.5 rounded border", stage.pill)}>
-                              <span className={cn("h-1.5 w-1.5 rounded-full mr-1", stage.dot)} />
-                              {stage.label}
-                            </span>
+                      <div key={c.id}
+                        className="group relative flex flex-col rounded-2xl border border-slate-200 dark:border-slate-800/70 bg-white dark:bg-slate-900 overflow-hidden hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
+                        onClick={() => { setMenuOpenId(null); router.push(`/admin/clients/${c.id}`); }}>
+
+                        {/* Thick stage strip */}
+                        <div className={cn("h-1.5 w-full shrink-0", stage.dot)} />
+
+                        <div className="flex flex-col flex-1 p-4 gap-4">
+                          {/* ── Header ── */}
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-brand-500 to-violet-600 text-xs font-extrabold text-white flex items-center justify-center shrink-0 shadow">
+                                {initials || "?"}
+                              </div>
+                              <div className="min-w-0">
+                                <h3 className="text-sm font-extrabold text-slate-900 dark:text-white truncate">{c.name}</h3>
+                                <span className={cn("inline-flex items-center gap-1 text-[9px] font-bold px-2 py-0.5 rounded-full border mt-1", stage.pill)}>
+                                  <span className={cn("h-1.5 w-1.5 rounded-full shrink-0", stage.dot)} />
+                                  {stage.label}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="relative shrink-0" onClick={e => e.stopPropagation()}>
+                              <button onClick={() => setMenuOpenId(menuOpenId === c.id ? null : c.id)}
+                                className="h-7 w-7 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center transition-all cursor-pointer">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </button>
+                              {menuOpenId === c.id && (
+                                <div className="absolute right-0 top-8 z-20 w-44 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl p-1.5 space-y-0.5">
+                                  <button onClick={() => { openEditClient(c); setMenuOpenId(null); }}
+                                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer">
+                                    <Edit2 className="h-3.5 w-3.5 text-slate-400" /> Edit Client
+                                  </button>
+                                  <button onClick={() => { handleDeleteClient(c.id, c.name); setMenuOpenId(null); }}
+                                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-all cursor-pointer">
+                                    <Trash2 className="h-3.5 w-3.5" /> Delete Client
+                                  </button>
+                                </div>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      </div>
-                      {/* Three-dots menu */}
-                      <div className="relative shrink-0" onClick={e => e.stopPropagation()}>
-                        <button onClick={() => setMenuOpenId(menuOpenId === c.id ? null : c.id)}
-                          className="h-7 w-7 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center transition-all cursor-pointer">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </button>
-                        {menuOpenId === c.id && (
-                          <div className="absolute right-0 top-8 z-20 w-44 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl p-1.5 space-y-0.5">
-                            <button onClick={() => { openEditClient(c); setMenuOpenId(null); }}
-                              className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer">
-                              <Edit2 className="h-3.5 w-3.5 text-slate-400" /> Edit Client
-                            </button>
-                            <button onClick={() => { handleDeleteClient(c.id, c.name); setMenuOpenId(null); }}
-                              className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-all cursor-pointer">
-                              <Trash2 className="h-3.5 w-3.5" /> Delete Client
-                            </button>
+
+                          {/* ── Divider ── */}
+                          <div className="h-px bg-slate-100 dark:bg-slate-800" />
+
+                          {/* ── Info rows ── */}
+                          <div className="space-y-3 flex-1">
+                            {/* Account Lead */}
+                            <div className="flex items-center gap-2.5">
+                              <Avatar name={owner} size="xs" />
+                              <div className="min-w-0">
+                                <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 block leading-none mb-0.5">Account Lead</span>
+                                <span className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate block">{owner || "Unassigned"}</span>
+                              </div>
+                            </div>
+
+                            {/* Contact */}
+                            {(d.contactName || d.contactPhone || d.contactEmail) && (
+                              <div className="flex items-center gap-2.5">
+                                <div className="h-6 w-6 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
+                                  <User className="h-3 w-3 text-slate-400" />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 block leading-none mb-0.5">Contact</span>
+                                  <span className="text-xs font-semibold text-slate-600 dark:text-slate-300 truncate block">{d.contactName || d.contactEmail || d.contactPhone}</span>
+                                </div>
+                                {d.contactPhone && (
+                                  <a href={`https://wa.me/${d.contactPhone.replace(/\D/g, "")}`} target="_blank" rel="noreferrer"
+                                    onClick={e => e.stopPropagation()}
+                                    className="shrink-0 inline-flex items-center gap-1 text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200/60 dark:border-emerald-800/40 px-2 py-1 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all">
+                                    WhatsApp
+                                  </a>
+                                )}
+                              </div>
+                            )}
+
+                            {/* Project type pills */}
+                            {c.linkedProjects.length > 0 ? (
+                              <div className="flex flex-wrap gap-1.5">
+                                {c.linkedProjects.slice(0, 4).map((p: any) => {
+                                  const pillStyle: Record<string, string> = {
+                                    meta_ads: "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800/50",
+                                    web_dev:  "text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/30 border-violet-200 dark:border-violet-800/50",
+                                    other:    "text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700/60",
+                                  };
+                                  const Icon = PROJ_TYPE_ICON[p.projectType] || Zap;
+                                  return (
+                                    <span key={p.id} className={cn("inline-flex items-center gap-1 text-[9px] font-bold px-2 py-1 rounded-lg border", pillStyle[p.projectType] || pillStyle.other)}>
+                                      <Icon className="h-2.5 w-2.5 shrink-0" />
+                                      {p.name.length > 14 ? p.name.slice(0, 14) + "…" : p.name}
+                                    </span>
+                                  );
+                                })}
+                                {c.linkedProjects.length > 4 && (
+                                  <span className="text-[9px] font-bold text-slate-400 self-center">+{c.linkedProjects.length - 4}</span>
+                                )}
+                              </div>
+                            ) : (
+                              <span className="text-[11px] text-slate-400 dark:text-slate-600 italic">No projects linked</span>
+                            )}
                           </div>
-                        )}
-                      </div>
-                    </div>
 
-                    {/* Contact + Owner */}
-                    <div className="mt-4 pt-3.5 border-t border-slate-100 dark:border-slate-800 grid grid-cols-2 gap-3">
-                      <div>
-                        <p className="text-[8px] font-bold text-slate-400 uppercase tracking-wider mb-1">Contact</p>
-                        <p className="text-xs font-bold text-slate-800 dark:text-white truncate">{d.contactName || "—"}</p>
-                        {d.contactPhone && (
-                          <a href={`https://wa.me/${d.contactPhone.replace(/\D/g, "")}`} target="_blank" rel="noreferrer"
-                            className="inline-flex items-center gap-0.5 text-[10px] text-emerald-600 dark:text-emerald-400 font-bold mt-0.5 hover:underline">
-                            <Phone className="h-2.5 w-2.5" /> WhatsApp
-                          </a>
-                        )}
-                        {d.contactEmail && !d.contactPhone && (
-                          <p className="text-[10px] text-slate-400 truncate">{d.contactEmail}</p>
-                        )}
-                      </div>
-                      <div>
-                        <p className="text-[8px] font-bold text-slate-400 uppercase tracking-wider mb-1">Account Lead</p>
-                        <div className="flex items-center gap-1.5 mt-0.5">
-                          <Avatar name={owner} size="xs" />
-                          <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 truncate">{owner}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Tags */}
-                    <div className="mt-3 flex flex-wrap gap-1">
-                      {d.industry && (
-                        <span className="flex items-center gap-1 text-[9px] font-bold text-slate-500 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-1.5 py-0.5 rounded-full">
-                          <Tag className="h-2.5 w-2.5" /> {d.industry}
-                        </span>
-                      )}
-                      {d.country && (
-                        <span className="flex items-center gap-1 text-[9px] font-bold text-slate-500 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-1.5 py-0.5 rounded-full">
-                          <MapPin className="h-2.5 w-2.5" /> {d.country}
-                        </span>
-                      )}
-                      {d.websiteUrl && (
-                        <a href={d.websiteUrl.startsWith("http") ? d.websiteUrl : `https://${d.websiteUrl}`} target="_blank" rel="noreferrer"
-                          className="flex items-center gap-1 text-[9px] font-bold text-brand-600 dark:text-brand-400 bg-brand-500/5 border border-brand-500/20 px-1.5 py-0.5 rounded-full hover:bg-brand-500/20 transition-all">
-                          <Globe className="h-2.5 w-2.5" /> Website
-                        </a>
-                      )}
-                      {d.services && (
-                        <span className="text-[9px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/20 border border-indigo-500/20 px-1.5 py-0.5 rounded-full">
-                          {d.services}
-                        </span>
-                      )}
-                    </div>
-
-                    {/* MRR + Projects */}
-                    <div className="mt-3.5 pt-3.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3">
-                      <div>
-                        <p className="text-[8px] font-bold text-slate-400 uppercase tracking-wider">MRR</p>
-                        <p className="text-sm font-bold text-slate-800 dark:text-white mt-0.5">
-                          {c.totalMRR > 0 ? `$${c.totalMRR.toLocaleString()}/mo` : "—"}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-1 flex-wrap justify-end">
-                        {c.linkedProjects.slice(0, 3).map((p: any) => {
-                          const Icon = PROJ_TYPE_ICON[p.projectType] || Zap;
-                          return (
-                            <span key={p.id} className="flex items-center gap-1 text-[9px] font-bold text-slate-500 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-1.5 py-0.5 rounded-full">
-                              <Icon className="h-2.5 w-2.5" /> {p.name.substring(0, 14)}{p.name.length > 14 ? "…" : ""}
-                            </span>
-                          );
-                        })}
-                        {c.linkedProjects.length === 0 && <span className="text-[10px] text-slate-400 italic">No projects</span>}
-                      </div>
-                    </div>
-
-                    {/* Invoice status */}
-                    {c.latestInvoice && (
-                      <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[10px]">
-                        <span className="font-bold text-slate-400">Latest Invoice</span>
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-slate-600 dark:text-slate-300">{c.latestInvoice.invoiceNumber}</span>
-                          <span className={cn("px-1.5 py-0.5 rounded border text-[9px] font-bold", INV_STATUS[c.latestInvoice.status]?.pill || INV_STATUS.draft.pill)}>
-                            {INV_STATUS[c.latestInvoice.status]?.label || c.latestInvoice.status}
-                          </span>
-                          {c.unpaidCount > 0 && (
-                            <span className="text-[9px] font-bold text-rose-500">{c.unpaidCount} unpaid</span>
+                          {/* ── Footer links ── */}
+                          {siteUrl && (
+                            <div className="flex items-center gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+                              {hasWebDev && siteUrl && (
+                                <a href={siteUrl} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()}
+                                  className="flex-1 inline-flex items-center gap-1.5 text-[10px] font-bold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/20 border border-violet-200/60 dark:border-violet-800/40 px-2.5 py-1.5 rounded-lg hover:bg-violet-100 dark:hover:bg-violet-950/40 transition-all truncate">
+                                  <Globe className="h-3 w-3 shrink-0" />
+                                  <span className="truncate">{siteLabel || "Visit Site"}</span>
+                                </a>
+                              )}
+                              {hasMetaAds && siteUrl && (
+                                <a href={siteUrl} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()}
+                                  className="flex-1 inline-flex items-center gap-1.5 text-[10px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/20 border border-blue-200/60 dark:border-blue-800/40 px-2.5 py-1.5 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-950/40 transition-all truncate">
+                                  <Instagram className="h-3 w-3 shrink-0" />
+                                  <span className="truncate">Instagram</span>
+                                </a>
+                              )}
+                              {!hasWebDev && !hasMetaAds && siteUrl && (
+                                <a href={siteUrl} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()}
+                                  className="flex-1 inline-flex items-center gap-1.5 text-[10px] font-bold text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/60 px-2.5 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all truncate">
+                                  <Globe className="h-3 w-3 shrink-0" />
+                                  <span className="truncate">{siteLabel || "Website"}</span>
+                                </a>
+                              )}
+                            </div>
                           )}
                         </div>
                       </div>
-                    )}
-
-                    {/* Progress */}
-                    <div className="mt-3.5 pt-3.5 border-t border-slate-100 dark:border-slate-800">
-                      <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Onboarding</span>
-                        <span className="text-[9px] font-bold text-slate-500">{c.progress}%</span>
-                      </div>
-                      <Progress value={c.progress} size="sm" barClassName="bg-brand-600" />
-                    </div>
-                  </div>
                 );
               })}
             </div>
@@ -654,7 +654,7 @@ export default function ClientsPage() {
                           <td className="px-4 py-3.5 font-mono text-[11px] font-bold text-slate-700 dark:text-slate-200 whitespace-nowrap">{inv.invoiceNumber}</td>
                           <td className="px-4 py-3.5 font-semibold text-slate-800 dark:text-white whitespace-nowrap">{inv.clientName}</td>
                           <td className="px-4 py-3.5 text-slate-500 dark:text-slate-400 hidden md:table-cell">{inv.projectName || <span className="italic text-slate-300 dark:text-slate-600">—</span>}</td>
-                          <td className="px-4 py-3.5 text-right font-bold text-slate-900 dark:text-white whitespace-nowrap">${inv.amount.toLocaleString()}</td>
+                          <td className="px-4 py-3.5 text-right font-bold text-slate-900 dark:text-white whitespace-nowrap">₹{inv.amount.toLocaleString()}</td>
                           <td className="px-4 py-3.5 text-slate-500 hidden sm:table-cell whitespace-nowrap">
                             {inv.paidDate ? <span className="text-emerald-600 dark:text-emerald-400 font-semibold">Paid {inv.paidDate}</span>
                               : inv.dueDate ? <span className={cn(isOverdue && "text-rose-500 font-semibold")}>{inv.dueDate}</span> : "—"}
@@ -984,7 +984,7 @@ export default function ClientsPage() {
                           const cl = clients.find(c => c.id === parseInt(invForm.clientId));
                           return cl && (p.clientId === cl.id || p.clientName === cl.name);
                         }).map(p => (
-                          <option key={p.id} value={p.id}>{p.name} {p.monthlyFee ? `— $${p.monthlyFee}/mo` : ""}</option>
+                          <option key={p.id} value={p.id}>{p.name} {p.monthlyFee ? `— ₹${p.monthlyFee}/mo` : ""}</option>
                         ))}
                       </select>
                     </div>
@@ -1035,69 +1035,92 @@ function KanbanCard({ client, ownerName, onMove, onToggleCheck }: {
   onMove: (id: number, dir: "left" | "right") => void;
   onToggleCheck: (id: number, idx: number) => void;
 }) {
-  let checklist: { text: string; checked: boolean }[] = [];
-  try { checklist = JSON.parse(client.checklist); } catch { checklist = []; }
-  const pct = checklist.length ? Math.round((checklist.filter(i => i.checked).length / checklist.length) * 100) : 0;
   const initials = client.name.split(" ").map((w: string) => w[0]).join("").substring(0, 2).toUpperCase();
   const d = parseDetails(client.details);
+  const mainProject = client.linkedProjects?.[0];
+  const extraProjects = (client.linkedProjects?.length ?? 0) - 1;
 
   return (
-    <div className="bg-white dark:bg-slate-950 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 hover:shadow-md transition-all space-y-3">
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex items-center gap-2 min-w-0">
-          <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-500 text-[10px] font-bold text-white flex items-center justify-center shrink-0">
-            {initials || "?"}
-          </div>
-          <div className="min-w-0">
-            <h4 className="text-xs font-bold text-slate-800 dark:text-white truncate">{client.name}</h4>
-            <span className="text-[9px] uppercase tracking-wider text-slate-400 font-bold block mt-0.5">{d.industry || "General Retainer"}</span>
-          </div>
-        </div>
-        <div className="flex gap-0.5 shrink-0">
-          {client.stage !== "contract_signed" && (
-            <button onClick={() => onMove(client.id, "left")} className="h-5 w-5 rounded bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-white flex items-center justify-center cursor-pointer" aria-label="Move back">
-              <ArrowLeft className="h-3 w-3" />
-            </button>
-          )}
-          {client.stage !== "live" && (
-            <button onClick={() => onMove(client.id, "right")} className="h-5 w-5 rounded bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-white flex items-center justify-center cursor-pointer" aria-label="Advance">
-              <ArrowRight className="h-3 w-3" />
-            </button>
-          )}
-        </div>
-      </div>
+    <div className="group bg-white dark:bg-slate-900/70 rounded-2xl border border-slate-200/80 dark:border-slate-800/60 hover:border-brand-400/40 dark:hover:border-brand-600/50 hover:shadow-md dark:hover:shadow-black/30 transition-all duration-200 overflow-hidden">
+      {/* Stage color strip */}
+      <div className={cn("h-0.5 w-full", STAGE_CONFIG[client.stage]?.dot.replace("bg-", "bg-") ?? "bg-slate-300")} />
 
-      {checklist.length > 0 && (
-        <div className="space-y-1.5 border-t border-b border-slate-100 dark:border-slate-900 py-2.5">
-          {checklist.map((item, idx) => (
-            <div key={idx} onClick={() => onToggleCheck(client.id, idx)}
-              className="flex items-center gap-2 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900/60 p-1 rounded-lg transition-colors">
-              <input type="checkbox" checked={item.checked} readOnly className="rounded text-brand-600 h-3.5 w-3.5 border-slate-200 cursor-pointer" />
-              <span className={cn("text-[10px] select-none", item.checked ? "text-slate-400 line-through" : "text-slate-600 dark:text-slate-350 font-bold")}>{item.text}</span>
+      <div className="p-3.5 space-y-3">
+        {/* Header: avatar + name + move arrows */}
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-brand-500 to-violet-500 text-[11px] font-bold text-white flex items-center justify-center shrink-0 shadow-sm">
+              {initials || "?"}
             </div>
-          ))}
-        </div>
-      )}
-
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1.5 min-w-0">
-          <Avatar name={ownerName} size="xs" />
-          <span className="text-[10px] text-slate-400 font-bold truncate max-w-[80px]">{ownerName}</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-12 bg-slate-100 dark:bg-slate-900 h-1.5 rounded-full overflow-hidden">
-            <div className="bg-brand-600 h-full transition-all" style={{ width: `${pct}%` }} />
+            <div className="min-w-0">
+              <h4 className="text-sm font-bold text-slate-800 dark:text-white truncate leading-tight">{client.name}</h4>
+              {d.industry && (
+                <span className="text-[9px] uppercase tracking-wider text-slate-400 dark:text-slate-500 font-semibold">{d.industry}</span>
+              )}
+            </div>
           </div>
-          <span className="text-[9px] font-extrabold text-brand-600 dark:text-brand-400">{pct}%</span>
+          <div className="flex gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+            {client.stage !== "contract_signed" && (
+              <button onClick={() => onMove(client.id, "left")}
+                className="h-6 w-6 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-slate-700 dark:hover:text-white flex items-center justify-center cursor-pointer transition-all hover:bg-slate-100 dark:hover:bg-slate-700"
+                aria-label="Move back">
+                <ArrowLeft className="h-3 w-3" />
+              </button>
+            )}
+            {client.stage !== "live" && (
+              <button onClick={() => onMove(client.id, "right")}
+                className="h-6 w-6 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 flex items-center justify-center cursor-pointer transition-all hover:bg-brand-50 dark:hover:bg-brand-950/30"
+                aria-label="Advance">
+                <ArrowRight className="h-3 w-3" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Info rows */}
+        <div className="space-y-2">
+          {/* Account Lead */}
+          <div className="flex items-center gap-2">
+            <Avatar name={ownerName} size="xs" />
+            <div className="min-w-0">
+              <span className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold uppercase tracking-wider">Lead</span>
+              <span className="text-[11px] font-bold text-slate-700 dark:text-slate-200 ml-1.5 truncate">{ownerName || "Unassigned"}</span>
+            </div>
+          </div>
+
+          {/* Project */}
+          {mainProject ? (
+            <div className="flex items-center gap-2">
+              <div className="h-5 w-5 rounded-md bg-brand-50 dark:bg-brand-950/40 border border-brand-100 dark:border-brand-900/40 flex items-center justify-center shrink-0">
+                <Layers className="h-3 w-3 text-brand-500 dark:text-brand-400" />
+              </div>
+              <span className="text-[11px] font-bold text-slate-700 dark:text-slate-200 truncate flex-1">{mainProject.name}</span>
+              {extraProjects > 0 && (
+                <span className="text-[9px] font-bold text-slate-400 shrink-0">+{extraProjects}</span>
+              )}
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <div className="h-5 w-5 rounded-md bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 flex items-center justify-center shrink-0">
+                <Layers className="h-3 w-3 text-slate-300 dark:text-slate-600" />
+              </div>
+              <span className="text-[11px] text-slate-400 dark:text-slate-600 font-medium italic">No project</span>
+            </div>
+          )}
+
+          {/* Contact */}
+          {(d.contactName || d.contactPhone || d.contactEmail) && (
+            <div className="flex items-center gap-2">
+              <div className="h-5 w-5 rounded-md bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 flex items-center justify-center shrink-0">
+                <Phone className="h-3 w-3 text-slate-400 dark:text-slate-500" />
+              </div>
+              <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 truncate">
+                {d.contactName || d.contactEmail || d.contactPhone}
+              </span>
+            </div>
+          )}
         </div>
       </div>
-
-      {client.totalMRR > 0 && (
-        <div className="pt-2 border-t border-slate-100 dark:border-slate-900 flex items-center justify-between text-[10px]">
-          <span className="text-slate-400 font-bold">MRR</span>
-          <span className="font-bold text-emerald-600 dark:text-emerald-400">${client.totalMRR.toLocaleString()}/mo</span>
-        </div>
-      )}
     </div>
   );
 }
