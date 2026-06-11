@@ -59,6 +59,7 @@ export function useLocalNotifications() {
         channelReady.current = await ensureChannelAndPermission();
         if (!channelReady.current) return;
       }
+      const res = await getMyNotifications();
 
       // Initialize lastMaxId on first successful fetch
       if (lastMaxId.current === 0) {
