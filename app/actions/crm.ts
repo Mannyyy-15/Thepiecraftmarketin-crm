@@ -8,6 +8,7 @@ import * as schema from "@/lib/schema";
 import { eq, and, or, inArray, desc, gte } from "drizzle-orm";
 import { decrypt, getCurrentUser } from "./auth";
 import { validateGeofence } from "@/lib/geofence";
+import { sendEmail } from "@/lib/mailer";
 import { revalidatePath } from "next/cache";
 
 // Helper to check user session and get authenticated profile
@@ -3138,27 +3139,12 @@ export async function triggerMetaAPISync(projectId?: number) {
 
 export async function triggerEmailNotification(recipient: string, subject: string, htmlContent: string) {
   try {
-    const logDir = path.join(process.cwd(), "logs");
-    if (!fs.existsSync(logDir)) {
-      fs.mkdirSync(logDir, { recursive: true });
+    if (!recipient) return { success: false, error: "No recipient." };
+    const res = await sendEmail(recipient, subject, htmlContent);
+    if (res.skipped) {
+      console.warn(`[Email] SMTP not configured — email to ${recipient} skipped.`);
     }
-    const logFilePath = path.join(logDir, "debug_emails_sent.log");
-    
-    const timestamp = new Date().toISOString();
-    const logEntry = `
-=============================================================================
-TIMESTAMP: ${timestamp}
-RECIPIENT: ${recipient}
-SUBJECT: ${subject}
------------------------------------------------------------------------------
-CONTENT:
-${htmlContent}
-=============================================================================
-\n`;
-
-    fs.appendFileSync(logFilePath, logEntry, "utf-8");
-    console.log(`[Email Simulated] Sent to ${recipient}: "${subject}"`);
-    return { success: true };
+    return { success: res.success, error: res.error };
   } catch (error: any) {
     console.error("triggerEmailNotification Error:", error);
     return { success: false, error: error.message };

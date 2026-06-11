@@ -58,3 +58,5 @@ android/app/google-services.json
 # Local debug scripts with hardcoded credentials — do not commit
 scripts/check-tokens.js
 scripts/send-test-push.js
+alter_*.js
+logs/

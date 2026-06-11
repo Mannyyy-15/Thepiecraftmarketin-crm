@@ -20,8 +20,9 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
 import { Progress } from "@/components/ui/Progress";
+import { generateStrategy } from "@/app/actions/ai";
 
-// Mock templates
+// Fallback templates (used only if the AI call fails, so the panel is never empty)
 const strategies: Record<string, any> = {
   meta: {
     summary: "A high-efficiency Meta Ads strategy targeting middle-of-funnel retargeting and high-intent lookalike audiences to maximize ROAS.",
@@ -76,34 +77,44 @@ export default function StudioAIPage() {
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
   const loadingSteps = [
-    "Initializing Studio AI Sandbox Engine...",
-    "Scanning industry-specific design guidelines...",
-    "Analyzing competitor keywords & budget parameters...",
-    "Structuring high-converting marketing copywriting variations...",
-    "Compiling technical roadmap & milestone schedules..."
+    "Initializing Studio AI engine...",
+    "Scanning industry-specific guidelines...",
+    "Analyzing keywords & budget parameters...",
+    "Structuring high-converting copywriting...",
+    "Compiling technical roadmap & milestones..."
   ];
 
-  // Simulated multi-step loading
+  // Advance the step animation while the AI request is in flight (cosmetic only;
+  // it caps at the last step until the real response resolves).
   useEffect(() => {
     let timer: any;
-    if (isGenerating) {
-      if (currentStep < loadingSteps.length) {
-        timer = setTimeout(() => {
-          setCurrentStep((prev) => prev + 1);
-        }, 1200);
-      } else {
-        setIsGenerating(false);
-        setGeneratedOutput(strategies[selectedChannel]);
-      }
+    if (isGenerating && currentStep < loadingSteps.length - 1) {
+      timer = setTimeout(() => setCurrentStep((prev) => prev + 1), 900);
     }
     return () => clearTimeout(timer);
   }, [isGenerating, currentStep]);
 
-  const handleGenerate = (e: React.FormEvent) => {
+  const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsGenerating(true);
     setCurrentStep(0);
     setGeneratedOutput(null);
+
+    try {
+      const res = await generateStrategy(selectedClient, selectedChannel, focusKeyword);
+      if (res.success && res.data) {
+        setGeneratedOutput(res.data);
+      } else {
+        // Graceful fallback to a template so the user still sees a result.
+        toast(res.error || "AI unavailable — showing a sample.", "error");
+        setGeneratedOutput(strategies[selectedChannel]);
+      }
+    } catch (err: any) {
+      toast("Something went wrong generating the strategy.", "error");
+      setGeneratedOutput(strategies[selectedChannel]);
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const handleCopy = (text: string, index: number) => {

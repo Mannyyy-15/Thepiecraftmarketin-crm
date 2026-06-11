@@ -18,8 +18,8 @@ function getDbUrl() {
     const m = content.match(/^DATABASE_URL=["']?([^"'\r\n]+)["']?/m);
     if (m?.[1]) return m[1];
   }
-  // fallback hardcoded
-  return "mysql://u257795766_admin:Thepiecraftmarketing%40123@srv2209.hstgr.io:3306/u257795766_crm";
+  if (process.env.DATABASE_URL) return process.env.DATABASE_URL;
+  throw new Error("DATABASE_URL not found in .env.local or environment. Refusing to run without credentials.");
 }
 
 function parseUrl(url) {

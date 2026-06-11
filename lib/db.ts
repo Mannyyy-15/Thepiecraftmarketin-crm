@@ -8,15 +8,28 @@ const connectionString = process.env.DATABASE_URL;
 
 let connectionPool: mysql.Pool | null = null;
 
+// Pool tuned for Hostinger + Vercel serverless. Each warm lambda keeps a small
+// pool; reusing a global pool across invocations prevents connection exhaustion
+// (Hostinger caps concurrent connections, and a new pool per request blows past it).
+const poolOptions: mysql.PoolOptions = {
+  uri: connectionString,
+  ssl: { rejectUnauthorized: false }, // Hostinger requires SSL but uses a shared cert
+  waitForConnections: true,
+  connectionLimit: 5,
+  maxIdle: 5,
+  idleTimeout: 30_000,
+  enableKeepAlive: true,
+  keepAliveInitialDelay: 10_000,
+};
+
 if (connectionString) {
-  if (process.env.NODE_ENV === "production") {
-    connectionPool = mysql.createPool({ uri: connectionString });
-  } else {
-    if (!(global as any).dbPool) {
-      (global as any).dbPool = mysql.createPool({ uri: connectionString });
-    }
-    connectionPool = (global as any).dbPool;
+  // Reuse one global pool in BOTH dev (HMR) and prod (lambda reuse) so we never
+  // leak pools. globalThis survives module re-evaluation within a warm instance.
+  const g = globalThis as any;
+  if (!g.__dbPool) {
+    g.__dbPool = mysql.createPool(poolOptions);
   }
+  connectionPool = g.__dbPool;
 } else {
   console.warn("⚠️ DATABASE_URL is not set in environment variables! Direct database connections will fail.");
 }
