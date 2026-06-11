@@ -32,9 +32,7 @@ const config: CapacitorConfig = {
       overlaysWebView: false,
     },
     LocalNotifications: {
-      smallIcon: 'ic_stat_icon_config_sample',
       iconColor: '#3a58e8',
-      sound: 'beep.wav',
     },
   },
 };

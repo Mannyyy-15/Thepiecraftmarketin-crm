@@ -40,14 +40,7 @@ async function ensureChannelAndPermission() {
   }
 }
 
-// Map notification type → friendly icon key
-function iconForType(type: string): string {
-  if (type.includes("message")) return "ic_stat_message";
-  if (type.includes("expense") || type.includes("payment")) return "ic_stat_payment";
-  if (type.includes("leave")) return "ic_stat_event";
-  if (type.includes("punch")) return "ic_stat_access_time";
-  return "ic_stat_notification";
-}
+// Icons intentionally omitted because they are not present in the Android bundle.
 
 export function useLocalNotifications() {
   const lastMaxId = useRef<number>(0);
@@ -92,7 +85,6 @@ export function useLocalNotifications() {
                 channelId: CHANNEL_ID,
                 title: n.title,
                 body: n.message || "",
-                smallIcon: iconForType(n.type),
                 iconColor: "#3a58e8",
                 vibrate: true,
                 sound: undefined, // use system default
