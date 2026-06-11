@@ -48,3 +48,13 @@ Thumbs.db
 desktop.ini
 
 .vercel
+
+# Secrets — never commit
+firebase-adminsdk.json
+firebase-admin*.json
+*-firebase-adminsdk-*.json
+android/app/google-services.json
+
+# Local debug scripts with hardcoded credentials — do not commit
+scripts/check-tokens.js
+scripts/send-test-push.js

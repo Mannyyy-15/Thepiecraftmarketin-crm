@@ -1,111 +1,120 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { isCapacitor } from "./capacitor";
-import { getMyNotifications } from "@/app/actions/crm";
-import type { Notification } from "./schema";
-
-let LocalNotifications: any = null;
-if (typeof window !== "undefined" && isCapacitor()) {
-  import("@capacitor/local-notifications").then((mod) => {
-    LocalNotifications = mod.LocalNotifications;
-  });
-}
-
-// Friendly channel ID → label mapping for Android notification channels
-const CHANNEL_ID = "thepiecraft-crm";
-const CHANNEL_NAME = "ThePieCraft CRM";
-
-async function ensureChannelAndPermission() {
-  if (!LocalNotifications) return false;
-  try {
-    // Request permission (required on Android 13+ / iOS)
-    const { display } = await LocalNotifications.requestPermissions();
-    if (display !== "granted") return false;
-
-    // Create a named notification channel so Android shows our app name + icon
-    await LocalNotifications.createChannel({
-      id: CHANNEL_ID,
-      name: CHANNEL_NAME,
-      description: "CRM activity updates — clients, leads, expenses, messages",
-      importance: 4, // HIGH
-      visibility: 1, // PUBLIC
-      vibration: true,
-      lights: true,
-      lightColor: "#3a58e8",
-    });
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-// Icons intentionally omitted because they are not present in the Android bundle.
+import { registerFcmToken } from "@/app/actions/crm";
+import { useRouter } from "next/navigation";
+import { Capacitor } from "@capacitor/core";
 
 export function useLocalNotifications() {
-  const lastMaxId = useRef<number>(0);
-  const channelReady = useRef<boolean>(false);
+  const router = useRouter();
 
   useEffect(() => {
     if (!isCapacitor()) return;
 
-    const init = async () => {
-      channelReady.current = await ensureChannelAndPermission();
-    };
-    init();
+    let cleanupFn: (() => void) | undefined;
 
-    const checkAndNotify = async () => {
-      if (!channelReady.current) {
-        channelReady.current = await ensureChannelAndPermission();
-        if (!channelReady.current) return;
-      }
-      const res = await getMyNotifications();
+    const initPush = async () => {
+      try {
+        const { PushNotifications } = await import("@capacitor/push-notifications");
 
-      // Initialize lastMaxId on first successful fetch
-      if (lastMaxId.current === 0) {
-        if (!res.success || !res.data) return;
-        lastMaxId.current = res.data.length > 0 ? Math.max(...res.data.map((n: Notification) => n.id)) : -1;
-        return; // Don't fire historical notifications on first load
-      }
-
-      if (!res.success || !res.data || res.data.length === 0) return;
-
-      const newNotifs = res.data.filter((n: Notification) => n.id > lastMaxId.current);
-      if (newNotifs.length === 0) return;
-
-      lastMaxId.current = Math.max(...res.data.map((n: Notification) => n.id));
-
-      if (!LocalNotifications) return;
-
-      for (const n of newNotifs) {
-        try {
-          await LocalNotifications.schedule({
-            notifications: [
-              {
-                id: n.id,
-                channelId: CHANNEL_ID,
-                title: n.title,
-                body: n.message || "",
-                iconColor: "#3a58e8",
-                vibrate: true,
-                sound: undefined, // use system default
-                autoCancel: true,
-                extra: { link: n.link || "/" },
-              },
-            ],
-          });
-        } catch (e) {
-          console.error("Local notification error:", e);
+        // Create notification channel for Android before requesting permissions
+        if (Capacitor.getPlatform() === "android") {
+          try {
+            await PushNotifications.createChannel({
+              id: "thepiecraft-crm",
+              name: "ThePieCraft CRM",
+              description: "CRM activity updates — clients, leads, expenses, messages",
+              importance: 4, // HIGH
+              visibility: 1, // PUBLIC
+              vibration: true,
+              lights: true,
+              lightColor: "#3a58e8",
+            });
+            console.log("FCM notification channel created successfully.");
+          } catch (channelErr) {
+            console.error("Error creating FCM channel:", channelErr);
+          }
         }
+
+        // Request permissions
+        let permStatus = await PushNotifications.checkPermissions();
+        if (permStatus.receive === "prompt") {
+          permStatus = await PushNotifications.requestPermissions();
+        }
+
+        if (permStatus.receive !== "granted") {
+          console.warn("Push notification permission denied.");
+          return;
+        }
+
+        // Register with Firebase
+        await PushNotifications.register();
+
+        // Listen for successful registration and save the token
+        const registrationListener = await PushNotifications.addListener(
+          "registration",
+          async (token) => {
+            console.log("FCM Registration success, token:", token.value);
+            const platform = Capacitor.getPlatform(); // 'android' or 'ios'
+            try {
+              const res = await registerFcmToken(token.value, platform);
+              if (res.success) {
+                console.log("FCM Token successfully registered on server.");
+              } else {
+                console.error("Failed to register FCM Token on server.");
+              }
+            } catch (regErr) {
+              console.error("Error sending FCM Token to server:", regErr);
+            }
+          }
+        );
+
+        // Listen for registration error
+        const errorListener = await PushNotifications.addListener(
+          "registrationError",
+          (err) => {
+            console.error("FCM Registration error:", err.error);
+          }
+        );
+
+        // Listen for incoming notifications when app is in foreground
+        const notificationListener = await PushNotifications.addListener(
+          "pushNotificationReceived",
+          (notification) => {
+            console.log("Push notification received in foreground:", notification);
+          }
+        );
+
+        // Listen for notification tap action
+        const actionListener = await PushNotifications.addListener(
+          "pushNotificationActionPerformed",
+          (action) => {
+            console.log("Push notification action performed:", action);
+            const link = action.notification.data?.link;
+            if (link) {
+              router.push(link);
+            }
+          }
+        );
+
+        cleanupFn = () => {
+          registrationListener.remove();
+          errorListener.remove();
+          notificationListener.remove();
+          actionListener.remove();
+        };
+      } catch (err) {
+        console.error("Error initializing push notifications:", err);
       }
     };
 
-    // Check immediately after init, then every 15 seconds
-    const delay = setTimeout(checkAndNotify, 2000);
-    const interval = setInterval(checkAndNotify, 15000);
+    initPush();
+
     return () => {
-      clearTimeout(delay);
-      clearInterval(interval);
+      if (cleanupFn) {
+        cleanupFn();
+      }
     };
-  }, []);
+  }, [router]);
 }

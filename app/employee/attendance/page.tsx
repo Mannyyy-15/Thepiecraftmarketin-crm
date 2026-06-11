@@ -16,6 +16,8 @@ import {
   getAttendancePageData,
   requestLeave,
 } from "@/app/actions/crm";
+import PunchButton from "@/components/PunchButton";
+import { getLocations } from "@/app/actions/punch";
 
 export default function EmployeeAttendancePage() {
   const { toast, confirmDialog } = useToast();
@@ -31,6 +33,9 @@ export default function EmployeeAttendancePage() {
   const [reqEndDate, setReqEndDate] = useState("");
   const [reqReason, setReqReason] = useState("");
   const [attMessage, setAttMessage] = useState<string | null>(null);
+
+  // --- Punch / Geofence location ---
+  const [punchLocation, setPunchLocation] = useState<{ id: number; name: string } | null>(null);
 
   // Dynamic calendar switcher states
   const [currentMonth, setCurrentMonth] = useState(() => {
@@ -73,6 +78,21 @@ export default function EmployeeAttendancePage() {
     loadDashboardData(true);
     const interval = setInterval(() => loadDashboardData(false), 10000);
     return () => clearInterval(interval);
+  }, []);
+
+  // Load the office location used for geofenced punch in/out
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await getLocations();
+        if (res.success && res.data && res.data.length > 0) {
+          const loc = res.data[0];
+          setPunchLocation({ id: loc.id, name: loc.name });
+        }
+      } catch (err) {
+        console.error("Error loading punch location:", err);
+      }
+    })();
   }, []);
 
   const handleRequestLeave = async (e: React.FormEvent) => {
@@ -444,8 +464,26 @@ export default function EmployeeAttendancePage() {
           </Card>
         </div>
 
-        {/* Right Column: Leave Form */}
+        {/* Right Column: Punch + Leave Form */}
         <div className="lg:col-span-1 space-y-4">
+          {/* Geofenced Punch In / Out */}
+          {punchLocation && (
+            <Card className="border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-950 shadow-soft rounded-2xl overflow-hidden relative">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-indigo-500" />
+              <CardHeader className="pb-3">
+                <span className="text-[9px] font-extrabold uppercase tracking-widest text-slate-400 block">Attendance</span>
+                <CardTitle className="text-sm font-bold">Punch In / Out</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <PunchButton
+                  locationId={punchLocation.id}
+                  locationName={punchLocation.name}
+                  onPunched={() => loadDashboardData(false)}
+                />
+              </CardContent>
+            </Card>
+          )}
+
           <Card className="border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-950 shadow-soft rounded-2xl overflow-hidden relative">
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 to-brand-500" />
             

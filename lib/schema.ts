@@ -1,4 +1,4 @@
-import { mysqlTable, int, varchar, mysqlEnum, timestamp, text, double } from "drizzle-orm/mysql-core";
+import { mysqlTable, int, varchar, mysqlEnum, timestamp, text, double, decimal } from "drizzle-orm/mysql-core";
 
 // 1. Users Table
 export const users = mysqlTable("users", {
@@ -208,6 +208,28 @@ export const leads = mysqlTable("leads", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// 14. Locations Table (Geofencing)
+export const locations = mysqlTable("locations", {
+  id: int("id").primaryKey().autoincrement(),
+  name: varchar("name", { length: 255 }).notNull(),
+  address: varchar("address", { length: 500 }),
+  latitude: decimal("latitude", { precision: 10, scale: 8 }).notNull(),
+  longitude: decimal("longitude", { precision: 11, scale: 8 }).notNull(),
+  radiusMeters: int("radius_meters").notNull().default(100),
+  wifiPublicIp: varchar("wifi_public_ip", { length: 45 }).notNull(), // IPv4 or IPv6
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// 15. Attendance Logs Table (Punch In / Out audit trail)
+export const attendanceLogs = mysqlTable("attendance_logs", {
+  id: int("id").primaryKey().autoincrement(),
+  userId: int("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  locationId: int("location_id").references(() => locations.id, { onDelete: "cascade" }).notNull(),
+  punchType: mysqlEnum("punch_type", ["IN", "OUT"]).notNull(),
+  verifiedIp: varchar("verified_ip", { length: 45 }).notNull(),
+  punchedAt: timestamp("punched_at").defaultNow().notNull(),
+});
+
 // Types Export
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
@@ -252,4 +274,20 @@ export type NewDocument = typeof documents.$inferInsert;
 export type MetaCampaign = typeof metaCampaigns.$inferSelect;
 export type NewMetaCampaign = typeof metaCampaigns.$inferInsert;
 
+export type Location = typeof locations.$inferSelect;
+export type NewLocation = typeof locations.$inferInsert;
 
+export type AttendanceLog = typeof attendanceLogs.$inferSelect;
+export type NewAttendanceLog = typeof attendanceLogs.$inferInsert;
+
+// 14. FCM Tokens Table
+export const fcmTokens = mysqlTable("fcm_tokens", {
+  id: int("id").primaryKey().autoincrement(),
+  userId: int("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  token: varchar("token", { length: 255 }).notNull().unique(),
+  deviceType: varchar("device_type", { length: 50 }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export type FcmToken = typeof fcmTokens.$inferSelect;
+export type NewFcmToken = typeof fcmTokens.$inferInsert;

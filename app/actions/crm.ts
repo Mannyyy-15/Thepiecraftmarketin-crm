@@ -746,6 +746,33 @@ async function createNotification(userId: number, type: string, title: string, m
       link: link || null,
       read: 0,
     });
+
+    // Send FCM Push Notification
+    const { messaging } = require("@/lib/firebase-admin");
+    if (messaging) {
+      const tokens = await db.select({ token: schema.fcmTokens.token }).from(schema.fcmTokens).where(eq(schema.fcmTokens.userId, userId));
+      for (const t of tokens) {
+        try {
+          await messaging.send({
+            token: t.token,
+            notification: {
+              title,
+              body: message,
+            },
+            data: {
+              link: link || "/",
+            },
+            android: {
+              notification: {
+                channelId: "thepiecraft-crm",
+              },
+            },
+          });
+        } catch (fcmErr) {
+          console.error("FCM Send Error:", fcmErr);
+        }
+      }
+    }
   } catch (e) {
     console.error("createNotification error:", e);
   }
@@ -1755,6 +1782,34 @@ export async function getUnreadMessageCount() {
   } catch (error: any) {
     console.error("getUnreadMessageCount Error:", error);
     return { success: false, count: 0 };
+  }
+}
+
+// Register FCM Token for Push Notifications
+export async function registerFcmToken(token: string, deviceType?: string) {
+  const session = await getAuthSession();
+  if (!session || !db) return { success: false };
+
+  try {
+    // Check if token already exists
+    const existing = await db.select().from(schema.fcmTokens).where(eq(schema.fcmTokens.token, token));
+    
+    if (existing.length === 0) {
+      await db.insert(schema.fcmTokens).values({
+        userId: session.id as number,
+        token,
+        deviceType: deviceType || "android",
+      });
+    } else if (existing[0].userId !== session.id) {
+      // If token exists but belongs to another user (e.g. they logged out and someone else logged in), update it
+      await db.update(schema.fcmTokens)
+        .set({ userId: session.id as number })
+        .where(eq(schema.fcmTokens.token, token));
+    }
+    return { success: true };
+  } catch (e) {
+    console.error("registerFcmToken Error:", e);
+    return { success: false };
   }
 }
 
