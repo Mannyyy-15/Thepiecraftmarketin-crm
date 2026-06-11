@@ -67,14 +67,14 @@ export function useLocalNotifications() {
         if (!channelReady.current) return;
       }
 
-      const res = await getMyNotifications();
-      if (!res.success || !res.data || res.data.length === 0) return;
-
-      // On first load, snapshot the highest ID without firing any notifications
+      // Initialize lastMaxId on first successful fetch
       if (lastMaxId.current === 0) {
-        lastMaxId.current = Math.max(...res.data.map((n: Notification) => n.id));
-        return;
+        if (!res.success || !res.data) return;
+        lastMaxId.current = res.data.length > 0 ? Math.max(...res.data.map((n: Notification) => n.id)) : -1;
+        return; // Don't fire historical notifications on first load
       }
+
+      if (!res.success || !res.data || res.data.length === 0) return;
 
       const newNotifs = res.data.filter((n: Notification) => n.id > lastMaxId.current);
       if (newNotifs.length === 0) return;
