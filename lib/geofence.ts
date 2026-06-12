@@ -53,6 +53,7 @@ export async function validateGeofence(userLat: number, userLng: number, userBss
     id: number;
     name: string;
     wifi_public_ip: string;
+    bssid: string | null;
     radius_meters: number;
     distance_meters: number;
   };

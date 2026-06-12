@@ -884,6 +884,11 @@ export async function getUnreadNotificationCount() {
 
     return { success: true, count: results.length };
   } catch (error: any) {
+    console.error("getUnreadNotificationCount Error:", error);
+    return { success: false, count: 0 };
+  }
+}
+
 // Punch In
 export async function punchIn(lat?: number, lng?: number, bssid?: string) {
   try {
