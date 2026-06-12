@@ -154,7 +154,7 @@ export default function AdminInvoicesPage() {
           setBillToEmail(payload.billTo?.email || "");
           setBillToAddress(payload.billTo?.address || "");
           if (payload.items && payload.items.length > 0) {
-            setItems(payload.items.map((i: any) => ({ ...i, id: Date.now().toString() + Math.random(), units: i.units?.toString() || "", amount: i.amount?.toString() || "" })));
+            setItems(payload.items.map((i: any) => ({ service: i.service || "", details: i.details || "", note: i.note || "", units: i.units?.toString() || "", amount: Number(i.amount) || 0 })));
           }
           setTaxPercent(Number(payload.taxPercent) || 0);
           setDiscount(Number(payload.discount) || 0);
@@ -173,11 +173,10 @@ export default function AdminInvoicesPage() {
         setBillToEmail("");
         setBillToAddress("");
         setItems([{ 
-          id: Date.now().toString(), 
           service: "Services Rendered", 
           details: "Legacy invoice entry", 
           units: "1", 
-          amount: inv.amount?.toString() || "0",
+          amount: Number(inv.amount) || 0,
           note: ""
         }]);
         setTaxPercent(0);
