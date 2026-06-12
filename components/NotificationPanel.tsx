@@ -110,7 +110,7 @@ export default function NotificationPanel({
           top: 0,
           right: 0,
           height: "100dvh",
-          width: "min(92vw, 26rem)",
+          width: "100vw",
           transform: open ? "translateX(0)" : "translateX(100%)",
         }}
       >
