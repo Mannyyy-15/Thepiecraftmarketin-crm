@@ -7,7 +7,11 @@ export default function Loading() {
       <KpiCardsSkeleton count={4} />
       <Card>
         <div className="p-6">
-          <TableRowsSkeleton rows={6} cols={6} />
+          <table className="w-full">
+            <tbody>
+              <TableRowsSkeleton rows={6} cols={6} />
+            </tbody>
+          </table>
         </div>
       </Card>
     </div>

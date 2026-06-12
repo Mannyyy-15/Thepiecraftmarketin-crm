@@ -2157,20 +2157,30 @@ export async function createInvoice(formData: FormData) {
   }
 }
 
-// Rich invoice creation: line items + bill-to details stored as JSON in `notes`
-// so we avoid a schema migration. clientId is optional (manual/one-off billing).
-export interface InvoiceLineItem { description: string; qty: number; rate: number; }
+// Service-based invoice. Each line item is a service/deliverable with an amount
+// (and optional unit count, e.g. "3 months retainer") + an optional per-item note
+// such as "Domain & hosting included for 1 year". Stored as JSON in `notes` so we
+// avoid a schema migration. clientId is optional (manual/one-off billing).
+export interface InvoiceServiceItem {
+  service: string;        // e.g. "Web Development", "Meta Ads Management"
+  details?: string;       // scope/description, e.g. "5-page responsive site"
+  units?: number;         // optional (months, posts, hours); blank = flat fee
+  amount: number;         // total for this line
+  note?: string;          // e.g. "Domain & hosting included for 1 year"
+}
 export interface CreateInvoiceFullInput {
   clientId?: number | null;
   projectId?: number | null;
   billToName: string;
   billToEmail?: string;
   billToAddress?: string;
-  items: InvoiceLineItem[];
+  items: InvoiceServiceItem[];
   taxPercent?: number;
   discount?: number;        // flat amount
+  servicePeriod?: string;   // e.g. "June 2026" or "May–Jul 2026"
+  paymentTerms?: string;    // e.g. "50% advance, balance on delivery"
   dueDate?: string;
-  notes?: string;
+  notes?: string;           // overall invoice note / terms
   status?: "draft" | "sent";
 }
 
@@ -2180,11 +2190,11 @@ export async function createInvoiceFull(input: CreateInvoiceFullInput) {
     if (!session || session.role !== "admin") return { success: false, error: "Unauthorized." };
     if (!db) return { success: false, error: "Database not connected." };
 
-    const items = (input.items || []).filter(i => (i.description || "").trim() && Number(i.rate) > 0);
+    const items = (input.items || []).filter(i => (i.service || "").trim() && Number(i.amount) > 0);
     if (!input.billToName?.trim()) return { success: false, error: "Bill-to name is required." };
-    if (items.length === 0) return { success: false, error: "Add at least one line item." };
+    if (items.length === 0) return { success: false, error: "Add at least one service." };
 
-    const subtotal = items.reduce((s, i) => s + Number(i.qty || 1) * Number(i.rate || 0), 0);
+    const subtotal = items.reduce((s, i) => s + Number(i.amount || 0), 0);
     const taxPercent = Number(input.taxPercent || 0);
     const discount = Number(input.discount || 0);
     const taxAmount = Math.round((subtotal * taxPercent) / 100);
@@ -2196,12 +2206,19 @@ export async function createInvoiceFull(input: CreateInvoiceFullInput) {
     const countRows = await db.select({ id: schema.invoices.id }).from(schema.invoices);
     const invoiceNumber = `${prefix}-${String(countRows.length + 1).padStart(4, "0")}`;
 
-    // Pack the rich details into notes as JSON (back-compat: plain notes still readable).
     const payload = {
-      v: 1,
+      v: 2,
       billTo: { name: input.billToName.trim(), email: input.billToEmail?.trim() || "", address: input.billToAddress?.trim() || "" },
-      items: items.map(i => ({ description: i.description.trim(), qty: Number(i.qty || 1), rate: Number(i.rate || 0) })),
+      items: items.map(i => ({
+        service: i.service.trim(),
+        details: i.details?.trim() || "",
+        units: i.units ? Number(i.units) : null,
+        amount: Number(i.amount || 0),
+        note: i.note?.trim() || "",
+      })),
       subtotal, taxPercent, taxAmount, discount, total,
+      servicePeriod: input.servicePeriod?.trim() || "",
+      paymentTerms: input.paymentTerms?.trim() || "",
       note: input.notes?.trim() || "",
     };
 
