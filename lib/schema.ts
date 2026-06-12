@@ -320,6 +320,18 @@ export const agencySettings = mysqlTable("agency_settings", {
   agencyName: varchar("agency_name", { length: 255 }).notNull().default("ThePieCraft"),
   agencyLogoUrl: text("agency_logo_url"),
   baseCurrency: varchar("base_currency", { length: 10 }).notNull().default("INR"),
+  // Business profile (shows on invoices / emails)
+  agencyEmail: varchar("agency_email", { length: 255 }),
+  agencyPhone: varchar("agency_phone", { length: 50 }),
+  agencyWebsite: varchar("agency_website", { length: 255 }),
+  agencyAddress: text("agency_address"),
+  gstNumber: varchar("gst_number", { length: 50 }),
+  // Invoice defaults
+  invoiceTaxPercent: int("invoice_tax_percent").default(0),
+  invoicePaymentTerms: varchar("invoice_payment_terms", { length: 255 }),
+  invoiceNotes: text("invoice_notes"),
+  bankDetails: text("bank_details"),
+  // Integrations
   razorpayKeyId: text("razorpay_key_id"),
   razorpayKeySecret: text("razorpay_key_secret"),
   smtpHost: varchar("smtp_host", { length: 255 }),

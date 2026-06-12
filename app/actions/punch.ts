@@ -1,7 +1,7 @@
 "use server";
 
 import { headers, cookies } from "next/headers";
-import { sql } from "drizzle-orm";
+import { sql, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import * as schema from "@/lib/schema";
 import { decrypt } from "./auth";
@@ -178,4 +178,70 @@ export async function getLocations() {
   } catch (err: any) {
     return { success: false, data: [], error: err.message };
   }
+}
+
+// ---------------------------------------------------------------------------
+// Office geofence settings (admin) — manage the punch-in location from the UI
+// ---------------------------------------------------------------------------
+
+export async function getOfficeLocation() {
+  const token = cookies().get("token")?.value;
+  const session = token ? await decrypt(token) : null;
+  if (!session?.id || session.role !== "admin") return { success: false, data: null };
+  if (!db) return { success: false, data: null };
+  try {
+    const rows = await db.select().from(schema.locations).orderBy(schema.locations.id).limit(1);
+    return { success: true, data: rows[0] || null };
+  } catch (err: any) {
+    return { success: false, data: null, error: err.message };
+  }
+}
+
+export interface OfficeLocationInput {
+  name: string;
+  address?: string;
+  latitude: string | number;
+  longitude: string | number;
+  radiusMeters: number;
+  wifiPublicIp: string;
+  bssid?: string;
+}
+
+export async function updateOfficeLocation(input: OfficeLocationInput) {
+  const token = cookies().get("token")?.value;
+  const session = token ? await decrypt(token) : null;
+  if (!session?.id || session.role !== "admin") return { success: false, error: "Unauthorized." };
+  if (!db) return { success: false, error: "Database not connected." };
+  try {
+    const values = {
+      name: input.name?.trim() || "Office",
+      address: input.address?.trim() || null,
+      latitude: String(input.latitude),
+      longitude: String(input.longitude),
+      radiusMeters: Number(input.radiusMeters) || 150,
+      wifiPublicIp: input.wifiPublicIp?.trim() || "0.0.0.0",
+      bssid: input.bssid?.trim() || null,
+    };
+    const existing = await db.select({ id: schema.locations.id }).from(schema.locations).orderBy(schema.locations.id).limit(1);
+    if (existing.length > 0) {
+      await db.update(schema.locations).set(values).where(eq(schema.locations.id, existing[0].id));
+    } else {
+      await db.insert(schema.locations).values(values);
+    }
+    return { success: true };
+  } catch (err: any) {
+    console.error("updateOfficeLocation error:", err);
+    return { success: false, error: err.message };
+  }
+}
+
+// Detect the server's view of the requesting client's public IP — used by the
+// settings page "use my current network" helper.
+export async function detectCurrentIp() {
+  const token = cookies().get("token")?.value;
+  const session = token ? await decrypt(token) : null;
+  if (!session?.id || session.role !== "admin") return { success: false, ip: "" };
+  let ip = extractClientIp(headers());
+  if (ip.startsWith("::ffff:")) ip = ip.substring(7);
+  return { success: true, ip };
 }
