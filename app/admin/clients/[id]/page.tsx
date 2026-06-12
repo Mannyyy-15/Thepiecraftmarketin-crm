@@ -7,6 +7,7 @@ import {
   getClientById, updateClient, updateClientChecklist,
   deleteClient, updateInvoiceStatus, createInvoice, getTeamUsers,
   addProjectTask, toggleTaskDone, deleteTask,
+  getClientLogin, resetClientPassword,
 } from "@/app/actions/crm";
 import {
   ArrowLeft, Building2, CheckCircle2, Code2, DollarSign, Edit2,
@@ -14,7 +15,7 @@ import {
   MoreHorizontal, Phone, Plus, Receipt, RefreshCw, Tag, Trash2,
   TrendingUp, Users, X, Zap, AlertCircle, CalendarDays, Clock,
   BadgeCheck, FileText, Link as LinkIcon, ChevronRight, Square,
-  ListTodo, Loader2, Send, BadgeDollarSign,
+  ListTodo, Loader2, Send, BadgeDollarSign, KeyRound, Copy, ShieldCheck,
 } from "lucide-react";
 import { ClientDetailSkeleton } from "@/components/ui/Skeleton";
 import { Badge } from "@/components/ui/Badge";
@@ -93,16 +94,49 @@ export default function ClientDetailPage() {
   const [editForm, setEditForm]           = useState<any>({});
   const [editSaving, setEditSaving]       = useState(false);
 
+  // Client portal login
+  const [login, setLogin]                 = useState<any>(null);
+  const [newPass, setNewPass]             = useState("");
+  const [savingPass, setSavingPass]       = useState(false);
+  const [passResult, setPassResult]       = useState<string | null>(null);
+  const [linkUserId, setLinkUserId]       = useState<string>("");
+
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [cr, tr] = await Promise.all([getClientById(Number(id)), getTeamUsers()]);
+      const [cr, tr, lr] = await Promise.all([getClientById(Number(id)), getTeamUsers(), getClientLogin(Number(id))]);
       if (cr.success && cr.data) setClient(cr.data);
       if (tr.success && tr.data) setRoster((tr.data as any[]).filter(u => u.role !== "client"));
+      if (lr.success && lr.data) { setLogin(lr.data); setLinkUserId(lr.data.userId ? String(lr.data.userId) : ""); }
     } finally { setLoading(false); }
   }, [id]);
 
   useEffect(() => { load(); }, [load]);
+
+  const genPassword = () => {
+    const chars = "abcdefghijkmnpqrstuvwxyz23456789";
+    let p = "";
+    for (let i = 0; i < 8; i++) p += chars[Math.floor(Math.random() * chars.length)];
+    setNewPass(p);
+  };
+
+  const handleResetPassword = async () => {
+    const targetId = linkUserId ? Number(linkUserId) : login?.userId;
+    if (!targetId) { toast("Select which login account belongs to this client first.", "error"); return; }
+    if (!newPass || newPass.length < 4) { toast("Enter a password (min 4 characters).", "error"); return; }
+    setSavingPass(true);
+    const r = await resetClientPassword(targetId, newPass);
+    setSavingPass(false);
+    if (r.success) {
+      setPassResult(newPass);
+      toast("Password updated. Share it with the client.", "success");
+      // refresh the login email if we just linked a different account
+      const lr = await getClientLogin(Number(id));
+      if (lr.success && lr.data) setLogin(lr.data);
+    } else {
+      toast(r.error || "Failed to update password.", "error");
+    }
+  };
 
   // ── derived ──────────────────────────────────────────────────────────────
   const d              = parseDetails(client?.details);
@@ -371,6 +405,80 @@ export default function ClientDetailPage() {
                   <span className={cn("text-xs font-medium", item.checked ? "text-slate-400 line-through" : "text-slate-700 dark:text-slate-200")}>{item.text}</span>
                 </button>
               ))}
+            </div>
+          )}
+        </BentoCard>
+
+        {/* ── Client Portal Access ─────────────────────────────────────────── */}
+        <BentoCard className="lg:col-span-4">
+          <SectionTitle icon={KeyRound} label="Client Portal Login" />
+
+          {login?.hasLogin ? (
+            <>
+              {/* Email */}
+              <div className="rounded-xl border border-slate-200/80 dark:border-slate-800/80 p-3 mb-3">
+                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Login Email</p>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate">{login.email}</span>
+                  <button onClick={() => { navigator.clipboard.writeText(login.email); toast("Email copied.", "success"); }}
+                    className="shrink-0 text-slate-400 hover:text-brand-600 p-1 rounded-lg cursor-pointer" title="Copy email">
+                    <Copy className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Password note */}
+              <div className="flex items-start gap-2 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-900/30 p-2.5 mb-3">
+                <ShieldCheck className="h-3.5 w-3.5 text-amber-500 shrink-0 mt-0.5" />
+                <p className="text-[11px] text-amber-700 dark:text-amber-400 leading-relaxed">
+                  Passwords are encrypted and can’t be shown. Set a new one below and share it with the client.
+                </p>
+              </div>
+            </>
+          ) : (
+            <div className="mb-3">
+              <div className="flex items-start gap-2 rounded-xl bg-rose-50 dark:bg-rose-950/20 border border-rose-200/60 dark:border-rose-900/30 p-2.5 mb-3">
+                <AlertCircle className="h-3.5 w-3.5 text-rose-500 shrink-0 mt-0.5" />
+                <p className="text-[11px] text-rose-700 dark:text-rose-400 leading-relaxed">
+                  No portal login auto-matched. Pick this client’s login account:
+                </p>
+              </div>
+              <label className={LABEL}>Login account</label>
+              <select value={linkUserId} onChange={(e) => setLinkUserId(e.target.value)}
+                className="w-full h-10 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white">
+                <option value="">— Select —</option>
+                {(login?.allClientUsers || []).map((u: any) => (
+                  <option key={u.id} value={u.id}>{u.email}</option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {/* Set / change password */}
+          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Set New Password</p>
+          <div className="flex gap-2">
+            <input value={newPass} onChange={(e) => { setNewPass(e.target.value); setPassResult(null); }} placeholder="New password"
+              className="flex-1 h-10 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white" />
+            <button onClick={genPassword} title="Generate"
+              className="shrink-0 h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-bold text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-950/20 cursor-pointer">
+              <RefreshCw className="h-3.5 w-3.5" />
+            </button>
+          </div>
+          <Button onClick={handleResetPassword} disabled={savingPass} size="sm" className="w-full mt-2.5 gap-1.5 bg-brand-600 text-white">
+            {savingPass ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <KeyRound className="h-3.5 w-3.5" />}
+            Update password
+          </Button>
+
+          {passResult && (
+            <div className="mt-3 rounded-xl border border-emerald-200 dark:border-emerald-900/40 bg-emerald-50 dark:bg-emerald-950/20 p-3">
+              <p className="text-[9px] font-bold text-emerald-600 uppercase tracking-widest mb-1">New password — share with client</p>
+              <div className="flex items-center justify-between gap-2">
+                <code className="text-sm font-bold text-emerald-700 dark:text-emerald-400 font-mono">{passResult}</code>
+                <button onClick={() => { navigator.clipboard.writeText(passResult); toast("Password copied.", "success"); }}
+                  className="shrink-0 text-emerald-500 hover:text-emerald-700 p-1 rounded-lg cursor-pointer" title="Copy">
+                  <Copy className="h-3.5 w-3.5" />
+                </button>
+              </div>
             </div>
           )}
         </BentoCard>

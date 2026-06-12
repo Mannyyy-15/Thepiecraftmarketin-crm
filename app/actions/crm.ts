@@ -10,6 +10,7 @@ import { decrypt, getCurrentUser } from "./auth";
 import { validateGeofence } from "@/lib/geofence";
 import { sendEmail } from "@/lib/mailer";
 import { revalidatePath } from "next/cache";
+import bcrypt from "bcryptjs";
 import Razorpay from "razorpay";
 
 // Helper to check user session and get authenticated profile
@@ -229,6 +230,69 @@ export async function getClientById(clientId: number) {
   } catch (error: any) {
     console.error("getClientById Error:", error);
     return { success: false, data: null, error: error.message };
+  }
+}
+
+// Normalise a name for fuzzy matching (lowercase, strip non-alphanumerics).
+function normName(s: string) { return (s || "").toLowerCase().replace(/[^a-z0-9]/g, ""); }
+
+// Find the client's PORTAL LOGIN account (a users row with role "client").
+// Clients have no FK to users, so we match by normalised name or email prefix.
+export async function getClientLogin(clientId: number) {
+  try {
+    const session = await getAuthSession();
+    if (!session || session.role !== "admin") return { success: false, data: null };
+    if (!db) return { success: false, data: null };
+
+    const clientRows = await db.select().from(schema.clients).where(eq(schema.clients.id, clientId)).limit(1);
+    if (!clientRows.length) return { success: false, data: null };
+    const client = clientRows[0];
+
+    const clientUsers = await db.select({ id: schema.users.id, name: schema.users.name, email: schema.users.email })
+      .from(schema.users).where(eq(schema.users.role, "client"));
+
+    const target = normName(client.name);
+    const match = clientUsers.find(u =>
+      normName(u.name) === target ||
+      normName(u.email.split("@")[0]) === target
+    ) || null;
+
+    return {
+      success: true,
+      data: {
+        // The login account (if found). Password is bcrypt-hashed and CANNOT be shown.
+        userId: match?.id || null,
+        email: match?.email || null,
+        hasLogin: !!match,
+        // All client-role users so the admin can manually link if auto-match fails.
+        allClientUsers: clientUsers,
+      },
+    };
+  } catch (error: any) {
+    console.error("getClientLogin Error:", error);
+    return { success: false, data: null };
+  }
+}
+
+// Set a NEW password for a client's portal login (admin relays it to the client).
+export async function resetClientPassword(userId: number, newPassword: string) {
+  try {
+    const session = await getAuthSession();
+    if (!session || session.role !== "admin") return { success: false, error: "Unauthorized." };
+    if (!db) return { success: false, error: "Database not connected." };
+    if (!newPassword || newPassword.length < 4) return { success: false, error: "Password must be at least 4 characters." };
+
+    // Only allow resetting client-role accounts.
+    const u = await db.select({ id: schema.users.id, role: schema.users.role }).from(schema.users).where(eq(schema.users.id, userId)).limit(1);
+    if (!u.length) return { success: false, error: "Account not found." };
+    if (u[0].role !== "client") return { success: false, error: "Can only reset client accounts here." };
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+    await db.update(schema.users).set({ password: hashed }).where(eq(schema.users.id, userId));
+    return { success: true };
+  } catch (error: any) {
+    console.error("resetClientPassword Error:", error);
+    return { success: false, error: error.message };
   }
 }
 
