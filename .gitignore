@@ -55,8 +55,11 @@ firebase-admin*.json
 *-firebase-adminsdk-*.json
 android/app/google-services.json
 
-# Local debug scripts with hardcoded credentials — do not commit
+# Local debug / one-off scripts — do not commit (live at project root)
 scripts/check-tokens.js
 scripts/send-test-push.js
 alter_*.js
+update_ip.*
+/update_*.ts
+/update_*.js
 logs/

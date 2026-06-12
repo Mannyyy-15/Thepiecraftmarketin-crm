@@ -13,7 +13,7 @@ import {
   TrendingUp,
   Timer,
 } from "lucide-react";
-import { motion, useMotionValue } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { getCurrentUser } from "@/app/actions/auth";
@@ -35,12 +35,10 @@ export default function EmployeeDashboardPage() {
   const [isPunching, setIsPunching] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  const desktopTrackRef = useRef<HTMLDivElement>(null);
-  const mobileTrackRef = useRef<HTMLDivElement>(null);
-  const [desktopSliderWidth, setDesktopSliderWidth] = useState(320);
-  const [mobileSliderWidth, setMobileSliderWidth] = useState(320);
-  const desktopHandleX = useMotionValue(0);
-  const mobileHandleX = useMotionValue(0);
+  // Hold-to-Punch state
+  const [holdProgress, setHoldProgress] = useState(0);
+  const animationRef = useRef<number | null>(null);
+  const startTimeRef = useRef<number>(0);
 
   const [isNativeApp, setIsNativeApp] = useState(true);
 
@@ -49,16 +47,6 @@ export default function EmployeeDashboardPage() {
       // If window.Capacitor is not present, we are in a web browser
       setIsNativeApp(!!(window as any).Capacitor?.isNative);
     }
-  }, []);
-
-  useEffect(() => {
-    const measure = () => {
-      if (desktopTrackRef.current) setDesktopSliderWidth(desktopTrackRef.current.offsetWidth);
-      if (mobileTrackRef.current) setMobileSliderWidth(mobileTrackRef.current.offsetWidth);
-    };
-    measure();
-    window.addEventListener("resize", measure);
-    return () => window.removeEventListener("resize", measure);
   }, []);
 
   const loadDashboardData = async () => {
@@ -151,15 +139,37 @@ export default function EmployeeDashboardPage() {
     setTimeout(() => setAttMessage(null), 4000);
   };
 
-  const makeDragEnd = (sliderWidth: number, motionX: any) =>
-    async (_event: any, info: any) => {
-      const threshold = (sliderWidth - 54) * 0.85;
-      if (info.offset.x >= threshold || motionX.get() >= threshold) {
-        if (!todayAttendance) await handlePunchInAction();
-        else if (!todayAttendance.punchOutTime) await handlePunchOutAction();
+  const handlePointerDown = (e: React.PointerEvent) => {
+    e.preventDefault();
+    if (isPunchedOut || isPunching || isLoading) return;
+    if (window.navigator?.vibrate) window.navigator.vibrate(15);
+    startTimeRef.current = Date.now();
+    const duration = 1000; // 1 second to fill
+
+    const animate = () => {
+      const elapsed = Date.now() - startTimeRef.current;
+      const p = Math.min((elapsed / duration) * 100, 100);
+      setHoldProgress(p);
+
+      if (p >= 100) {
+        if (window.navigator?.vibrate) window.navigator.vibrate(50);
+        if (!todayAttendance) handlePunchInAction();
+        else handlePunchOutAction();
+      } else {
+        animationRef.current = requestAnimationFrame(animate);
       }
-      motionX.set(0);
     };
+    animationRef.current = requestAnimationFrame(animate);
+  };
+
+  const handlePointerUpOrLeave = () => {
+    if (animationRef.current) cancelAnimationFrame(animationRef.current);
+    if (holdProgress < 100) {
+      setHoldProgress(0);
+    } else {
+      setTimeout(() => setHoldProgress(0), 1000);
+    }
+  };
 
   const hours = Math.floor(timerSeconds / 3600);
   const minutes = Math.floor((timerSeconds % 3600) / 60);
@@ -309,52 +319,59 @@ export default function EmployeeDashboardPage() {
             </CardContent>
           </Card>
 
-          {/* Desktop swipe bar */}
+          {/* Desktop Press & Hold Button */}
           {isNativeApp ? (
-            <div className="hidden lg:block">
-              <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center mb-3">
+            <div className="hidden lg:block space-y-3">
+              <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center">
                 {isPunchedOut
                   ? "Shift completed for today"
                   : isNotPunchedYet
-                  ? "Slide to punch in"
-                  : "Slide to punch out"}
+                  ? "Press and hold to begin shift"
+                  : "Press and hold to end shift"}
               </p>
+              
               <div
-                ref={desktopTrackRef}
-                className={`relative h-14 rounded-full flex items-center justify-center p-1 border select-none overflow-hidden transition-all duration-300 ${
+                onPointerDown={handlePointerDown}
+                onPointerUp={handlePointerUpOrLeave}
+                onPointerLeave={handlePointerUpOrLeave}
+                onContextMenu={(e) => e.preventDefault()}
+                className={`relative h-14 rounded-full overflow-hidden flex items-center justify-center transition-all duration-300 touch-none select-none border ${
                   isPunchedOut
                     ? "bg-slate-100 dark:bg-slate-900 border-slate-200 dark:border-slate-800 cursor-not-allowed opacity-50"
                     : isNotPunchedYet
-                    ? "bg-gradient-to-r from-brand-700 to-brand-500 dark:from-brand-800 dark:to-brand-600 border-brand-600/30 shadow-lg shadow-brand-500/20"
-                    : "bg-gradient-to-r from-rose-700 to-rose-500 dark:from-rose-800 dark:to-rose-600 border-rose-600/30 shadow-lg shadow-rose-500/20"
-                }`}
+                    ? "bg-white dark:bg-slate-900 border-brand-200 dark:border-brand-900/40 cursor-pointer shadow-sm hover:shadow-md"
+                    : "bg-white dark:bg-slate-900 border-rose-200 dark:border-rose-900/40 cursor-pointer shadow-sm hover:shadow-md"
+                } ${isPunching ? "opacity-70 pointer-events-none" : ""}`}
               >
+                {/* Progress Fill Background */}
                 {!isPunchedOut && (
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none animate-[shimmer_2s_linear_infinite]" />
+                  <div
+                    className={`absolute left-0 top-0 bottom-0 ${
+                      isNotPunchedYet ? "bg-brand-500 dark:bg-brand-600" : "bg-rose-500 dark:bg-rose-600"
+                    }`}
+                    style={{ width: `${holdProgress}%`, transition: holdProgress === 0 ? "width 0.3s ease-out" : "none" }}
+                  />
                 )}
-                <span className="text-white text-xs font-black uppercase tracking-widest pointer-events-none drop-shadow select-none z-10">
-                  {isPunchedOut
-                    ? "✓ Shift Logged"
-                    : isNotPunchedYet
-                    ? "Slide to Punch In →"
-                    : "Slide to Punch Out →"}
+                
+                {/* Text Content */}
+                <span className={`relative z-10 text-xs font-black uppercase tracking-widest pointer-events-none flex items-center gap-2 transition-colors ${
+                  holdProgress > 50 || isPunchedOut ? "text-white" : isNotPunchedYet ? "text-brand-600 dark:text-brand-400" : "text-rose-600 dark:text-rose-400"
+                }`}>
+                  {isPunching ? (
+                    <div className="flex items-center gap-2">
+                      <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Processing...
+                    </div>
+                  ) : isPunchedOut ? (
+                    "✓ Shift Logged"
+                  ) : holdProgress > 0 ? (
+                    "Keep Holding..."
+                  ) : isNotPunchedYet ? (
+                    "Hold to Punch In"
+                  ) : (
+                    "Hold to Punch Out"
+                  )}
                 </span>
-                {!isPunchedOut && (
-                  <motion.div
-                    drag="x"
-                    dragConstraints={{ left: 0, right: desktopSliderWidth - 56 }}
-                    dragElastic={{ left: 0, right: 0.1 }}
-                    dragTransition={{ bounceStiffness: 600, bounceDamping: 25 }}
-                    onDragEnd={makeDragEnd(desktopSliderWidth, desktopHandleX)}
-                    style={{ x: desktopHandleX }}
-                    className="absolute left-1 top-1 h-12 w-12 rounded-full bg-white flex items-center justify-center shadow-xl cursor-grab active:cursor-grabbing z-20 active:scale-[0.95] transition-transform"
-                  >
-                    {isPunching
-                      ? <div className="h-4 w-4 border-2 border-slate-200 border-t-slate-600 rounded-full animate-spin" />
-                      : <ChevronsRight className={`h-5 w-5 ${isNotPunchedYet ? "text-brand-600" : "text-rose-500"}`} />
-                    }
-                  </motion.div>
-                )}
               </div>
             </div>
           ) : (
@@ -560,35 +577,44 @@ export default function EmployeeDashboardPage() {
         </div>
       </div>
 
-      {/* ── Mobile swipe bar (fixed, above nav) ─────────── */}
+      {/* ── Mobile Hold-to-Punch (fixed, above nav) ─────────── */}
       {isNativeApp && !isPunchedOut && (
         <div className="lg:hidden fixed bottom-[7rem] left-4 right-4 z-50">
           <div
-            ref={mobileTrackRef}
-            className={`relative h-14 rounded-full flex items-center justify-center p-1 border shadow-xl select-none overflow-hidden ${
+            onPointerDown={handlePointerDown}
+            onPointerUp={handlePointerUpOrLeave}
+            onPointerLeave={handlePointerUpOrLeave}
+            onContextMenu={(e) => e.preventDefault()}
+            className={`relative h-14 rounded-full overflow-hidden flex items-center justify-center shadow-2xl touch-none select-none border transition-all ${
               isNotPunchedYet
-                ? "bg-gradient-to-r from-brand-700 to-brand-500 border-brand-600/30"
-                : "bg-gradient-to-r from-rose-700 to-rose-500 border-rose-600/30"
-            }`}
+                ? "bg-white dark:bg-slate-900 border-brand-200 dark:border-brand-900/40"
+                : "bg-white dark:bg-slate-900 border-rose-200 dark:border-rose-900/40"
+            } ${isPunching ? "opacity-70 pointer-events-none" : "active:scale-[0.98]"}`}
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none animate-[shimmer_2s_linear_infinite]" />
-            <span className="text-white text-xs font-black uppercase tracking-widest pointer-events-none select-none z-10 drop-shadow">
-              {isNotPunchedYet ? "Slide to Punch In →" : "Slide to Punch Out →"}
+            {/* Progress Fill Background */}
+            <div
+              className={`absolute left-0 top-0 bottom-0 ${
+                isNotPunchedYet ? "bg-brand-500" : "bg-rose-500"
+              }`}
+              style={{ width: `${holdProgress}%`, transition: holdProgress === 0 ? "width 0.3s ease-out" : "none" }}
+            />
+            
+            <span className={`relative z-10 text-xs font-black uppercase tracking-widest pointer-events-none flex items-center gap-2 transition-colors ${
+              holdProgress > 50 ? "text-white" : isNotPunchedYet ? "text-brand-600 dark:text-brand-400" : "text-rose-600 dark:text-rose-400"
+            }`}>
+              {isPunching ? (
+                <div className="flex items-center gap-2">
+                  <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Processing...
+                </div>
+              ) : holdProgress > 0 ? (
+                "Keep Holding..."
+              ) : isNotPunchedYet ? (
+                "Hold to Punch In"
+              ) : (
+                "Hold to Punch Out"
+              )}
             </span>
-            <motion.div
-              drag="x"
-              dragConstraints={{ left: 0, right: mobileSliderWidth - 56 }}
-              dragElastic={{ left: 0, right: 0.1 }}
-              dragTransition={{ bounceStiffness: 600, bounceDamping: 25 }}
-              onDragEnd={makeDragEnd(mobileSliderWidth, mobileHandleX)}
-              style={{ x: mobileHandleX }}
-              className="absolute left-1 top-1 h-12 w-12 rounded-full bg-white flex items-center justify-center shadow-lg cursor-grab active:cursor-grabbing z-20 active:scale-[0.95] transition-transform"
-            >
-              {isPunching
-                ? <div className="h-4 w-4 border-2 border-slate-200 border-t-slate-600 rounded-full animate-spin" />
-                : <ChevronsRight className={`h-5 w-5 ${isNotPunchedYet ? "text-brand-600" : "text-rose-500"}`} />
-              }
-            </motion.div>
           </div>
         </div>
       )}

@@ -19,6 +19,7 @@ import {
   Activity,
   Plus,
   Check,
+  CheckCircle2,
   AlertCircle,
   Trash2,
   Edit2,
@@ -1422,69 +1423,40 @@ export default function TeamPage() {
                 </div>
 
                 {/* Assigned Workload Card */}
-                <Card className="border border-slate-200 dark:border-slate-800/80">
-                  <CardHeader className="border-b border-slate-100 dark:border-slate-800/80 py-4">
-                    <CardTitle className="text-base font-bold flex items-center gap-2">
-                      <Briefcase className="h-5 w-5 text-indigo-500" /> Assigned Workload & Tasks
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-6">
-                    {isWorkloadLoading ? (
-                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <div className="space-y-3">
-                          <Skeleton className="h-4 w-28" />
-                          {Array.from({ length: 3 }).map((_, i) => (
-                            <div key={i} className="flex items-center justify-between p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
-                              <div className="space-y-1.5 flex-1">
-                                <Skeleton className="h-3.5 w-28" />
-                                <Skeleton className="h-3 w-16" />
-                              </div>
-                              <Skeleton className="h-5 w-12 rounded" />
-                            </div>
-                          ))}
-                        </div>
-                        <div className="lg:col-span-2 space-y-3">
-                          <Skeleton className="h-4 w-36" />
-                          <Skeleton className="h-20 w-full rounded-xl" />
-                          <TaskListSkeleton count={4} />
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        
-                        <div className="lg:col-span-1 space-y-4">
-                          <h3 className="text-xs font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-widest">Assigned Projects</h3>
-                          
-                          {/* Active Projects List */}
-                          <div className="space-y-2">
-                            {allProjects.filter(p => p.leadId === parseInt(selectedEmployeeDetailId)).length === 0 ? (
-                              <div className="rounded-xl border border-dashed border-slate-200 dark:border-slate-800 py-6 px-4 flex flex-col items-center gap-1.5">
-                                <div className="h-7 w-7 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                                  <Briefcase className="h-3.5 w-3.5 text-slate-400" />
-                                </div>
-                                <p className="text-[11px] font-semibold text-slate-400 dark:text-slate-500">No projects assigned</p>
+                <div className="space-y-6">
+                  {/* Section 1: Delegated Projects */}
+                  <Card className="border border-slate-200 dark:border-slate-800/80 shadow-sm">
+                    <CardHeader className="border-b border-slate-100 dark:border-slate-800/80 py-4">
+                      <CardTitle className="text-sm font-bold flex items-center gap-2">
+                        <Briefcase className="h-4 w-4 text-brand-500" /> Active Projects
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4 py-4">
+                      {isWorkloadLoading ? (
+                        <Skeleton className="h-14 w-full rounded-xl" />
+                      ) : (
+                        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+                          <div className="flex-1 flex flex-wrap gap-3 w-full">
+                            {allProjects.filter(p => String(p.leadId) === String(selectedEmployeeDetailId)).length === 0 ? (
+                              <div className="text-xs font-medium text-slate-500 bg-slate-50 dark:bg-slate-800/50 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm w-full text-center sm:text-left">
+                                No projects assigned yet.
                               </div>
                             ) : (
-                              allProjects.filter(p => p.leadId === parseInt(selectedEmployeeDetailId)).map(p => (
-                                <div key={p.id} className="flex items-center justify-between p-3 rounded-xl border border-slate-300 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/20 shadow-sm">
-                                  <div className="min-w-0 flex-1">
-                                    <p className="text-xs font-extrabold text-slate-900 dark:text-white truncate">{p.name}</p>
-                                    <p className="text-[10px] text-slate-600 dark:text-slate-400 font-extrabold mt-0.5">Budget: ${(p.budget || 0).toLocaleString()}</p>
+                              allProjects.filter(p => String(p.leadId) === String(selectedEmployeeDetailId)).map(p => (
+                                <div key={p.id} className="flex items-center gap-3 bg-slate-50 dark:bg-slate-800/50 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                                  <div>
+                                    <p className="text-xs font-bold text-slate-900 dark:text-white">{p.name}</p>
+                                    <p className="text-[10px] text-slate-500 mt-0.5">Budget: ${(p.budget || 0).toLocaleString()}</p>
                                   </div>
-                                  <button
-                                    onClick={() => handleUnassignProject(p.id)}
-                                    className="text-[10px] text-rose-500 hover:text-rose-600 font-extrabold ml-2 transition-colors cursor-pointer"
-                                  >
-                                    Remove
+                                  <button onClick={() => handleUnassignProject(p.id)} className="h-6 w-6 rounded-md hover:bg-rose-100 hover:text-rose-600 dark:hover:bg-rose-900/40 text-slate-400 flex items-center justify-center transition-colors">
+                                    <X className="h-3 w-3" />
                                   </button>
                                 </div>
                               ))
                             )}
                           </div>
-
-                          {/* Assign Project Form */}
-                          <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
-                            <label className="block text-[10px] font-extrabold text-slate-700 dark:text-slate-300 uppercase tracking-widest mb-1.5">Delegate New Project</label>
+                          
+                          <div className="w-full sm:w-64 shrink-0 relative z-10">
                             <select
                               onChange={(e) => {
                                 if (e.target.value) {
@@ -1492,10 +1464,10 @@ export default function TeamPage() {
                                   e.target.value = "";
                                 }
                               }}
-                              className="h-10 w-full rounded-xl border border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/40 text-slate-800 dark:text-white"
+                              className="h-11 w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 text-xs font-medium focus:ring-2 focus:ring-brand-500/40 text-slate-700 dark:text-slate-200 shadow-sm transition-all"
                             >
-                              <option value="">Select project to delegate...</option>
-                              {allProjects.filter(p => p.leadId !== parseInt(selectedEmployeeDetailId)).map(p => (
+                              <option value="">+ Delegate Project...</option>
+                              {allProjects.filter(p => String(p.leadId) !== String(selectedEmployeeDetailId)).map(p => (
                                 <option key={p.id} value={p.id}>
                                   {p.name} {p.leadId ? "(Has lead)" : ""}
                                 </option>
@@ -1503,223 +1475,196 @@ export default function TeamPage() {
                             </select>
                           </div>
                         </div>
+                      )}
+                    </CardContent>
+                  </Card>
 
-                        {/* Tasks Section (2/3) */}
-                        <div className="lg:col-span-2 space-y-4">
-                          {(() => {
-                            const filteredTasks = newTaskDueDate
-                              ? employeeTasks.filter((t: any) => t.dueDate === newTaskDueDate)
-                              : employeeTasks;
-                            
-                            return (
-                              <>
-                                <div className="flex items-center justify-between">
-                                  <h3 className="text-xs font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-widest flex flex-wrap items-center gap-2">
-                                    <span>{newTaskDueDate ? `Tasks Due: ${new Date(newTaskDueDate + "T00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}` : "All Assigned Tasks"}</span>
-                                    {newTaskDueDate && (
+                  {/* Section 2: Tasks & To-Dos */}
+                  <Card className="border border-slate-200 dark:border-slate-800/80 shadow-md">
+                    <CardHeader className="border-b border-slate-100 dark:border-slate-800/80 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                      <div className="space-y-1">
+                        <CardTitle className="text-base font-bold flex items-center gap-2">
+                          <CheckCircle2 className="h-5 w-5 text-emerald-500" /> Employee Tasks
+                        </CardTitle>
+                        {newTaskDueDate && (
+                          <CardDescription className="text-xs font-bold text-brand-600 dark:text-brand-400 flex items-center gap-1.5 mt-1">
+                            Showing tasks due: {new Date(newTaskDueDate).toLocaleDateString("en-US", { month: "long", day: "numeric" })}
+                            <button onClick={() => setNewTaskDueDate("")} className="ml-2 px-2 py-0.5 bg-brand-50 dark:bg-brand-900/40 rounded-full hover:bg-brand-100 dark:hover:bg-brand-800/60 transition-colors">
+                              Show All
+                            </button>
+                          </CardDescription>
+                        )}
+                      </div>
+                      
+                      {/* Stats */}
+                      {!isWorkloadLoading && (
+                        <div className="flex gap-2">
+                          <Badge variant="brand" className="font-bold">
+                            {employeeTasks.filter((t: any) => (!newTaskDueDate || t.dueDate === newTaskDueDate) && t.done === 1).length} Done
+                          </Badge>
+                          <Badge variant="neutral" className="font-bold">
+                            {employeeTasks.filter((t: any) => !newTaskDueDate || t.dueDate === newTaskDueDate).length} Total
+                          </Badge>
+                        </div>
+                      )}
+                    </CardHeader>
+                    
+                    <CardContent className="p-0">
+                      {isWorkloadLoading ? (
+                        <div className="p-6 space-y-4">
+                          <Skeleton className="h-12 w-full rounded-xl" />
+                          <TaskListSkeleton count={4} />
+                        </div>
+                      ) : (
+                        <div className="flex flex-col">
+                          
+                          {/* Add Task Input Row (Inline Style) */}
+                          <div className="p-4 sm:p-6 bg-slate-50/50 dark:bg-slate-900/30 border-b border-slate-100 dark:border-slate-800/80">
+                            <form onSubmit={handleCreateEmployeeTask} className="flex flex-col xl:flex-row items-start xl:items-center gap-3">
+                              <div className="flex-1 w-full relative">
+                                <input
+                                  type="text"
+                                  required
+                                  placeholder="Add a new task..."
+                                  value={newTaskTitle}
+                                  onChange={(e) => setNewTaskTitle(e.target.value)}
+                                  className="h-11 w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 px-4 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-brand-500/40 shadow-sm text-slate-800 dark:text-white"
+                                />
+                              </div>
+                              
+                              <div className="flex flex-wrap sm:flex-nowrap items-center gap-3 w-full xl:w-auto">
+                                <select
+                                  value={newTaskProjectId}
+                                  onChange={(e) => setNewTaskProjectId(e.target.value)}
+                                  className="h-11 w-full sm:w-40 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white"
+                                >
+                                  <option value="">No Project</option>
+                                  {allProjects.filter(p => String(p.leadId) === String(selectedEmployeeDetailId)).map(p => (
+                                    <option key={p.id} value={p.id}>{p.name.slice(0, 15)}...</option>
+                                  ))}
+                                </select>
+                                
+                                <input
+                                  type="date"
+                                  value={newTaskDueDate}
+                                  onChange={(e) => setNewTaskDueDate(e.target.value)}
+                                  className="h-11 w-full sm:w-40 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white dark:[color-scheme:dark]"
+                                />
+                                
+                                <select
+                                  value={newTaskPriority}
+                                  onChange={(e) => setNewTaskPriority(e.target.value)}
+                                  className={`h-11 w-full sm:w-36 rounded-xl border px-3 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-brand-500/40 ${
+                                    newTaskPriority === "high" ? "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-900/20 dark:text-rose-400 dark:border-rose-800" :
+                                    newTaskPriority === "medium" ? "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800" :
+                                    "bg-slate-50 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700"
+                                  }`}
+                                >
+                                  <option value="low">Low Priority</option>
+                                  <option value="medium">Medium Priority</option>
+                                  <option value="high">High Priority</option>
+                                </select>
+                                
+                                <Button type="submit" disabled={isCreatingTask} className="h-11 w-full sm:w-32 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow-md">
+                                  {isCreatingTask ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save Task"}
+                                </Button>
+                              </div>
+                            </form>
+                          </div>
+
+                          {/* Task List */}
+                          <div className="p-4 sm:p-6 space-y-3 max-h-[500px] overflow-y-auto">
+                            {(() => {
+                              const filteredTasks = newTaskDueDate
+                                ? employeeTasks.filter((t: any) => t.dueDate === newTaskDueDate)
+                                : employeeTasks;
+                                
+                              if (filteredTasks.length === 0) {
+                                return (
+                                  <div className="py-12 flex flex-col items-center justify-center">
+                                    <div className="h-12 w-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-3">
+                                      <CheckCircle2 className="h-6 w-6 text-slate-300 dark:text-slate-600" />
+                                    </div>
+                                    <p className="text-sm font-bold text-slate-600 dark:text-slate-400">All caught up!</p>
+                                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 text-center max-w-[200px]">
+                                      {newTaskDueDate ? "No tasks due on this date." : "This employee has an empty workload."}
+                                    </p>
+                                  </div>
+                                );
+                              }
+
+                              return filteredTasks.map((t: any) => {
+                                const linkedProj = allProjects.find((p: any) => p.id === t.projectId);
+                                return (
+                                  <div
+                                    key={t.id}
+                                    className={`group flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border transition-all duration-300 hover:shadow-md ${
+                                      t.done === 1
+                                        ? "border-slate-200/60 dark:border-slate-800/40 bg-slate-50/40 dark:bg-slate-900/20 opacity-60 hover:opacity-100 grayscale hover:grayscale-0"
+                                        : "border-slate-200 dark:border-slate-800/80 bg-white dark:bg-slate-950 hover:border-slate-300 dark:hover:border-slate-700"
+                                    }`}
+                                  >
+                                    <div className="flex items-start gap-4">
                                       <button
                                         type="button"
-                                        onClick={() => setNewTaskDueDate("")}
-                                        className="text-[10px] font-extrabold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer flex items-center gap-0.5 normal-case tracking-normal ml-2"
+                                        onClick={() => handleToggleEmployeeTask(t.id, t.done)}
+                                        className={`mt-0.5 h-6 w-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-all cursor-pointer ${
+                                          t.done === 1
+                                            ? "bg-emerald-500 border-emerald-500 text-white"
+                                            : "border-slate-300 dark:border-slate-600 bg-transparent text-transparent hover:border-emerald-400"
+                                        }`}
                                       >
-                                        (Show All Tasks)
+                                        <Check className="h-3.5 w-3.5" />
                                       </button>
-                                    )}
-                                  </h3>
-                                  <Badge variant="brand" className="text-[10px] font-bold px-2 py-0.5">
-                                    {filteredTasks.filter((t: any) => t.done === 1).length} / {filteredTasks.length} Completed
-                                  </Badge>
-                                </div>
-
-                                {/* Add Task Form Indicator */}
-                                {newTaskDueDate && (
-                                  <div className="mb-3 p-2.5 bg-indigo-500/10 border border-indigo-500/20 rounded-xl flex items-center justify-between text-xs text-indigo-700 dark:text-indigo-300 animate-fadeIn">
-                                    <span className="font-bold flex items-center gap-1.5">
-                                      📅 Scheduled Due Date: {new Date(newTaskDueDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                                    </span>
-                                    <button
-                                      type="button"
-                                      onClick={() => setNewTaskDueDate("")}
-                                      className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 cursor-pointer animate-pulse"
-                                      title="Clear Due Date"
-                                    >
-                                      <X className="h-4 w-4" />
-                                    </button>
-                                  </div>
-                                )}
-
-                                <form onSubmit={handleCreateEmployeeTask} className="grid grid-cols-1 md:grid-cols-2 gap-4 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/20 shadow-sm">
-                                  {/* Task Title (Full Width) */}
-                                  <div className="md:col-span-2">
-                                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">
-                                      Task Title
-                                    </label>
-                                    <input
-                                      type="text"
-                                      id="adminNewTaskTitleInput"
-                                      required
-                                      placeholder="What needs to be done?"
-                                      value={newTaskTitle}
-                                      onChange={(e) => setNewTaskTitle(e.target.value)}
-                                      className="h-10 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/40 text-slate-800 dark:text-white"
-                                    />
-                                  </div>
-                                  
-                                  {/* Associated Project */}
-                                  <div>
-                                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">
-                                      Associated Project
-                                    </label>
-                                    <select
-                                      value={newTaskProjectId}
-                                      onChange={(e) => setNewTaskProjectId(e.target.value)}
-                                      className="h-10 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/40 text-slate-800 dark:text-white"
-                                    >
-                                      <option value="">General / No Project</option>
-                                      {allProjects.filter(p => p.leadId === parseInt(selectedEmployeeDetailId)).map(p => (
-                                        <option key={p.id} value={p.id}>{p.name}</option>
-                                      ))}
-                                    </select>
-                                  </div>
-
-                                  {/* Due Date */}
-                                  <div>
-                                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">
-                                      Due Date
-                                    </label>
-                                    <input
-                                      type="date"
-                                      value={newTaskDueDate}
-                                      onChange={(e) => setNewTaskDueDate(e.target.value)}
-                                      className="h-10 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/40 text-slate-800 dark:text-white"
-                                    />
-                                  </div>
-
-                                  {/* Bottom Row: Priority & Submit */}
-                                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 md:col-span-2 pt-3 mt-1 border-t border-slate-200 dark:border-slate-800/80">
-                                    <div className="flex items-center gap-3">
-                                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest hidden sm:block">Priority:</span>
-                                      <div className="flex gap-1.5 bg-slate-100 dark:bg-slate-900 p-1 rounded-xl">
-                                        {['low', 'medium', 'high'].map(p => (
-                                          <button
-                                            key={p}
-                                            type="button"
-                                            onClick={() => setNewTaskPriority(p)}
-                                            className={cn(
-                                              "px-3 py-1.5 rounded-lg text-[10px] font-extrabold uppercase tracking-widest transition-all",
-                                              newTaskPriority === p
-                                                ? (p === 'high' ? "bg-rose-500 text-white shadow-sm" : p === 'medium' ? "bg-amber-500 text-white shadow-sm" : "bg-sky-500 text-white shadow-sm")
-                                                : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
-                                            )}
-                                          >
-                                            {p}
-                                          </button>
-                                        ))}
+                                      
+                                      <div className="space-y-1">
+                                        <p className={`text-sm font-bold leading-tight ${t.done === 1 ? "line-through text-slate-500" : "text-slate-800 dark:text-slate-100"}`}>
+                                          {t.title}
+                                        </p>
+                                        <div className="flex flex-wrap items-center gap-2">
+                                          {linkedProj && (
+                                            <span className="flex items-center gap-1 text-[10px] font-bold text-brand-600 dark:text-brand-400 bg-brand-50 dark:bg-brand-900/30 px-2 py-0.5 rounded-md">
+                                              <Briefcase className="h-3 w-3" /> {linkedProj.name}
+                                            </span>
+                                          )}
+                                          {t.dueDate && (
+                                            <span className="flex items-center gap-1 text-[10px] font-bold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">
+                                              <CalendarIcon className="h-3 w-3" /> {new Date(t.dueDate + "T00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                                            </span>
+                                          )}
+                                        </div>
                                       </div>
                                     </div>
-                                    <Button
-                                      type="submit"
-                                      disabled={isCreatingTask}
-                                      className="h-10 px-5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md rounded-xl w-full sm:w-auto"
-                                    >
-                                      {isCreatingTask ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4 mr-1.5" />}
-                                      Add Task
-                                    </Button>
+                                    
+                                    <div className="flex items-center justify-between sm:justify-end gap-4 mt-3 sm:mt-0 pl-10 sm:pl-0">
+                                      <span
+                                        className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md ${
+                                          t.priority === "high" ? "bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-400" :
+                                          t.priority === "medium" ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400" :
+                                          "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                                        }`}
+                                      >
+                                        {t.priority} Priority
+                                      </span>
+                                      
+                                      <button
+                                        onClick={() => handleDeleteEmployeeTask(t.id)}
+                                        className="text-slate-400 hover:text-rose-500 transition-colors p-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-900/20 lg:opacity-0 group-hover:opacity-100 focus:opacity-100 cursor-pointer"
+                                        title="Delete Task"
+                                      >
+                                        <Trash2 className="h-4 w-4" />
+                                      </button>
+                                    </div>
                                   </div>
-                                </form>
-
-                                {/* Tasks List */}
-                                <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
-                                  {filteredTasks.length === 0 ? (
-                                    <EmptyState
-                                      icon={<Check className="h-5 w-5" />}
-                                      title={newTaskDueDate ? "No tasks for this date" : "No tasks assigned"}
-                                      description={newTaskDueDate ? "Add a task above to schedule it for this date." : "Create a task above to add it to this employee's workload."}
-                                    />
-                                  ) : (
-                                    filteredTasks.map((t: any) => {
-                                      const linkedProj = allProjects.find((p: any) => p.id === t.projectId);
-                                      return (
-                                        <div
-                                          key={t.id}
-                                          className={cn(
-                                            "flex items-center justify-between p-3 rounded-xl border transition-all duration-200",
-                                            t.done === 1
-                                              ? "border-slate-200 dark:border-slate-800/40 bg-slate-50/25 dark:bg-slate-900/20 opacity-70"
-                                              : "border-slate-300 dark:border-slate-800/80 bg-white dark:bg-slate-900/40 hover:border-slate-400 dark:hover:border-slate-700 shadow-sm"
-                                          )}
-                                        >
-                                          <div className="flex items-center gap-3 min-w-0 flex-1">
-                                            <button
-                                              type="button"
-                                              onClick={() => handleToggleEmployeeTask(t.id, t.done)}
-                                              className={cn(
-                                                "h-5 w-5 rounded-md border flex items-center justify-center shrink-0 transition-all cursor-pointer",
-                                                t.done === 1
-                                                  ? "bg-emerald-500 border-emerald-500 text-white"
-                                                  : "border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-900 text-transparent hover:border-brand-500"
-                                              )}
-                                            >
-                                              <Check className="h-3.5 w-3.5" />
-                                            </button>
-                                            
-                                            <div className="min-w-0 flex-1">
-                                              <p className={cn(
-                                                "text-xs font-bold truncate",
-                                                t.done === 1 ? "line-through text-slate-500 dark:text-slate-500" : "text-slate-900 dark:text-white"
-                                              )}>
-                                                {t.title}
-                                              </p>
-                                              <div className="flex flex-wrap items-center gap-1.5 mt-1">
-                                                {linkedProj && (
-                                                  <span className="inline-flex items-center text-[9px] font-extrabold text-indigo-700 dark:text-indigo-350 uppercase tracking-widest bg-indigo-50 dark:bg-indigo-950/45 px-1.5 py-0.5 rounded border border-indigo-200 dark:border-indigo-900/50">
-                                                    {linkedProj.name}
-                                                  </span>
-                                                )}
-                                                {t.dueDate && (
-                                                  <span className="inline-flex items-center text-[9px] font-extrabold text-amber-750 dark:text-amber-300 uppercase tracking-widest bg-amber-50 dark:bg-amber-950/45 px-1.5 py-0.5 rounded border border-amber-200 dark:border-amber-900/50">
-                                                    📅 Due: {t.dueDate}
-                                                  </span>
-                                                )}
-                                              </div>
-                                            </div>
-                                          </div>
-
-                                          <div className="flex items-center gap-3 ml-2 shrink-0">
-                                            <Badge
-                                              variant={
-                                                t.priority === "high"
-                                                  ? "danger"
-                                                  : t.priority === "medium"
-                                                  ? "warning"
-                                                  : "neutral"
-                                              }
-                                              className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5"
-                                            >
-                                              {t.priority}
-                                            </Badge>
-                                            
-                                            <button
-                                              onClick={() => handleDeleteEmployeeTask(t.id)}
-                                              className="text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-500 transition-colors p-1 hover:bg-slate-100 dark:hover:bg-slate-900 rounded-lg cursor-pointer"
-                                              title="Delete Task"
-                                            >
-                                              <Trash2 className="h-3.5 w-3.5" />
-                                            </button>
-                                          </div>
-                                        </div>
-                                      );
-                                    })
-                                  )}
-                                </div>
-                              </>
-                            );
-                          })()}
+                                );
+                              });
+                            })()}
+                          </div>
                         </div>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
 
                 {/* Member-specific Leave Requests */}
                 <Card className="border border-slate-200 dark:border-slate-800/80">
