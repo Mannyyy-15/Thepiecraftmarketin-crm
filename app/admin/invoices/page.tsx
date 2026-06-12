@@ -384,8 +384,10 @@ export default function AdminInvoicesPage() {
             <Button variant="outline" size="sm" onClick={handleShareEmail} className="gap-1.5"><Mail className="h-3.5 w-3.5" /> Email</Button>
           </div>
 
-          <div ref={previewRef} className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white text-slate-900 p-6 sm:p-8 shadow-sm">
-            <div className="flex items-start justify-between gap-4">
+          {/* Wrapper to allow horizontal scroll on mobile while strictly keeping A4 dimensions inside */}
+          <div className="overflow-x-auto w-full pb-4">
+            <div ref={previewRef} className="min-w-[780px] rounded-2xl border border-slate-200 dark:border-slate-800 bg-white text-slate-900 p-10 shadow-sm mx-auto">
+              <div className="flex items-start justify-between gap-4">
               <div>
                 <img src={logoImg.src} alt={COMPANY.name} className="h-32 w-auto mb-2 -mt-6 -ml-4 object-contain mix-blend-multiply" />
                 <p className="text-xs text-slate-500">{COMPANY.tagline}</p>
@@ -399,7 +401,7 @@ export default function AdminInvoicesPage() {
               </div>
             </div>
 
-            <div className="mt-6 pt-4 border-t border-slate-100 flex justify-between gap-4 flex-wrap">
+            <div className="mt-6 pt-4 border-t border-slate-100 flex justify-between gap-4">
               <div>
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Bill To</p>
                 <p className="text-sm font-bold text-slate-800 mt-1">{billToName || "—"}</p>
@@ -469,8 +471,9 @@ export default function AdminInvoicesPage() {
           </div>
         </div>
       </div>
+    </div>
 
-      {/* ── Existing invoices ────────────────────────────────── */}
+    {/* ── Existing invoices ────────────────────────────────── */}
       <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-950 overflow-hidden">
         <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800/80 flex items-center gap-2">
           <FileText className="h-4 w-4 text-slate-400" />
