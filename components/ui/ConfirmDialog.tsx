@@ -33,7 +33,7 @@ export function ConfirmDialog({ id, message, onConfirm, onCancel }: ConfirmDialo
     >
       <div
         className={cn(
-          "w-full max-w-sm overflow-hidden rounded-2xl border border-white/10 bg-white/10 p-6 shadow-2xl backdrop-blur-2xl transition-all duration-200 dark:bg-black/50",
+          "w-full max-w-sm overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl backdrop-blur-2xl transition-all duration-200 dark:border-slate-800 dark:bg-slate-900",
           isVisible ? "scale-100 opacity-100" : "scale-95 opacity-0"
         )}
       >
