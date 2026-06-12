@@ -17,7 +17,8 @@ import {
   Check,
   FolderPlus,
   Edit,
-  Download
+  Download,
+  Eye
 } from "lucide-react";
 import { DocumentsPageSkeleton } from "@/components/ui/Skeleton";
 import { Badge } from "@/components/ui/Badge";
@@ -25,6 +26,7 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
 import { Avatar } from "@/components/ui/Avatar";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { DocumentPreviewModal } from "@/components/ui/DocumentPreviewModal";
 import { getDocuments, createDocument, deleteDocument, deleteFolder, getClients, getProjects, signContractSOW } from "@/app/actions/crm";
 
 interface ToastMessage {
@@ -69,6 +71,7 @@ export default function DocumentsPage() {
   const [activeFolder, setActiveFolder] = useState<string | null>(null);
   const [openDropdownId, setOpenDropdownId] = useState<number | null>(null);
   const [openFolderDropdownId, setOpenFolderDropdownId] = useState<string | null>(null);
+  const [previewDoc, setPreviewDoc] = useState<{url: string, name: string} | null>(null);
 
   // Proposal / SOW States
   const [showProposalModal, setShowProposalModal] = useState(false);
@@ -474,6 +477,11 @@ export default function DocumentsPage() {
                     {openDropdownId === d.id && (
                       <div className="absolute right-10 top-10 mt-1 w-32 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-50 py-1 flex flex-col animate-scaleIn">
                         {d.url && (
+                          <button onClick={() => { setPreviewDoc({url: d.url, name: d.name}); setOpenDropdownId(null); }} className="flex items-center gap-2 px-3 py-2 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 w-full text-left transition-colors">
+                            <Eye className="h-3.5 w-3.5" /> Preview
+                          </button>
+                        )}
+                        {d.url && (
                           <a href={d.url} download={d.name} className="flex items-center gap-2 px-3 py-2 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 w-full text-left transition-colors" onClick={() => setOpenDropdownId(null)}>
                             <Download className="h-3.5 w-3.5" /> Download
                           </a>
@@ -645,6 +653,12 @@ export default function DocumentsPage() {
             </button>
           </div>
         ))}
+        <DocumentPreviewModal 
+          isOpen={!!previewDoc} 
+          onClose={() => setPreviewDoc(null)} 
+          url={previewDoc?.url || null} 
+          name={previewDoc?.name || ""} 
+        />
       </div>
 
     </div>
