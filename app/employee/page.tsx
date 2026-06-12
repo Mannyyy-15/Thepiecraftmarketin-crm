@@ -42,6 +42,15 @@ export default function EmployeeDashboardPage() {
   const desktopHandleX = useMotionValue(0);
   const mobileHandleX = useMotionValue(0);
 
+  const [isNativeApp, setIsNativeApp] = useState(true);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      // If window.Capacitor is not present, we are in a web browser
+      setIsNativeApp(!!(window as any).Capacitor?.isNative);
+    }
+  }, []);
+
   useEffect(() => {
     const measure = () => {
       if (desktopTrackRef.current) setDesktopSliderWidth(desktopTrackRef.current.offsetWidth);
@@ -301,52 +310,63 @@ export default function EmployeeDashboardPage() {
           </Card>
 
           {/* Desktop swipe bar */}
-          <div className="hidden lg:block">
-            <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center mb-3">
-              {isPunchedOut
-                ? "Shift completed for today"
-                : isNotPunchedYet
-                ? "Slide to punch in"
-                : "Slide to punch out"}
-            </p>
-            <div
-              ref={desktopTrackRef}
-              className={`relative h-14 rounded-full flex items-center justify-center p-1 border select-none overflow-hidden transition-all duration-300 ${
-                isPunchedOut
-                  ? "bg-slate-100 dark:bg-slate-900 border-slate-200 dark:border-slate-800 cursor-not-allowed opacity-50"
-                  : isNotPunchedYet
-                  ? "bg-gradient-to-r from-brand-700 to-brand-500 dark:from-brand-800 dark:to-brand-600 border-brand-600/30 shadow-lg shadow-brand-500/20"
-                  : "bg-gradient-to-r from-rose-700 to-rose-500 dark:from-rose-800 dark:to-rose-600 border-rose-600/30 shadow-lg shadow-rose-500/20"
-              }`}
-            >
-              {!isPunchedOut && (
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none animate-[shimmer_2s_linear_infinite]" />
-              )}
-              <span className="text-white text-xs font-black uppercase tracking-widest pointer-events-none drop-shadow select-none z-10">
+          {isNativeApp ? (
+            <div className="hidden lg:block">
+              <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center mb-3">
                 {isPunchedOut
-                  ? "✓ Shift Logged"
+                  ? "Shift completed for today"
                   : isNotPunchedYet
-                  ? "Slide to Punch In →"
-                  : "Slide to Punch Out →"}
-              </span>
-              {!isPunchedOut && (
-                <motion.div
-                  drag="x"
-                  dragConstraints={{ left: 0, right: desktopSliderWidth - 56 }}
-                  dragElastic={{ left: 0, right: 0.1 }}
-                  dragTransition={{ bounceStiffness: 600, bounceDamping: 25 }}
-                  onDragEnd={makeDragEnd(desktopSliderWidth, desktopHandleX)}
-                  style={{ x: desktopHandleX }}
-                  className="absolute left-1 top-1 h-12 w-12 rounded-full bg-white flex items-center justify-center shadow-xl cursor-grab active:cursor-grabbing z-20 active:scale-[0.95] transition-transform"
-                >
-                  {isPunching
-                    ? <div className="h-4 w-4 border-2 border-slate-200 border-t-slate-600 rounded-full animate-spin" />
-                    : <ChevronsRight className={`h-5 w-5 ${isNotPunchedYet ? "text-brand-600" : "text-rose-500"}`} />
-                  }
-                </motion.div>
-              )}
+                  ? "Slide to punch in"
+                  : "Slide to punch out"}
+              </p>
+              <div
+                ref={desktopTrackRef}
+                className={`relative h-14 rounded-full flex items-center justify-center p-1 border select-none overflow-hidden transition-all duration-300 ${
+                  isPunchedOut
+                    ? "bg-slate-100 dark:bg-slate-900 border-slate-200 dark:border-slate-800 cursor-not-allowed opacity-50"
+                    : isNotPunchedYet
+                    ? "bg-gradient-to-r from-brand-700 to-brand-500 dark:from-brand-800 dark:to-brand-600 border-brand-600/30 shadow-lg shadow-brand-500/20"
+                    : "bg-gradient-to-r from-rose-700 to-rose-500 dark:from-rose-800 dark:to-rose-600 border-rose-600/30 shadow-lg shadow-rose-500/20"
+                }`}
+              >
+                {!isPunchedOut && (
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none animate-[shimmer_2s_linear_infinite]" />
+                )}
+                <span className="text-white text-xs font-black uppercase tracking-widest pointer-events-none drop-shadow select-none z-10">
+                  {isPunchedOut
+                    ? "✓ Shift Logged"
+                    : isNotPunchedYet
+                    ? "Slide to Punch In →"
+                    : "Slide to Punch Out →"}
+                </span>
+                {!isPunchedOut && (
+                  <motion.div
+                    drag="x"
+                    dragConstraints={{ left: 0, right: desktopSliderWidth - 56 }}
+                    dragElastic={{ left: 0, right: 0.1 }}
+                    dragTransition={{ bounceStiffness: 600, bounceDamping: 25 }}
+                    onDragEnd={makeDragEnd(desktopSliderWidth, desktopHandleX)}
+                    style={{ x: desktopHandleX }}
+                    className="absolute left-1 top-1 h-12 w-12 rounded-full bg-white flex items-center justify-center shadow-xl cursor-grab active:cursor-grabbing z-20 active:scale-[0.95] transition-transform"
+                  >
+                    {isPunching
+                      ? <div className="h-4 w-4 border-2 border-slate-200 border-t-slate-600 rounded-full animate-spin" />
+                      : <ChevronsRight className={`h-5 w-5 ${isNotPunchedYet ? "text-brand-600" : "text-rose-500"}`} />
+                    }
+                  </motion.div>
+                )}
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200/60 dark:border-amber-800/30 rounded-2xl p-5 text-center shadow-inner hidden lg:block">
+               <p className="text-sm font-bold text-amber-800 dark:text-amber-400">
+                 Mobile App Required
+               </p>
+               <p className="text-xs font-medium text-amber-700/80 dark:text-amber-500/80 mt-1">
+                 For security and accurate GPS tracking, please use the official PieCraft mobile app to punch in and punch out.
+               </p>
+            </div>
+          )}
         </div>
 
         {/* ── RIGHT: Activity log ────────────────────────── */}
@@ -541,7 +561,7 @@ export default function EmployeeDashboardPage() {
       </div>
 
       {/* ── Mobile swipe bar (fixed, above nav) ─────────── */}
-      {!isPunchedOut && (
+      {isNativeApp && !isPunchedOut && (
         <div className="lg:hidden fixed bottom-[7rem] left-4 right-4 z-50">
           <div
             ref={mobileTrackRef}
@@ -569,6 +589,19 @@ export default function EmployeeDashboardPage() {
                 : <ChevronsRight className={`h-5 w-5 ${isNotPunchedYet ? "text-brand-600" : "text-rose-500"}`} />
               }
             </motion.div>
+          </div>
+        </div>
+      )}
+
+      {!isNativeApp && !isPunchedOut && (
+        <div className="lg:hidden fixed bottom-[7rem] left-4 right-4 z-50">
+          <div className="bg-amber-50 dark:bg-amber-900/90 border border-amber-200 dark:border-amber-700 shadow-2xl rounded-2xl p-4 text-center">
+             <p className="text-sm font-bold text-amber-800 dark:text-amber-400">
+               Mobile App Required
+             </p>
+             <p className="text-[11px] font-medium text-amber-700 dark:text-amber-200 mt-1">
+               Please use the PieCraft mobile app to punch in.
+             </p>
           </div>
         </div>
       )}

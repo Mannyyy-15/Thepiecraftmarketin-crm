@@ -81,13 +81,8 @@ export async function validateGeofence(userLat: number, userLng: number): Promis
   }
   const loc = rows[0];
 
-  // Wi-Fi / IP check — strictly enforced in production to ensure physical presence on office network
-  if (process.env.NODE_ENV === "production") {
-    if (clientIp === "unknown" || clientIp !== loc.wifi_public_ip) {
-      return { ok: false, message: `Not connected to office Wi-Fi. (${clientIp})` };
-    }
-  }
-
+  // Wi-Fi / IP check removed because of dynamic IP issues.
+  // We now rely purely on the GPS Geofence from the mobile app.
   // Geofence check
   const distance = Number(loc.distance_meters);
   const radius = Number(loc.radius_meters);
