@@ -211,11 +211,21 @@ export default function AdminInvoicesPage() {
     const w = window.open("", "_blank", "width=820,height=1000");
     if (!w) { toast("Allow pop-ups to download the PDF.", "error"); return; }
     w.document.write(`<!doctype html><html><head><title>${previewNumber}</title>
-      <meta charset="utf-8" />
       <script src="https://cdn.tailwindcss.com"></script>
-      <style>@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}</style>
-      </head><body class="p-8 bg-white text-slate-900">${node.innerHTML}
-      <script>window.onload=function(){setTimeout(function(){window.print();},400);}</script>
+      <style>
+        @page { size: A4; margin: 0; }
+        @media print { 
+          body { 
+            -webkit-print-color-adjust: exact; 
+            print-color-adjust: exact; 
+            margin: 0;
+            padding: 20mm !important;
+          } 
+        }
+      </style>
+      </head><body class="bg-white text-slate-900 font-sans">
+      ${node.innerHTML}
+      <script>window.onload = () => { setTimeout(() => { window.print(); window.close(); }, 500); };</script>
       </body></html>`);
     w.document.close();
   };
