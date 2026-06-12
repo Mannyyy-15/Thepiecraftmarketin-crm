@@ -158,7 +158,7 @@ export default function SlideToPunch({
   return (
     <div
       ref={trackRef}
-      className={`relative h-[60px] w-full rounded-full overflow-hidden select-none border bg-slate-100 dark:bg-slate-800/60 ${colors.ring} ${isBusy ? "opacity-90" : ""} ${className}`}
+      className={`relative h-[60px] w-full rounded-full overflow-hidden select-none border bg-slate-100 dark:bg-slate-800/60 transition-shadow ${colors.ring} ${dragging ? "shadow-md" : ""} ${isBusy ? "opacity-90" : ""} ${className}`}
       style={{ touchAction: "none", padding: PAD }}
     >
       {/* Color fill that grows behind the handle */}
@@ -176,7 +176,10 @@ export default function SlideToPunch({
         </span>
       </div>
 
-      {/* Draggable handle */}
+      {/* Draggable handle.
+          Vertical centering comes from top:PAD (track is HANDLE+2*PAD tall), so
+          the inline transform is free to do ONLY horizontal translate — that's
+          what keeps it from dropping out of the track when grabbed. */}
       <div
         ref={handleRef}
         onPointerDown={onPointerDown}
@@ -184,10 +187,11 @@ export default function SlideToPunch({
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
         onContextMenu={(e) => e.preventDefault()}
-        className={`absolute top-1/2 -translate-y-1/2 flex items-center justify-center rounded-full bg-white dark:bg-slate-900 shadow-md ${isBusy ? "cursor-default" : "cursor-grab active:cursor-grabbing"} ${dragging ? "scale-105" : ""}`}
+        className={`absolute flex items-center justify-center rounded-full bg-white dark:bg-slate-900 shadow-md ${isBusy ? "cursor-default" : "cursor-grab active:cursor-grabbing"}`}
         style={{
           width: HANDLE,
           height: HANDLE,
+          top: PAD,
           left: PAD,
           transition: "transform 0.28s cubic-bezier(0.22,1,0.36,1)",
           willChange: "transform",
