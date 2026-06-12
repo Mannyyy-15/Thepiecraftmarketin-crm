@@ -99,7 +99,7 @@ export default function ClientsPage() {
 
   const router = useRouter();
 
-  const [activeTab, setActiveTab] = useState<"directory" | "pipeline" | "invoices">("directory");
+  const [activeTab, setActiveTab] = useState<"directory" | "invoices">("directory");
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -346,7 +346,6 @@ export default function ClientsPage() {
 
   const TABS = [
     { key: "directory", label: "Clients",  count: clients.length },
-    { key: "pipeline",  label: "Pipeline", count: null },
     { key: "invoices",  label: "Invoices", count: invoices.filter(i => i.status !== "paid").length || null },
   ] as const;
 
@@ -427,54 +426,58 @@ export default function ClientsPage() {
                 const hasMetaAds = projectTypes.includes("meta_ads");
                 const siteUrl = d.websiteUrl ? (d.websiteUrl.startsWith("http") ? d.websiteUrl : `https://${d.websiteUrl}`) : null;
                 const siteLabel = d.websiteUrl ? d.websiteUrl.replace(/^https?:\/\/(www\.)?/, "").split("/")[0] : "";
+                const instaHandle = (d.instagram || d.instagramUrl || "").toString();
+                const instaUrl = instaHandle
+                  ? (instaHandle.startsWith("http") ? instaHandle : `https://instagram.com/${instaHandle.replace(/^@/, "")}`)
+                  : (siteUrl || null);
                 return (
                       <div key={c.id}
-                        className="group relative flex flex-col rounded-2xl border border-slate-200 dark:border-slate-800/70 bg-white dark:bg-slate-900 overflow-hidden hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
+                        className="group relative flex flex-col rounded-2xl border border-slate-200 dark:border-slate-800/70 bg-white dark:bg-slate-900 overflow-hidden hover:shadow-glow hover:border-indigo-500/50 transition-all duration-200 cursor-pointer"
                         onClick={() => { setMenuOpenId(null); router.push(`/admin/clients/${c.id}`); }}>
 
-                        {/* Thick stage strip */}
-                        <div className={cn("h-1.5 w-full shrink-0", stage.dot)} />
-
-                        <div className="flex flex-col flex-1 p-4 gap-4">
-                          {/* ── Header ── */}
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="flex items-center gap-3 min-w-0">
-                              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-brand-500 to-violet-600 text-xs font-extrabold text-white flex items-center justify-center shrink-0 shadow">
-                                {initials || "?"}
-                              </div>
-                              <div className="min-w-0">
-                                <h3 className="text-sm font-extrabold text-slate-900 dark:text-white truncate">{c.name}</h3>
-                                <span className={cn("inline-flex items-center gap-1 text-[9px] font-bold px-2 py-0.5 rounded-full border mt-1", stage.pill)}>
-                                  <span className={cn("h-1.5 w-1.5 rounded-full shrink-0", stage.dot)} />
-                                  {stage.label}
-                                </span>
-                              </div>
-                            </div>
-                            <div className="relative shrink-0" onClick={e => e.stopPropagation()}>
-                              <button onClick={() => setMenuOpenId(menuOpenId === c.id ? null : c.id)}
-                                className="h-7 w-7 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center transition-all cursor-pointer">
-                                <MoreHorizontal className="h-4 w-4" />
-                              </button>
-                              {menuOpenId === c.id && (
-                                <div className="absolute right-0 top-8 z-20 w-44 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl p-1.5 space-y-0.5">
-                                  <button onClick={() => { openEditClient(c); setMenuOpenId(null); }}
-                                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer">
-                                    <Edit2 className="h-3.5 w-3.5 text-slate-400" /> Edit Client
-                                  </button>
-                                  <button onClick={() => { handleDeleteClient(c.id, c.name); setMenuOpenId(null); }}
-                                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-all cursor-pointer">
-                                    <Trash2 className="h-3.5 w-3.5" /> Delete Client
-                                  </button>
-                                </div>
-                              )}
+                        {/* ── Banner + overlapping avatar (matches team cards) ── */}
+                        <div className="relative h-16 bg-brand-hero">
+                          <div className="absolute -bottom-6 left-4">
+                            <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-brand-500 to-violet-600 text-sm font-extrabold text-white flex items-center justify-center shadow-lg ring-4 ring-white dark:ring-slate-900">
+                              {initials || "?"}
                             </div>
                           </div>
+                          {/* Menu */}
+                          <div className="absolute top-2.5 right-2.5 z-10" onClick={e => e.stopPropagation()}>
+                            <button onClick={() => setMenuOpenId(menuOpenId === c.id ? null : c.id)}
+                              className="h-7 w-7 rounded-lg text-white/80 hover:text-white hover:bg-white/20 flex items-center justify-center transition-all cursor-pointer">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </button>
+                            {menuOpenId === c.id && (
+                              <div className="absolute right-0 top-8 z-20 w-44 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl p-1.5 space-y-0.5">
+                                <button onClick={() => { openEditClient(c); setMenuOpenId(null); }}
+                                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer">
+                                  <Edit2 className="h-3.5 w-3.5 text-slate-400" /> Edit Client
+                                </button>
+                                <button onClick={() => { handleDeleteClient(c.id, c.name); setMenuOpenId(null); }}
+                                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-all cursor-pointer">
+                                  <Trash2 className="h-3.5 w-3.5" /> Delete Client
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
 
-                          {/* ── Divider ── */}
-                          <div className="h-px bg-slate-100 dark:bg-slate-800" />
+                        <div className="flex flex-col flex-1 px-4 pt-8 pb-4 gap-3">
+                          {/* ── Name + stage ── */}
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0">
+                              <h3 className="text-sm font-extrabold text-slate-900 dark:text-white truncate">{c.name}</h3>
+                              {d.industry && <p className="text-[11px] text-slate-400 truncate mt-0.5">{d.industry}</p>}
+                            </div>
+                            <span className={cn("inline-flex items-center gap-1 text-[9px] font-bold px-2 py-1 rounded-full border shrink-0", stage.pill)}>
+                              <span className={cn("h-1.5 w-1.5 rounded-full shrink-0", stage.dot)} />
+                              {stage.label}
+                            </span>
+                          </div>
 
-                          {/* ── Info rows ── */}
-                          <div className="space-y-3 flex-1">
+                          {/* ── Detail rows ── */}
+                          <div className="space-y-2.5 flex-1">
                             {/* Account Lead */}
                             <div className="flex items-center gap-2.5">
                               <Avatar name={owner} size="xs" />
@@ -504,97 +507,44 @@ export default function ClientsPage() {
                               </div>
                             )}
 
-                            {/* Project type pills */}
-                            {c.linkedProjects.length > 0 ? (
+                            {/* Service type chips (Web Dev / Meta Ads) */}
+                            {(hasWebDev || hasMetaAds) && (
                               <div className="flex flex-wrap gap-1.5">
-                                {c.linkedProjects.slice(0, 4).map((p: any) => {
-                                  const pillStyle: Record<string, string> = {
-                                    meta_ads: "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800/50",
-                                    web_dev:  "text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/30 border-violet-200 dark:border-violet-800/50",
-                                    other:    "text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700/60",
-                                  };
-                                  const Icon = PROJ_TYPE_ICON[p.projectType] || Zap;
-                                  return (
-                                    <span key={p.id} className={cn("inline-flex items-center gap-1 text-[9px] font-bold px-2 py-1 rounded-lg border", pillStyle[p.projectType] || pillStyle.other)}>
-                                      <Icon className="h-2.5 w-2.5 shrink-0" />
-                                      {p.name.length > 14 ? p.name.slice(0, 14) + "…" : p.name}
-                                    </span>
-                                  );
-                                })}
-                                {c.linkedProjects.length > 4 && (
-                                  <span className="text-[9px] font-bold text-slate-400 self-center">+{c.linkedProjects.length - 4}</span>
+                                {hasWebDev && (
+                                  <span className="inline-flex items-center gap-1 text-[9px] font-bold px-2 py-1 rounded-lg border text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/30 border-violet-200 dark:border-violet-800/50">
+                                    <Code2 className="h-2.5 w-2.5" /> Web Development
+                                  </span>
+                                )}
+                                {hasMetaAds && (
+                                  <span className="inline-flex items-center gap-1 text-[9px] font-bold px-2 py-1 rounded-lg border text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800/50">
+                                    <Megaphone className="h-2.5 w-2.5" /> Meta Ads
+                                  </span>
                                 )}
                               </div>
-                            ) : (
-                              <span className="text-[11px] text-slate-400 dark:text-slate-600 italic">No projects linked</span>
                             )}
                           </div>
 
-                          {/* ── Footer links ── */}
-                          {siteUrl && (
+                          {/* ── Conditional footer: web → site, ads → Instagram, else nothing ── */}
+                          {((hasWebDev && siteUrl) || (hasMetaAds && instaUrl)) && (
                             <div className="flex items-center gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
                               {hasWebDev && siteUrl && (
                                 <a href={siteUrl} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()}
-                                  className="flex-1 inline-flex items-center gap-1.5 text-[10px] font-bold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/20 border border-violet-200/60 dark:border-violet-800/40 px-2.5 py-1.5 rounded-lg hover:bg-violet-100 dark:hover:bg-violet-950/40 transition-all truncate">
+                                  className="flex-1 inline-flex items-center justify-center gap-1.5 text-[10px] font-bold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/20 border border-violet-200/60 dark:border-violet-800/40 px-2.5 py-1.5 rounded-lg hover:bg-violet-100 dark:hover:bg-violet-950/40 transition-all truncate">
                                   <Globe className="h-3 w-3 shrink-0" />
                                   <span className="truncate">{siteLabel || "Visit Site"}</span>
                                 </a>
                               )}
-                              {hasMetaAds && siteUrl && (
-                                <a href={siteUrl} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()}
-                                  className="flex-1 inline-flex items-center gap-1.5 text-[10px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/20 border border-blue-200/60 dark:border-blue-800/40 px-2.5 py-1.5 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-950/40 transition-all truncate">
+                              {hasMetaAds && instaUrl && (
+                                <a href={instaUrl} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()}
+                                  className="flex-1 inline-flex items-center justify-center gap-1.5 text-[10px] font-bold text-pink-600 dark:text-pink-400 bg-pink-50 dark:bg-pink-950/20 border border-pink-200/60 dark:border-pink-800/40 px-2.5 py-1.5 rounded-lg hover:bg-pink-100 dark:hover:bg-pink-950/40 transition-all truncate">
                                   <Instagram className="h-3 w-3 shrink-0" />
                                   <span className="truncate">Instagram</span>
-                                </a>
-                              )}
-                              {!hasWebDev && !hasMetaAds && siteUrl && (
-                                <a href={siteUrl} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()}
-                                  className="flex-1 inline-flex items-center gap-1.5 text-[10px] font-bold text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/60 px-2.5 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all truncate">
-                                  <Globe className="h-3 w-3 shrink-0" />
-                                  <span className="truncate">{siteLabel || "Website"}</span>
                                 </a>
                               )}
                             </div>
                           )}
                         </div>
                       </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ── PIPELINE ──────────────────────────────────────────────────────── */}
-      {activeTab === "pipeline" && (
-        <div className="space-y-5">
-          {loading ? (
-            <div className="flex items-center justify-center py-20">
-              <div className="h-6 w-6 border-2 border-slate-200 dark:border-slate-700 border-t-brand-500 rounded-full animate-spin" />
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 items-start">
-              {(["contract_signed", "discovery", "integrations", "live"] as const).map(stage => {
-                const cfg = STAGE_CONFIG[stage];
-                const list = clients.filter(c => c.stage === stage);
-                return (
-                  <div key={stage} className="rounded-2xl bg-slate-50/60 dark:bg-slate-900/20 border border-slate-200/60 dark:border-slate-800/60 p-4 space-y-3">
-                    <div className="flex items-center justify-between pb-2.5 border-b border-slate-200/60 dark:border-slate-800/60">
-                      <div className="flex items-center gap-2">
-                        <span className={cn("h-2 w-2 rounded-full", cfg.dot)} />
-                        <span className="text-xs font-bold text-slate-700 dark:text-slate-200">{cfg.label}</span>
-                      </div>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200/60 dark:bg-slate-800 text-slate-500">{list.length}</span>
-                    </div>
-                    <div className="space-y-3">
-                      {list.map(c => (
-                        <KanbanCard key={c.id} client={c} ownerName={getOwner(c.ownerId)} onMove={handleMoveCard} onToggleCheck={handleToggleCheck} />
-                      ))}
-                      {list.length === 0 && (
-                        <EmptyState icon={<Building2 className="h-4 w-4" />} title="Empty" description="No clients in this stage" />
-                      )}
-                    </div>
-                  </div>
                 );
               })}
             </div>

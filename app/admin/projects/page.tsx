@@ -354,7 +354,6 @@ export default function ProjectsPage() {
 
   const [search, setSearch]             = useState("");
   const [serviceTab, setServiceTab]     = useState<"all" | "meta_ads" | "web_dev">("all");
-  const [statusFilter, setStatusFilter] = useState("all");
 
   // New project drawer
   const [drawerOpen, setDrawerOpen]   = useState(false);
@@ -428,8 +427,6 @@ export default function ProjectsPage() {
 
   const switchTab = (tab: "all" | "meta_ads" | "web_dev") => {
     setServiceTab(tab);
-    const valid = tab === "meta_ads" ? META_STATUSES : tab === "web_dev" ? WEBDEV_STATUSES : [...META_STATUSES, ...WEBDEV_STATUSES];
-    if (statusFilter !== "all" && !valid.includes(statusFilter)) setStatusFilter("all");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -554,7 +551,6 @@ export default function ProjectsPage() {
   const ef = (v: any) => setEditForm((p: any) => ({ ...p, ...v }));
 
   const matchesFilter = (p: any) => {
-    if (statusFilter !== "all" && p.status !== statusFilter) return false;
     if (search) {
       const q = search.toLowerCase();
       return p.name.toLowerCase().includes(q) || (p.clientName || "").toLowerCase().includes(q);
@@ -570,10 +566,6 @@ export default function ProjectsPage() {
   const showMeta   = serviceTab === "all" || serviceTab === "meta_ads";
   const showWeb    = serviceTab === "all" || serviceTab === "web_dev";
   const hasResults = (showMeta && metaList.length > 0) || (showWeb && webList.length > 0);
-
-  const statusOptions = serviceTab === "meta_ads" ? META_STATUSES
-    : serviceTab === "web_dev" ? WEBDEV_STATUSES
-    : [...META_STATUSES, ...WEBDEV_STATUSES].filter((v, i, a) => a.indexOf(v) === i);
 
   const typeCfg = TYPES[projectType];
 
@@ -628,17 +620,6 @@ export default function ProjectsPage() {
               className="h-9 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 pl-9 pr-3 text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-900 dark:text-white transition-all" />
           </div>
         </div>
-        <div className="flex flex-wrap gap-1.5 items-center">
-          <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 mr-1">Status</span>
-          {["all", ...statusOptions].map(s => (
-            <button key={s} onClick={() => setStatusFilter(s)}
-              className={cn("inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-bold border transition-all cursor-pointer",
-                statusFilter === s ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-transparent" : "bg-white dark:bg-slate-900 text-slate-500 border-slate-200 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-600"
-              )}>
-              {s === "all" ? "All" : getProjectStatusLabel(s)}
-            </button>
-          ))}
-        </div>
       </div>
 
       {/* ── Content ─────────────────────────────────────────────────────────── */}
@@ -669,63 +650,58 @@ export default function ProjectsPage() {
                   const pct = tp ? tp.pct : progressFromStatus(p.projectType, p.status);
                   const lead = roster.find((u: any) => u.id === p.leadId);
                   return (
-                    <div key={p.id} onClick={() => router.push(`/admin/projects/${p.id}`)} className="rounded-2xl border-l-4 border-l-indigo-500 border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-950 p-5 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer">
+                    <div key={p.id} onClick={() => router.push(`/admin/projects/${p.id}`)} className="group rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-950 p-4 hover:shadow-md hover:border-indigo-400/50 transition-all duration-200 cursor-pointer">
+                      {/* Header: name + client, actions */}
                       <div className="flex items-start justify-between gap-2">
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <Badge variant={getProjectStatusVariant(p.status)} className="text-[9px] font-bold uppercase tracking-wide px-2 py-0.5">{getProjectStatusLabel(p.status)}</Badge>
-                          {p.priority === "high" && <span className={cn("rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide", getPriorityClass("high"))}>High</span>}
-                          {tp && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-500">{tp.done}/{tp.total} tasks</span>}
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="h-9 w-9 rounded-xl bg-indigo-500/10 flex items-center justify-center shrink-0">
+                            <Megaphone className="h-4 w-4 text-indigo-500" />
+                          </div>
+                          <div className="min-w-0">
+                            <h3 className="text-sm font-bold text-slate-900 dark:text-white truncate">{p.name}</h3>
+                            <p className="text-[11px] text-slate-400 truncate">{p.clientName || "Unknown client"}</p>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-1 shrink-0">
-                          <button onClick={e => { e.stopPropagation(); openEdit(p); }} title="Edit project" aria-label="Edit project"
-                            className="h-7 w-7 rounded-lg text-slate-400 hover:text-brand-500 hover:bg-brand-50 dark:hover:bg-brand-950/20 flex items-center justify-center cursor-pointer transition-all">
-                            <Edit2 className="h-3.5 w-3.5" />
-                          </button>
-                          <button onClick={e => { e.stopPropagation(); setTaskModalProject(p); setNewTaskTitle(""); }} title="Manage tasks" aria-label="Manage tasks"
+                        <div className="flex items-center gap-0.5 shrink-0 opacity-60 group-hover:opacity-100 transition-opacity">
+                          <button onClick={e => { e.stopPropagation(); setTaskModalProject(p); setNewTaskTitle(""); }} title="Tasks" aria-label="Manage tasks"
                             className="h-7 w-7 rounded-lg text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-950/20 flex items-center justify-center cursor-pointer transition-all">
                             <ListTodo className="h-3.5 w-3.5" />
                           </button>
-                          <button onClick={e => { e.stopPropagation(); printDocument(p, roster, taskMap[p.id]?.tasks || []); }} title="Download proposal / SOW as PDF" aria-label="Download document"
-                            className="h-7 w-7 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 flex items-center justify-center cursor-pointer transition-all">
-                            <FileText className="h-3.5 w-3.5" />
+                          <button onClick={e => { e.stopPropagation(); openEdit(p); }} title="Edit" aria-label="Edit project"
+                            className="h-7 w-7 rounded-lg text-slate-400 hover:text-brand-500 hover:bg-brand-50 dark:hover:bg-brand-950/20 flex items-center justify-center cursor-pointer transition-all">
+                            <Edit2 className="h-3.5 w-3.5" />
                           </button>
-                          <button onClick={e => { e.stopPropagation(); handleDelete(p.id, p.name); }} disabled={deleting === p.id} title="Delete project" aria-label="Delete project"
+                          <button onClick={e => { e.stopPropagation(); handleDelete(p.id, p.name); }} disabled={deleting === p.id} title="Delete" aria-label="Delete project"
                             className="h-7 w-7 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 flex items-center justify-center cursor-pointer transition-all disabled:opacity-50">
                             {deleting === p.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
                           </button>
                         </div>
                       </div>
-                      <div className="mt-3">
-                        <h3 className="text-sm font-bold text-slate-900 dark:text-white truncate">{p.name}</h3>
-                        <p className="text-xs text-slate-400 mt-0.5 truncate">{p.clientName || "Unknown client"}</p>
-                      </div>
-                      <div className="mt-4 pt-3.5 border-t border-slate-100 dark:border-slate-800 grid grid-cols-2 gap-3">
+
+                      {/* Key figures: retainer + manager */}
+                      <div className="mt-3.5 flex items-center justify-between gap-2">
                         <div>
                           <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Retainer</p>
-                          <p className="text-sm font-bold text-slate-800 dark:text-white mt-0.5">{p.monthlyFee ? `₹${Number(p.monthlyFee).toLocaleString()}/mo` : "—"}</p>
-                          {Number(p.adSpendBudget) > 0 && <p className="text-[10px] text-indigo-500 font-semibold mt-0.5">+${Number(p.adSpendBudget).toLocaleString()} spend</p>}
+                          <p className="text-sm font-extrabold text-slate-800 dark:text-white mt-0.5">{p.monthlyFee ? `₹${Number(p.monthlyFee).toLocaleString()}/mo` : "—"}</p>
                         </div>
-                        <div>
-                          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Manager</p>
-                          {lead ? (
-                            <div className="flex items-center gap-1.5 mt-1"><Avatar name={lead.name} size="xs" /><span className="text-xs font-semibold text-slate-700 dark:text-slate-300 truncate">{lead.name.split(" ")[0]}</span></div>
-                          ) : <p className="text-xs text-slate-400 mt-0.5 italic">Unassigned</p>}
-                        </div>
+                        {lead ? (
+                          <div className="flex items-center gap-1.5">
+                            <Avatar name={lead.name} size="xs" />
+                            <span className="text-xs font-semibold text-slate-600 dark:text-slate-300 truncate">{lead.name.split(" ")[0]}</span>
+                          </div>
+                        ) : <span className="text-[11px] text-slate-400 italic">Unassigned</span>}
                       </div>
-                      {(d.objective || d.primaryKpi || d.adAccountId) && (
-                        <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 flex flex-wrap gap-1">
-                          {d.objective && <span className="flex items-center gap-1 text-[9px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/20 border border-indigo-500/20 px-2 py-0.5 rounded-full"><Target className="h-2.5 w-2.5" />{d.objective}</span>}
-                          {d.primaryKpi && <span className="flex items-center gap-1 text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-500/20 px-2 py-0.5 rounded-full"><BarChart3 className="h-2.5 w-2.5" />{d.primaryKpi}{d.targetKpiValue ? ` ${d.targetKpiValue}` : ""}</span>}
-                          {d.adAccountId && <span className="flex items-center gap-1 text-[9px] font-bold text-slate-500 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-2 py-0.5 rounded-full"><ShieldAlert className="h-2.5 w-2.5" />{d.adAccountId}</span>}
+
+                      {/* Task progress (only if there are tasks) */}
+                      {tp && tp.total > 0 && (
+                        <div className="mt-3">
+                          <Progress value={pct} size="sm" barClassName="bg-indigo-500" />
+                          <div className="mt-1.5 flex items-center justify-between">
+                            <span className="text-[9px] text-slate-400">{tp.done} of {tp.total} tasks done</span>
+                            <span className="text-[9px] font-bold text-slate-500 dark:text-slate-400">{pct}%</span>
+                          </div>
                         </div>
                       )}
-                      <div className="mt-4">
-                        <Progress value={pct} size="sm" barClassName="bg-indigo-500" />
-                        <div className="mt-1.5 flex items-center justify-between">
-                          <span className="text-[9px] text-slate-400">{tp ? `${tp.done} of ${tp.total} done` : (p.startDate || "No start date")}</span>
-                          <span className="text-[9px] font-bold text-slate-500 dark:text-slate-400">{pct}%</span>
-                        </div>
-                      </div>
                     </div>
                   );
                 })}
@@ -750,65 +726,58 @@ export default function ProjectsPage() {
                   const pct = tp ? tp.pct : progressFromStatus(p.projectType, p.status);
                   const lead = roster.find((u: any) => u.id === p.leadId);
                   return (
-                    <div key={p.id} onClick={() => router.push(`/admin/projects/${p.id}`)} className="rounded-2xl border-l-4 border-l-emerald-500 border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-950 p-5 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer">
+                    <div key={p.id} onClick={() => router.push(`/admin/projects/${p.id}`)} className="group rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-950 p-4 hover:shadow-md hover:border-emerald-400/50 transition-all duration-200 cursor-pointer">
+                      {/* Header: name + client, actions */}
                       <div className="flex items-start justify-between gap-2">
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <Badge variant={getProjectStatusVariant(p.status)} className="text-[9px] font-bold uppercase tracking-wide px-2 py-0.5">{getProjectStatusLabel(p.status)}</Badge>
-                          {p.priority === "high" && <span className={cn("rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide", getPriorityClass("high"))}>High</span>}
-                          {tp && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-500">{tp.done}/{tp.total} tasks</span>}
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="h-9 w-9 rounded-xl bg-emerald-500/10 flex items-center justify-center shrink-0">
+                            <Code2 className="h-4 w-4 text-emerald-500" />
+                          </div>
+                          <div className="min-w-0">
+                            <h3 className="text-sm font-bold text-slate-900 dark:text-white truncate">{p.name}</h3>
+                            <p className="text-[11px] text-slate-400 truncate">{p.clientName || "Unknown client"}</p>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-1 shrink-0">
-                          <button onClick={e => { e.stopPropagation(); openEdit(p); }} title="Edit project" aria-label="Edit project"
-                            className="h-7 w-7 rounded-lg text-slate-400 hover:text-brand-500 hover:bg-brand-50 dark:hover:bg-brand-950/20 flex items-center justify-center cursor-pointer transition-all">
-                            <Edit2 className="h-3.5 w-3.5" />
-                          </button>
-                          <button onClick={e => { e.stopPropagation(); setTaskModalProject(p); setNewTaskTitle(""); }} title="Manage tasks" aria-label="Manage tasks"
+                        <div className="flex items-center gap-0.5 shrink-0 opacity-60 group-hover:opacity-100 transition-opacity">
+                          <button onClick={e => { e.stopPropagation(); setTaskModalProject(p); setNewTaskTitle(""); }} title="Tasks" aria-label="Manage tasks"
                             className="h-7 w-7 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 flex items-center justify-center cursor-pointer transition-all">
                             <ListTodo className="h-3.5 w-3.5" />
                           </button>
-                          <button onClick={e => { e.stopPropagation(); printDocument(p, roster, taskMap[p.id]?.tasks || []); }} title="Download proposal / SOW as PDF" aria-label="Download document"
-                            className="h-7 w-7 rounded-lg text-slate-400 hover:text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-950/20 flex items-center justify-center cursor-pointer transition-all">
-                            <FileText className="h-3.5 w-3.5" />
+                          <button onClick={e => { e.stopPropagation(); openEdit(p); }} title="Edit" aria-label="Edit project"
+                            className="h-7 w-7 rounded-lg text-slate-400 hover:text-brand-500 hover:bg-brand-50 dark:hover:bg-brand-950/20 flex items-center justify-center cursor-pointer transition-all">
+                            <Edit2 className="h-3.5 w-3.5" />
                           </button>
-                          <button onClick={e => { e.stopPropagation(); handleDelete(p.id, p.name); }} disabled={deleting === p.id} title="Delete project" aria-label="Delete project"
+                          <button onClick={e => { e.stopPropagation(); handleDelete(p.id, p.name); }} disabled={deleting === p.id} title="Delete" aria-label="Delete project"
                             className="h-7 w-7 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 flex items-center justify-center cursor-pointer transition-all disabled:opacity-50">
                             {deleting === p.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
                           </button>
                         </div>
                       </div>
-                      <div className="mt-3">
-                        <h3 className="text-sm font-bold text-slate-900 dark:text-white truncate">{p.name}</h3>
-                        <p className="text-xs text-slate-400 mt-0.5 truncate">{p.clientName || "Unknown client"}</p>
-                      </div>
-                      <div className="mt-4 pt-3.5 border-t border-slate-100 dark:border-slate-800 grid grid-cols-2 gap-3">
+
+                      {/* Key figures: budget + lead dev */}
+                      <div className="mt-3.5 flex items-center justify-between gap-2">
                         <div>
                           <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Budget</p>
-                          <p className="text-sm font-bold text-slate-800 dark:text-white mt-0.5">{Number(p.budget) > 0 ? `₹${Number(p.budget).toLocaleString()}` : "—"}</p>
+                          <p className="text-sm font-extrabold text-slate-800 dark:text-white mt-0.5">{Number(p.budget) > 0 ? `₹${Number(p.budget).toLocaleString()}` : "—"}</p>
                         </div>
-                        <div>
-                          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Lead Dev</p>
-                          {lead ? (
-                            <div className="flex items-center gap-1.5 mt-1"><Avatar name={lead.name} size="xs" /><span className="text-xs font-semibold text-slate-700 dark:text-slate-300 truncate">{lead.name.split(" ")[0]}</span></div>
-                          ) : <p className="text-xs text-slate-400 mt-0.5 italic">Unassigned</p>}
+                        {lead ? (
+                          <div className="flex items-center gap-1.5">
+                            <Avatar name={lead.name} size="xs" />
+                            <span className="text-xs font-semibold text-slate-600 dark:text-slate-300 truncate">{lead.name.split(" ")[0]}</span>
+                          </div>
+                        ) : <span className="text-[11px] text-slate-400 italic">Unassigned</span>}
+                      </div>
+
+                      {/* Task progress (only if there are tasks) */}
+                      {tp && tp.total > 0 && (
+                        <div className="mt-3">
+                          <Progress value={pct} size="sm" barClassName="bg-emerald-500" />
+                          <div className="mt-1.5 flex items-center justify-between">
+                            <span className="text-[9px] text-slate-400">{tp.done} of {tp.total} tasks done</span>
+                            <span className="text-[9px] font-bold text-slate-500 dark:text-slate-400">{pct}%</span>
+                          </div>
                         </div>
-                      </div>
-                      <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 flex flex-wrap gap-1">
-                        {d.platform && <span className="flex items-center gap-1 text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-500/20 px-2 py-0.5 rounded-full"><Cpu className="h-2.5 w-2.5" />{d.platform}</span>}
-                        {d.hostingProvider && <span className="flex items-center gap-1 text-[9px] font-bold text-slate-500 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-2 py-0.5 rounded-full"><Globe className="h-2.5 w-2.5" />{d.hostingProvider}</span>}
-                        {d.numPages && <span className="flex items-center gap-1 text-[9px] font-bold text-slate-500 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-2 py-0.5 rounded-full"><Layers className="h-2.5 w-2.5" />{d.numPages}p</span>}
-                        {d.repoLink && <a href={d.repoLink} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-[9px] font-bold text-brand-600 dark:text-brand-400 bg-brand-500/5 border border-brand-500/20 px-2 py-0.5 rounded-full hover:bg-brand-500/20 transition-all"><ExternalLink className="h-2.5 w-2.5" />Repo</a>}
-                        {d.oldWebsiteUrl && <a href={d.oldWebsiteUrl} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-[9px] font-bold text-slate-500 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-2 py-0.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"><Globe2 className="h-2.5 w-2.5" />Old Site</a>}
-                        {d.cmsNeeded && <span className="text-[9px] font-bold text-slate-500 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-2 py-0.5 rounded-full">CMS</span>}
-                        {d.adminPanelNeeded && <span className="text-[9px] font-bold text-slate-500 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-2 py-0.5 rounded-full">Admin</span>}
-                        {d.dbNeeded && <span className="flex items-center gap-1 text-[9px] font-bold text-slate-500 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-2 py-0.5 rounded-full"><Database className="h-2.5 w-2.5" />DB</span>}
-                      </div>
-                      <div className="mt-4">
-                        <Progress value={pct} size="sm" barClassName="bg-emerald-500" />
-                        <div className="mt-1.5 flex items-center justify-between">
-                          <span className="text-[9px] text-slate-400">{tp ? `${tp.done} of ${tp.total} done` : (d.launchDate || p.deadline || "No deadline")}</span>
-                          <span className="text-[9px] font-bold text-slate-500 dark:text-slate-400">{pct}%</span>
-                        </div>
-                      </div>
+                      )}
                     </div>
                   );
                 })}
