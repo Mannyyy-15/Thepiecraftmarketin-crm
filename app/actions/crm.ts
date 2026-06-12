@@ -2962,37 +2962,6 @@ export async function getReports() {
       .where(eq(schema.documents.folder, "Reports"))
       .orderBy(desc(schema.documents.createdAt));
 
-    // Seed if empty (just to match reports listing)
-    if (dbReports.length === 0) {
-      const initialReports = [
-        { title: "Acme Corp — May 2026 Performance", type: "Monthly", client: "Acme Corp", size: "2.4 MB" },
-        { title: "Q2 Agency Health Report", type: "Quarterly", client: "Internal", size: "8.1 MB" },
-        { title: "Stark Industries — Ad ROAS Deep Dive", type: "Custom", client: "Stark Industries", size: "1.2 MB" },
-        { title: "Wayne Enterprises — SEO Audit", type: "Audit", client: "Wayne Enterprises", size: "3.6 MB" },
-        { title: "Hooli — Conversion Funnel Analysis", type: "Custom", client: "Hooli", size: "1.8 MB" },
-      ];
-
-      for (const rep of initialReports) {
-        const clients = await db.select().from(schema.clients).where(eq(schema.clients.name, rep.client));
-        const clientId = clients.length > 0 ? clients[0].id : null;
-
-        await db.insert(schema.documents).values({
-          name: rep.title,
-          clientId,
-          clientName: rep.client,
-          type: "PDF",
-          size: rep.size,
-          folder: "Reports",
-          ownerName: "AI Analyst",
-        });
-      }
-
-      dbReports = await db.select()
-        .from(schema.documents)
-        .where(eq(schema.documents.folder, "Reports"))
-        .orderBy(desc(schema.documents.createdAt));
-    }
-
     return { success: true, data: dbReports };
   } catch (error: any) {
     console.error("getReports Error:", error);

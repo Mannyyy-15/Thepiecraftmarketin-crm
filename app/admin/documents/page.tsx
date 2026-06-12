@@ -68,6 +68,7 @@ export default function DocumentsPage() {
 
   const [activeFolder, setActiveFolder] = useState<string | null>(null);
   const [openDropdownId, setOpenDropdownId] = useState<number | null>(null);
+  const [openFolderDropdownId, setOpenFolderDropdownId] = useState<string | null>(null);
 
   // Proposal / SOW States
   const [showProposalModal, setShowProposalModal] = useState(false);
@@ -365,14 +366,34 @@ export default function DocumentsPage() {
         <h2 className="text-sm font-semibold text-slate-900 dark:text-white mb-3">Folders</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
           {folders.map((f) => (
-            <Card key={f.name} onClick={() => setActiveFolder(f.name)} className="p-4 hover:shadow-glow cursor-pointer transition-all border border-slate-200 dark:border-slate-800 relative group">
-              <button 
-                onClick={(e) => handleRemoveFolder(f.name, f.files, e)}
-                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all z-10"
-                title="Delete folder"
-              >
-                <Trash2 className="h-4 w-4" />
-              </button>
+            <Card key={f.name} onClick={() => setActiveFolder(f.name)} className="p-4 hover:shadow-glow cursor-pointer transition-all border border-slate-200 dark:border-slate-800 relative group overflow-visible">
+              <div className="absolute top-2 right-2 z-10">
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setOpenFolderDropdownId(openFolderDropdownId === f.name ? null : f.name);
+                  }}
+                  className={`p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:hover:text-slate-200 dark:hover:bg-slate-800 transition-all ${openFolderDropdownId === f.name ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
+                >
+                  <MoreHorizontal className="h-4 w-4" />
+                </button>
+                {openFolderDropdownId === f.name && (
+                  <div 
+                    className="absolute right-0 top-8 mt-1 w-36 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-50 py-1 flex flex-col animate-scaleIn"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <button 
+                      onClick={(e) => { 
+                        setOpenFolderDropdownId(null); 
+                        handleRemoveFolder(f.name, f.files, e); 
+                      }} 
+                      className="flex items-center gap-2 px-3 py-2 text-xs text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10 w-full text-left transition-colors"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" /> Delete Folder
+                    </button>
+                  </div>
+                )}
+              </div>
               <div className={`h-10 w-10 rounded-xl bg-gradient-to-br ${f.accent} text-white flex items-center justify-center mb-3 shadow-md`}>
                 <Folder className="h-5 w-5" />
               </div>
@@ -384,7 +405,7 @@ export default function DocumentsPage() {
       </div>
 
       {/* Main Files Table Card */}
-      <Card className="overflow-hidden border border-slate-200 dark:border-slate-850">
+      <Card className="border border-slate-200 dark:border-slate-850">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 sm:p-5 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20">
           <div className="flex items-center gap-3">
             {activeFolder && (
@@ -410,7 +431,7 @@ export default function DocumentsPage() {
             />
           </div>
         </div>
-        <div className="overflow-x-auto">
+        <div className="w-full">
           <table className="w-full text-sm">
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {filteredFiles.map((d) => (
