@@ -2157,6 +2157,73 @@ export async function createInvoice(formData: FormData) {
   }
 }
 
+// Rich invoice creation: line items + bill-to details stored as JSON in `notes`
+// so we avoid a schema migration. clientId is optional (manual/one-off billing).
+export interface InvoiceLineItem { description: string; qty: number; rate: number; }
+export interface CreateInvoiceFullInput {
+  clientId?: number | null;
+  projectId?: number | null;
+  billToName: string;
+  billToEmail?: string;
+  billToAddress?: string;
+  items: InvoiceLineItem[];
+  taxPercent?: number;
+  discount?: number;        // flat amount
+  dueDate?: string;
+  notes?: string;
+  status?: "draft" | "sent";
+}
+
+export async function createInvoiceFull(input: CreateInvoiceFullInput) {
+  try {
+    const session = await getAuthSession();
+    if (!session || session.role !== "admin") return { success: false, error: "Unauthorized." };
+    if (!db) return { success: false, error: "Database not connected." };
+
+    const items = (input.items || []).filter(i => (i.description || "").trim() && Number(i.rate) > 0);
+    if (!input.billToName?.trim()) return { success: false, error: "Bill-to name is required." };
+    if (items.length === 0) return { success: false, error: "Add at least one line item." };
+
+    const subtotal = items.reduce((s, i) => s + Number(i.qty || 1) * Number(i.rate || 0), 0);
+    const taxPercent = Number(input.taxPercent || 0);
+    const discount = Number(input.discount || 0);
+    const taxAmount = Math.round((subtotal * taxPercent) / 100);
+    const total = Math.max(0, subtotal + taxAmount - discount);
+
+    // Auto-generate invoice number: INV-YYYYMM-XXXX
+    const now = new Date();
+    const prefix = `INV-${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}`;
+    const countRows = await db.select({ id: schema.invoices.id }).from(schema.invoices);
+    const invoiceNumber = `${prefix}-${String(countRows.length + 1).padStart(4, "0")}`;
+
+    // Pack the rich details into notes as JSON (back-compat: plain notes still readable).
+    const payload = {
+      v: 1,
+      billTo: { name: input.billToName.trim(), email: input.billToEmail?.trim() || "", address: input.billToAddress?.trim() || "" },
+      items: items.map(i => ({ description: i.description.trim(), qty: Number(i.qty || 1), rate: Number(i.rate || 0) })),
+      subtotal, taxPercent, taxAmount, discount, total,
+      note: input.notes?.trim() || "",
+    };
+
+    await db.insert(schema.invoices).values({
+      clientId: input.clientId || null,
+      projectId: input.projectId || null,
+      invoiceNumber,
+      amount: total,
+      status: input.status || "draft",
+      dueDate: input.dueDate || null,
+      notes: JSON.stringify(payload),
+    });
+
+    revalidatePath("/admin/invoices");
+    revalidatePath("/admin/clients");
+    return { success: true, invoiceNumber };
+  } catch (error: any) {
+    console.error("createInvoiceFull Error:", error);
+    return { success: false, error: error.message };
+  }
+}
+
 // Update invoice status
 export async function updateInvoiceStatus(invoiceId: number, status: "draft" | "sent" | "paid" | "overdue", paidDate?: string) {
   try {

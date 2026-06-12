@@ -16,6 +16,7 @@ import {
   Code2,
   FilePieChart,
   CircleDollarSign,
+  Receipt,
   Files,
   Settings,
   X,
@@ -33,6 +34,7 @@ const drawerOptions = [
   { name: "Website Dev", href: "/admin/website-dev", icon: Code2, desc: "Dev Projects" },
   { name: "Reports", href: "/admin/reports", icon: FilePieChart, desc: "Analytics" },
   { name: "Finance", href: "/admin/finance", icon: CircleDollarSign, desc: "Billing & Finance" },
+  { name: "Invoices", href: "/admin/invoices", icon: Receipt, desc: "Create & Send Invoices" },
   { name: "Documents", href: "/admin/documents", icon: Files, desc: "Files & Contracts" },
   { name: "Settings", href: "/admin/settings", icon: Settings, desc: "System Settings" },
 ];
