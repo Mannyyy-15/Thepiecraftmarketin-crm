@@ -255,9 +255,7 @@ export default function NotificationPanel({
             </div>
           ) : (
             <>
-              <p className="px-2 pb-2 text-[11px] font-bold uppercase tracking-widest text-slate-400">
-                Recent <span className="text-slate-300 dark:text-slate-600 normal-case font-medium">· swipe a card to dismiss</span>
-              </p>
+              <p className="px-2 pb-2 text-[11px] font-bold uppercase tracking-widest text-slate-400">Recent</p>
               <div className="space-y-2.5">
                 {notifications.map((n) => (
                   <SwipeableNotification
