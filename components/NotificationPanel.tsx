@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   Bell, X, ArrowLeft, Check, Fingerprint, DoorOpen, Send, ThumbsUp,
   ThumbsDown, Receipt, type LucideIcon,
@@ -64,6 +65,9 @@ export default function NotificationPanel({
   onMarkOneRead,
   onDismiss,
 }: NotificationPanelProps) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   // Close on Esc; lock body scroll while open.
   useEffect(() => {
     if (!open) return;
@@ -79,19 +83,36 @@ export default function NotificationPanel({
 
   const unread = notifications.filter((n) => !n.read).length;
 
-  return (
-    <div className={`fixed inset-0 z-[60] ${open ? "" : "pointer-events-none"}`} aria-hidden={!open}>
+  if (!mounted) return null;
+
+  // Rendered through a portal to document.body so no transformed/overflow-hidden
+  // ancestor (sticky header, motion.div, etc.) can clip or shrink the fixed panel.
+  return createPortal(
+    <div
+      className={open ? "" : "pointer-events-none"}
+      aria-hidden={!open}
+      style={{ position: "fixed", inset: 0, zIndex: 9999 }}
+    >
       {/* Backdrop — clicking anywhere here closes the panel */}
       <div
         onClick={onClose}
-        className={`absolute inset-0 bg-slate-950/40 backdrop-blur-[2px] transition-opacity duration-300 ${open ? "opacity-100" : "opacity-0"}`}
+        className="bg-slate-950/50 backdrop-blur-[2px] transition-opacity duration-300"
+        style={{ position: "absolute", inset: 0, opacity: open ? 1 : 0 }}
       />
 
       {/* Sliding panel */}
       <aside
-        className={`absolute top-0 right-0 h-full w-[88%] max-w-sm bg-slate-50 dark:bg-slate-950 shadow-2xl flex flex-col transition-transform duration-300 ease-out ${open ? "translate-x-0" : "translate-x-full"}`}
+        className="bg-slate-50 dark:bg-slate-950 shadow-2xl flex flex-col transition-transform duration-300 ease-out"
         role="dialog"
         aria-label="Notifications"
+        style={{
+          position: "absolute",
+          top: 0,
+          right: 0,
+          height: "100dvh",
+          width: "min(92vw, 26rem)",
+          transform: open ? "translateX(0)" : "translateX(100%)",
+        }}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-4 pt-5 pb-4 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800/80">
@@ -172,6 +193,7 @@ export default function NotificationPanel({
           )}
         </div>
       </aside>
-    </div>
+    </div>,
+    document.body
   );
 }
