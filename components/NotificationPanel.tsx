@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { createPortal } from "react-dom";
 import {
-  Bell, X, ArrowLeft, Check, Fingerprint, DoorOpen, Send, ThumbsUp,
+  Bell, ArrowLeft, Check, Fingerprint, DoorOpen, Send, ThumbsUp,
   ThumbsDown, Receipt, type LucideIcon,
 } from "lucide-react";
 
@@ -51,6 +51,113 @@ function formatDate(createdAt: Date | string | null): string {
   const diffDays = Math.floor(diffHrs / 24);
   if (diffDays < 7) return `${diffDays}d ago`;
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
+
+/**
+ * A single notification row that can be swiped left/right to dismiss.
+ * Uses pointer capture so the drag never gets stuck mid-swipe.
+ */
+function SwipeableNotification({
+  n,
+  onMarkOneRead,
+  onDismiss,
+}: {
+  n: NotificationItem;
+  onMarkOneRead: (id: number) => void;
+  onDismiss: (id: number) => void;
+}) {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const draggingRef = useRef(false);
+  const startXRef = useRef(0);
+  const dxRef = useRef(0);
+  const [removing, setRemoving] = useState(false);
+
+  const conf = ICONS[n.type] || DEFAULT_ICON;
+  const Icon = conf.icon;
+  const DISMISS_AT = 110; // px of horizontal travel to dismiss
+
+  const paint = (dx: number, withTransition: boolean) => {
+    const el = cardRef.current;
+    if (!el) return;
+    el.style.transition = withTransition ? "transform 0.25s ease, opacity 0.25s ease" : "none";
+    el.style.transform = `translateX(${dx}px)`;
+    el.style.opacity = String(Math.max(0, 1 - Math.abs(dx) / 220));
+  };
+
+  const onPointerDown = (e: React.PointerEvent) => {
+    if (removing) return;
+    draggingRef.current = true;
+    startXRef.current = e.clientX - dxRef.current;
+    paint(dxRef.current, false);
+    (e.target as Element).setPointerCapture?.(e.pointerId);
+  };
+
+  const onPointerMove = (e: React.PointerEvent) => {
+    if (!draggingRef.current) return;
+    dxRef.current = e.clientX - startXRef.current;
+    paint(dxRef.current, false);
+  };
+
+  const finishDismiss = (dir: 1 | -1) => {
+    setRemoving(true);
+    if (cardRef.current) {
+      cardRef.current.style.transition = "transform 0.22s ease, opacity 0.22s ease";
+      cardRef.current.style.transform = `translateX(${dir * 400}px)`;
+      cardRef.current.style.opacity = "0";
+    }
+    if (navigator.vibrate) navigator.vibrate(15);
+    setTimeout(() => onDismiss(n.id), 200);
+  };
+
+  const onPointerUp = (e: React.PointerEvent) => {
+    if (!draggingRef.current) return;
+    draggingRef.current = false;
+    (e.target as Element).releasePointerCapture?.(e.pointerId);
+    const dx = dxRef.current;
+    if (Math.abs(dx) >= DISMISS_AT) {
+      finishDismiss(dx > 0 ? 1 : -1);
+    } else if (Math.abs(dx) < 6) {
+      // Treat as a tap → mark read.
+      dxRef.current = 0;
+      paint(0, true);
+      if (!n.read) onMarkOneRead(n.id);
+    } else {
+      dxRef.current = 0;
+      paint(0, true); // spring back
+    }
+  };
+
+  return (
+    <div className="relative overflow-hidden rounded-2xl" style={{ touchAction: "pan-y" }}>
+      <div
+        ref={cardRef}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerUp}
+        className={`relative flex items-start gap-3 rounded-2xl p-3.5 cursor-grab active:cursor-grabbing select-none border ${
+          n.read
+            ? "bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800/60"
+            : "bg-white dark:bg-slate-900 border-indigo-200 dark:border-indigo-900/40 shadow-sm"
+        }`}
+        style={{ willChange: "transform, opacity" }}
+      >
+        <div className={`h-10 w-10 rounded-full flex items-center justify-center shrink-0 ${conf.bg}`}>
+          <Icon className={`h-5 w-5 ${conf.color}`} />
+        </div>
+        <div className="min-w-0 flex-1 pointer-events-none">
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{n.title}</p>
+            <span className="text-[10px] text-slate-400 font-medium tabular-nums shrink-0">{formatDate(n.createdAt)}</span>
+          </div>
+          {n.message && (
+            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mt-0.5 line-clamp-2">{n.message}</p>
+          )}
+        </div>
+        {!n.read && <span className="absolute top-3.5 right-3.5 h-2 w-2 rounded-full bg-indigo-500 pointer-events-none" />}
+      </div>
+    </div>
+  );
 }
 
 /**
@@ -148,46 +255,18 @@ export default function NotificationPanel({
             </div>
           ) : (
             <>
-              <p className="px-2 pb-2 text-[11px] font-bold uppercase tracking-widest text-slate-400">Recent</p>
+              <p className="px-2 pb-2 text-[11px] font-bold uppercase tracking-widest text-slate-400">
+                Recent <span className="text-slate-300 dark:text-slate-600 normal-case font-medium">· swipe a card to dismiss</span>
+              </p>
               <div className="space-y-2.5">
-                {notifications.map((n) => {
-                  const conf = ICONS[n.type] || DEFAULT_ICON;
-                  const Icon = conf.icon;
-                  return (
-                    <div
-                      key={n.id}
-                      onClick={() => { if (!n.read) onMarkOneRead(n.id); }}
-                      className={`group relative flex items-start gap-3 rounded-2xl p-3.5 cursor-pointer transition-all border ${
-                        n.read
-                          ? "bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800/60"
-                          : "bg-white dark:bg-slate-900 border-indigo-200 dark:border-indigo-900/40 shadow-sm"
-                      }`}
-                    >
-                      <div className={`h-10 w-10 rounded-full flex items-center justify-center shrink-0 ${conf.bg}`}>
-                        <Icon className={`h-5 w-5 ${conf.color}`} />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center justify-between gap-2">
-                          <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{n.title}</p>
-                          <span className="text-[10px] text-slate-400 font-medium tabular-nums shrink-0">{formatDate(n.createdAt)}</span>
-                        </div>
-                        {n.message && (
-                          <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mt-0.5 line-clamp-2">{n.message}</p>
-                        )}
-                      </div>
-                      {/* Unread blue dot */}
-                      {!n.read && <span className="absolute top-3.5 right-3.5 h-2 w-2 rounded-full bg-indigo-500" />}
-                      {/* Dismiss (hover) */}
-                      <button
-                        onClick={(e) => { e.stopPropagation(); onDismiss(n.id); }}
-                        className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 text-slate-300 hover:text-rose-500 p-1 rounded-lg transition-all"
-                        title="Dismiss"
-                      >
-                        <X className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                  );
-                })}
+                {notifications.map((n) => (
+                  <SwipeableNotification
+                    key={n.id}
+                    n={n}
+                    onMarkOneRead={onMarkOneRead}
+                    onDismiss={onDismiss}
+                  />
+                ))}
               </div>
             </>
           )}
