@@ -38,6 +38,7 @@ import { LogoutConfirmModal } from "@/components/ui/LogoutConfirmModal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { getMyNotifications, markAllNotificationsRead, dismissNotification, getGlobalSearchData, quickAddClient, quickAddEmployee, quickAddProject, quickAddTimesheet, quickAddExpense } from "@/app/actions/crm";
 import type { Notification } from "@/lib/schema";
+import NotificationPanel from "@/components/NotificationPanel";
 
 interface SearchItem {
   title: string;
@@ -419,13 +420,13 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
           <button
             type="button"
             onClick={() => {
-              setShowNotifications(!showNotifications);
+              setShowNotifications(true);
               setShowQuickActions(false);
               setShowProfileMenu(false);
             }}
             className={`relative inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 transition-all cursor-pointer ${
-              showNotifications 
-                ? "bg-slate-100 dark:bg-slate-800 text-brand-600" 
+              showNotifications
+                ? "bg-slate-100 dark:bg-slate-800 text-brand-600"
                 : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
             }`}
             aria-label="Notifications"
@@ -435,70 +436,23 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
               <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-rose-500 ring-2 ring-white dark:ring-slate-950 animate-pulse" />
             )}
           </button>
-
-          {/* Notifications Dropdown Panel */}
-          {showNotifications && (
-            <div className="absolute right-0 mt-2.5 w-80 sm:w-96 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl z-50 overflow-hidden animate-fadeIn">
-              <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 px-4 py-3 bg-slate-50/50 dark:bg-slate-900/10">
-                <span className="text-xs font-bold text-slate-900 dark:text-white">Agency Notifications</span>
-                {hasUnread && (
-                  <button 
-                    onClick={handleMarkAllRead}
-                    className="text-[10px] font-bold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 cursor-pointer"
-                  >
-                    Mark all read
-                  </button>
-                )}
-              </div>
-              
-              <div className="max-h-72 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800/80">
-                {notifications.map((n) => {
-                  const mapped = notifIconMap[n.type] || defaultNotifIcon;
-                  const IconComp = mapped.icon;
-                  return (
-                    <div 
-                      key={n.id} 
-                      onClick={async () => {
-                        if (!n.read) {
-                          await markAllNotificationsRead();
-                          setNotifications(notifications.map(item => item.id === n.id ? { ...item, read: 1 } : item));
-                        }
-                      }}
-                      className={`flex items-start gap-3 p-3.5 transition-colors cursor-pointer ${
-                        n.read ? "hover:bg-slate-50/40 dark:hover:bg-slate-900/10" : "bg-indigo-500/5 hover:bg-indigo-500/10"
-                      }`}
-                    >
-                      <div className="h-7 w-7 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
-                        <IconComp className={`h-3.5 w-3.5 ${mapped.color}`} />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center justify-between gap-2">
-                          <p className={`text-xs font-bold truncate ${n.read ? "text-slate-800 dark:text-slate-200" : "text-indigo-600 dark:text-indigo-400"}`}>{n.title}</p>
-                          <span className="text-[9px] text-slate-400 font-medium tabular-nums">{n._time}</span>
-                        </div>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-normal mt-0.5">{n.message}</p>
-                      </div>
-                      <button 
-                        onClick={(e) => handleDismissNotification(n.id, e)}
-                        className="text-slate-450 hover:text-rose-600 p-0.5 rounded transition-colors"
-                        title="Dismiss"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </div>
-                  );
-                })}
-                
-                {notifications.length === 0 && (
-                  <div className="p-8 text-center text-xs text-slate-400">
-                    <Check className="h-6 w-6 text-emerald-500 mx-auto mb-2" />
-                    All caught up! No notifications.
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
         </div>
+
+        {/* Notifications side panel (closes on backdrop / Esc) */}
+        <NotificationPanel
+          open={showNotifications}
+          onClose={() => setShowNotifications(false)}
+          notifications={notifications}
+          onMarkAllRead={handleMarkAllRead}
+          onMarkOneRead={async (id) => {
+            await markAllNotificationsRead();
+            setNotifications(notifications.map((item) => (item.id === id ? { ...item, read: 1 } : item)));
+          }}
+          onDismiss={(id) => {
+            dismissNotification(id);
+            setNotifications(notifications.filter((item) => item.id !== id));
+          }}
+        />
 
         {/* Profile avatar + dropdown — visible on all screen sizes */}
         <div className="relative ml-1">

@@ -5,8 +5,20 @@ import { Send, Search, Plus, ArrowLeft, MessageSquare, X, Building2, Users, Shie
 import { Card, CardContent } from "@/components/ui/Card";
 import { Avatar } from "@/components/ui/Avatar";
 import { getCurrentUser } from "@/app/actions/auth";
-import { sendMessage, getConversations, getConversationMessages, markConversationRead } from "@/app/actions/crm";
-import { getEmployeeContacts, MockContact, getAllContacts } from "@/lib/mock-contacts";
+import { sendMessage, getConversations, getConversationMessages, markConversationRead, getMessagingContacts } from "@/app/actions/crm";
+
+// Real contact shape (replaces the old MockContact).
+interface Contact {
+  id: number;
+  name: string;
+  email: string;
+  role: "admin" | "employee" | "client";
+  systemRole?: string | null;
+  jobTitle?: string;
+  clientName?: string;
+  industry?: string;
+  status?: string;
+}
 
 const STORAGE_KEY = "employee_chat_ids";
 
@@ -21,12 +33,13 @@ type SectionKey = keyof typeof sectionIcons;
 
 export default function EmployeeMessagesPage() {
   const [conversations, setConversations] = useState<any[]>([]);
-  const [activeContact, setActiveContact] = useState<MockContact | null>(null);
+  const [activeContact, setActiveContact] = useState<Contact | null>(null);
   const [messages, setMessages] = useState<any[]>([]);
   const [newMsg, setNewMsg] = useState("");
   const [search, setSearch] = useState("");
   const [userName, setUserName] = useState("");
   const [chatIds, setChatIds] = useState<number[]>([]);
+  const [allContacts, setAllContacts] = useState<Contact[]>([]);
   const [showContactPicker, setShowContactPicker] = useState(false);
   const [pickerSearch, setPickerSearch] = useState("");
   const [expandedSections, setExpandedSections] = useState<Record<SectionKey, boolean>>({ admins: true, employees: true, clients: true });
@@ -37,19 +50,47 @@ export default function EmployeeMessagesPage() {
     getCurrentUser().then((u) => {
       if (u) setUserName(u.name as string);
     });
+    getMessagingContacts().then((res) => {
+      if (res.success && res.data) setAllContacts(res.data as Contact[]);
+    });
   }, []);
 
-  const contacts = useMemo(() => getEmployeeContacts(userName || ""), [userName]);
+  // Group real contacts by role for the picker (clients section stays empty
+  // for now since employees message the internal team).
+  const contacts = useMemo(() => ({
+    admins: allContacts.filter((c) => c.role === "admin"),
+    employees: allContacts.filter((c) => c.role === "employee"),
+    clients: allContacts.filter((c) => c.role === "client"),
+  }), [allContacts]);
+
   const allMap = useMemo(() => {
-    const m = new Map<number, MockContact>();
-    for (const c of getAllContacts()) m.set(c.id, c);
+    const m = new Map<number, Contact>();
+    for (const c of allContacts) m.set(c.id, c);
     return m;
-  }, []);
+  }, [allContacts]);
 
-  const chatContacts = useMemo(
-    () => chatIds.map((id) => allMap.get(id)).filter((c) => c && (c.role !== "employee" || c.name !== userName)).filter(Boolean) as MockContact[],
-    [chatIds, allMap, userName],
-  );
+  // Show a sidebar entry for everyone you've messaged (from real conversation
+  // history) PLUS anyone you've explicitly opened (localStorage), newest first.
+  const chatContacts = useMemo(() => {
+    const ordered: number[] = [];
+    const seen = new Set<number>();
+    // Conversations come back newest-first from the server.
+    for (const conv of conversations) {
+      const id = conv.otherId ?? conv.otherUser?.id;
+      if (id && !seen.has(id)) { seen.add(id); ordered.push(id); }
+    }
+    for (const id of chatIds) {
+      if (!seen.has(id)) { seen.add(id); ordered.push(id); }
+    }
+    return ordered
+      .map((id) => allMap.get(id) || (() => {
+        const conv = conversations.find((c) => (c.otherId ?? c.otherUser?.id) === id);
+        return conv?.otherUser
+          ? { id, name: conv.otherUser.name, email: conv.otherUser.email, role: conv.otherUser.role } as Contact
+          : null;
+      })())
+      .filter(Boolean) as Contact[];
+  }, [conversations, chatIds, allMap]);
 
   const filteredList = useMemo(() => {
     if (!search) return chatContacts;
@@ -65,7 +106,7 @@ export default function EmployeeMessagesPage() {
     return {
       admins: contacts.admins.filter((c) => c.name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q)),
       employees: contacts.employees.filter((c) => c.name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q)),
-      clients: contacts.clients.filter((c) => c.clientName?.toLowerCase().includes(q) || c.name.toLowerCase().includes(q) || c.industry?.toLowerCase().includes(q)),
+      clients: contacts.clients.filter((c) => (c.clientName?.toLowerCase().includes(q) || c.name.toLowerCase().includes(q) || c.industry?.toLowerCase().includes(q))),
     };
   }, [contacts, pickerSearch]);
 
@@ -97,7 +138,7 @@ export default function EmployeeMessagesPage() {
 
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
 
-  const addChatContact = (contact: MockContact) => {
+  const addChatContact = (contact: Contact) => {
     if (!chatIds.includes(contact.id)) {
       const updated = [contact.id, ...chatIds];
       setChatIds(updated);
@@ -122,9 +163,10 @@ export default function EmployeeMessagesPage() {
     try { await sendMessage(activeContact.id, text); } catch {}
   };
 
-  const statusDot = (s: string) => {
-    const colors = { online: "bg-emerald-500", away: "bg-amber-400", offline: "bg-slate-400" };
-    return <span className={`h-2.5 w-2.5 rounded-full ring-2 ring-white dark:ring-slate-950 ${colors[s as keyof typeof colors] || colors.offline}`} />;
+  // Real users carry no presence status; show a neutral "available" dot.
+  const statusDot = (s?: string) => {
+    const colors: Record<string, string> = { online: "bg-emerald-500", away: "bg-amber-400", offline: "bg-slate-400" };
+    return <span className={`h-2.5 w-2.5 rounded-full ring-2 ring-white dark:ring-slate-950 ${colors[s as string] || "bg-emerald-500"}`} />;
   };
 
   const conversationList = (
@@ -173,7 +215,7 @@ export default function EmployeeMessagesPage() {
           <h3 className="text-sm font-bold text-slate-900 dark:text-white">All Contacts</h3>
         </div>
         <div className="flex-1 overflow-y-auto p-3 space-y-1">
-          {(Object.entries(contacts) as [SectionKey, MockContact[]][]).map(([key, items]) => {
+          {(Object.entries(contacts) as [SectionKey, Contact[]][]).map(([key, items]) => {
             if (items.length === 0) return null;
             const Icon = sectionIcons[key];
             const labels: Record<SectionKey, string> = { admins: "Admin", employees: "Team", clients: "Clients" };

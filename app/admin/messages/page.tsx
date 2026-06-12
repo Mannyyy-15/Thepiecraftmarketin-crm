@@ -4,8 +4,19 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { Send, Search, Plus, ArrowLeft, MessageSquare, X, Building2, Users, Shield, ChevronDown, ChevronRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Avatar } from "@/components/ui/Avatar";
-import { sendMessage, getConversations, getConversationMessages, markConversationRead } from "@/app/actions/crm";
-import { getAdminContacts, MockContact, getAllContacts } from "@/lib/mock-contacts";
+import { sendMessage, getConversations, getConversationMessages, markConversationRead, getMessagingContacts } from "@/app/actions/crm";
+
+interface Contact {
+  id: number;
+  name: string;
+  email: string;
+  role: "admin" | "employee" | "client";
+  systemRole?: string | null;
+  jobTitle?: string;
+  clientName?: string;
+  industry?: string;
+  status?: string;
+}
 
 const STORAGE_KEY = "admin_chat_ids";
 
@@ -20,29 +31,55 @@ type SectionKey = keyof typeof sectionIcons;
 
 export default function AdminMessagesPage() {
   const [conversations, setConversations] = useState<any[]>([]);
-  const [activeContact, setActiveContact] = useState<MockContact | null>(null);
+  const [activeContact, setActiveContact] = useState<Contact | null>(null);
   const [messages, setMessages] = useState<any[]>([]);
   const [newMsg, setNewMsg] = useState("");
   const [search, setSearch] = useState("");
   const [chatIds, setChatIds] = useState<number[]>([]);
+  const [allContacts, setAllContacts] = useState<Contact[]>([]);
   const [showContactPicker, setShowContactPicker] = useState(false);
   const [pickerSearch, setPickerSearch] = useState("");
   const [expandedSections, setExpandedSections] = useState<Record<SectionKey, boolean>>({ admins: true, employees: true, clients: true });
   const chatEndRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => { setChatIds(loadChatIds()); }, []);
-
-  const contacts = useMemo(() => getAdminContacts(), []);
-  const allMap = useMemo(() => {
-    const m = new Map<number, MockContact>();
-    for (const c of getAllContacts()) m.set(c.id, c);
-    return m;
+  useEffect(() => {
+    setChatIds(loadChatIds());
+    getMessagingContacts().then((res) => {
+      if (res.success && res.data) setAllContacts(res.data as Contact[]);
+    });
   }, []);
 
-  const chatContacts = useMemo(
-    () => chatIds.map((id) => allMap.get(id)).filter(Boolean) as MockContact[],
-    [chatIds, allMap],
-  );
+  const contacts = useMemo(() => ({
+    admins: allContacts.filter((c) => c.role === "admin"),
+    employees: allContacts.filter((c) => c.role === "employee"),
+    clients: allContacts.filter((c) => c.role === "client"),
+  }), [allContacts]);
+
+  const allMap = useMemo(() => {
+    const m = new Map<number, Contact>();
+    for (const c of allContacts) m.set(c.id, c);
+    return m;
+  }, [allContacts]);
+
+  const chatContacts = useMemo(() => {
+    const ordered: number[] = [];
+    const seen = new Set<number>();
+    for (const conv of conversations) {
+      const id = conv.otherId ?? conv.otherUser?.id;
+      if (id && !seen.has(id)) { seen.add(id); ordered.push(id); }
+    }
+    for (const id of chatIds) {
+      if (!seen.has(id)) { seen.add(id); ordered.push(id); }
+    }
+    return ordered
+      .map((id) => allMap.get(id) || (() => {
+        const conv = conversations.find((c) => (c.otherId ?? c.otherUser?.id) === id);
+        return conv?.otherUser
+          ? { id, name: conv.otherUser.name, email: conv.otherUser.email, role: conv.otherUser.role } as Contact
+          : null;
+      })())
+      .filter(Boolean) as Contact[];
+  }, [conversations, chatIds, allMap]);
 
   const filteredList = useMemo(() => {
     if (!search) return chatContacts;

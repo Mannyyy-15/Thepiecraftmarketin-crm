@@ -1855,6 +1855,34 @@ export async function getUnreadMessageCount() {
   }
 }
 
+// Real contacts a user can message: all admins + employees except themselves.
+// Returns the current user's id so the page can filter / label correctly.
+export async function getMessagingContacts() {
+  try {
+    const session = await getAuthSession();
+    if (!session) return { success: false, data: [], meId: 0 };
+    if (!db) return { success: false, data: [], meId: 0 };
+
+    const meId = session.id as number;
+    const usersList = await db
+      .select({
+        id: schema.users.id,
+        name: schema.users.name,
+        email: schema.users.email,
+        role: schema.users.role,
+        systemRole: schema.users.systemRole,
+      })
+      .from(schema.users)
+      .where(inArray(schema.users.role, ["admin", "employee"]));
+
+    const contacts = usersList.filter((u) => u.id !== meId);
+    return { success: true, data: contacts, meId };
+  } catch (error: any) {
+    console.error("getMessagingContacts Error:", error);
+    return { success: false, data: [], meId: 0, error: error.message };
+  }
+}
+
 // Register FCM Token for Push Notifications
 export async function registerFcmToken(token: string, deviceType?: string) {
   const session = await getAuthSession();

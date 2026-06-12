@@ -364,10 +364,10 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
 
         {/* ── Header card (full width) ─────────────────────────────────────── */}
-        <BentoCard className="lg:col-span-12 bg-gradient-to-r from-brand-500/5 via-violet-500/5 to-transparent">
+        <BentoCard className="lg:col-span-12 bg-slate-50 dark:bg-slate-900/40">
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div className="flex items-start gap-4">
-              <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-brand-500 to-violet-600 flex items-center justify-center shrink-0 shadow-lg">
+              <div className="h-14 w-14 rounded-2xl bg-brand-500 flex items-center justify-center shrink-0 shadow-sm">
                 <TypeIcon className="h-6 w-6 text-white" />
               </div>
               <div>
@@ -508,7 +508,7 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
 
           {/* Lead highlight */}
           {project.lead ? (
-            <div className="mb-4 flex items-center gap-3 px-3.5 py-3 rounded-xl bg-gradient-to-r from-brand-500/5 to-violet-500/5 border border-brand-500/15 dark:border-brand-700/30">
+            <div className="mb-4 flex items-center gap-3 px-3.5 py-3 rounded-xl bg-slate-50 border border-slate-200 dark:bg-slate-900/40 dark:border-slate-800">
               <div className="relative shrink-0">
                 <Avatar name={project.lead.name} size="sm" />
                 <div className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-amber-400 flex items-center justify-center shadow-sm">
@@ -714,7 +714,7 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
             {project.client && (
               <button onClick={() => router.push(`/admin/clients/${project.client.id}`)}
                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/30 border border-slate-200/80 dark:border-slate-800/80 hover:border-brand-300 dark:hover:border-brand-700 transition-all cursor-pointer text-left">
-                <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center text-xs font-extrabold text-white shrink-0">
+                <div className="h-9 w-9 rounded-xl bg-brand-500 flex items-center justify-center text-xs font-extrabold text-white shrink-0">
                   {(project.clientName || "?").substring(0, 2).toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0">

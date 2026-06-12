@@ -21,6 +21,8 @@ import { useEffect, useState } from "react";
 import { Avatar } from "@/components/ui/Avatar";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { getCurrentUser } from "@/app/actions/auth";
+import { getMyNotifications, markAllNotificationsRead, dismissNotification } from "@/app/actions/crm";
+import NotificationPanel from "@/components/NotificationPanel";
 
 interface SearchItem {
   title: string;
@@ -56,14 +58,25 @@ export default function PortalTopNav({ onMenuClick }: { onMenuClick?: () => void
     });
   }, []);
 
-  // Notification states
+  // Notification states (real, from the database)
   const [showNotifications, setShowNotifications] = useState(false);
-  const [hasUnread, setHasUnread] = useState(true);
-  const [notifications, setNotifications] = useState([
-    { id: "cn1", title: "Brand Brief Uploaded", message: "Lena Park uploaded 'Acme - Brand Guidelines v3.pdf'.", time: "10m ago", read: false, icon: <FileText className="h-3.5 w-3.5 text-indigo-500" /> },
-    { id: "cn2", title: "Invoice Released", message: "INV-2026-0144 for ₹22,000 has been issued.", time: "1h ago", read: false, icon: <DollarSign className="h-3.5 w-3.5 text-emerald-500" /> },
-    { id: "cn3", title: "Project Stage Shifted", message: "Website Redesign moved to In-Progress stage.", time: "Yesterday", read: true, icon: <Briefcase className="h-3.5 w-3.5 text-amber-500" /> },
-  ]);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const hasUnread = notifications.some((n) => !n.read);
+
+  useEffect(() => {
+    const fetchNotifs = async () => {
+      const res = await getMyNotifications();
+      if (res.success && res.data) setNotifications(res.data);
+    };
+    fetchNotifs();
+    const interval = setInterval(fetchNotifs, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleMarkAllRead = async () => {
+    await markAllNotificationsRead();
+    setNotifications(notifications.map((n) => ({ ...n, read: 1 })));
+  };
 
   // Global Search
   const [showSearchModal, setShowSearchModal] = useState(false);
@@ -102,18 +115,9 @@ export default function PortalTopNav({ onMenuClick }: { onMenuClick?: () => void
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  const handleMarkAllRead = () => {
-    setNotifications(notifications.map((n) => ({ ...n, read: true })));
-    setHasUnread(false);
-    addToast("All client alerts marked as read", "info");
-  };
-
-  const handleDismissNotification = (id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleDismissNotification = async (id: number) => {
+    await dismissNotification(id);
     setNotifications(notifications.filter((n) => n.id !== id));
-    if (notifications.filter((n) => n.id !== id && !n.read).length === 0) {
-      setHasUnread(false);
-    }
   };
 
   // Search Items optimized for client view
@@ -269,12 +273,12 @@ export default function PortalTopNav({ onMenuClick }: { onMenuClick?: () => void
           <button
             type="button"
             onClick={() => {
-              setShowNotifications(!showNotifications);
+              setShowNotifications(true);
               setShowQuickActions(false);
             }}
             className={`relative inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 transition-all cursor-pointer ${
-              showNotifications 
-                ? "bg-slate-100 dark:bg-slate-800 text-indigo-600" 
+              showNotifications
+                ? "bg-slate-100 dark:bg-slate-800 text-indigo-600"
                 : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
             }`}
             aria-label="Notifications"
@@ -284,63 +288,20 @@ export default function PortalTopNav({ onMenuClick }: { onMenuClick?: () => void
               <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-indigo-500 ring-2 ring-white dark:ring-slate-950 animate-pulse" />
             )}
           </button>
-
-          {showNotifications && (
-            <div className="absolute right-0 mt-2.5 w-80 sm:w-96 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl z-50 overflow-hidden animate-fadeIn">
-              <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 px-4 py-3 bg-slate-50/50 dark:bg-slate-900/10">
-                <span className="text-xs font-bold text-slate-900 dark:text-white">Workspace Alerts</span>
-                {hasUnread && (
-                  <button 
-                    onClick={handleMarkAllRead}
-                    className="text-[10px] font-bold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 cursor-pointer"
-                  >
-                    Mark all read
-                  </button>
-                )}
-              </div>
-              
-              <div className="max-h-72 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800/80">
-                {notifications.map((n) => (
-                  <div 
-                    key={n.id} 
-                    onClick={() => {
-                      setNotifications(notifications.map(item => item.id === n.id ? { ...item, read: true } : item));
-                      if (notifications.filter(item => item.id !== n.id && !item.read).length === 0) setHasUnread(false);
-                    }}
-                    className={`flex items-start gap-3 p-3.5 transition-colors cursor-pointer ${
-                      n.read ? "hover:bg-slate-50/40 dark:hover:bg-slate-900/10" : "bg-indigo-500/5 hover:bg-indigo-500/10"
-                    }`}
-                  >
-                    <div className="h-7 w-7 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
-                      {n.icon}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between gap-2">
-                        <p className={`text-xs font-bold truncate ${n.read ? "text-slate-800 dark:text-slate-200" : "text-indigo-600 dark:text-indigo-400"}`}>{n.title}</p>
-                        <span className="text-[9px] text-slate-400 font-medium tabular-nums">{n.time}</span>
-                      </div>
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-normal mt-0.5">{n.message}</p>
-                    </div>
-                    <button 
-                      onClick={(e) => handleDismissNotification(n.id, e)}
-                      className="text-slate-450 hover:text-rose-600 p-0.5 rounded transition-colors"
-                      title="Dismiss"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </div>
-                ))}
-                
-                {notifications.length === 0 && (
-                  <div className="p-8 text-center text-xs text-slate-400">
-                    <Check className="h-6 w-6 text-emerald-500 mx-auto mb-2" />
-                    All caught up! No notifications.
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
         </div>
+
+        {/* Notifications side panel (closes on backdrop / Esc) */}
+        <NotificationPanel
+          open={showNotifications}
+          onClose={() => setShowNotifications(false)}
+          notifications={notifications}
+          onMarkAllRead={handleMarkAllRead}
+          onMarkOneRead={async (id) => {
+            await markAllNotificationsRead();
+            setNotifications(notifications.map((item) => (item.id === id ? { ...item, read: 1 } : item)));
+          }}
+          onDismiss={handleDismissNotification}
+        />
 
         <div className="ml-1 hidden sm:block">
           <Avatar name={user?.name || "Client"} size="sm" />

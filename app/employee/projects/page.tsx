@@ -6,6 +6,7 @@ import {
   Target, ExternalLink, Globe, CheckCircle2,
 } from "lucide-react";
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
 import { Progress } from "@/components/ui/Progress";
 import { cn } from "@/components/ui/cn";
@@ -141,7 +142,7 @@ export default function EmployeeProjectsPage() {
                   )}
                 </div>
 
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white truncate">{p.name}</h3>
+                <Link href={"/employee/projects/${p.id}"} className="block text-sm font-bold text-slate-900 dark:text-white truncate hover:text-brand-600 hover:underline transition-colors">{p.name}</Link>
                 <p className="text-xs text-slate-400 mt-0.5 truncate">{p.clientName || "Unknown client"}</p>
 
                 <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 grid grid-cols-2 gap-2 text-xs">
@@ -274,7 +275,7 @@ export default function EmployeeProjectsPage() {
                             {isMeta ? <Megaphone className="h-3.5 w-3.5 text-indigo-500" /> : <Code2 className="h-3.5 w-3.5 text-emerald-500" />}
                           </div>
                           <div className="min-w-0">
-                            <div className="font-semibold text-slate-900 dark:text-white truncate">{p.name}</div>
+                            <Link href={"/employee/projects/${p.id}"} className="font-semibold text-slate-900 dark:text-white truncate hover:text-brand-600 hover:underline transition-colors">{p.name}</Link>
                             <div className="text-xs text-slate-400 truncate">{p.clientName || "—"}</div>
                           </div>
                         </div>
@@ -316,3 +317,4 @@ export default function EmployeeProjectsPage() {
     </div>
   );
 }
+

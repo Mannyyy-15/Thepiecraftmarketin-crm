@@ -77,7 +77,7 @@ export function KanbanBoard({ initialTasks }: { initialTasks: KanbanTask[] }) {
 
   const getPriorityVariant = (p: string) => {
     if (p === "high") return "danger";
-    if (p === "medium") return "warning";
+    if (p === "medium") return "brand";
     return "neutral";
   };
 
@@ -137,7 +137,7 @@ export function KanbanBoard({ initialTasks }: { initialTasks: KanbanTask[] }) {
                     {task.assignedTo ? (
                       <div className="flex items-center gap-1.5">
                         <Avatar name={task.assignedTo} size="xs" />
-                        <span className="text-[10px] font-medium text-slate-500 truncate max-w-[80px]">{task.assignedTo}</span>
+                        <span className="text-[10px] font-medium text-slate-500 truncate max-w-[120px]">{task.assignedTo}</span>
                       </div>
                     ) : (
                       <div className="flex items-center gap-1.5 text-slate-400">
@@ -160,3 +160,5 @@ export function KanbanBoard({ initialTasks }: { initialTasks: KanbanTask[] }) {
     </div>
   );
 }
+
+
