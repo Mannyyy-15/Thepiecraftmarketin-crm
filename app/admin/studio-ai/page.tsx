@@ -21,8 +21,9 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Progress } from "@/components/ui/Progress";
+import { generateStrategy } from "@/app/actions/ai";
 
-// Mock templates
+// Fallback templates (used only if the AI call fails, so the panel is never empty)
 const strategies: Record<string, any> = {
   meta: {
     summary: "A high-efficiency Meta Ads strategy targeting middle-of-funnel retargeting and high-intent lookalike audiences to maximize ROAS.",
@@ -84,33 +85,78 @@ export default function StudioAIPage() {
     "Compiling technical roadmap & milestone schedules..."
   ];
 
-  // Simulated multi-step loading
+  // Advance the step animation while the AI request is in flight.
   useEffect(() => {
     let timer: any;
-    if (isGenerating) {
-      if (currentStep < loadingSteps.length) {
-        timer = setTimeout(() => {
-          setCurrentStep((prev) => prev + 1);
-        }, 1200);
-      } else {
-        setIsGenerating(false);
-        setGeneratedOutput(strategies[selectedChannel]);
-      }
+    if (isGenerating && currentStep < loadingSteps.length - 1) {
+      timer = setTimeout(() => setCurrentStep((prev) => prev + 1), 900);
     }
     return () => clearTimeout(timer);
   }, [isGenerating, currentStep]);
 
-  const handleGenerate = (e: React.FormEvent) => {
+  const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsGenerating(true);
     setCurrentStep(0);
     setGeneratedOutput(null);
+    try {
+      const res = await generateStrategy(selectedClient, selectedChannel, focusKeyword);
+      if (res.success && res.data) {
+        setGeneratedOutput(res.data);
+      } else {
+        toast(res.error || "AI unavailable — showing a sample.", "error");
+        setGeneratedOutput(strategies[selectedChannel]);
+      }
+    } catch {
+      toast("Something went wrong generating the strategy.", "error");
+      setGeneratedOutput(strategies[selectedChannel]);
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const handleCopy = (text: string, index: number) => {
     navigator.clipboard.writeText(text);
     setCopiedIndex(index);
     setTimeout(() => setCopiedIndex(null), 2000);
+  };
+
+  const briefText = () => {
+    const o = generatedOutput;
+    if (!o) return "";
+    const lines: string[] = [];
+    lines.push(`STRATEGY BRIEF — ${selectedClient} (${selectedChannel.toUpperCase()})`, "");
+    lines.push("OVERVIEW", o.summary, "");
+    lines.push("AD COPY");
+    (o.copywriting || []).forEach((c: any, i: number) =>
+      lines.push(`  ${i + 1}. "${c.hook}"`, `     ${c.body}`, `     CTA: ${c.cta}`)
+    );
+    lines.push("", "TARGET AUDIENCE", ...(o.audience || []).map((a: string) => `  • ${a}`));
+    lines.push("", "ROADMAP");
+    (o.roadmap || []).forEach((r: any, i: number) => lines.push(`  ${i + 1}. ${r.step}: ${r.detail}`));
+    return lines.join("\n");
+  };
+
+  const handleCopyBrief = async () => {
+    const text = briefText();
+    if (!text) return;
+    await navigator.clipboard.writeText(text);
+    toast("Brief copied to clipboard.", "success");
+  };
+
+  const handleDownloadBrief = () => {
+    const text = briefText();
+    if (!text) return;
+    const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${selectedClient.replace(/\s+/g, "-")}-${selectedChannel}-brief.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast("Brief downloaded.", "success");
   };
 
   return (
@@ -265,10 +311,10 @@ export default function StudioAIPage() {
                     <Brain className="h-3.5 w-3.5" /> Strategy Playbook
                   </span>
                   <div className="flex gap-1.5">
-                    <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs" onClick={() => toast("Strategy downloaded as PDF! (Demo)", "info")}>
-                      <Download className="h-3.5 w-3.5" /> Export PDF
+                    <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs" onClick={handleDownloadBrief}>
+                      <Download className="h-3.5 w-3.5" /> Download
                     </Button>
-                    <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs" onClick={() => toast("Copied brief to clipboard! (Demo)", "info")}>
+                    <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs" onClick={handleCopyBrief}>
                       <Copy className="h-3.5 w-3.5" /> Copy Brief
                     </Button>
                   </div>

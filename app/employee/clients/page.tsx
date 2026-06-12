@@ -1,22 +1,19 @@
 "use client";
 import { useToast } from "@/providers/ToastProvider";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Building2,
-  Download,
   Filter,
   Mail,
-  MoreHorizontal,
   Phone,
-  Plus,
   Search,
   Users,
   TrendingUp,
   Heart,
-  Briefcase,
   CheckCircle,
-  AlertTriangle
+  AlertTriangle,
+  Loader2,
 } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -24,11 +21,26 @@ import { Card, CardContent } from "@/components/ui/Card";
 import { Avatar } from "@/components/ui/Avatar";
 import { Progress } from "@/components/ui/Progress";
 import KpiCard from "@/components/KpiCard";
-import { clients } from "@/lib/mock";
 import { getClientStatusVariant, getClientStatusLabel } from "@/lib/statusHelpers";
+import { getMyClients, getFreshUserProfile } from "@/app/actions/crm";
+
+// Deterministic avatar gradient + initials derived from the client name, so
+// real clients (which don't carry logoBg/initials) still render nicely.
+const GRADIENTS = [
+  "from-rose-500 to-orange-500", "from-amber-500 to-rose-500", "from-emerald-500 to-teal-500",
+  "from-indigo-500 to-violet-500", "from-sky-500 to-indigo-500", "from-violet-600 to-fuchsia-600",
+];
+function clientVisual(name: string, id: number) {
+  const initials = (name || "?").split(/\s+/).map(w => w[0]).join("").slice(0, 2).toUpperCase();
+  return { initials, logoBg: GRADIENTS[id % GRADIENTS.length] };
+}
 
 export default function EmployeeClientsPage() {
-  const { toast, confirmDialog } = useToast();
+  const { toast } = useToast();
+
+  const [allClients, setAllClients] = useState<any[]>([]);
+  const [me, setMe] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [onlyMyAccounts, setOnlyMyAccounts] = useState(true);
@@ -37,78 +49,89 @@ export default function EmployeeClientsPage() {
   const [emailBody, setEmailBody] = useState("");
   const [emailSentMessage, setEmailSentMessage] = useState<string | null>(null);
 
-  // Filter clients
-  const filteredClients = clients.filter((c) => {
-    // Owner filter
-    if (onlyMyAccounts && c.owner !== "Priya Shah") {
-      return false;
-    }
-    // Search query filter
-    const query = searchQuery.toLowerCase();
-    return (
-      c.name.toLowerCase().includes(query) ||
-      c.industry.toLowerCase().includes(query) ||
-      c.owner.toLowerCase().includes(query)
-    );
-  });
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
+      try {
+        const [cr, pr] = await Promise.all([getMyClients(), getFreshUserProfile()]);
+        if (cr.success) setAllClients((cr.data as any[]) || []);
+        if (pr.success && pr.data) setMe(pr.data);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
 
-  // Calculate stats for Priya's managed portfolio
-  const priyaClients = clients.filter((c) => c.owner === "Priya Shah");
-  const activePriyaClients = priyaClients.filter((c) => c.status === "active");
-  const onboardingPriya = priyaClients.filter((c) => c.status === "onboarding");
-  const priyaMRR = priyaClients.reduce((sum, c) => sum + (c.status !== "churned" ? c.mrr : 0), 0);
-  
-  const totalPriyaHealth = priyaClients.reduce((sum, c) => sum + c.health, 0);
-  const priyaAvgHealth = priyaClients.length > 0 ? Math.round(totalPriyaHealth / priyaClients.length) : 0;
+  const myName = me?.name || "";
+
+  // Clients shown in the table (respecting the "only mine" + search filters)
+  const filteredClients = useMemo(() => {
+    const q = searchQuery.toLowerCase();
+    return allClients.filter((c) => {
+      if (onlyMyAccounts && !c.isMine) return false;
+      if (!q) return true;
+      return (
+        (c.name || "").toLowerCase().includes(q) ||
+        (c.ownerName || "").toLowerCase().includes(q)
+      );
+    });
+  }, [allClients, onlyMyAccounts, searchQuery]);
+
+  // Portfolio KPIs: the employee's own managed accounts.
+  const myClients = useMemo(() => allClients.filter(c => c.isMine), [allClients]);
+  const activeMine = myClients.filter(c => c.status === "active");
+  const onboardingMine = myClients.filter(c => c.status === "onboarding");
+  const portfolioMRR = myClients.reduce((sum, c) => sum + (c.totalMRR || 0), 0);
+  const avgHealth = myClients.length > 0
+    ? Math.round(myClients.reduce((sum, c) => sum + (c.health || 0), 0) / myClients.length)
+    : 0;
 
   const handleComposeEmail = (clientName: string) => {
     setComposeEmailTo(clientName);
-    setEmailSubject(`Strategy & Q3 Planning Alignment — ThePieCraft`);
-    setEmailBody(`Hi team,\n\nI hope you're having a great week! I'd like to sync on our outstanding deliverables and map out our strategic focus for the upcoming quarter...\n\nBest,\nPriya Shah\nLead Strategist`);
+    setEmailSubject(`Strategy & Planning Alignment — ThePieCraft`);
+    setEmailBody(`Hi team,\n\nI'd like to sync on our outstanding deliverables and map out our strategic focus for the upcoming quarter.\n\nBest,\n${myName}`);
   };
 
   const handleSendEmail = (e: React.FormEvent) => {
     e.preventDefault();
     setComposeEmailTo(null);
-    setEmailSentMessage(`Email sent to "${composeEmailTo}" team successfully! 🚀`);
-    setTimeout(() => {
-      setEmailSentMessage(null);
-    }, 4000);
+    setEmailSentMessage(`Email drafted to "${composeEmailTo}" team.`);
+    setTimeout(() => setEmailSentMessage(null), 4000);
   };
 
   return (
     <div className="space-y-6">
-      {/* KPI Cards Grid for Priya's Portfolio */}
+      {/* KPI Cards — your managed client portfolio */}
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
         <KpiCard
           title="Portfolio MRR"
-          value={`₹${priyaMRR.toLocaleString()}`}
-          change="+12.4% vs last Q"
-          changeType="positive"
+          value={`₹${portfolioMRR.toLocaleString()}`}
+          change={`${myClients.length} accounts`}
+          changeType="neutral"
           accent="brand"
           icon={<TrendingUp className="h-5 w-5" />}
         />
         <KpiCard
           title="Active Accounts"
-          value={`${activePriyaClients.length}`}
-          change={`${priyaClients.length} Total Assigned`}
+          value={`${activeMine.length}`}
+          change={`${myClients.length} Total Assigned`}
           changeType="neutral"
           accent="emerald"
           icon={<Users className="h-5 w-5" />}
         />
         <KpiCard
           title="In Onboarding"
-          value={`${onboardingPriya.length}`}
-          change="0 pending setup"
-          changeType="positive"
+          value={`${onboardingMine.length}`}
+          change={onboardingMine.length > 0 ? "In progress" : "All set up"}
+          changeType="neutral"
           accent="amber"
           icon={<Building2 className="h-5 w-5" />}
         />
         <KpiCard
           title="Portfolio Health"
-          value={`${priyaAvgHealth}%`}
-          change={priyaAvgHealth > 75 ? "Excellent" : "Needs Review"}
-          changeType={priyaAvgHealth > 75 ? "positive" : "negative"}
+          value={`${avgHealth}%`}
+          change={avgHealth > 75 ? "Excellent" : avgHealth > 0 ? "Needs Review" : "—"}
+          changeType={avgHealth > 75 ? "positive" : avgHealth > 0 ? "negative" : "neutral"}
           accent="portal"
           icon={<Heart className="h-5 w-5" />}
         />
@@ -222,32 +245,43 @@ export default function EmployeeClientsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-              {filteredClients.length === 0 ? (
+              {loading ? (
+                <tr>
+                  <td colSpan={7} className="px-5 py-16 text-center text-slate-400">
+                    <Loader2 className="h-6 w-6 animate-spin mx-auto text-brand-500" />
+                  </td>
+                </tr>
+              ) : filteredClients.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-5 py-12 text-center text-slate-400">
                     <div className="flex flex-col items-center justify-center gap-2">
                       <AlertTriangle className="h-8 w-8 text-slate-300 dark:text-slate-700" />
-                      <p className="text-sm font-semibold">No clients match your filter criteria.</p>
-                      <p className="text-xs">Try searching for something else or untoggle "Show Only My Managed Clients".</p>
+                      <p className="text-sm font-semibold">No clients to show.</p>
+                      <p className="text-xs">{onlyMyAccounts ? "You have no assigned accounts yet — turn off \"Only my accounts\" to see all." : "Try a different search."}</p>
                     </div>
                   </td>
                 </tr>
               ) : (
-                filteredClients.map((c) => (
-                  <tr key={c.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-900/40 transition-colors">
+                filteredClients.map((c) => {
+                  const vis = clientVisual(c.name, c.id);
+                  const contact = (() => { try { return JSON.parse(c.details || "{}"); } catch { return {}; } })();
+                  const phone = contact.phone || contact.contactPhone || "";
+                  const email = contact.email || contact.contactEmail || "";
+                  return (
+                  <tr key={c.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors duration-150">
                     <td className="px-5 py-3.5">
                       <div className="flex items-center gap-3">
-                        <div className={`h-9 w-9 rounded-xl bg-gradient-to-br ${c.logoBg} text-white text-xs font-bold flex items-center justify-center shrink-0`}>
-                          {c.initials}
+                        <div className={`h-9 w-9 rounded-xl bg-gradient-to-br ${vis.logoBg} text-white text-xs font-bold flex items-center justify-center shrink-0`}>
+                          {vis.initials}
                         </div>
                         <div className="min-w-0">
                           <div className="font-medium text-slate-900 dark:text-white truncate">{c.name}</div>
-                          <div className="text-xs text-slate-500 dark:text-slate-400 truncate">Partnership since {c.since}</div>
+                          <div className="text-xs text-slate-500 dark:text-slate-400 truncate">{c.projectCount} project{c.projectCount === 1 ? "" : "s"}</div>
                         </div>
                       </div>
                     </td>
-                    <td className="px-5 py-3.5 hidden md:table-cell text-slate-600 dark:text-slate-300 font-medium">{c.industry}</td>
-                    <td className="px-5 py-3.5 font-semibold text-slate-900 dark:text-white tabular-nums">${c.mrr.toLocaleString()}</td>
+                    <td className="px-5 py-3.5 hidden md:table-cell text-slate-600 dark:text-slate-300 font-medium capitalize">{(c.stage || "").replace(/_/g, " ") || "—"}</td>
+                    <td className="px-5 py-3.5 font-semibold text-slate-900 dark:text-white tabular-nums">₹{(c.totalMRR || 0).toLocaleString()}</td>
                     <td className="px-5 py-3.5 hidden lg:table-cell">
                       <div className="flex items-center gap-2 min-w-[120px]">
                         <Progress value={c.health} size="sm" className="w-20" barClassName={c.health > 70 ? "bg-gradient-to-r from-emerald-500 to-emerald-600" : c.health > 40 ? "bg-gradient-to-r from-amber-500 to-amber-600" : "bg-gradient-to-r from-rose-500 to-rose-600"} />
@@ -255,10 +289,14 @@ export default function EmployeeClientsPage() {
                       </div>
                     </td>
                     <td className="px-5 py-3.5 hidden sm:table-cell">
-                      <div className="flex items-center gap-2">
-                        <Avatar name={c.owner} size="xs" />
-                        <span className="text-sm text-slate-600 dark:text-slate-300 font-medium">{c.owner}</span>
-                      </div>
+                      {c.ownerName ? (
+                        <div className="flex items-center gap-2">
+                          <Avatar name={c.ownerName} size="xs" />
+                          <span className="text-sm text-slate-600 dark:text-slate-300 font-medium">{c.ownerName}</span>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-slate-400">Unassigned</span>
+                      )}
                     </td>
                     <td className="px-5 py-3.5">
                       <Badge dot variant={getClientStatusVariant(c.status)}>{getClientStatusLabel(c.status)}</Badge>
@@ -267,28 +305,33 @@ export default function EmployeeClientsPage() {
                       <div className="inline-flex items-center gap-1 justify-end">
                         <button
                           onClick={() => handleComposeEmail(c.name)}
-                          aria-label="Email Stakeholders"
-                          className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                          aria-label="Email stakeholders"
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition-colors"
                         >
                           <Mail className="h-4 w-4" />
                         </button>
-                        <button
-                          onClick={() => toast(`Calling ${c.name} primary account manager... (Demo, "info")`)}
-                          aria-label="Call Stakeholders"
-                          className="hidden sm:inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
-                        >
-                          <Phone className="h-4 w-4" />
-                        </button>
-                        <button
-                          aria-label="More"
-                          className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
-                        >
-                          <MoreHorizontal className="h-4 w-4" />
-                        </button>
+                        {phone ? (
+                          <a
+                            href={`tel:${phone}`}
+                            aria-label={`Call ${c.name}`}
+                            className="hidden sm:inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition-colors"
+                          >
+                            <Phone className="h-4 w-4" />
+                          </a>
+                        ) : (
+                          <button
+                            onClick={() => toast("No phone number on file for this client.", "info")}
+                            aria-label="No phone on file"
+                            className="hidden sm:inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-300 dark:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition-colors"
+                          >
+                            <Phone className="h-4 w-4" />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
-                ))
+                  );
+                })
               )}
             </tbody>
           </table>

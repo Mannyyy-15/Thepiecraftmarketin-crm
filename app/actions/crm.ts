@@ -249,7 +249,22 @@ export async function getProjects() {
     if (session.role === "admin") {
       results = await db.select().from(schema.projects);
     } else if (session.role === "employee") {
-      results = await db.select().from(schema.projects).where(eq(schema.projects.leadId, session.id as number));
+      // An employee is "on" a project if they are the lead OR they have any
+      // task assigned to them on that project. This makes the employee's
+      // Projects view reflect everything they actually work on.
+      const uid = session.id as number;
+      const taskRows = await db
+        .select({ projectId: schema.tasks.projectId })
+        .from(schema.tasks)
+        .where(eq(schema.tasks.userId, uid));
+      const taskProjectIds = Array.from(
+        new Set(taskRows.map(t => t.projectId).filter((x): x is number => x != null))
+      );
+
+      const allProjects = await db.select().from(schema.projects);
+      results = allProjects.filter(
+        p => p.leadId === uid || taskProjectIds.includes(p.id)
+      );
     } else {
       // Clients see projects mapped to their client account
       const clientProfile = await db.select().from(schema.clients).where(eq(schema.clients.ownerId, session.id as number)).limit(1);
@@ -2228,6 +2243,51 @@ export async function getClientsEnriched() {
     return { success: true, data: enriched };
   } catch (error: any) {
     console.error("getClientsEnriched Error:", error);
+    return { success: false, data: [], error: error.message };
+  }
+}
+
+// Employee-facing enriched clients: returns ALL clients with computed MRR /
+// project counts / health, plus an `isMine` flag for clients this employee owns.
+// The UI can then offer a "Only my accounts" toggle without a second request.
+export async function getMyClients() {
+  try {
+    const session = await getAuthSession();
+    if (!session) return { success: false, data: [] };
+    if (!db) return { success: false, data: [] };
+
+    const uid = session.id as number;
+    const [clientList, projectList, userList] = await Promise.all([
+      db.select().from(schema.clients),
+      db.select().from(schema.projects),
+      db.select({ id: schema.users.id, name: schema.users.name }).from(schema.users),
+    ]);
+
+    const enriched = clientList.map(client => {
+      const linkedProjects = projectList.filter(p => p.clientId === client.id || p.clientName === client.name);
+      const totalMRR = linkedProjects.reduce((s, p) => s + (p.monthlyFee || p.budget || 0), 0);
+      const owner = userList.find(u => u.id === client.ownerId) || null;
+      // Derive a simple status + health from the existing stage/progress fields.
+      const stage = client.stage || "contract_signed";
+      const status =
+        stage === "campaign_live" ? "active" :
+        stage === "contract_signed" ? "onboarding" : "onboarding";
+      const health = Math.max(0, Math.min(100, client.progress || 0));
+      return {
+        ...client,
+        linkedProjects,
+        projectCount: linkedProjects.length,
+        totalMRR,
+        ownerName: owner?.name || null,
+        status,
+        health,
+        isMine: client.ownerId === uid,
+      };
+    });
+
+    return { success: true, data: enriched };
+  } catch (error: any) {
+    console.error("getMyClients Error:", error);
     return { success: false, data: [], error: error.message };
   }
 }

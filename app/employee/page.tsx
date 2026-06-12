@@ -24,6 +24,7 @@ import {
   punchOut,
 } from "@/app/actions/crm";
 import { getValidatedLocation } from "@/lib/getLocation";
+import { Capacitor } from "@capacitor/core";
 
 export default function EmployeeDashboardPage() {
   const { toast } = useToast();
@@ -43,10 +44,8 @@ export default function EmployeeDashboardPage() {
   const [isNativeApp, setIsNativeApp] = useState(true);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      // If window.Capacitor is not present, we are in a web browser
-      setIsNativeApp(!!(window as any).Capacitor?.isNative);
-    }
+    // Reliably check if running inside a native Capacitor app
+    setIsNativeApp(Capacitor.isNativePlatform());
   }, []);
 
   const loadDashboardData = async () => {

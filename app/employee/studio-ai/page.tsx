@@ -123,6 +123,45 @@ export default function StudioAIPage() {
     setTimeout(() => setCopiedIndex(null), 2000);
   };
 
+  // Flatten the generated strategy into a readable plain-text brief.
+  const briefText = () => {
+    const o = generatedOutput;
+    if (!o) return "";
+    const lines: string[] = [];
+    lines.push(`STRATEGY BRIEF — ${selectedClient} (${selectedChannel.toUpperCase()})`, "");
+    lines.push("OVERVIEW", o.summary, "");
+    lines.push("AD COPY");
+    (o.copywriting || []).forEach((c: any, i: number) =>
+      lines.push(`  ${i + 1}. "${c.hook}"`, `     ${c.body}`, `     CTA: ${c.cta}`)
+    );
+    lines.push("", "TARGET AUDIENCE", ...(o.audience || []).map((a: string) => `  • ${a}`));
+    lines.push("", "ROADMAP");
+    (o.roadmap || []).forEach((r: any, i: number) => lines.push(`  ${i + 1}. ${r.step}: ${r.detail}`));
+    return lines.join("\n");
+  };
+
+  const handleCopyBrief = async () => {
+    const text = briefText();
+    if (!text) return;
+    await navigator.clipboard.writeText(text);
+    toast("Brief copied to clipboard.", "success");
+  };
+
+  const handleDownloadBrief = () => {
+    const text = briefText();
+    if (!text) return;
+    const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${selectedClient.replace(/\s+/g, "-")}-${selectedChannel}-brief.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast("Brief downloaded.", "success");
+  };
+
   return (
     <div className="space-y-6">
 
@@ -266,10 +305,10 @@ export default function StudioAIPage() {
                     <Brain className="h-3.5 w-3.5" /> Strategy Playbook
                   </span>
                   <div className="flex gap-1.5">
-                    <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs" onClick={() => toast("Strategy downloaded as PDF! (Demo)", "info")}>
-                      <Download className="h-3.5 w-3.5" /> Export PDF
+                    <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs" onClick={handleDownloadBrief}>
+                      <Download className="h-3.5 w-3.5" /> Download
                     </Button>
-                    <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs" onClick={() => toast("Copied brief to clipboard! (Demo)", "info")}>
+                    <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs" onClick={handleCopyBrief}>
                       <Copy className="h-3.5 w-3.5" /> Copy Brief
                     </Button>
                   </div>

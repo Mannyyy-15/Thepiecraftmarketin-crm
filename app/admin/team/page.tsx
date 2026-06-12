@@ -192,6 +192,7 @@ export default function TeamPage() {
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [newTaskPriority, setNewTaskPriority] = useState("medium");
   const [newTaskProjectId, setNewTaskProjectId] = useState<string>("");
+  const [selectedFilterProjectId, setSelectedFilterProjectId] = useState<string>("");
   const [newTaskDueDate, setNewTaskDueDate] = useState("");
   const [isCreatingTask, setIsCreatingTask] = useState(false);
   const [selectedSingleDateStatus, setSelectedSingleDateStatus] = useState<"vacation" | "sick" | "present" | "off">("present");
@@ -1424,89 +1425,44 @@ export default function TeamPage() {
 
                 {/* Assigned Workload Card */}
                 <div className="space-y-6">
-                  {/* Section 1: Delegated Projects */}
-                  <Card className="border border-slate-200 dark:border-slate-800/80 shadow-sm">
-                    <CardHeader className="border-b border-slate-100 dark:border-slate-800/80 py-4">
-                      <CardTitle className="text-sm font-bold flex items-center gap-2">
-                        <Briefcase className="h-4 w-4 text-brand-500" /> Active Projects
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4 py-4">
-                      {isWorkloadLoading ? (
-                        <Skeleton className="h-14 w-full rounded-xl" />
-                      ) : (
-                        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-                          <div className="flex-1 flex flex-wrap gap-3 w-full">
-                            {allProjects.filter(p => String(p.leadId) === String(selectedEmployeeDetailId)).length === 0 ? (
-                              <div className="text-xs font-medium text-slate-500 bg-slate-50 dark:bg-slate-800/50 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm w-full text-center sm:text-left">
-                                No projects assigned yet.
-                              </div>
-                            ) : (
-                              allProjects.filter(p => String(p.leadId) === String(selectedEmployeeDetailId)).map(p => (
-                                <div key={p.id} className="flex items-center gap-3 bg-slate-50 dark:bg-slate-800/50 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                                  <div>
-                                    <p className="text-xs font-bold text-slate-900 dark:text-white">{p.name}</p>
-                                    <p className="text-[10px] text-slate-500 mt-0.5">Budget: ${(p.budget || 0).toLocaleString()}</p>
-                                  </div>
-                                  <button onClick={() => handleUnassignProject(p.id)} className="h-6 w-6 rounded-md hover:bg-rose-100 hover:text-rose-600 dark:hover:bg-rose-900/40 text-slate-400 flex items-center justify-center transition-colors">
-                                    <X className="h-3 w-3" />
-                                  </button>
-                                </div>
-                              ))
-                            )}
-                          </div>
-                          
-                          <div className="w-full sm:w-64 shrink-0 relative z-10">
-                            <select
-                              onChange={(e) => {
-                                if (e.target.value) {
-                                  handleAssignProject(parseInt(e.target.value));
-                                  e.target.value = "";
-                                }
-                              }}
-                              className="h-11 w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 text-xs font-medium focus:ring-2 focus:ring-brand-500/40 text-slate-700 dark:text-slate-200 shadow-sm transition-all"
-                            >
-                              <option value="">+ Delegate Project...</option>
-                              {allProjects.filter(p => String(p.leadId) !== String(selectedEmployeeDetailId)).map(p => (
-                                <option key={p.id} value={p.id}>
-                                  {p.name} {p.leadId ? "(Has lead)" : ""}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-
-                  {/* Section 2: Tasks & To-Dos */}
+                  {/* Tasks & To-Dos */}
                   <Card className="border border-slate-200 dark:border-slate-800/80 shadow-md">
-                    <CardHeader className="border-b border-slate-100 dark:border-slate-800/80 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <CardHeader className="border-b border-slate-100 dark:border-slate-800/80 py-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                       <div className="space-y-1">
                         <CardTitle className="text-base font-bold flex items-center gap-2">
-                          <CheckCircle2 className="h-5 w-5 text-emerald-500" /> Employee Tasks
+                          <CheckCircle2 className="h-5 w-5 text-brand-500" /> Employee Tasks
                         </CardTitle>
-                        {newTaskDueDate && (
-                          <CardDescription className="text-xs font-bold text-brand-600 dark:text-brand-400 flex items-center gap-1.5 mt-1">
-                            Showing tasks due: {new Date(newTaskDueDate).toLocaleDateString("en-US", { month: "long", day: "numeric" })}
-                            <button onClick={() => setNewTaskDueDate("")} className="ml-2 px-2 py-0.5 bg-brand-50 dark:bg-brand-900/40 rounded-full hover:bg-brand-100 dark:hover:bg-brand-800/60 transition-colors">
-                              Show All
-                            </button>
-                          </CardDescription>
-                        )}
+                        <CardDescription className="text-xs text-slate-500 flex items-center gap-2">
+                           Manage assigned tasks and workload.
+                        </CardDescription>
                       </div>
                       
-                      {/* Stats */}
-                      {!isWorkloadLoading && (
-                        <div className="flex gap-2">
-                          <Badge variant="brand" className="font-bold">
-                            {employeeTasks.filter((t: any) => (!newTaskDueDate || t.dueDate === newTaskDueDate) && t.done === 1).length} Done
-                          </Badge>
-                          <Badge variant="neutral" className="font-bold">
-                            {employeeTasks.filter((t: any) => !newTaskDueDate || t.dueDate === newTaskDueDate).length} Total
-                          </Badge>
-                        </div>
-                      )}
+                      <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto items-center">
+                        <select
+                          value={selectedFilterProjectId}
+                          onChange={(e) => {
+                            setSelectedFilterProjectId(e.target.value);
+                            setNewTaskProjectId(e.target.value);
+                          }}
+                          className="h-10 w-full sm:w-56 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 text-sm font-bold focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white"
+                        >
+                          <option value="">All Projects</option>
+                          {allProjects.map(p => (
+                            <option key={p.id} value={p.id}>{p.name}</option>
+                          ))}
+                        </select>
+                        
+                        {!isWorkloadLoading && (
+                          <div className="flex gap-2 shrink-0">
+                            <Badge variant="brand" className="font-bold">
+                              {employeeTasks.filter((t: any) => (!selectedFilterProjectId || String(t.projectId) === selectedFilterProjectId) && t.done === 1).length} Done
+                            </Badge>
+                            <Badge variant="neutral" className="font-bold">
+                              {employeeTasks.filter((t: any) => (!selectedFilterProjectId || String(t.projectId) === selectedFilterProjectId)).length} Total
+                            </Badge>
+                          </div>
+                        )}
+                      </div>
                     </CardHeader>
                     
                     <CardContent className="p-0">
@@ -1521,11 +1477,11 @@ export default function TeamPage() {
                           {/* Add Task Input Row (Inline Style) */}
                           <div className="p-4 sm:p-6 bg-slate-50/50 dark:bg-slate-900/30 border-b border-slate-100 dark:border-slate-800/80">
                             <form onSubmit={handleCreateEmployeeTask} className="flex flex-col xl:flex-row items-start xl:items-center gap-3">
-                              <div className="flex-1 w-full relative">
+                              <div className="flex-1 w-full">
                                 <input
                                   type="text"
                                   required
-                                  placeholder="Add a new task..."
+                                  placeholder={selectedFilterProjectId ? "Add a task to the selected project..." : "Select a project above to add a task, or add standalone task..."}
                                   value={newTaskTitle}
                                   onChange={(e) => setNewTaskTitle(e.target.value)}
                                   className="h-11 w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 px-4 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-brand-500/40 shadow-sm text-slate-800 dark:text-white"
@@ -1533,17 +1489,6 @@ export default function TeamPage() {
                               </div>
                               
                               <div className="flex flex-wrap sm:flex-nowrap items-center gap-3 w-full xl:w-auto">
-                                <select
-                                  value={newTaskProjectId}
-                                  onChange={(e) => setNewTaskProjectId(e.target.value)}
-                                  className="h-11 w-full sm:w-40 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white"
-                                >
-                                  <option value="">No Project</option>
-                                  {allProjects.filter(p => String(p.leadId) === String(selectedEmployeeDetailId)).map(p => (
-                                    <option key={p.id} value={p.id}>{p.name.slice(0, 15)}...</option>
-                                  ))}
-                                </select>
-                                
                                 <input
                                   type="date"
                                   value={newTaskDueDate}
@@ -1575,9 +1520,10 @@ export default function TeamPage() {
                           {/* Task List */}
                           <div className="p-4 sm:p-6 space-y-3 max-h-[500px] overflow-y-auto">
                             {(() => {
-                              const filteredTasks = newTaskDueDate
-                                ? employeeTasks.filter((t: any) => t.dueDate === newTaskDueDate)
-                                : employeeTasks;
+                              const filteredTasks = employeeTasks.filter((t: any) => {
+                                if (selectedFilterProjectId && String(t.projectId) !== selectedFilterProjectId) return false;
+                                return true;
+                              });
                                 
                               if (filteredTasks.length === 0) {
                                 return (
@@ -1587,7 +1533,7 @@ export default function TeamPage() {
                                     </div>
                                     <p className="text-sm font-bold text-slate-600 dark:text-slate-400">All caught up!</p>
                                     <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 text-center max-w-[200px]">
-                                      {newTaskDueDate ? "No tasks due on this date." : "This employee has an empty workload."}
+                                      {selectedFilterProjectId ? "No tasks for this project." : "This employee has an empty workload."}
                                     </p>
                                   </div>
                                 );
