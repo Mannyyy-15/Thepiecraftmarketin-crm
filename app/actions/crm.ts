@@ -3599,3 +3599,36 @@ export async function generatePaymentLink(invoiceId: number, amount: number, cli
     return { success: false, error: "Failed to generate payment link via Razorpay." };
   }
 }
+
+export async function getAgencySettings() {
+  try {
+    const session = await getAuthSession();
+    if (!session || session.role !== "admin") return { success: false, error: "Unauthorized." };
+    if (!db) return { success: false, error: "Database not connected." };
+
+    const settings = await db.query.agencySettings.findFirst();
+    return { success: true, data: settings };
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
+
+export async function updateAgencySettings(data: Partial<typeof schema.agencySettings.$inferInsert>) {
+  try {
+    const session = await getAuthSession();
+    if (!session || session.role !== "admin") return { success: false, error: "Unauthorized." };
+    if (!db) return { success: false, error: "Database not connected." };
+
+    const settings = await db.query.agencySettings.findFirst();
+    if (settings) {
+      await db.update(schema.agencySettings).set(data).where(eq(schema.agencySettings.id, settings.id));
+    } else {
+      await db.insert(schema.agencySettings).values(data as any);
+    }
+    
+    revalidatePath("/admin/settings");
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
