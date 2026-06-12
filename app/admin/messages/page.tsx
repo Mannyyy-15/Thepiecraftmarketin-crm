@@ -16,6 +16,7 @@ interface Contact {
   clientName?: string;
   industry?: string;
   status?: string;
+  assignedTo?: string;
 }
 
 const STORAGE_KEY = "admin_chat_ids";
@@ -134,7 +135,7 @@ export default function AdminMessagesPage() {
 
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
 
-  const addChatContact = (contact: MockContact) => {
+  const addChatContact = (contact: Contact) => {
     if (!chatIds.includes(contact.id)) {
       const updated = [contact.id, ...chatIds];
       setChatIds(updated);
@@ -159,9 +160,9 @@ export default function AdminMessagesPage() {
     try { await sendMessage(activeContact.id, text); } catch {}
   };
 
-  const statusDot = (s: string) => {
-    const colors = { online: "bg-emerald-500", away: "bg-amber-400", offline: "bg-slate-400" };
-    return <span className={`h-2.5 w-2.5 rounded-full ring-2 ring-white dark:ring-slate-950 ${colors[s as keyof typeof colors] || colors.offline}`} />;
+  const statusDot = (s?: string) => {
+    const colors: Record<string, string> = { online: "bg-emerald-500", away: "bg-amber-400", offline: "bg-slate-400" };
+    return <span className={`h-2.5 w-2.5 rounded-full ring-2 ring-white dark:ring-slate-950 ${colors[s as string] || "bg-emerald-500"}`} />;
   };
 
   // Conversation list component
@@ -230,7 +231,7 @@ export default function AdminMessagesPage() {
           <h3 className="text-sm font-bold text-slate-900 dark:text-white">All Contacts</h3>
         </div>
         <div className="flex-1 overflow-y-auto p-3 space-y-1">
-          {(Object.entries(contacts) as [SectionKey, MockContact[]][]).map(([key, items]) => {
+          {(Object.entries(contacts) as [SectionKey, Contact[]][]).map(([key, items]) => {
             if (items.length === 0) return null;
             const Icon = sectionIcons[key];
             const labels: Record<SectionKey, string> = { admins: "Admin", employees: "Team", clients: "Clients" };

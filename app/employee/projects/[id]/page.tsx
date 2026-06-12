@@ -689,11 +689,6 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
           </div>
         </BentoCard>
 
-        </div>
-
-          )}
-        </BentoCard>
-
       </div>{/* /grid */}
 
       {/* ── EDIT DRAWER ─────────────────────────────────────────────────────── */}
