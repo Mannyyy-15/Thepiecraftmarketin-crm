@@ -168,8 +168,7 @@ export default function DocumentsPage() {
     };
   });
 
-  // Folder creation handler
-  const handleCreateFolder = (e: React.FormEvent) => {
+  const handleCreateFolder = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newFolderName.trim()) return;
 
@@ -178,10 +177,21 @@ export default function DocumentsPage() {
       return;
     }
 
-    setCustomFolders([...customFolders, newFolderName.trim()]);
+    const formData = new FormData();
+    formData.append("name", ".folder-keep");
+    formData.append("clientName", "");
+    formData.append("type", "SYS");
+    formData.append("size", "0 KB");
+    formData.append("folder", newFolderName.trim());
+
+    setIsLoading(true);
+    await createDocument(formData);
+    await fetchData();
+
     setNewFolderName("");
     setShowFolderModal(false);
     addToast(`Successfully created folder "${newFolderName.trim()}"!`);
+    setIsLoading(false);
   };
 
   // File upload handler
@@ -312,6 +322,7 @@ export default function DocumentsPage() {
 
   // Filtered files
   const filteredFiles = files.filter(f => {
+    if (f.name === ".folder-keep") return false;
     const q = searchQuery.toLowerCase();
     const fName = (f.name || "").toLowerCase();
     const fClient = (f.clientName || "").toLowerCase();

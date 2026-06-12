@@ -2232,7 +2232,20 @@ export async function createInvoiceFull(input: CreateInvoiceFullInput) {
       notes: JSON.stringify(payload),
     });
 
+    // Save virtual document to populate Documents page
+    await db.insert(schema.documents).values({
+      name: `Invoice ${invoiceNumber} - ${input.billToName.trim()}`,
+      clientId: input.clientId || null,
+      clientName: input.billToName.trim() || "Unknown Client",
+      type: "PDF",
+      size: "—",
+      folder: "Invoices",
+      ownerName: session.name || "System",
+      url: "/admin/invoices",
+    });
+
     revalidatePath("/admin/invoices");
+    revalidatePath("/admin/documents");
     revalidatePath("/admin/clients");
     return { success: true, invoiceNumber };
   } catch (error: any) {
