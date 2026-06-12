@@ -5,10 +5,10 @@ import { useToast } from "@/providers/ToastProvider";
 import {
   Plus, Trash2, Download, Save, FileText, Loader2, Mail,
   MessageCircle, Check, IndianRupee, Megaphone, Code2, Search as SearchIcon,
-  Palette, Globe2, Wrench, StickyNote,
+  Palette, Globe2, Wrench, StickyNote, Eye,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { getClients, createInvoiceFull, getInvoices, updateInvoiceStatus } from "@/app/actions/crm";
+import { getClients, createInvoiceFull, getInvoices, updateInvoiceStatus, deleteInvoice } from "@/app/actions/crm";
 import logoImg from "@/assets/invoice-logo.png";
 
 const COMPANY = {
@@ -140,6 +140,43 @@ export default function AdminInvoicesPage() {
       paymentTerms ? `Terms: ${paymentTerms}` : "",
     ].filter(Boolean);
     return lines.join("\n");
+  };
+
+  const handleLoadInvoice = (inv: any) => {
+    try {
+      const payload = JSON.parse(inv.notes);
+      if (payload.v === 2) {
+        setClientId(inv.clientId || "");
+        setBillToName(payload.billTo.name || "");
+        setBillToEmail(payload.billTo.email || "");
+        setBillToAddress(payload.billTo.address || "");
+        if (payload.items && payload.items.length > 0) {
+          setItems(payload.items.map((i: any) => ({ ...i, id: Date.now().toString() + Math.random(), units: i.units?.toString() || "", amount: i.amount?.toString() || "" })));
+        }
+        setTaxPercent(payload.taxPercent?.toString() || "");
+        setDiscount(payload.discount?.toString() || "");
+        setServicePeriod(payload.servicePeriod || "");
+        setPaymentTerms(payload.paymentTerms || "");
+        setNotes(payload.note || "");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        toast(`Loaded ${inv.invoiceNumber}`, "success");
+      } else {
+        toast("Cannot load old format invoice.", "error");
+      }
+    } catch (e) {
+      toast("Error loading invoice data.", "error");
+    }
+  };
+
+  const handleDeleteInvoice = async (id: number) => {
+    if (!confirm("Are you sure you want to delete this invoice?")) return;
+    const res = await deleteInvoice(id);
+    if (res.success) {
+      toast("Invoice deleted.", "success");
+      refreshInvoices();
+    } else {
+      toast(res.error || "Failed to delete", "error");
+    }
   };
 
   const handlePrint = () => {
@@ -413,11 +450,12 @@ export default function AdminInvoicesPage() {
                 <th className="px-4 py-2.5 text-right font-semibold">Amount</th>
                 <th className="px-4 py-2.5 text-left font-semibold hidden sm:table-cell">Due</th>
                 <th className="px-4 py-2.5 text-left font-semibold">Status</th>
+                <th className="px-4 py-2.5 text-right font-semibold">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {invoices.length === 0 ? (
-                <tr><td colSpan={5} className="px-4 py-10 text-center text-xs text-slate-400">No invoices yet — create one above.</td></tr>
+                <tr><td colSpan={6} className="px-4 py-10 text-center text-xs text-slate-400">No invoices yet — create one above.</td></tr>
               ) : invoices.map((inv) => (
                 <tr key={inv.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                   <td className="px-4 py-3 font-semibold text-slate-800 dark:text-slate-200">{inv.invoiceNumber}</td>
@@ -443,6 +481,24 @@ export default function AdminInvoicesPage() {
                       <option value="paid">Paid</option>
                       <option value="overdue">Overdue</option>
                     </select>
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <div className="flex items-center justify-end gap-1">
+                      <button
+                        title="View / Download"
+                        onClick={() => handleLoadInvoice(inv)}
+                        className="p-1.5 text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-900/30 rounded-md transition-colors"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
+                      <button
+                        title="Delete Invoice"
+                        onClick={() => handleDeleteInvoice(inv.id)}
+                        className="p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-md transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
