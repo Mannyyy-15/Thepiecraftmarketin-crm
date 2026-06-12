@@ -84,7 +84,7 @@ export async function validateGeofence(userLat: number, userLng: number): Promis
   // Wi-Fi / IP check — strictly enforced in production to ensure physical presence on office network
   if (process.env.NODE_ENV === "production") {
     if (clientIp === "unknown" || clientIp !== loc.wifi_public_ip) {
-      return { ok: false, message: "Not connected to office Wi-Fi." };
+      return { ok: false, message: `Not connected to office Wi-Fi. (${clientIp})` };
     }
   }
 
