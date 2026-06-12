@@ -156,8 +156,8 @@ export default function AdminInvoicesPage() {
           if (payload.items && payload.items.length > 0) {
             setItems(payload.items.map((i: any) => ({ ...i, id: Date.now().toString() + Math.random(), units: i.units?.toString() || "", amount: i.amount?.toString() || "" })));
           }
-          setTaxPercent(payload.taxPercent?.toString() || "");
-          setDiscount(payload.discount?.toString() || "");
+          setTaxPercent(Number(payload.taxPercent) || 0);
+          setDiscount(Number(payload.discount) || 0);
           setServicePeriod(payload.servicePeriod || "");
           setPaymentTerms(payload.paymentTerms || "");
           setNotes(payload.note || "");
@@ -180,8 +180,8 @@ export default function AdminInvoicesPage() {
           amount: inv.amount?.toString() || "0",
           note: ""
         }]);
-        setTaxPercent("");
-        setDiscount("");
+        setTaxPercent(0);
+        setDiscount(0);
         setServicePeriod("");
         setPaymentTerms("");
         // If notes is valid text and doesn't look like JSON, use it
