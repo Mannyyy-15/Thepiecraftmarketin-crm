@@ -378,10 +378,10 @@ export default function AdminInvoicesPage() {
 
         {/* ── Live preview ─────────────────────────────────────── */}
         <div className="lg:col-span-3 space-y-3">
-          <div className="flex flex-wrap items-center gap-2 justify-end">
-            <Button variant="outline" size="sm" onClick={handlePrint} className="gap-1.5"><Download className="h-3.5 w-3.5" /> Download / Print</Button>
-            <Button variant="outline" size="sm" onClick={handleShareWhatsApp} className="gap-1.5"><MessageCircle className="h-3.5 w-3.5" /> WhatsApp</Button>
-            <Button variant="outline" size="sm" onClick={handleShareEmail} className="gap-1.5"><Mail className="h-3.5 w-3.5" /> Email</Button>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <Button variant="outline" size="sm" onClick={handlePrint} className="w-full gap-1.5"><Download className="h-3.5 w-3.5" /> Download / Print</Button>
+            <Button variant="outline" size="sm" onClick={handleShareWhatsApp} className="w-full gap-1.5"><MessageCircle className="h-3.5 w-3.5" /> WhatsApp</Button>
+            <Button variant="outline" size="sm" onClick={handleShareEmail} className="w-full gap-1.5"><Mail className="h-3.5 w-3.5" /> Email</Button>
           </div>
 
           {/* Wrapper to allow horizontal scroll on mobile while strictly keeping A4 dimensions inside */}
