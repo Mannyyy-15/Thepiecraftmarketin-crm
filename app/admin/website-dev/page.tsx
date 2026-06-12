@@ -56,7 +56,6 @@ export default function WebsiteDevPage() {
   const [loading, setLoading] = useState(true);
   const [tasks, setTasks] = useState<WebsiteTask[]>([]);
   const [sitesList, setSitesList] = useState<any[]>([]);
-  const [isUsingMock, setIsUsingMock] = useState(false);
 
   // Drawer toggles
   const [showTicketForm, setShowTicketForm] = useState(false);
@@ -111,30 +110,33 @@ export default function WebsiteDevPage() {
           return {
             name: sd.websiteUrl || p.name,
             uptime: sd.uptime || 100,
-            response: sd.response || 100,
-            status: sd.siteStatus || "operational"
-          };
-        });
+      if (res.success && res.data.projects.length > 0) {
+        // Map DB projects to frontend "domains/sites"
+        const mappedDomains = res.data.projects.map((p: any) => ({
+          id: p.id,
+          url: p.name,
+          client: p.clientName || "Unknown Client",
+          status: "Healthy",
+          uptime: 99.9,
+          response: 250,
+          lastChecked: "Just now",
+        }));
 
-        // Map DB Tasks -> Engineering Backlog
         const mappedTasks = res.data.tasks.map((t: any) => ({
-          id: String(t.id),
+          id: t.id,
           title: t.title,
-          repo: "github.com/repo",
-          priority: t.priority as any,
-          status: t.status as any,
+          type: "Feature",
+          status: t.status === "completed" ? "Done" : (t.status === "in_progress" ? "In Progress" : "To Do"),
+          priority: t.priority,
           assignee: "Lead Dev",
         }));
 
         setSitesList(mappedDomains);
         setTasks(mappedTasks);
-        setIsUsingMock(false);
-
       } else {
-        // No web-dev data yet — show empty states rather than fake data.
+        // No web-dev data yet - show empty states rather than fake data.
         setSitesList([]);
         setTasks([]);
-        setIsUsingMock(false);
       }
       setLoading(false);
     })();
@@ -376,41 +378,33 @@ export default function WebsiteDevPage() {
 
       {/* Premium Glassmorphic KPI Cards */}
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-5">
-        <PremiumKpiCard 
+        <StatsCard 
           title="Sites Managed" 
           value={totalSites.toString()} 
-          change="+1" 
-          changeType="positive" 
           icon={<Globe className="h-5 w-5" />} 
           gradient="from-indigo-500/20 to-violet-500/20"
           iconColor="text-indigo-500"
         />
-        <PremiumKpiCard 
+        <StatsCard 
           title="Avg Uptime" 
           value={`${avgUptime}%`} 
-          change="+0.2%" 
-          changeType="positive" 
           icon={<Server className="h-5 w-5" />} 
           gradient="from-emerald-500/20 to-teal-500/20"
           iconColor="text-emerald-500"
         />
-        <PremiumKpiCard 
+        <StatsCard 
           title="Open Tickets" 
           value={openTicketsCount.toString()} 
-          change="-3" 
-          changeType="positive" 
-          icon={<Code2 className="h-5 w-5" />} 
+          icon={<AlertTriangle className="h-5 w-5" />} 
           gradient="from-amber-500/20 to-orange-500/20"
           iconColor="text-amber-500"
         />
-        <PremiumKpiCard 
+        <StatsCard 
           title="Avg. Response" 
           value={`${avgResponse} ms`} 
-          change="-12ms" 
-          changeType="positive" 
           icon={<Zap className="h-5 w-5" />} 
-          gradient="from-cyan-500/20 to-blue-500/20"
-          iconColor="text-cyan-500"
+          gradient="from-blue-500/20 to-cyan-500/20"
+          iconColor="text-blue-500"
         />
       </div>
 
@@ -652,32 +646,21 @@ export default function WebsiteDevPage() {
 }
 
 // Internal component for the premium glassmorphic KPI cards
-function PremiumKpiCard({ title, value, change, changeType, icon, gradient, iconColor }: any) {
+function StatsCard({ title, value, icon, gradient, iconColor }: any) {
   return (
     <div className="relative overflow-hidden rounded-2xl border border-white/40 dark:border-slate-800/60 bg-white/60 dark:bg-slate-900/40 p-5 shadow-lg backdrop-blur-xl group hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-      {/* Background glow */}
-      <div className={`absolute -inset-10 bg-gradient-to-br ${gradient} opacity-40 blur-2xl group-hover:opacity-60 transition-opacity duration-500`} />
-      
-      <div className="relative z-10 flex items-start justify-between">
-        <div>
-          <p className="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest mb-1">{title}</p>
-          <h3 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">{value}</h3>
-          
-          <div className="mt-3 flex items-center gap-1.5">
-            <span className={cn(
-              "text-[10px] font-bold px-1.5 py-0.5 rounded-md",
-              changeType === "positive" 
-                ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400" 
-                : "bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-400"
-            )}>
-              {change}
-            </span>
-            <span className="text-[10px] font-semibold text-slate-400">avg 30d</span>
+      <div className={`absolute -right-12 -top-12 h-32 w-32 rounded-full bg-gradient-to-br ${gradient} blur-3xl opacity-50 group-hover:opacity-70 transition-opacity`} />
+      <div className="relative">
+        <div className="flex items-start justify-between">
+          <div className="space-y-1">
+            <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">{title}</p>
+            <p className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">
+              {value}
+            </p>
           </div>
-        </div>
-        
-        <div className="h-12 w-12 rounded-xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm flex items-center justify-center rotate-3 group-hover:rotate-6 transition-transform">
-          <div className={iconColor}>{icon}</div>
+          <div className={cn("rounded-xl bg-white dark:bg-slate-950 p-2.5 shadow-sm border border-slate-100 dark:border-slate-800", iconColor)}>
+            {icon}
+          </div>
         </div>
       </div>
     </div>

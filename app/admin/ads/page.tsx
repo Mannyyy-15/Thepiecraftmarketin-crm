@@ -65,7 +65,6 @@ export default function AdsPage() {
   const [loading, setLoading] = useState(true);
   const [campaigns, setCampaigns] = useState<any[]>([]);
   const [clientsList, setClientsList] = useState<any[]>([]);
-  const [isUsingMock, setIsUsingMock] = useState(false);
 
   const [showAddForm, setShowAddForm] = useState(false);
   const [sortByRoas, setSortByRoas] = useState(false);
@@ -92,11 +91,9 @@ export default function AdsPage() {
     const res = await getMetaCampaigns();
     if (res.success && res.data && res.data.length > 0) {
       setCampaigns(res.data);
-      setIsUsingMock(false);
     } else {
-      // No real campaigns yet — show an empty table (not fake demo data).
+      // No real campaigns yet — show an empty table
       setCampaigns([]);
-      setIsUsingMock(true);
     }
   };
 
@@ -361,8 +358,6 @@ export default function AdsPage() {
         <PremiumKpiCard 
           title="Total Spend" 
           value={`₹${formatCompact(totalSpend)}`} 
-          change="+12.5%" 
-          changeType="positive" 
           icon={<DollarSign className="h-5 w-5" />} 
           gradient="from-indigo-500/20 to-violet-500/20"
           iconColor="text-indigo-500"
@@ -370,8 +365,6 @@ export default function AdsPage() {
         <PremiumKpiCard 
           title="Impressions" 
           value={formatCompact(totalImpressions)} 
-          change="+18.2%" 
-          changeType="positive" 
           icon={<Eye className="h-5 w-5" />} 
           gradient="from-amber-500/20 to-orange-500/20"
           iconColor="text-amber-500"
@@ -379,17 +372,13 @@ export default function AdsPage() {
         <PremiumKpiCard 
           title="Clicks" 
           value={formatCompact(totalClicks)} 
-          change="+9.4%" 
-          changeType="positive" 
           icon={<MousePointerClick className="h-5 w-5" />} 
           gradient="from-emerald-500/20 to-teal-500/20"
           iconColor="text-emerald-500"
         />
         <PremiumKpiCard 
           title="Avg. ROAS" 
-          value={`${avgRoas.toFixed(2)}×`} 
-          change="-0.1×" 
-          changeType="negative" 
+          value={`${avgRoas.toFixed(2)}x`} 
           icon={<Target className="h-5 w-5" />} 
           gradient="from-rose-500/20 to-pink-500/20"
           iconColor="text-rose-500"
@@ -566,7 +555,7 @@ export default function AdsPage() {
 }
 
 // Internal component for the premium glassmorphic KPI cards
-function PremiumKpiCard({ title, value, change, changeType, icon, gradient, iconColor }: any) {
+function PremiumKpiCard({ title, value, icon, gradient, iconColor }: any) {
   return (
     <div className="relative overflow-hidden rounded-2xl border border-white/40 dark:border-slate-800/60 bg-white/60 dark:bg-slate-900/40 p-5 shadow-lg backdrop-blur-xl group hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
       {/* Background glow */}
@@ -576,18 +565,6 @@ function PremiumKpiCard({ title, value, change, changeType, icon, gradient, icon
         <div>
           <p className="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest mb-1">{title}</p>
           <h3 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">{value}</h3>
-          
-          <div className="mt-3 flex items-center gap-1.5">
-            <span className={cn(
-              "text-[10px] font-bold px-1.5 py-0.5 rounded-md",
-              changeType === "positive" 
-                ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400" 
-                : "bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-400"
-            )}>
-              {change}
-            </span>
-            <span className="text-[10px] font-semibold text-slate-400">vs last 7d</span>
-          </div>
         </div>
         
         <div className="h-12 w-12 rounded-xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm flex items-center justify-center rotate-3 group-hover:rotate-6 transition-transform">
