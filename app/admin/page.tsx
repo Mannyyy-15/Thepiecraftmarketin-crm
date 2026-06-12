@@ -84,7 +84,7 @@ export default function DashboardPage() {
       />
 
       {/* KPI grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
         <KpiCard
           title="Monthly Revenue"
           value={`₹${(dashboardData?.monthlyRevenue || 0).toLocaleString()}`}
