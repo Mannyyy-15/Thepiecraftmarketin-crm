@@ -144,25 +144,52 @@ export default function AdminInvoicesPage() {
 
   const handleLoadInvoice = (inv: any) => {
     try {
-      const payload = JSON.parse(inv.notes);
-      if (payload.v === 2) {
-        setClientId(inv.clientId || "");
-        setBillToName(payload.billTo.name || "");
-        setBillToEmail(payload.billTo.email || "");
-        setBillToAddress(payload.billTo.address || "");
-        if (payload.items && payload.items.length > 0) {
-          setItems(payload.items.map((i: any) => ({ ...i, id: Date.now().toString() + Math.random(), units: i.units?.toString() || "", amount: i.amount?.toString() || "" })));
+      let isOldFormat = true;
+      try {
+        const payload = JSON.parse(inv.notes);
+        if (payload && payload.v === 2) {
+          isOldFormat = false;
+          setClientId(inv.clientId || "");
+          setBillToName(payload.billTo?.name || "");
+          setBillToEmail(payload.billTo?.email || "");
+          setBillToAddress(payload.billTo?.address || "");
+          if (payload.items && payload.items.length > 0) {
+            setItems(payload.items.map((i: any) => ({ ...i, id: Date.now().toString() + Math.random(), units: i.units?.toString() || "", amount: i.amount?.toString() || "" })));
+          }
+          setTaxPercent(payload.taxPercent?.toString() || "");
+          setDiscount(payload.discount?.toString() || "");
+          setServicePeriod(payload.servicePeriod || "");
+          setPaymentTerms(payload.paymentTerms || "");
+          setNotes(payload.note || "");
         }
-        setTaxPercent(payload.taxPercent?.toString() || "");
-        setDiscount(payload.discount?.toString() || "");
-        setServicePeriod(payload.servicePeriod || "");
-        setPaymentTerms(payload.paymentTerms || "");
-        setNotes(payload.note || "");
-        window.scrollTo({ top: 0, behavior: "smooth" });
-        toast(`Loaded ${inv.invoiceNumber}`, "success");
-      } else {
-        toast("Cannot load old format invoice.", "error");
+      } catch (e) {
+        // Not JSON, ignore and fallback to old format
       }
+
+      if (isOldFormat) {
+        // Fallback for older or auto-generated invoices
+        setClientId(inv.clientId || "");
+        setBillToName(inv.clientName || "");
+        setBillToEmail("");
+        setBillToAddress("");
+        setItems([{ 
+          id: Date.now().toString(), 
+          service: "Services Rendered", 
+          details: "Legacy invoice entry", 
+          units: "1", 
+          amount: inv.amount?.toString() || "0",
+          note: ""
+        }]);
+        setTaxPercent("");
+        setDiscount("");
+        setServicePeriod("");
+        setPaymentTerms("");
+        // If notes is valid text and doesn't look like JSON, use it
+        setNotes(!inv.notes?.startsWith("{") ? (inv.notes || "") : "");
+      }
+
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      toast(`Loaded ${inv.invoiceNumber}`, "success");
     } catch (e) {
       toast("Error loading invoice data.", "error");
     }
