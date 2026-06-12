@@ -8,13 +8,19 @@ import {
   Palette, Globe2, Wrench, StickyNote, Eye,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { getClients, createInvoiceFull, getInvoices, updateInvoiceStatus, deleteInvoice } from "@/app/actions/crm";
+import { getClients, createInvoiceFull, getInvoices, updateInvoiceStatus, deleteInvoice, getInvoiceSettings } from "@/app/actions/crm";
 import logoImg from "@/assets/invoice-logo.png";
 
-const COMPANY = {
+// Default agency identity — overridden by Settings → Agency Profile when present.
+const COMPANY_FALLBACK = {
   name: "ThePieCraft Marketing",
   email: "info@thepiecraftmarketing.com",
   tagline: "Performance Marketing & Web Development",
+  phone: "",
+  website: "",
+  address: "",
+  gst: "",
+  logoUrl: "",
 };
 
 // Quick-add service presets (one tap to add a line for that service).
@@ -54,11 +60,35 @@ export default function AdminInvoicesPage() {
   const [saving, setSaving] = useState(false);
   const [savedNumber, setSavedNumber] = useState<string | null>(null);
 
+  // Agency identity + invoice defaults pulled from Settings.
+  const [company, setCompany] = useState(COMPANY_FALLBACK);
+  const [bankDetails, setBankDetails] = useState("");
+
   const previewRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     getClients().then((r) => { if (r.success) setClients(r.data || []); });
     refreshInvoices();
+    getInvoiceSettings().then((r) => {
+      if (r.success && r.data) {
+        const d = r.data;
+        setCompany({
+          name: d.agencyName || COMPANY_FALLBACK.name,
+          email: d.agencyEmail || COMPANY_FALLBACK.email,
+          tagline: COMPANY_FALLBACK.tagline,
+          phone: d.agencyPhone || "",
+          website: d.agencyWebsite || "",
+          address: d.agencyAddress || "",
+          gst: d.gstNumber || "",
+          logoUrl: d.agencyLogoUrl || "",
+        });
+        setBankDetails(d.bankDetails || "");
+        // Pre-fill invoice defaults (only when the user hasn't typed anything yet).
+        if (d.invoiceTaxPercent) setTaxPercent((t) => t || Number(d.invoiceTaxPercent));
+        if (d.invoicePaymentTerms) setPaymentTerms((p) => p || d.invoicePaymentTerms);
+        if (d.invoiceNotes) setNotes((n) => n || d.invoiceNotes);
+      }
+    });
   }, []);
 
   const refreshInvoices = () => getInvoices().then((r) => { if (r.success) setInvoices(r.data || []); });
@@ -364,9 +394,16 @@ export default function AdminInvoicesPage() {
             <div ref={previewRef} className="min-w-[780px] max-md:[zoom:0.7] max-sm:[zoom:0.45] rounded-2xl border border-slate-200 dark:border-slate-800 bg-white text-slate-900 p-10 shadow-sm mx-auto">
               <div className="flex items-start justify-between gap-4">
               <div>
-                <img src={logoImg.src} alt={COMPANY.name} className="h-32 w-auto mb-2 -mt-6 -ml-4 object-contain mix-blend-multiply" />
-                <p className="text-xs text-slate-500">{COMPANY.tagline}</p>
-                <p className="text-xs text-slate-500">{COMPANY.email}</p>
+                {company.logoUrl
+                  ? <img src={company.logoUrl} alt={company.name} className="h-20 w-auto mb-2 object-contain" />
+                  : <img src={logoImg.src} alt={company.name} className="h-32 w-auto mb-2 -mt-6 -ml-4 object-contain mix-blend-multiply" />}
+                <p className="text-sm font-extrabold text-slate-900">{company.name}</p>
+                <p className="text-xs text-slate-500">{company.tagline}</p>
+                {company.email && <p className="text-xs text-slate-500">{company.email}</p>}
+                {company.phone && <p className="text-xs text-slate-500">{company.phone}</p>}
+                {company.website && <p className="text-xs text-slate-500">{company.website}</p>}
+                {company.address && <p className="text-xs text-slate-500 whitespace-pre-line max-w-[260px]">{company.address}</p>}
+                {company.gst && <p className="text-xs text-slate-500">GSTIN: {company.gst}</p>}
               </div>
               <div className="text-right">
                 <p className="text-2xl font-black tracking-tight text-slate-900">INVOICE</p>
@@ -442,7 +479,13 @@ export default function AdminInvoicesPage() {
                 )}
               </div>
             )}
-            <p className="mt-6 text-center text-[10px] text-slate-400">Thank you for your business · {COMPANY.name}</p>
+            {bankDetails && (
+              <div className="mt-5 pt-4 border-t border-slate-100">
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Payment Details</p>
+                <p className="text-xs text-slate-600 mt-0.5 whitespace-pre-line">{bankDetails}</p>
+              </div>
+            )}
+            <p className="mt-6 text-center text-[10px] text-slate-400">Thank you for your business · {company.name}</p>
           </div>
         </div>
       </div>

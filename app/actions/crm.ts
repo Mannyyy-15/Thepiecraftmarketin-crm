@@ -3612,6 +3612,36 @@ export async function generatePaymentLink(invoiceId: number, amount: number, cli
   }
 }
 
+// Agency profile + invoice defaults for the invoice generator (admin only).
+export async function getInvoiceSettings() {
+  try {
+    const session = await getAuthSession();
+    if (!session || session.role !== "admin") return { success: false, data: null };
+    if (!db) return { success: false, data: null };
+    const s: any = await db.query.agencySettings.findFirst();
+    if (!s) return { success: true, data: null };
+    return {
+      success: true,
+      data: {
+        agencyName: s.agencyName || "ThePieCraft Marketing",
+        agencyEmail: s.agencyEmail || "",
+        agencyPhone: s.agencyPhone || "",
+        agencyWebsite: s.agencyWebsite || "",
+        agencyAddress: s.agencyAddress || "",
+        gstNumber: s.gstNumber || "",
+        agencyLogoUrl: s.agencyLogoUrl || "",
+        invoiceTaxPercent: s.invoiceTaxPercent ?? 0,
+        invoicePaymentTerms: s.invoicePaymentTerms || "",
+        invoiceNotes: s.invoiceNotes || "",
+        bankDetails: s.bankDetails || "",
+      },
+    };
+  } catch (err: any) {
+    console.error("getInvoiceSettings error:", err?.message);
+    return { success: false, data: null };
+  }
+}
+
 export async function getAgencySettings() {
   try {
     const session = await getAuthSession();

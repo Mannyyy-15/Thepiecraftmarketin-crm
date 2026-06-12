@@ -117,12 +117,15 @@ export default function WebsiteDevPage() {
           };
         });
 
-        const mappedTasks = res.data.tasks.map((t: any) => ({
-          id: t.id,
+        const mappedTasks: WebsiteTask[] = res.data.tasks.map((t: any) => ({
+          id: String(t.id),
           title: t.title,
-          type: "Feature",
-          status: t.status === "completed" ? "Done" : (t.status === "in_progress" ? "In Progress" : "To Do"),
-          priority: t.priority,
+          repo: "",
+          status: (t.done || t.status === "done") ? "done"
+            : t.status === "in-progress" || t.status === "in_progress" ? "in-progress"
+            : t.status === "in-review" ? "in-review"
+            : "todo",
+          priority: ["low", "medium", "high", "critical"].includes(t.priority) ? t.priority : "medium",
           assignee: "Lead Dev",
         }));
 
