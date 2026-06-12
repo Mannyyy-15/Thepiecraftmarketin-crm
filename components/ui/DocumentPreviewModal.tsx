@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { X, ExternalLink, Download } from "lucide-react";
 import { cn } from "./cn";
 
@@ -10,14 +11,20 @@ export interface DocumentPreviewModalProps {
 }
 
 export function DocumentPreviewModal({ isOpen, onClose, url, name }: DocumentPreviewModalProps) {
-  if (!isOpen || !url) return null;
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!isOpen || !url || !mounted) return null;
 
   const ext = name.split('.').pop()?.toLowerCase();
   const isImage = ["jpg", "jpeg", "png", "webp", "gif", "svg"].includes(ext || "");
   const isPdf = ext === "pdf";
 
-  return (
-    <div className="fixed inset-0 z-[999] flex flex-col bg-black/90 backdrop-blur-sm animate-fadeIn">
+  return createPortal(
+    <div className="fixed inset-0 z-[99999] flex flex-col bg-black/90 backdrop-blur-sm animate-fadeIn">
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-black/50">
         <div className="flex flex-col">
@@ -44,7 +51,7 @@ export function DocumentPreviewModal({ isOpen, onClose, url, name }: DocumentPre
           </a>
           <button
             onClick={onClose}
-            className="p-2 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors ml-2"
+            className="p-2 text-slate-300 hover:text-white hover:bg-rose-500 rounded-lg transition-colors ml-2"
           >
             <X className="h-6 w-6" />
           </button>
@@ -84,6 +91,7 @@ export function DocumentPreviewModal({ isOpen, onClose, url, name }: DocumentPre
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

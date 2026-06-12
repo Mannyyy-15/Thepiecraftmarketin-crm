@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { 
-  getFinanceDashboardData, 
-  updateExpenseStatus, 
-  updateTimesheetStatus 
+import {
+  getFinanceDashboardData,
+  updateExpenseStatus,
+  updateTimesheetStatus,
+  updateInvoiceStatus,
 } from "@/app/actions/crm";
 import { 
   Card, CardContent, CardHeader, CardTitle, CardDescription 
@@ -218,7 +219,8 @@ export default function FinanceDashboard() {
                     <thead>
                       <tr className="border-b border-slate-200 dark:border-slate-800 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                         <th className="pb-3 px-2 font-semibold">Invoice #</th>
-                        <th className="pb-3 px-2 font-semibold">Client ID</th>
+                        <th className="pb-3 px-2 font-semibold">Client</th>
+                        <th className="pb-3 px-2 font-semibold hidden sm:table-cell">Due</th>
                         <th className="pb-3 px-2 font-semibold text-right">Amount</th>
                         <th className="pb-3 px-2 font-semibold text-right">Status</th>
                       </tr>
@@ -227,16 +229,29 @@ export default function FinanceDashboard() {
                       {data.invoices.map((inv: any) => (
                         <tr key={inv.id} className="border-b border-slate-100 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                           <td className="py-3 px-2 font-semibold text-slate-900 dark:text-white">{inv.invoiceNumber}</td>
-                          <td className="py-3 px-2 text-slate-500">#{inv.clientId}</td>
+                          <td className="py-3 px-2 text-slate-600 dark:text-slate-300">{inv.clientName || "—"}</td>
+                          <td className="py-3 px-2 text-slate-500 hidden sm:table-cell">{inv.dueDate || "—"}</td>
                           <td className="py-3 px-2 text-right font-bold">₹{inv.amount.toLocaleString()}</td>
                           <td className="py-3 px-2 text-right">
-                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-[10px] font-bold ${
-                              inv.status === 'paid' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400' :
-                              inv.status === 'overdue' ? 'bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-400' :
-                              'bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-400'
-                            }`}>
-                              {inv.status.toUpperCase()}
-                            </span>
+                            <select
+                              value={inv.status}
+                              onChange={async (e) => {
+                                const s = e.target.value as any;
+                                await updateInvoiceStatus(inv.id, s, s === "paid" ? new Date().toISOString().slice(0, 10) : undefined);
+                                fetchData();
+                              }}
+                              className={`text-[10px] font-bold uppercase tracking-wider rounded-lg px-2 py-1 border cursor-pointer ${
+                                inv.status === 'paid' ? 'text-emerald-600 border-emerald-200 bg-emerald-50 dark:bg-emerald-950/20' :
+                                inv.status === 'overdue' ? 'text-rose-600 border-rose-200 bg-rose-50 dark:bg-rose-950/20' :
+                                inv.status === 'sent' ? 'text-blue-600 border-blue-200 bg-blue-50 dark:bg-blue-950/20' :
+                                'text-slate-500 border-slate-200 bg-slate-50 dark:bg-slate-900'
+                              }`}
+                            >
+                              <option value="draft">Draft</option>
+                              <option value="sent">Sent / Unpaid</option>
+                              <option value="paid">Paid</option>
+                              <option value="overdue">Overdue / Due</option>
+                            </select>
                           </td>
                         </tr>
                       ))}

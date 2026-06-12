@@ -2266,6 +2266,8 @@ export async function updateInvoiceStatus(invoiceId: number, status: "draft" | "
       .where(eq(schema.invoices.id, invoiceId));
 
     revalidatePath("/admin/clients");
+    revalidatePath("/admin/finance");
+    revalidatePath("/admin/invoices");
     return { success: true };
   } catch (error: any) {
     console.error("updateInvoiceStatus Error:", error);
@@ -2763,8 +2765,20 @@ export async function getFinanceDashboardData() {
     if (!session || !db) return { success: false, data: null };
 
     // Get Invoices
-    const allInvoices = await db.select().from(schema.invoices);
-    
+    const allInvoices = await db.select().from(schema.invoices).orderBy(desc(schema.invoices.createdAt));
+
+    // Map client names + the bill-to name saved in the invoice JSON payload.
+    const invClientIds = Array.from(new Set(allInvoices.map(i => i.clientId).filter(Boolean))) as number[];
+    const invClients = invClientIds.length > 0
+      ? await db.select({ id: schema.clients.id, name: schema.clients.name }).from(schema.clients).where(inArray(schema.clients.id, invClientIds))
+      : [];
+    const enrichedInvoices = allInvoices.map(inv => {
+      let billToName = "";
+      try { const p = JSON.parse(inv.notes || "{}"); billToName = p?.billTo?.name || ""; } catch {}
+      const clientName = invClients.find(c => c.id === inv.clientId)?.name || billToName || "—";
+      return { id: inv.id, invoiceNumber: inv.invoiceNumber, amount: inv.amount, status: inv.status, dueDate: inv.dueDate, clientName };
+    });
+
     // Calculate Revenue (Paid invoices) and Pending AR (Sent/Overdue)
     let revenue = 0;
     let pendingAR = 0;
@@ -2817,7 +2831,7 @@ export async function getFinanceDashboardData() {
         pendingAR, 
         approvedCosts, 
         margin: revenue - approvedCosts,
-        invoices: allInvoices.slice(0, 10), // return recent 10 invoices
+        invoices: enrichedInvoices.slice(0, 12), // recent invoices with client names
         pendingExpenses: mappedPendingExpenses,
         pendingTimesheets: mappedPendingTimesheets
       } 
