@@ -10,6 +10,7 @@ import { decrypt, getCurrentUser } from "./auth";
 import { validateGeofence } from "@/lib/geofence";
 import { sendEmail } from "@/lib/mailer";
 import { revalidatePath } from "next/cache";
+import Razorpay from "razorpay";
 
 // Helper to check user session and get authenticated profile
 async function getAuthSession() {
@@ -3562,3 +3563,39 @@ export async function convertLeadToClient(id: number) {
 }
 
 
+
+export async function generatePaymentLink(invoiceId: number, amount: number, clientEmail: string, description: string) {
+  if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+    return { success: true, url: "https://checkout.razorpay.com/pay?mock=" + invoiceId };
+  }
+
+  try {
+    const rzp = new Razorpay({
+      key_id: process.env.RAZORPAY_KEY_ID,
+      key_secret: process.env.RAZORPAY_KEY_SECRET,
+    });
+
+    const paymentLink = await rzp.paymentLink.create({
+      amount: amount * 100, 
+      currency: "INR",
+      accept_partial: false,
+      description: description,
+      customer: {
+        email: clientEmail,
+      },
+      notify: {
+        sms: false,
+        email: true,
+      },
+      reminder_enable: true,
+      notes: {
+        invoice_id: invoiceId.toString(),
+      },
+    });
+
+    return { success: true, url: paymentLink.short_url };
+  } catch (error: any) {
+    console.error("Razorpay error:", error);
+    return { success: false, error: "Failed to generate payment link via Razorpay." };
+  }
+}
