@@ -3155,6 +3155,68 @@ export async function getClientReports() {
   }
 }
 
+// The logged-in client's real invoices (with parsed line items for the portal).
+export async function getClientInvoices() {
+  try {
+    const session = await getCurrentUser();
+    if (!session || session.role !== "client") return { success: false, data: [] };
+    if (!db) return { success: false, data: [] };
+
+    const clientList = await db.select().from(schema.clients).where(eq(schema.clients.ownerId, session.id as number));
+    if (clientList.length === 0) return { success: true, data: [] };
+    const clientId = clientList[0].id;
+
+    const rows = await db.select().from(schema.invoices)
+      .where(eq(schema.invoices.clientId, clientId))
+      .orderBy(desc(schema.invoices.createdAt));
+
+    const data = rows.map(inv => {
+      let items: any[] = [];
+      try { const p = JSON.parse(inv.notes || "{}"); if (Array.isArray(p.items)) items = p.items; } catch {}
+      return {
+        id: inv.id,
+        invoiceNumber: inv.invoiceNumber,
+        amount: inv.amount,
+        status: inv.status,
+        dueDate: inv.dueDate,
+        paidDate: inv.paidDate,
+        createdAt: inv.createdAt,
+        items,
+      };
+    });
+    return { success: true, data };
+  } catch (error: any) {
+    console.error("getClientInvoices Error:", error);
+    return { success: false, data: [], error: error.message };
+  }
+}
+
+// Generate a Razorpay payment link for one of the client's own invoices.
+export async function getClientPaymentLink(invoiceId: number) {
+  try {
+    const session = await getCurrentUser();
+    if (!session || session.role !== "client") return { success: false, error: "Unauthorized." };
+    if (!db) return { success: false, error: "Database not connected." };
+
+    const clientList = await db.select().from(schema.clients).where(eq(schema.clients.ownerId, session.id as number));
+    if (clientList.length === 0) return { success: false, error: "Client not found." };
+    const clientId = clientList[0].id;
+
+    const invRows = await db.select().from(schema.invoices).where(eq(schema.invoices.id, invoiceId)).limit(1);
+    if (!invRows.length || invRows[0].clientId !== clientId) return { success: false, error: "Invoice not found." };
+    const inv = invRows[0];
+    if (inv.status === "paid") return { success: false, error: "This invoice is already paid." };
+
+    const email = (session.email as string) || "";
+    const res = await generatePaymentLink(inv.id, inv.amount, email, `Invoice ${inv.invoiceNumber}`);
+    if ((res as any)?.success && (res as any).url) return { success: true, url: (res as any).url };
+    return { success: false, error: (res as any)?.error || "Payment links are not enabled. Please contact us." };
+  } catch (error: any) {
+    console.error("getClientPaymentLink Error:", error);
+    return { success: false, error: error.message };
+  }
+}
+
 // ----------------------------------------------------
 // AD CAMPAIGN & MOCK INTEGRATION ACTIONS
 // ----------------------------------------------------
