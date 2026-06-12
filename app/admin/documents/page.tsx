@@ -98,9 +98,6 @@ export default function DocumentsPage() {
     const clientsRes = await getClients();
     if (clientsRes.success && clientsRes.data) {
       setClientsList(clientsRes.data);
-      if (clientsRes.data.length > 0) {
-        setUploadClient(clientsRes.data[0].name);
-      }
     }
     const projectsRes = await getProjects();
     if (projectsRes.success && projectsRes.data) {
