@@ -313,3 +313,19 @@ export const fcmTokens = mysqlTable("fcm_tokens", {
 
 export type FcmToken = typeof fcmTokens.$inferSelect;
 export type NewFcmToken = typeof fcmTokens.$inferInsert;
+
+// Agency Settings Table
+export const agencySettings = mysqlTable("agency_settings", {
+  id: int("id").primaryKey().autoincrement(),
+  agencyName: varchar("agency_name", { length: 255 }).notNull().default("ThePieCraft"),
+  agencyLogoUrl: text("agency_logo_url"),
+  baseCurrency: varchar("base_currency", { length: 10 }).notNull().default("INR"),
+  razorpayKeyId: text("razorpay_key_id"),
+  razorpayKeySecret: text("razorpay_key_secret"),
+  smtpHost: varchar("smtp_host", { length: 255 }),
+  smtpPort: int("smtp_port").default(465),
+  smtpUser: varchar("smtp_user", { length: 255 }),
+  smtpPass: text("smtp_pass"),
+  smtpFrom: varchar("smtp_from", { length: 255 }),
+  updatedAt: timestamp("updated_at").defaultNow().onUpdateNow(),
+});

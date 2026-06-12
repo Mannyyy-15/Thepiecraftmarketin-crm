@@ -3565,14 +3565,26 @@ export async function convertLeadToClient(id: number) {
 
 
 export async function generatePaymentLink(invoiceId: number, amount: number, clientEmail: string, description: string) {
-  if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+  let settings: any = null;
+  if (db) {
+    try {
+      settings = await db.query.agencySettings.findFirst();
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  const keyId = settings?.razorpayKeyId || process.env.RAZORPAY_KEY_ID;
+  const keySecret = settings?.razorpayKeySecret || process.env.RAZORPAY_KEY_SECRET;
+
+  if (!keyId || !keySecret) {
     return { success: true, url: "https://checkout.razorpay.com/pay?mock=" + invoiceId };
   }
 
   try {
     const rzp = new Razorpay({
-      key_id: process.env.RAZORPAY_KEY_ID,
-      key_secret: process.env.RAZORPAY_KEY_SECRET,
+      key_id: keyId,
+      key_secret: keySecret,
     });
 
     const paymentLink = await rzp.paymentLink.create({
