@@ -478,15 +478,6 @@ export default function ClientsPage() {
 
                           {/* ── Detail rows ── */}
                           <div className="space-y-2.5 flex-1">
-                            {/* Account Lead */}
-                            <div className="flex items-center gap-2.5">
-                              <Avatar name={owner} size="xs" />
-                              <div className="min-w-0">
-                                <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 block leading-none mb-0.5">Account Lead</span>
-                                <span className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate block">{owner || "Unassigned"}</span>
-                              </div>
-                            </div>
-
                             {/* Contact */}
                             {(d.contactName || d.contactPhone || d.contactEmail) && (
                               <div className="flex items-center gap-2.5">
