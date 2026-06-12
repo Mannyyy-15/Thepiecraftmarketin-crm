@@ -1,10 +1,9 @@
 "use client";
 import { useToast } from "@/providers/ToastProvider";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import {
   Clock,
-  ChevronsRight,
   LogIn,
   LogOut,
   Calendar,
@@ -25,6 +24,7 @@ import {
 } from "@/app/actions/crm";
 import { getValidatedLocation } from "@/lib/getLocation";
 import { Capacitor } from "@capacitor/core";
+import SlideToPunch from "@/components/SlideToPunch";
 
 export default function EmployeeDashboardPage() {
   const { toast } = useToast();
@@ -35,11 +35,6 @@ export default function EmployeeDashboardPage() {
   const [timerSeconds, setTimerSeconds] = useState(0);
   const [isPunching, setIsPunching] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-
-  // Hold-to-Punch state
-  const [holdProgress, setHoldProgress] = useState(0);
-  const animationRef = useRef<number | null>(null);
-  const startTimeRef = useRef<number>(0);
 
   const [isNativeApp, setIsNativeApp] = useState(true);
 
@@ -138,36 +133,12 @@ export default function EmployeeDashboardPage() {
     setTimeout(() => setAttMessage(null), 4000);
   };
 
-  const handlePointerDown = (e: React.PointerEvent) => {
-    e.preventDefault();
-    if (isPunchedOut || isPunching || isLoading) return;
-    if (window.navigator?.vibrate) window.navigator.vibrate(15);
-    startTimeRef.current = Date.now();
-    const duration = 1000; // 1 second to fill
-
-    const animate = () => {
-      const elapsed = Date.now() - startTimeRef.current;
-      const p = Math.min((elapsed / duration) * 100, 100);
-      setHoldProgress(p);
-
-      if (p >= 100) {
-        if (window.navigator?.vibrate) window.navigator.vibrate(50);
-        if (!todayAttendance) handlePunchInAction();
-        else handlePunchOutAction();
-      } else {
-        animationRef.current = requestAnimationFrame(animate);
-      }
-    };
-    animationRef.current = requestAnimationFrame(animate);
-  };
-
-  const handlePointerUpOrLeave = () => {
-    if (animationRef.current) cancelAnimationFrame(animationRef.current);
-    if (holdProgress < 100) {
-      setHoldProgress(0);
-    } else {
-      setTimeout(() => setHoldProgress(0), 1000);
-    }
+  // Single entry point for the slide-to-punch control: punch in if not yet in,
+  // otherwise punch out. Awaited so the slider shows its processing state.
+  const handleSlideComplete = async () => {
+    if (isPunching || isLoading) return;
+    if (!todayAttendance) await handlePunchInAction();
+    else if (!todayAttendance.punchOutTime) await handlePunchOutAction();
   };
 
   const hours = Math.floor(timerSeconds / 3600);
@@ -318,60 +289,30 @@ export default function EmployeeDashboardPage() {
             </CardContent>
           </Card>
 
-          {/* Desktop Press & Hold Button */}
+          {/* Desktop Slide-to-Punch */}
           {isNativeApp ? (
             <div className="hidden lg:block space-y-3">
               <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center">
                 {isPunchedOut
                   ? "Shift completed for today"
                   : isNotPunchedYet
-                  ? "Press and hold to begin shift"
-                  : "Press and hold to end shift"}
+                  ? "Slide to begin your shift"
+                  : "Slide to end your shift"}
               </p>
-              
-              <div
-                onPointerDown={handlePointerDown}
-                onPointerUp={handlePointerUpOrLeave}
-                onPointerLeave={handlePointerUpOrLeave}
-                onContextMenu={(e) => e.preventDefault()}
-                className={`relative h-14 rounded-full overflow-hidden flex items-center justify-center transition-all duration-300 touch-none select-none border ${
-                  isPunchedOut
-                    ? "bg-slate-100 dark:bg-slate-900 border-slate-200 dark:border-slate-800 cursor-not-allowed opacity-50"
-                    : isNotPunchedYet
-                    ? "bg-white dark:bg-slate-900 border-brand-200 dark:border-brand-900/40 cursor-pointer shadow-sm hover:shadow-md"
-                    : "bg-white dark:bg-slate-900 border-rose-200 dark:border-rose-900/40 cursor-pointer shadow-sm hover:shadow-md"
-                } ${isPunching ? "opacity-70 pointer-events-none" : ""}`}
-              >
-                {/* Progress Fill Background */}
-                {!isPunchedOut && (
-                  <div
-                    className={`absolute left-0 top-0 bottom-0 ${
-                      isNotPunchedYet ? "bg-brand-500 dark:bg-brand-600" : "bg-rose-500 dark:bg-rose-600"
-                    }`}
-                    style={{ width: `${holdProgress}%`, transition: holdProgress === 0 ? "width 0.3s ease-out" : "none" }}
-                  />
-                )}
-                
-                {/* Text Content */}
-                <span className={`relative z-10 text-xs font-black uppercase tracking-widest pointer-events-none flex items-center gap-2 transition-colors ${
-                  holdProgress > 50 || isPunchedOut ? "text-white" : isNotPunchedYet ? "text-brand-600 dark:text-brand-400" : "text-rose-600 dark:text-rose-400"
-                }`}>
-                  {isPunching ? (
-                    <div className="flex items-center gap-2">
-                      <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      Processing...
-                    </div>
-                  ) : isPunchedOut ? (
-                    "✓ Shift Logged"
-                  ) : holdProgress > 0 ? (
-                    "Keep Holding..."
-                  ) : isNotPunchedYet ? (
-                    "Hold to Punch In"
-                  ) : (
-                    "Hold to Punch Out"
-                  )}
-                </span>
-              </div>
+
+              {isPunchedOut ? (
+                <div className="relative h-[60px] rounded-full flex items-center justify-center bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 opacity-60">
+                  <span className="text-[13px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                    <CheckCircle2 className="h-4 w-4" /> Shift Logged
+                  </span>
+                </div>
+              ) : (
+                <SlideToPunch
+                  variant={isNotPunchedYet ? "in" : "out"}
+                  loading={isPunching}
+                  onComplete={handleSlideComplete}
+                />
+              )}
             </div>
           ) : (
             <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200/60 dark:border-amber-800/30 rounded-2xl p-5 text-center shadow-inner hidden lg:block">
@@ -576,44 +517,15 @@ export default function EmployeeDashboardPage() {
         </div>
       </div>
 
-      {/* ── Mobile Hold-to-Punch (fixed, above nav) ─────────── */}
+      {/* ── Mobile Slide-to-Punch (fixed, above nav) ─────────── */}
       {isNativeApp && !isPunchedOut && (
         <div className="lg:hidden fixed bottom-[7rem] left-4 right-4 z-50">
-          <div
-            onPointerDown={handlePointerDown}
-            onPointerUp={handlePointerUpOrLeave}
-            onPointerLeave={handlePointerUpOrLeave}
-            onContextMenu={(e) => e.preventDefault()}
-            className={`relative h-14 rounded-full overflow-hidden flex items-center justify-center shadow-2xl touch-none select-none border transition-all ${
-              isNotPunchedYet
-                ? "bg-white dark:bg-slate-900 border-brand-200 dark:border-brand-900/40"
-                : "bg-white dark:bg-slate-900 border-rose-200 dark:border-rose-900/40"
-            } ${isPunching ? "opacity-70 pointer-events-none" : "active:scale-[0.98]"}`}
-          >
-            {/* Progress Fill Background */}
-            <div
-              className={`absolute left-0 top-0 bottom-0 ${
-                isNotPunchedYet ? "bg-brand-500" : "bg-rose-500"
-              }`}
-              style={{ width: `${holdProgress}%`, transition: holdProgress === 0 ? "width 0.3s ease-out" : "none" }}
+          <div className="rounded-full shadow-2xl">
+            <SlideToPunch
+              variant={isNotPunchedYet ? "in" : "out"}
+              loading={isPunching}
+              onComplete={handleSlideComplete}
             />
-            
-            <span className={`relative z-10 text-xs font-black uppercase tracking-widest pointer-events-none flex items-center gap-2 transition-colors ${
-              holdProgress > 50 ? "text-white" : isNotPunchedYet ? "text-brand-600 dark:text-brand-400" : "text-rose-600 dark:text-rose-400"
-            }`}>
-              {isPunching ? (
-                <div className="flex items-center gap-2">
-                  <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Processing...
-                </div>
-              ) : holdProgress > 0 ? (
-                "Keep Holding..."
-              ) : isNotPunchedYet ? (
-                "Hold to Punch In"
-              ) : (
-                "Hold to Punch Out"
-              )}
-            </span>
           </div>
         </div>
       )}
