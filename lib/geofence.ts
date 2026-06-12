@@ -81,8 +81,17 @@ export async function validateGeofence(userLat: number, userLng: number): Promis
   }
   const loc = rows[0];
 
-  // Wi-Fi / IP check removed because of dynamic IP issues.
-  // We now rely purely on the GPS Geofence from the mobile app.
+  // Wi-Fi / IP check using Dynamic Range
+  // We match the first two octets (e.g., 203.194.) to allow for dynamic ISP IP changes
+  // while still adding a layer of security.
+  if (process.env.NODE_ENV === "production") {
+    const clientPrefix = clientIp.split('.').slice(0, 2).join('.');
+    const officePrefix = loc.wifi_public_ip.split('.').slice(0, 2).join('.');
+    
+    if (clientIp === "unknown" || clientPrefix !== officePrefix) {
+      return { ok: false, message: `Not connected to office Wi-Fi. (IP: ${clientIp})` };
+    }
+  }
   // Geofence check
   const distance = Number(loc.distance_meters);
   const radius = Number(loc.radius_meters);
