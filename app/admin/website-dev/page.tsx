@@ -102,25 +102,20 @@ export default function WebsiteDevPage() {
     (async () => {
       const res = await getWebDevDashboardData();
       if (res.success && res.data && (res.data.projects.length > 0 || res.data.tasks.length > 0)) {
-        
-        // Map DB Web Dev Projects -> Domains
+        // Map DB projects to frontend "domains/sites"
         const mappedDomains = res.data.projects.map((p: any) => {
           let sd: any = {};
           try { sd = JSON.parse(p.serviceDetails || "{}"); } catch(e) {}
           return {
-            name: sd.websiteUrl || p.name,
-            uptime: sd.uptime || 100,
-      if (res.success && res.data.projects.length > 0) {
-        // Map DB projects to frontend "domains/sites"
-        const mappedDomains = res.data.projects.map((p: any) => ({
-          id: p.id,
-          url: p.name,
-          client: p.clientName || "Unknown Client",
-          status: "Healthy",
-          uptime: 99.9,
-          response: 250,
-          lastChecked: "Just now",
-        }));
+            id: p.id,
+            url: sd.websiteUrl || p.name,
+            client: p.clientName || "Unknown Client",
+            status: "Healthy",
+            uptime: sd.uptime || 99.9,
+            response: sd.response || 250,
+            lastChecked: "Just now",
+          };
+        });
 
         const mappedTasks = res.data.tasks.map((t: any) => ({
           id: t.id,
