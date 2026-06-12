@@ -1582,6 +1582,13 @@ export async function toggleTaskStatus(id: number, doneStatus: boolean) {
     await db.update(schema.tasks)
       .set({ done: newDone, status: newStatus })
       .where(eq(schema.tasks.id, id));
+
+    // Sync everywhere the task surfaces.
+    revalidatePath("/employee/tasks");
+    revalidatePath("/employee/overview");
+    revalidatePath("/employee/projects");
+    revalidatePath("/admin/team");
+    revalidatePath("/admin/projects");
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message };
@@ -1982,9 +1989,16 @@ export async function getMyAssignedTasks() {
       ? await db.select({ id: schema.users.id, name: schema.users.name }).from(schema.users).where(inArray(schema.users.id, assigneeIds))
       : [];
 
+    // Join project names so the tasks page can group/filter by project.
+    const projectIds = Array.from(new Set(results.map(t => t.projectId).filter(Boolean))) as number[];
+    const projectsList = projectIds.length > 0
+      ? await db.select({ id: schema.projects.id, name: schema.projects.name }).from(schema.projects).where(inArray(schema.projects.id, projectIds))
+      : [];
+
     const enriched = results.map(task => ({
       ...task,
       assignedBy: assigners.find(a => a.id === task.assignedById) || null,
+      projectName: projectsList.find(p => p.id === task.projectId)?.name || null,
     }));
 
     return { success: true, data: enriched };

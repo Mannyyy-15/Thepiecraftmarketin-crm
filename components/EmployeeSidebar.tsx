@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import {
   LayoutDashboard,
+  ListTodo,
   Calendar,
   Users,
   FolderKanban,
@@ -26,6 +27,7 @@ import { getCurrentUser, logout } from "@/app/actions/auth";
 const navigation = [
   { name: "Home", href: "/employee", icon: Home },
   { name: "Overview", href: "/employee/overview", icon: LayoutDashboard },
+  { name: "Tasks", href: "/employee/tasks", icon: ListTodo },
   { name: "Attendance", href: "/employee/attendance", icon: Calendar },
   { name: "Meta Ads", href: "/employee/ads", icon: BarChart3 },
   { name: "Website Dev", href: "/employee/website-dev", icon: Code2 },

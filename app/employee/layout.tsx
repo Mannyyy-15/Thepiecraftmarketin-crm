@@ -7,6 +7,7 @@ import {
   Home,
   Calendar,
   LayoutDashboard,
+  ListTodo,
   Code2,
   BarChart3,
   MoreHorizontal,
@@ -62,6 +63,7 @@ export default function DashboardLayout({
 
   // Drawer menu options
   const drawerOptions = [
+    { name: "Tasks", href: "/employee/tasks", icon: ListTodo, desc: "My Tasks & To-dos" },
     { name: "Profile", href: "/employee/profile", icon: User, desc: "My Profile & Schedule" },
     { name: "Reports", href: "/employee/reports", icon: FilePieChart, desc: "Analytics & Reports" },
     { name: "Documents", href: "/employee/documents", icon: Files, desc: "Files & Contracts" },
