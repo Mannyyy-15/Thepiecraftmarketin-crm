@@ -884,13 +884,8 @@ export async function getUnreadNotificationCount() {
 
     return { success: true, count: results.length };
   } catch (error: any) {
-    console.error("getUnreadNotificationCount Error:", error);
-    return { success: false, count: 0 };
-  }
-}
-
-// Punch In for the day
-export async function punchIn(lat?: number, lng?: number) {
+// Punch In
+export async function punchIn(lat?: number, lng?: number, bssid?: string) {
   try {
     const session = await getAuthSession();
     if (!session) return { success: false, error: "Unauthorized" };
@@ -900,7 +895,7 @@ export async function punchIn(lat?: number, lng?: number) {
     if (typeof lat !== "number" || typeof lng !== "number") {
       return { success: false, error: "Location required. Enable GPS and retry." };
     }
-    const geo = await validateGeofence(lat, lng);
+    const geo = await validateGeofence(lat, lng, bssid);
     if (!geo.ok) return { success: false, error: geo.message };
 
     const todayStr = new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD in local time
@@ -960,8 +955,8 @@ export async function punchIn(lat?: number, lng?: number) {
   }
 }
 
-// Punch Out for the day
-export async function punchOut(lat?: number, lng?: number) {
+// Punch Out
+export async function punchOut(lat?: number, lng?: number, bssid?: string) {
   try {
     const session = await getAuthSession();
     if (!session) return { success: false, error: "Unauthorized" };
@@ -971,7 +966,7 @@ export async function punchOut(lat?: number, lng?: number) {
     if (typeof lat !== "number" || typeof lng !== "number") {
       return { success: false, error: "Location required. Enable GPS and retry." };
     }
-    const geo = await validateGeofence(lat, lng);
+    const geo = await validateGeofence(lat, lng, bssid);
     if (!geo.ok) return { success: false, error: geo.message };
 
     const todayStr = new Date().toLocaleDateString("en-CA");
