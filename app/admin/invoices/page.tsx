@@ -386,7 +386,7 @@ export default function AdminInvoicesPage() {
 
           {/* Wrapper to allow horizontal scroll on mobile while strictly keeping A4 dimensions inside */}
           <div className="overflow-x-auto w-full pb-4">
-            <div ref={previewRef} className="min-w-[780px] rounded-2xl border border-slate-200 dark:border-slate-800 bg-white text-slate-900 p-10 shadow-sm mx-auto">
+            <div ref={previewRef} className="min-w-[780px] max-md:[zoom:0.7] max-sm:[zoom:0.45] rounded-2xl border border-slate-200 dark:border-slate-800 bg-white text-slate-900 p-10 shadow-sm mx-auto">
               <div className="flex items-start justify-between gap-4">
               <div>
                 <img src={logoImg.src} alt={COMPANY.name} className="h-32 w-auto mb-2 -mt-6 -ml-4 object-contain mix-blend-multiply" />
