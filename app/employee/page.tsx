@@ -185,7 +185,7 @@ export default function EmployeeDashboardPage() {
           initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -12 }}
-          className="fixed top-4 left-1/2 -translate-x-1/2 z-50 px-5 py-3.5 bg-slate-900 dark:bg-slate-950 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl text-xs font-semibold text-white flex items-center gap-3 whitespace-nowrap"
+          className="fixed top-24 left-1/2 -translate-x-1/2 z-50 px-5 py-3.5 bg-slate-900 dark:bg-slate-950 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl text-xs font-semibold text-white flex items-center gap-3 whitespace-nowrap"
         >
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
           {attMessage}

@@ -34,6 +34,8 @@
     "drizzle-orm": "^0.45.2",
     "firebase-admin": "^14.0.0",
     "framer-motion": "^12.40.0",
+    "googleapis": "^173.0.0",
+    "isomorphic-dompurify": "^3.16.0",
     "jose": "^6.2.3",
     "lucide-react": "^0.300.0",
     "mysql2": "^3.22.3",
@@ -42,7 +44,8 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "recharts": "^2.10.3",
-    "tailwind-merge": "^2.2.1"
+    "tailwind-merge": "^2.2.1",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",

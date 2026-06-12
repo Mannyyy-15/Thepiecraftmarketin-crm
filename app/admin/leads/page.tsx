@@ -17,6 +17,7 @@ import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/components/ui/cn";
 import { KanbanSkeleton, Skeleton } from "@/components/ui/Skeleton";
+import InboundLeads from "@/components/InboundLeads";
 
 // ── stage / service config ────────────────────────────────────────────────────
 const STAGES = [
@@ -453,6 +454,9 @@ export default function LeadsPage() {
           </button>
         </div>
       </div>
+
+      {/* ── Inbound leads from the inquiry sheet ──────────────────────────── */}
+      <InboundLeads />
 
       {/* ── Integrations panel ────────────────────────────────────────────── */}
       {showIntegrations && (

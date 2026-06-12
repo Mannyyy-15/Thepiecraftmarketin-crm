@@ -749,31 +749,36 @@ async function createNotification(userId: number, type: string, title: string, m
       read: 0,
     });
 
-    // Send FCM Push Notification
+    // Send FCM Push Notification asynchronously in the background so it doesn't block the server action
     const { messaging } = require("@/lib/firebase-admin");
     if (messaging) {
-      const tokens = await db.select({ token: schema.fcmTokens.token }).from(schema.fcmTokens).where(eq(schema.fcmTokens.userId, userId));
-      for (const t of tokens) {
-        try {
-          await messaging.send({
-            token: t.token,
-            notification: {
-              title,
-              body: message,
-            },
-            data: {
-              link: link || "/",
-            },
-            android: {
+      db.select({ token: schema.fcmTokens.token })
+        .from(schema.fcmTokens)
+        .where(eq(schema.fcmTokens.userId, userId))
+        .then((tokens) => {
+          for (const t of tokens) {
+            messaging.send({
+              token: t.token,
               notification: {
-                channelId: "thepiecraft-crm",
+                title,
+                body: message,
               },
-            },
-          });
-        } catch (fcmErr) {
-          console.error("FCM Send Error:", fcmErr);
-        }
-      }
+              data: {
+                link: link || "/",
+              },
+              android: {
+                notification: {
+                  channelId: "thepiecraft-crm",
+                },
+              },
+            }).catch((fcmErr: any) => {
+              console.error("FCM Send Error:", fcmErr);
+            });
+          }
+        })
+        .catch((dbErr) => {
+          console.error("FCM Token fetch DB error:", dbErr);
+        });
     }
   } catch (e) {
     console.error("createNotification error:", e);
@@ -926,8 +931,13 @@ export async function punchIn(lat?: number, lng?: number) {
 
     revalidatePath("/employee");
     revalidatePath("/admin/team");
-    await notifyAdmins("punch_in", "Team Check-in", `${session.name || session.email} is in for the day`, "/admin/team");
-    await logActivity(session.id as number, "punch_in", `${session.name || session.email} punched in`);
+    // Run notifyAdmins and logActivity in background so they don't block the critical path
+    notifyAdmins("punch_in", "Team Check-in", `${session.name || session.email} is in for the day`, "/admin/team").catch(err => {
+      console.error("punchIn notifyAdmins async error:", err);
+    });
+    logActivity(session.id as number, "punch_in", `${session.name || session.email} punched in`).catch(err => {
+      console.error("punchIn logActivity async error:", err);
+    });
     return { success: true };
   } catch (error: any) {
     console.error("punchIn Error:", error);
@@ -996,8 +1006,13 @@ export async function punchOut(lat?: number, lng?: number) {
 
     revalidatePath("/employee");
     revalidatePath("/admin/team");
-    await notifyAdmins("punch_out", "Team Check-out", `${session.name || session.email} has wrapped up for the day`, "/admin/team");
-    await logActivity(session.id as number, "punch_out", `${session.name || session.email} punched out`);
+    // Run notifyAdmins and logActivity in background so they don't block the critical path
+    notifyAdmins("punch_out", "Team Check-out", `${session.name || session.email} has wrapped up for the day`, "/admin/team").catch(err => {
+      console.error("punchOut notifyAdmins async error:", err);
+    });
+    logActivity(session.id as number, "punch_out", `${session.name || session.email} punched out`).catch(err => {
+      console.error("punchOut logActivity async error:", err);
+    });
     return { success: true };
   } catch (error: any) {
     console.error("punchOut Error:", error);

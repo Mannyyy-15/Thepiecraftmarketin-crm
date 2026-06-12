@@ -43,7 +43,11 @@ export async function validateGeofence(userLat: number, userLng: number): Promis
     return { ok: false, message: "Invalid location. Enable GPS and retry." };
   }
 
-  const clientIp = extractClientIp(headers());
+  let clientIp = extractClientIp(headers());
+  // Normalize IPv6-mapped IPv4 addresses (e.g. ::ffff:203.194.96.181 -> 203.194.96.181)
+  if (clientIp.startsWith("::ffff:")) {
+    clientIp = clientIp.substring(7);
+  }
 
   type LocationRow = {
     id: number;
@@ -77,13 +81,11 @@ export async function validateGeofence(userLat: number, userLng: number): Promis
   }
   const loc = rows[0];
 
-  // Wi-Fi / IP check
-  if (clientIp === "unknown") {
-    if (process.env.NODE_ENV === "production") {
+  // Wi-Fi / IP check — strictly enforced in production to ensure physical presence on office network
+  if (process.env.NODE_ENV === "production") {
+    if (clientIp === "unknown" || clientIp !== loc.wifi_public_ip) {
       return { ok: false, message: "Not connected to office Wi-Fi." };
     }
-  } else if (clientIp !== loc.wifi_public_ip) {
-    return { ok: false, message: "Not connected to office Wi-Fi." };
   }
 
   // Geofence check

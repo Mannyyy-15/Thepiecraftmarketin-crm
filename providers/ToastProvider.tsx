@@ -51,7 +51,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       {children}
 
       {/* Toast stack — AnimatePresence enables exit animations */}
-      <div className="fixed top-4 right-4 z-[9999] flex flex-col gap-2 w-full max-w-sm pointer-events-none">
+      <div className="fixed top-24 right-4 z-[9999] flex flex-col gap-2 w-full max-w-sm pointer-events-none">
         <AnimatePresence mode="sync">
           {toasts.map(t => (
             <Toast key={t.id} {...t} onClose={removeToast} />
