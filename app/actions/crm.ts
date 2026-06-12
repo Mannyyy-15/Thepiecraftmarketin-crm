@@ -2839,34 +2839,6 @@ export async function getDocuments() {
     // Get documents from database
     let dbDocs = await db.select().from(schema.documents).orderBy(desc(schema.documents.createdAt));
 
-    // Seed if empty
-    if (dbDocs.length === 0) {
-      const { documents: seedDocs } = require("@/lib/mock");
-      for (const doc of seedDocs) {
-        // Find client if possible
-        const clients = await db.select().from(schema.clients).where(eq(schema.clients.name, doc.client));
-        const clientId = clients.length > 0 ? clients[0].id : null;
-        
-        let targetFolder = "Client Briefs";
-        if (doc.type === "FIG") targetFolder = "Brand Assets";
-        if (doc.type === "XLSX" || doc.type === "CSV") targetFolder = "Reports";
-        if (doc.name.toLowerCase().includes("contract") || doc.name.toLowerCase().includes("agreement")) {
-          targetFolder = "Contracts";
-        }
-
-        await db.insert(schema.documents).values({
-          name: doc.name,
-          clientId,
-          clientName: doc.client,
-          type: doc.type,
-          size: doc.size,
-          folder: targetFolder,
-          ownerName: doc.owner,
-        });
-      }
-      dbDocs = await db.select().from(schema.documents).orderBy(desc(schema.documents.createdAt));
-    }
-
     // Dynamic Contracts: Query active projects with contractLink and merge them as virtual contract files
     const projectsWithContracts = await db.select().from(schema.projects);
     const virtualContracts = projectsWithContracts

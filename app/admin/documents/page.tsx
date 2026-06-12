@@ -340,10 +340,6 @@ export default function DocumentsPage() {
         title="Documents"
         actions={
           <div className="flex gap-2">
-            <Button variant="outline" size="md" onClick={() => setShowProposalModal(true)} className="border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/50 font-semibold text-xs">
-              <Edit className="h-4 w-4 mr-1 text-indigo-500" />
-              Draft Proposal
-            </Button>
             <Button variant="outline" size="md" onClick={() => setShowFolderModal(true)} className="border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-900 font-semibold text-xs">
               <Plus className="h-4 w-4 mr-1 text-indigo-500" />
               New Folder
@@ -611,88 +607,7 @@ export default function DocumentsPage() {
       {/* ========================================================================= */}
       {/* 📝 MODAL: DRAFT PROPOSAL / SOW WITH SIGNATURE DRAWING PAD */}
       {/* ========================================================================= */}
-      {showProposalModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/40 dark:bg-slate-950/70 backdrop-blur-md flex items-start justify-center p-4 overflow-y-auto">
-          <Card className="w-full max-w-lg animate-scaleIn border border-indigo-500/25 shadow-2xl mt-8 mb-8">
-            <CardHeader className="py-4 border-b dark:border-slate-800">
-              <div className="flex justify-between items-center">
-                <CardTitle className="text-sm font-bold flex items-center gap-2">
-                  <Edit className="h-4.5 w-4.5 text-indigo-500" /> Draft Proposal & SOW
-                </CardTitle>
-                <button onClick={() => setShowProposalModal(false)} className="text-slate-400 hover:text-slate-650">
-                  <X className="h-4.5 w-4.5" />
-                </button>
-              </div>
-            </CardHeader>
-            <CardContent className="p-5">
-              <form onSubmit={handleCreateProposalSOW} className="space-y-4">
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Project to Sign</label>
-                  <select
-                    value={proposalProject}
-                    onChange={(e) => setProposalProject(e.target.value)}
-                    required
-                    className="w-full h-10 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-xs focus:ring-2 focus:ring-indigo-500/40 text-slate-850 dark:text-white"
-                  >
-                    {projectsList.map((p) => (
-                      <option key={p.id} value={p.id}>{p.name} ({p.clientName || "No Client"})</option>
-                    ))}
-                  </select>
-                </div>
 
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Proposal Title</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Website Dev Agreement v1"
-                    value={proposalTitle}
-                    onChange={(e) => setProposalTitle(e.target.value)}
-                    className="w-full h-10 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-xs focus:ring-2 focus:ring-indigo-500/40 text-slate-800 dark:text-white"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Agreement Details</label>
-                  <textarea
-                    required
-                    placeholder="Provide details about milestones, pricing, and terms..."
-                    value={proposalContent}
-                    onChange={(e) => setProposalContent(e.target.value)}
-                    rows={3}
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-3 text-xs focus:ring-2 focus:ring-indigo-500/40 text-slate-800 dark:text-white"
-                  />
-                </div>
-
-                <div>
-                  <div className="flex justify-between items-center mb-2">
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Draw Client Signature</label>
-                    <button type="button" onClick={clearCanvas} className="text-[10px] font-bold text-rose-500 hover:text-rose-600 uppercase">Clear Pad</button>
-                  </div>
-                  <canvas
-                    ref={canvasRef}
-                    width={440}
-                    height={120}
-                    onMouseDown={startDrawing}
-                    onMouseMove={draw}
-                    onMouseUp={stopDrawing}
-                    onMouseLeave={stopDrawing}
-                    onTouchStart={startDrawing}
-                    onTouchMove={draw}
-                    onTouchEnd={stopDrawing}
-                    className="w-full border-2 border-dashed border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-xl cursor-crosshair h-32"
-                  />
-                  <p className="text-[10px] text-slate-400 mt-1">Draw in the box above to add a digital signature. Signature is saved as PNG to the Contracts folder.</p>
-                </div>
-
-                <button type="submit" className="w-full h-10 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white text-xs font-bold rounded-xl shadow-md transition-colors">
-                  Create & Sign SOW
-                </button>
-              </form>
-            </CardContent>
-          </Card>
-        </div>
-      )}
       {/* ========================================================================= */}
       <div className="fixed bottom-5 right-5 z-55 flex flex-col gap-2.5 max-w-sm w-full pointer-events-none">
         {toasts.map((t) => (
