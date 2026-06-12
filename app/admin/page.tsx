@@ -332,26 +332,30 @@ export default function DashboardPage() {
           <CardHeader>
             <CardTitle>Recent Activity</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent>
             {isActivitiesLoading ? (
-              <ActivityFeedSkeleton count={5} />
+              <div className="space-y-3"><ActivityFeedSkeleton count={5} /></div>
             ) : activities.length === 0 ? (
               <EmptyState icon={<Activity className="h-5 w-5" />} title="No activity yet" description="Actions from your team will appear here." />
-            ) : null}
-            {!isActivitiesLoading && activities.map((a: any) => (
-              <div key={a.id} className="flex items-start gap-3">
-                <Avatar name={a.user?.name || "U"} size="sm" />
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm text-slate-700 dark:text-slate-300 leading-snug">
-                    <span className="font-semibold text-slate-900 dark:text-white">{a.user?.name || "System"}</span>{" "}
-                    {a.description}
-                  </p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                    {new Date(a.createdAt).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
-                  </p>
-                </div>
+            ) : (
+              // ~5 rows tall, scroll for the rest — keeps the card compact.
+              <div className="max-h-[20rem] overflow-y-auto space-y-3 pr-1 -mr-1">
+                {activities.map((a: any) => (
+                  <div key={a.id} className="flex items-start gap-3">
+                    <Avatar name={a.user?.name || "U"} size="sm" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm text-slate-700 dark:text-slate-300 leading-snug">
+                        <span className="font-semibold text-slate-900 dark:text-white">{a.user?.name || "System"}</span>{" "}
+                        {a.description}
+                      </p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                        {new Date(a.createdAt).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                      </p>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
+            )}
           </CardContent>
         </Card>
       </div>
