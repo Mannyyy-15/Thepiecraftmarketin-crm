@@ -220,14 +220,14 @@ export default function DashboardPage() {
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
-                    data={dashboardData?.channelData || channelData}
+                    data={dashboardData?.channelData || []}
                     innerRadius={45}
                     outerRadius={70}
                     paddingAngle={4}
                     dataKey="value"
                     stroke="none"
                   >
-                    {(dashboardData?.channelData || channelData).map((_, i) => (
+                    {(dashboardData?.channelData || []).map((_, i) => (
                       <Cell key={i} fill={channelColors[i % channelColors.length]} />
                     ))}
                   </Pie>
@@ -247,7 +247,7 @@ export default function DashboardPage() {
               </ResponsiveContainer>
             </div>
             <ul className="mt-2 space-y-2">
-              {(dashboardData?.channelData || channelData).map((c: any, i: number) => (
+              {(dashboardData?.channelData || []).map((c: any, i: number) => (
                 <li key={c.name} className="flex items-center justify-between text-sm">
                   <span className="inline-flex items-center gap-2 text-slate-600 dark:text-slate-300">
                     <span
@@ -291,7 +291,7 @@ export default function DashboardPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {(dashboardData?.recentProjects || mockProjects.slice(0, 5)).map((p: any) => (
+                {(dashboardData?.recentProjects || []).map((p: any) => (
                   <tr
                     key={p.id}
                     className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors duration-150"

@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import * as schema from "@/lib/schema";
 
+// This route touches the database; never statically analyse/prerender it at build.
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
 // Allow any origin so external forms (website, Typeform, Meta Lead Ads) can POST here
 export async function OPTIONS() {
   return new NextResponse(null, {

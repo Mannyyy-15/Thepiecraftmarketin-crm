@@ -36,7 +36,7 @@ export function extractClientIp(headerMap: Headers): string {
  * configured location. Server-side only. Messages are kept short so the UI
  * can show them in a small toast.
  */
-export async function validateGeofence(userLat: number, userLng: number): Promise<GeoValidation> {
+export async function validateGeofence(userLat: number, userLng: number, userBssid?: string): Promise<GeoValidation> {
   if (!db) return { ok: false, message: "Server not connected." };
 
   if (!Number.isFinite(userLat) || !Number.isFinite(userLng) || Math.abs(userLat) > 90 || Math.abs(userLng) > 180) {
@@ -60,7 +60,7 @@ export async function validateGeofence(userLat: number, userLng: number): Promis
   let rows: LocationRow[];
   try {
     const result = await db.execute(sql`
-      SELECT id, name, wifi_public_ip, radius_meters,
+      SELECT id, name, wifi_public_ip, bssid, radius_meters,
         ROUND(6371000 * acos(LEAST(1.0,
           cos(radians(${userLat})) * cos(radians(latitude))
             * cos(radians(longitude) - radians(${userLng}))
@@ -81,20 +81,15 @@ export async function validateGeofence(userLat: number, userLng: number): Promis
   }
   const loc = rows[0];
 
-  // Wi-Fi / IP check using Dynamic Range
-  // We match the first two octets (e.g., 203.194.) to allow for dynamic ISP IP changes
-  // while still adding a layer of security.
-  // DISABLED: User's ISP rotates IPs across entirely different blocks (e.g. 203 to 108).
-  /*
+  // Wi-Fi BSSID Check
   if (process.env.NODE_ENV === "production") {
-    const clientPrefix = clientIp.split('.').slice(0, 2).join('.');
-    const officePrefix = loc.wifi_public_ip.split('.').slice(0, 2).join('.');
-    
-    if (clientIp === "unknown" || clientPrefix !== officePrefix) {
-      return { ok: false, message: \`Not connected to office Wi-Fi. (IP: ${clientIp})\` };
+    // If we have an office BSSID configured in DB, we must strictly validate it
+    if (loc.bssid && loc.bssid.trim().length > 0) {
+      if (!userBssid || userBssid.toLowerCase() !== loc.bssid.toLowerCase()) {
+        return { ok: false, message: `Please connect to the official office Wi-Fi network to clock in.` };
+      }
     }
   }
-  */
   // Geofence check
   const distance = Number(loc.distance_meters);
   const radius = Number(loc.radius_meters);

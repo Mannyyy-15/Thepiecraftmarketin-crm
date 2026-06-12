@@ -10,7 +10,7 @@ const GEO_OPTIONS: PositionOptions = {
 };
 
 export type LocationResult =
-  | { ok: true; lat: number; lng: number; accuracy: number }
+  | { ok: true; lat: number; lng: number; accuracy: number; bssid: string | null }
   | { ok: false; reason: "permission" | "gps-off" | "accuracy" | "unsupported" | "timeout"; message: string };
 
 // On native (Capacitor) the OS runtime location permission must be granted
@@ -46,6 +46,22 @@ function getCurrentPosition(): Promise<GeolocationPosition> {
  */
 export async function getValidatedLocation(): Promise<LocationResult> {
   const granted = await ensureNativeLocationPermission();
+  let bssid: string | null = null;
+  
+  if (granted) {
+    try {
+      const { Capacitor } = await import("@capacitor/core");
+      if (Capacitor.isNativePlatform()) {
+        const { CapacitorWifi } = await import("@capgo/capacitor-wifi");
+        const wifiInfo = await CapacitorWifi.getWifiInfo();
+        if (wifiInfo.bssid) {
+          bssid = wifiInfo.bssid;
+        }
+      }
+    } catch (e) {
+      console.warn("Failed to get BSSID", e);
+    }
+  }
   if (!granted) {
     return { ok: false, reason: "permission", message: "Enable location permission to punch." };
   }
@@ -57,7 +73,7 @@ export async function getValidatedLocation(): Promise<LocationResult> {
     if (accuracy > MAX_ACCURACY_METERS) {
       return { ok: false, reason: "accuracy", message: "Move outdoors — GPS too weak." };
     }
-    return { ok: true, lat: latitude, lng: longitude, accuracy };
+    return { ok: true, lat: latitude, lng: longitude, accuracy, bssid };
   } catch (err: any) {
     // GeolocationPositionError codes: 1 = PERMISSION_DENIED, 2 = POSITION_UNAVAILABLE, 3 = TIMEOUT
     const code = err && typeof err === "object" && "code" in err ? err.code : undefined;

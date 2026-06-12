@@ -100,7 +100,7 @@ export default function EmployeeDashboardPage() {
         toast(loc.message, "error", 2500);
         return;
       }
-      const res = await punchIn(loc.lat, loc.lng);
+      const res = await punchIn(loc.lat, loc.lng, loc.bssid || undefined);
       if (res.success) {
         setAttMessage("Punched in successfully! Have a great shift!");
         loadDashboardData();
@@ -123,7 +123,7 @@ export default function EmployeeDashboardPage() {
         toast(loc.message, "error", 2500);
         return;
       }
-      const res = await punchOut(loc.lat, loc.lng);
+      const res = await punchOut(loc.lat, loc.lng, loc.bssid || undefined);
       if (res.success) {
         setAttMessage("Punched out successfully! Shift logged.");
         loadDashboardData();

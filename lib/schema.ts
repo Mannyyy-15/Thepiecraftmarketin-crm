@@ -217,6 +217,7 @@ export const locations = mysqlTable("locations", {
   longitude: decimal("longitude", { precision: 11, scale: 8 }).notNull(),
   radiusMeters: int("radius_meters").notNull().default(100),
   wifiPublicIp: varchar("wifi_public_ip", { length: 45 }).notNull(), // IPv4 or IPv6
+  bssid: varchar("bssid", { length: 255 }), // e.g. "00:11:22:33:44:55"
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
