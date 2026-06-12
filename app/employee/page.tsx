@@ -24,6 +24,7 @@ import {
 } from "@/app/actions/crm";
 import { getValidatedLocation } from "@/lib/getLocation";
 import { Capacitor } from "@capacitor/core";
+import { NativeBiometric } from "@capgo/capacitor-native-biometric";
 import SlideToPunch from "@/components/SlideToPunch";
 
 export default function EmployeeDashboardPage() {
@@ -137,6 +138,25 @@ export default function EmployeeDashboardPage() {
   // otherwise punch out. Awaited so the slider shows its processing state.
   const handleSlideComplete = async () => {
     if (isPunching || isLoading) return;
+
+    if (isNativeApp) {
+      try {
+        const result = await NativeBiometric.isAvailable();
+        if (result.isAvailable) {
+          await NativeBiometric.verifyIdentity({
+            reason: "Securely authenticate to log your attendance.",
+            title: "Employee Verification",
+            subtitle: "Please verify it's you",
+          });
+        }
+      } catch (err: any) {
+        toast("Authentication failed or was canceled.", "error", 2500);
+        // Throwing here will stop the slider's 'onComplete' from succeeding
+        // so it resets automatically.
+        throw new Error("Biometric auth failed");
+      }
+    }
+
     if (!todayAttendance) await handlePunchInAction();
     else if (!todayAttendance.punchOutTime) await handlePunchOutAction();
   };
