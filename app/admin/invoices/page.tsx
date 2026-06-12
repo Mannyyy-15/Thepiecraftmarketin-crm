@@ -9,11 +9,12 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { getClients, createInvoiceFull, getInvoices, updateInvoiceStatus } from "@/app/actions/crm";
+import logoImg from "@/assets/invoice-logo.png";
 
 const COMPANY = {
   name: "ThePieCraft Marketing",
   email: "info@thepiecraftmarketing.com",
-  tagline: "Digital Marketing & Web Development",
+  tagline: "Performance Marketing & Web Development",
 };
 
 // Quick-add service presets (one tap to add a line for that service).
@@ -249,7 +250,7 @@ export default function AdminInvoicesPage() {
                     </div>
                   </div>
                   <div className="relative">
-                    <StickyNote className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-amber-400 pointer-events-none" />
+                    <StickyNote className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
                     <input value={it.note} onChange={(e) => setItem(idx, { note: e.target.value })} placeholder="Note (e.g. Domain & hosting included for 1 year)" className={`${INPUT} pl-8 text-xs`} />
                   </div>
                 </div>
@@ -313,7 +314,7 @@ export default function AdminInvoicesPage() {
           <div ref={previewRef} className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white text-slate-900 p-6 sm:p-8 shadow-sm">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h2 className="text-lg font-extrabold text-slate-900">{COMPANY.name}</h2>
+                <img src={logoImg.src} alt={COMPANY.name} className="h-12 w-auto mb-2 object-contain" />
                 <p className="text-xs text-slate-500">{COMPANY.tagline}</p>
                 <p className="text-xs text-slate-500">{COMPANY.email}</p>
               </div>
@@ -356,7 +357,7 @@ export default function AdminInvoicesPage() {
                     <td className="py-3 pr-3">
                       <p className="font-semibold text-slate-800">{it.service || "—"}{it.units ? ` × ${it.units}` : ""}</p>
                       {it.details && <p className="text-xs text-slate-500 mt-0.5">{it.details}</p>}
-                      {it.note && <p className="text-[11px] text-amber-600 mt-1 italic">↳ {it.note}</p>}
+                      {it.note && <p className="text-[11px] text-slate-500 mt-1 italic">↳ {it.note}</p>}
                     </td>
                     <td className="py-3 text-right font-semibold text-slate-800 tabular-nums">{fmt(it.amount)}</td>
                   </tr>
