@@ -178,7 +178,7 @@ export default function LoginPage() {
                 <label htmlFor="password" className="text-xs font-bold text-slate-300">
                   Password
                 </label>
-                <a href="#" className="text-xs font-bold text-indigo-400 hover:text-indigo-300 transition-colors">
+                <a href="mailto:info@thepiecraftmarketing.com?subject=CRM%20Password%20Reset%20Request" className="text-xs font-bold text-indigo-400 hover:text-indigo-300 transition-colors">
                   Forgot password?
                 </a>
               </div>
@@ -240,7 +240,7 @@ export default function LoginPage() {
             </div>
             <p className="text-xs text-slate-600 text-center lg:text-left">
               By signing in, you agree to ThePieCraft CRM's <br className="hidden lg:block"/>
-              <a href="#" className="text-slate-400 hover:text-slate-300 underline underline-offset-2 transition-colors">Terms of Service</a> and <a href="#" className="text-slate-400 hover:text-slate-300 underline underline-offset-2 transition-colors">Privacy Policy</a>.
+              <a href="https://thepiecraftmarketing.com/terms" target="_blank" rel="noreferrer" className="text-slate-400 hover:text-slate-300 underline underline-offset-2 transition-colors">Terms of Service</a> and <a href="https://thepiecraftmarketing.com/privacy" target="_blank" rel="noreferrer" className="text-slate-400 hover:text-slate-300 underline underline-offset-2 transition-colors">Privacy Policy</a>.
             </p>
           </motion.div>
         </motion.div>

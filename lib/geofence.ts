@@ -84,14 +84,17 @@ export async function validateGeofence(userLat: number, userLng: number): Promis
   // Wi-Fi / IP check using Dynamic Range
   // We match the first two octets (e.g., 203.194.) to allow for dynamic ISP IP changes
   // while still adding a layer of security.
+  // DISABLED: User's ISP rotates IPs across entirely different blocks (e.g. 203 to 108).
+  /*
   if (process.env.NODE_ENV === "production") {
     const clientPrefix = clientIp.split('.').slice(0, 2).join('.');
     const officePrefix = loc.wifi_public_ip.split('.').slice(0, 2).join('.');
     
     if (clientIp === "unknown" || clientPrefix !== officePrefix) {
-      return { ok: false, message: `Not connected to office Wi-Fi. (IP: ${clientIp})` };
+      return { ok: false, message: \`Not connected to office Wi-Fi. (IP: ${clientIp})\` };
     }
   }
+  */
   // Geofence check
   const distance = Number(loc.distance_meters);
   const radius = Number(loc.radius_meters);

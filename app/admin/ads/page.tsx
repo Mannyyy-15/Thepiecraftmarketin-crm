@@ -38,7 +38,6 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { adsCampaigns } from "@/lib/mock";
 import { getCampaignStatusVariant } from "@/lib/statusHelpers";
 import { 
   getMetaCampaigns, 
@@ -95,7 +94,8 @@ export default function AdsPage() {
       setCampaigns(res.data);
       setIsUsingMock(false);
     } else {
-      setCampaigns(adsCampaigns);
+      // No real campaigns yet — show an empty table (not fake demo data).
+      setCampaigns([]);
       setIsUsingMock(true);
     }
   };
@@ -108,27 +108,9 @@ export default function AdsPage() {
     })();
   }, []);
 
+  // Previously this seeded demo campaigns into the DB; now it simply returns the
+  // current real campaigns (no fake data is ever written).
   const ensureSeededCampaigns = async () => {
-    if (isUsingMock) {
-      for (const mc of adsCampaigns) {
-        await createMetaCampaign({
-          name: mc.name,
-          clientName: mc.client,
-          platform: mc.platform === "Meta" ? "Meta Ads" : "Google Ads",
-          spend: mc.spend,
-          impressions: mc.impressions,
-          clicks: mc.clicks,
-          roas: mc.roas,
-          status: mc.status
-        });
-      }
-      const res = await getMetaCampaigns();
-      if (res.success && res.data) {
-        setCampaigns(res.data);
-        setIsUsingMock(false);
-        return res.data;
-      }
-    }
     return campaigns;
   };
 

@@ -34,7 +34,6 @@ import { Progress } from "@/components/ui/Progress";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ActivityFeedSkeleton } from "@/components/ui/Skeleton";
-import { channelData, projects as mockProjects, revenueData } from "@/lib/mock";
 import { getActivityFeed, getAdminDashboardData } from "@/app/actions/crm";
 import { getProjectStatusVariant, getProjectStatusLabel } from "@/lib/statusHelpers";
 
@@ -150,7 +149,7 @@ export default function DashboardPage() {
           <CardContent className="p-2 sm:p-4">
             <div className="h-72 w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={dashboardData?.revenueData || revenueData} margin={{ top: 12, right: 16, left: -4, bottom: 0 }}>
+                <AreaChart data={dashboardData?.revenueData || []} margin={{ top: 12, right: 16, left: -4, bottom: 0 }}>
                   <defs>
                     <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="#6366F1" stopOpacity={0.4} />

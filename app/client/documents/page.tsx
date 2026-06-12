@@ -108,7 +108,19 @@ export default function ClientDocumentsPage() {
   });
 
   const handleDownload = (name: string) => {
-    alert(`Downloading ${name}...`);
+    // No file URL attached — generate a small placeholder so the action is real.
+    const blob = new Blob(
+      [`Document: ${name}\n\nNo file is attached to this document yet. Please contact your account manager for the original file.`],
+      { type: "text/plain;charset=utf-8" }
+    );
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${name.replace(/\s+/g, "-")}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   const filtered = files

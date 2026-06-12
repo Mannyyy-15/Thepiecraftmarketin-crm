@@ -24,7 +24,6 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
 import { Avatar } from "@/components/ui/Avatar";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { websiteTasks } from "@/lib/mock";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { getWebDevDashboardData } from "@/app/actions/crm";
 import { cn } from "@/components/ui/cn";
@@ -35,14 +34,6 @@ const priorityVariant = {
   high: "warning",
   critical: "danger",
 } as const;
-
-const initialSites = [
-  { name: "acme.com", uptime: 99.98, response: 142, status: "operational" as const },
-  { name: "stark-industries.com", uptime: 99.74, response: 312, status: "degraded" as const },
-  { name: "wayne-enterprises.com", uptime: 100, response: 98, status: "operational" as const },
-  { name: "hooli.com", uptime: 99.99, response: 184, status: "operational" as const },
-  { name: "massive.dynamic", uptime: 97.21, response: 514, status: "outage" as const },
-];
 
 const statusColor = {
   operational: "success",
@@ -135,15 +126,15 @@ export default function WebsiteDevPage() {
           assignee: "Lead Dev",
         }));
 
-        setSitesList(mappedDomains.length > 0 ? mappedDomains : initialSites);
-        setTasks(mappedTasks.length > 0 ? mappedTasks : (websiteTasks as WebsiteTask[]));
+        setSitesList(mappedDomains);
+        setTasks(mappedTasks);
         setIsUsingMock(false);
 
       } else {
-        // Fallback to beautiful mock data
-        setSitesList(initialSites);
-        setTasks(websiteTasks as WebsiteTask[]);
-        setIsUsingMock(true);
+        // No web-dev data yet — show empty states rather than fake data.
+        setSitesList([]);
+        setTasks([]);
+        setIsUsingMock(false);
       }
       setLoading(false);
     })();
