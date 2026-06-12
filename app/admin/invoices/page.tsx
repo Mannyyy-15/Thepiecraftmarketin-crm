@@ -314,7 +314,7 @@ export default function AdminInvoicesPage() {
           <div ref={previewRef} className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white text-slate-900 p-6 sm:p-8 shadow-sm">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <img src={logoImg.src} alt={COMPANY.name} className="h-12 w-auto mb-2 object-contain" />
+                <img src={logoImg.src} alt={COMPANY.name} className="h-24 w-auto mb-2 object-contain mix-blend-multiply" />
                 <p className="text-xs text-slate-500">{COMPANY.tagline}</p>
                 <p className="text-xs text-slate-500">{COMPANY.email}</p>
               </div>
@@ -453,3 +453,5 @@ export default function AdminInvoicesPage() {
     </div>
   );
 }
+
+// force reload
