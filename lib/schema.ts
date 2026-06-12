@@ -231,6 +231,24 @@ export const attendanceLogs = mysqlTable("attendance_logs", {
   punchedAt: timestamp("punched_at").defaultNow().notNull(),
 });
 
+// 16. AI Chats (Studio AI assistant conversations)
+export const aiChats = mysqlTable("ai_chats", {
+  id: int("id").primaryKey().autoincrement(),
+  userId: int("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  title: varchar("title", { length: 255 }).notNull().default("New chat"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// 17. AI Chat Messages
+export const aiChatMessages = mysqlTable("ai_chat_messages", {
+  id: int("id").primaryKey().autoincrement(),
+  chatId: int("chat_id").references(() => aiChats.id, { onDelete: "cascade" }).notNull(),
+  role: mysqlEnum("role", ["user", "model"]).notNull(),
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Types Export
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
@@ -279,6 +297,9 @@ export type Location = typeof locations.$inferSelect;
 export type NewLocation = typeof locations.$inferInsert;
 
 export type AttendanceLog = typeof attendanceLogs.$inferSelect;
+
+export type AiChat = typeof aiChats.$inferSelect;
+export type AiChatMessage = typeof aiChatMessages.$inferSelect;
 export type NewAttendanceLog = typeof attendanceLogs.$inferInsert;
 
 // 14. FCM Tokens Table

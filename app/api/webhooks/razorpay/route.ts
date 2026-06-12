@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
 import crypto from "crypto";
-import { db } from "@/db";
-import { schema } from "@/db/schema";
+import { db } from "@/lib/db";
+import * as schema from "@/lib/schema";
 import { eq } from "drizzle-orm";
+
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 export async function POST(req: Request) {
   try {
