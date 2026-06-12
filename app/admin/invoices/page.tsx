@@ -99,11 +99,12 @@ export default function AdminInvoicesPage() {
     setServicePeriod(""); setPaymentTerms(""); setDueDate(""); setNotes(""); setSavedNumber(null);
   };
 
-  const handleSave = async (status: "draft" | "sent") => {
+  const handleSave = async () => {
     if (!billToName.trim()) { toast("Enter who the invoice is for.", "error"); return; }
     if (!items.some((i) => i.service.trim() && Number(i.amount) > 0)) { toast("Add at least one service with an amount.", "error"); return; }
     setSaving(true);
     try {
+      const status = "sent";
       const res = await createInvoiceFull({
         clientId: clientId ? Number(clientId) : null,
         billToName, billToEmail, billToAddress,
@@ -113,7 +114,7 @@ export default function AdminInvoicesPage() {
       });
       if (res.success) {
         setSavedNumber(res.invoiceNumber || null);
-        toast(`Invoice ${res.invoiceNumber} ${status === "sent" ? "created & marked sent" : "saved as draft"}.`, "success");
+        toast(`Invoice ${res.invoiceNumber} saved successfully.`, "success");
         refreshInvoices();
       } else {
         toast(res.error || "Could not save invoice.", "error");
@@ -123,24 +124,7 @@ export default function AdminInvoicesPage() {
     }
   };
 
-  const shareText = () => {
-    const lines = [
-      `Invoice ${previewNumber} from ${COMPANY.name}`,
-      `Bill to: ${billToName}`,
-      servicePeriod ? `Service period: ${servicePeriod}` : "",
-      "",
-      ...items.filter((i) => i.service.trim()).map((i) =>
-        `• ${i.service}${i.details ? ` — ${i.details}` : ""}: ${fmt(i.amount)}${i.note ? `\n   (${i.note})` : ""}`),
-      "",
-      `Subtotal: ${fmt(subtotal)}`,
-      taxPercent ? `Tax (${taxPercent}%): ${fmt(taxAmount)}` : "",
-      discount ? `Discount: -${fmt(discount)}` : "",
-      `Total: ${fmt(total)}`,
-      dueDate ? `Due: ${dueDate}` : "",
-      paymentTerms ? `Terms: ${paymentTerms}` : "",
-    ].filter(Boolean);
-    return lines.join("\n");
-  };
+
 
   const handleLoadInvoice = (inv: any) => {
     try {
@@ -230,11 +214,7 @@ export default function AdminInvoicesPage() {
     w.document.close();
   };
 
-  const handleShareWhatsApp = () => window.open(`https://wa.me/?text=${encodeURIComponent(shareText())}`, "_blank");
-  const handleShareEmail = () => {
-    const subject = `Invoice ${previewNumber} — ${COMPANY.name}`;
-    window.location.href = `mailto:${billToEmail || ""}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(shareText())}`;
-  };
+
 
   const visibleItems = items.filter((i) => i.service.trim() || i.amount > 0);
 
@@ -367,21 +347,16 @@ export default function AdminInvoicesPage() {
 
           {/* Actions */}
           <div className="flex flex-wrap gap-2">
-            <Button onClick={() => handleSave("draft")} disabled={saving} variant="outline" className="gap-1.5">
-              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Save draft
-            </Button>
-            <Button onClick={() => handleSave("sent")} disabled={saving} className="gap-1.5 bg-brand-600 text-white">
-              <Check className="h-4 w-4" /> Save & mark sent
+            <Button onClick={() => handleSave()} disabled={saving} className="w-full gap-2 bg-brand-600 hover:bg-brand-700 text-white">
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Save Invoice
             </Button>
           </div>
         </div>
 
         {/* ── Live preview ─────────────────────────────────────── */}
         <div className="lg:col-span-3 space-y-3">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            <Button variant="outline" size="sm" onClick={handlePrint} className="w-full gap-1.5"><Download className="h-3.5 w-3.5" /> Download / Print</Button>
-            <Button variant="outline" size="sm" onClick={handleShareWhatsApp} className="w-full gap-1.5"><MessageCircle className="h-3.5 w-3.5" /> WhatsApp</Button>
-            <Button variant="outline" size="sm" onClick={handleShareEmail} className="w-full gap-1.5"><Mail className="h-3.5 w-3.5" /> Email</Button>
+          <div className="flex justify-end">
+            <Button variant="outline" size="sm" onClick={handlePrint} className="gap-1.5"><Download className="h-3.5 w-3.5" /> Download / Print PDF</Button>
           </div>
 
           {/* Wrapper to allow horizontal scroll on mobile while strictly keeping A4 dimensions inside */}
@@ -488,39 +463,18 @@ export default function AdminInvoicesPage() {
                 <th className="px-4 py-2.5 text-left font-semibold">Client</th>
                 <th className="px-4 py-2.5 text-right font-semibold">Amount</th>
                 <th className="px-4 py-2.5 text-left font-semibold hidden sm:table-cell">Due</th>
-                <th className="px-4 py-2.5 text-left font-semibold">Status</th>
                 <th className="px-4 py-2.5 text-right font-semibold">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {invoices.length === 0 ? (
-                <tr><td colSpan={6} className="px-4 py-10 text-center text-xs text-slate-400">No invoices yet — create one above.</td></tr>
+                <tr><td colSpan={5} className="px-4 py-10 text-center text-xs text-slate-400">No invoices yet — create one above.</td></tr>
               ) : invoices.map((inv) => (
                 <tr key={inv.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                   <td className="px-4 py-3 font-semibold text-slate-800 dark:text-slate-200">{inv.invoiceNumber}</td>
                   <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{inv.clientName}</td>
                   <td className="px-4 py-3 text-right font-semibold tabular-nums text-slate-900 dark:text-white">{fmt(inv.amount)}</td>
                   <td className="px-4 py-3 text-slate-500 hidden sm:table-cell">{inv.dueDate || "—"}</td>
-                  <td className="px-4 py-3">
-                    <select
-                      value={inv.status}
-                      onChange={async (e) => {
-                        const s = e.target.value as any;
-                        await updateInvoiceStatus(inv.id, s, s === "paid" ? todayISO() : undefined);
-                        refreshInvoices();
-                      }}
-                      className={`text-[10px] font-bold uppercase tracking-wider rounded-lg px-2 py-1 border cursor-pointer ${
-                        inv.status === "paid" ? "text-emerald-600 border-emerald-200 bg-emerald-50 dark:bg-emerald-950/20"
-                        : inv.status === "overdue" ? "text-rose-600 border-rose-200 bg-rose-50 dark:bg-rose-950/20"
-                        : inv.status === "sent" ? "text-blue-600 border-blue-200 bg-blue-50 dark:bg-blue-950/20"
-                        : "text-slate-500 border-slate-200 bg-slate-50 dark:bg-slate-900"}`}
-                    >
-                      <option value="draft">Draft</option>
-                      <option value="sent">Sent</option>
-                      <option value="paid">Paid</option>
-                      <option value="overdue">Overdue</option>
-                    </select>
-                  </td>
                   <td className="px-4 py-3 text-right">
                     <div className="flex items-center justify-end gap-1">
                       <button
