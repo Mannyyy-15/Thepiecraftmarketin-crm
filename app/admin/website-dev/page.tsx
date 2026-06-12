@@ -68,30 +68,6 @@ export default function WebsiteDevPage() {
   const [tStatus, setTStatus] = useState<"todo" | "in-progress" | "in-review" | "blocked" | "done">("todo");
   const [tAssignee, setTAssignee] = useState("Priya Shah");
 
-  // GitHub commits
-  const [commits, setCommits] = useState<any[]>([]);
-  const [commitsLoading, setCommitsLoading] = useState(false);
-  const [githubRepo, setGithubRepo] = useState("vercel/next.js");
-  const [commitsError, setCommitsError] = useState("");
-
-  const fetchCommits = async (repo: string) => {
-    setCommitsLoading(true);
-    setCommitsError("");
-    try {
-      const res = await fetch(`https://api.github.com/repos/${repo}/commits?per_page=8`);
-      if (!res.ok) throw new Error("Repo not found or rate limited");
-      const data = await res.json();
-      setCommits(data);
-    } catch (err: any) {
-      setCommitsError(err.message || "Failed to fetch commits.");
-      setCommits([]);
-    } finally {
-      setCommitsLoading(false);
-    }
-  };
-
-  useEffect(() => { fetchCommits(githubRepo); }, []);
-
   // New Site Form states
   const [sName, setSName] = useState("");
   const [sUptime, setSUptime] = useState(99.9);
@@ -552,98 +528,11 @@ export default function WebsiteDevPage() {
 
       </div>
 
-      {/* GitHub Commits Feed */}
-      <Card className="shadow-sm border-slate-200/60 dark:border-slate-800/60 bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl overflow-hidden">
-        <CardHeader className="flex flex-row items-center justify-between border-b border-slate-100 dark:border-slate-800/60 pb-4">
-          <div>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <GitCommit className="h-4.5 w-4.5 text-brand-500" />
-              GitHub Commits Feed
-            </CardTitle>
-            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-1">Live from GitHub API</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <input
-              type="text"
-              value={githubRepo}
-              onChange={(e) => setGithubRepo(e.target.value)}
-              placeholder="owner/repo"
-              className="h-9 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 text-xs font-mono focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white w-44"
-            />
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => fetchCommits(githubRepo)}
-              className="h-9 w-9 p-0 rounded-xl flex items-center justify-center"
-            >
-              <RefreshCw className={`h-3.5 w-3.5 ${commitsLoading ? "animate-spin" : ""}`} />
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent className="p-4">
-          {commitsLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 p-3 space-y-2">
-                  <div className="flex items-center gap-2">
-                    <Skeleton className="h-7 w-7 rounded-full shrink-0" />
-                    <div className="space-y-1">
-                      <Skeleton className="h-3 w-20" />
-                      <Skeleton className="h-2.5 w-12" />
-                    </div>
-                  </div>
-                  <Skeleton className="h-3.5 w-full" />
-                  <Skeleton className="h-3 w-3/4" />
-                  <Skeleton className="h-2.5 w-20" />
-                </div>
-              ))}
-            </div>
-          ) : commitsError ? (
-            <div className="flex items-center gap-2 rounded-xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 p-4 text-sm text-rose-600 dark:text-rose-400">
-              <AlertTriangle className="h-4 w-4 shrink-0" />
-              {commitsError}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
-              {commits.map((c, idx) => (
-                <div key={c.sha || idx} className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 p-3 hover:border-brand-300 dark:hover:border-brand-700/50 transition-all group">
-                  <div className="flex items-start gap-2.5 mb-2">
-                    {c.author?.avatar_url ? (
-                      <img src={c.author.avatar_url} alt={c.author?.login} className="h-7 w-7 rounded-full border-2 border-brand-200 dark:border-brand-900 shrink-0" />
-                    ) : (
-                      <div className="h-7 w-7 rounded-full bg-brand-100 dark:bg-brand-900 flex items-center justify-center shrink-0">
-                        <GitCommit className="h-3.5 w-3.5 text-brand-500" />
-                      </div>
-                    )}
-                    <div className="min-w-0">
-                      <p className="text-[10px] font-bold text-slate-900 dark:text-white truncate">
-                        {c.author?.login || c.commit?.author?.name || "Unknown"}
-                      </p>
-                      <p className="text-[9px] text-slate-400 font-mono">
-                        {c.sha?.slice(0, 7)}
-                      </p>
-                    </div>
-                  </div>
-                  <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed line-clamp-2 font-medium">
-                    {c.commit?.message?.split("\n")[0] || "—"}
-                  </p>
-                  <p className="text-[9px] text-slate-400 mt-2">
-                    {c.commit?.author?.date ? new Date(c.commit.author.date).toLocaleString("en-GB", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) : ""}
-                  </p>
-                </div>
-              ))}
-              {commits.length === 0 && (
-                <div className="col-span-4 text-center py-6 text-slate-400 text-sm">No commits found for this repository.</div>
-              )}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </motion.div>
-  );
-}
-
-// Internal component for the premium glassmorphic KPI cards
+      </motion.div>
+    );
+  }
+  
+  // Internal component for the premium glassmorphic KPI cards
 function StatsCard({ title, value, icon, gradient, iconColor }: any) {
   return (
     <div className="relative overflow-hidden rounded-2xl border border-white/40 dark:border-slate-800/60 bg-white/60 dark:bg-slate-900/40 p-5 shadow-lg backdrop-blur-xl group hover:shadow-xl transition-all duration-300 hover:-translate-y-1">

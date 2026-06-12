@@ -340,46 +340,6 @@ export async function createProject(formData: FormData) {
       leadId: leadIdStr ? parseInt(leadIdStr) : null,
     });
 
-    // Auto-create default tasks when a developer is assigned
-    if (leadIdStr) {
-      const [latest] = await db.select({ id: schema.projects.id }).from(schema.projects).orderBy(desc(schema.projects.id)).limit(1);
-      const newProjectId = latest?.id;
-      if (newProjectId) {
-        const META_TASKS = [
-          { title: "Setup ad account & business manager access", priority: "high" },
-          { title: "Configure pixel & conversion tracking", priority: "high" },
-          { title: "Create campaign structure & ad sets", priority: "high" },
-          { title: "Design ad creatives & copy", priority: "medium" },
-          { title: "Launch campaign & verify delivery", priority: "high" },
-          { title: "First week performance review", priority: "medium" },
-          { title: "Monthly optimization & reporting", priority: "low" },
-        ];
-        const WEBDEV_TASKS = [
-          { title: "Discovery & project brief finalization", priority: "high" },
-          { title: "Wireframes & design mockups", priority: "high" },
-          { title: "Design approval from client", priority: "medium" },
-          { title: "Frontend development", priority: "high" },
-          { title: "Responsive & mobile optimization", priority: "medium" },
-          { title: "Backend / CMS integration", priority: "medium" },
-          { title: "Testing & bug fixes", priority: "medium" },
-          { title: "Client review & feedback round", priority: "medium" },
-          { title: "Final launch & deployment", priority: "high" },
-        ];
-        const templates = projectType === "meta_ads" ? META_TASKS : projectType === "web_dev" ? WEBDEV_TASKS : [];
-        for (const t of templates) {
-          await db.insert(schema.tasks).values({
-            title: t.title,
-            userId: parseInt(leadIdStr),
-            assignedById: session.id as number,
-            projectId: newProjectId,
-            priority: t.priority,
-            status: "todo",
-            done: 0,
-          });
-        }
-      }
-    }
-
     revalidatePath("/admin/projects");
     revalidatePath("/employee/projects");
     return { success: true };
