@@ -31,7 +31,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { getReports, createReport, deleteDocument, getReportsTrendAndAI } from "@/app/actions/crm";
+import { getReports, createReport, deleteDocument, getReportsTrendAndAI, getClients } from "@/app/actions/crm";
 
 interface ToastMessage {
   id: string;
@@ -43,6 +43,7 @@ export default function ReportsPage() {
   const { toast, confirmDialog } = useToast();
 
   const [reports, setReports] = useState<any[]>([]);
+  const [clientsList, setClientsList] = useState<any[]>([]);
   const [monthlyData, setMonthlyData] = useState<any[]>([]);
   const [liveAiSummary, setLiveAiSummary] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -75,6 +76,7 @@ export default function ReportsPage() {
     setIsLoading(true);
     const repRes = await getReports();
     const trendRes = await getReportsTrendAndAI();
+    const clientRes = await getClients();
     
     if (repRes && repRes.success && repRes.data) {
       setReports(repRes.data);
@@ -82,6 +84,14 @@ export default function ReportsPage() {
     if (trendRes && trendRes.success && trendRes.data) {
       setMonthlyData(trendRes.data.monthlyData);
       setLiveAiSummary(trendRes.data.aiSummary);
+    }
+    if (clientRes && clientRes.success && clientRes.data) {
+      setClientsList(clientRes.data);
+      if (clientRes.data.length > 0) {
+        setNewClient(clientRes.data[0].name);
+      } else {
+        setNewClient("Internal Agency");
+      }
     }
     setIsLoading(false);
   };
@@ -413,13 +423,13 @@ export default function ReportsPage() {
                       onChange={(e) => setNewClient(e.target.value)}
                       className="w-full h-10 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-xs focus:ring-2 focus:ring-indigo-500/40 text-slate-850 dark:text-white"
                     >
-                      <option value="Acme Corp">Acme Corp</option>
-                      <option value="Stark Industries">Stark Industries</option>
-                      <option value="Wayne Enterprises">Wayne Enterprises</option>
-                      <option value="Globex">Globex</option>
-                      <option value="Initech">Initech</option>
-                      <option value="Hooli">Hooli</option>
-                      <option value="Internal">Internal Agency</option>
+                      {clientsList.length > 0 ? (
+                        clientsList.map((c) => (
+                          <option key={c.id} value={c.name}>{c.name}</option>
+                        ))
+                      ) : (
+                        <option value="Internal Agency">Internal Agency</option>
+                      )}
                     </select>
                   </div>
                 </div>
