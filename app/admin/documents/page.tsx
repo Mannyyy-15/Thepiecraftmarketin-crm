@@ -24,7 +24,7 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
 import { Avatar } from "@/components/ui/Avatar";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { getDocuments, createDocument, deleteDocument, getClients, getProjects, signContractSOW } from "@/app/actions/crm";
+import { getDocuments, createDocument, deleteDocument, deleteFolder, getClients, getProjects, signContractSOW } from "@/app/actions/crm";
 
 interface ToastMessage {
   id: string;
@@ -62,11 +62,10 @@ export default function DocumentsPage() {
   
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [uploadName, setUploadName] = useState("");
-  const [uploadClient, setUploadClient] = useState("Acme Corp");
-  const [uploadType, setUploadType] = useState("PDF");
-  const [uploadSize, setUploadSize] = useState("1.8 MB");
-  const [uploadOwner, setUploadOwner] = useState("Priya Shah");
+  const [uploadFolder, setUploadFolder] = useState("Brand Assets");
   const [uploadFile, setUploadFile] = useState<File | null>(null);
+
+  const [activeFolder, setActiveFolder] = useState<string | null>(null);
 
   // Proposal / SOW States
   const [showProposalModal, setShowProposalModal] = useState(false);
@@ -199,23 +198,11 @@ export default function DocumentsPage() {
     e.preventDefault();
     if (!uploadName.trim()) return;
 
-    const formattedName = uploadName.includes(".") 
-      ? uploadName.trim() 
-      : `${uploadName.trim()}.${uploadType.toLowerCase()}`;
-
-    let folderTarget = "Client Briefs";
-    if (uploadType === "FIG") folderTarget = "Brand Assets";
-    if (uploadType === "XLSX" || uploadType === "CSV") folderTarget = "Reports";
-    if (formattedName.toLowerCase().includes("contract") || formattedName.toLowerCase().includes("agreement")) {
-      folderTarget = "Contracts";
-    }
+    const formattedName = uploadName.trim();
 
     const formData = new FormData();
     formData.append("name", formattedName);
-    formData.append("clientName", uploadClient);
-    formData.append("type", uploadType);
-    formData.append("size", uploadSize);
-    formData.append("folder", folderTarget);
+    formData.append("folder", uploadFolder);
     if (uploadFile) {
       formData.append("file", uploadFile);
     }
@@ -225,10 +212,31 @@ export default function DocumentsPage() {
       setUploadName("");
       setUploadFile(null);
       setShowUploadModal(false);
-      addToast(`Uploaded "${formattedName}" to ${folderTarget}!`);
+      addToast(`Uploaded "${formattedName}" to ${uploadFolder}!`);
       fetchData();
     } else {
       addToast(res?.error || "Failed to upload file.", "warning");
+    }
+  };
+
+  const handleRemoveFolder = async (folderName: string, filesCount: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (filesCount > 0) {
+      if (!(await confirmDialog(`There are ${filesCount} files inside "${folderName}". Are you sure you want to delete this folder and all its files?`))) {
+        return;
+      }
+    } else {
+      if (!(await confirmDialog(`Are you sure you want to delete folder "${folderName}"?`))) {
+        return;
+      }
+    }
+    const res = await deleteFolder(folderName);
+    if (res && res.success) {
+      addToast(`Deleted folder "${folderName}".`, "info");
+      if (activeFolder === folderName) setActiveFolder(null);
+      fetchData();
+    } else {
+      addToast(res?.error || "Failed to delete folder.", "warning");
     }
   };
 
@@ -323,6 +331,7 @@ export default function DocumentsPage() {
   // Filtered files
   const filteredFiles = files.filter(f => {
     if (f.name === ".folder-keep") return false;
+    if (activeFolder && f.folder !== activeFolder) return false;
     const q = searchQuery.toLowerCase();
     const fName = (f.name || "").toLowerCase();
     const fClient = (f.clientName || "").toLowerCase();
@@ -357,11 +366,18 @@ export default function DocumentsPage() {
         <h2 className="text-sm font-semibold text-slate-900 dark:text-white mb-3">Folders</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
           {folders.map((f) => (
-            <Card key={f.name} className="p-4 hover:shadow-glow cursor-pointer transition-all border border-slate-200 dark:border-slate-800 relative group">
+            <Card key={f.name} onClick={() => setActiveFolder(f.name)} className="p-4 hover:shadow-glow cursor-pointer transition-all border border-slate-200 dark:border-slate-800 relative group">
+              <button 
+                onClick={(e) => handleRemoveFolder(f.name, f.files, e)}
+                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all z-10"
+                title="Delete folder"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
               <div className={`h-10 w-10 rounded-xl bg-gradient-to-br ${f.accent} text-white flex items-center justify-center mb-3 shadow-md`}>
                 <Folder className="h-5 w-5" />
               </div>
-              <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{f.name}</p>
+              <p className="text-sm font-semibold text-slate-900 dark:text-white truncate pr-6">{f.name}</p>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 tabular-nums">{f.files} files • {f.size}</p>
             </Card>
           ))}
@@ -371,9 +387,18 @@ export default function DocumentsPage() {
       {/* Main Files Table Card */}
       <Card className="overflow-hidden border border-slate-200 dark:border-slate-850">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 sm:p-5 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20">
-          <div>
-            <h2 className="text-sm font-bold text-slate-900 dark:text-white">Recent files</h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Filter, search, or review legal agreements and brand guidelines.</p>
+          <div className="flex items-center gap-3">
+            {activeFolder && (
+              <Button variant="outline" size="sm" onClick={() => setActiveFolder(null)} className="h-8 px-2">
+                ← Back
+              </Button>
+            )}
+            <div>
+              <h2 className="text-sm font-bold text-slate-900 dark:text-white">
+                {activeFolder ? `Files in ${activeFolder}` : "Recent files"}
+              </h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Filter, search, or review documents.</p>
+            </div>
           </div>
           <div className="relative max-w-sm sm:w-72">
             <Search className="pointer-events-none absolute inset-y-0 left-3 h-full w-4 text-slate-400" />
@@ -534,64 +559,18 @@ export default function DocumentsPage() {
                   />
                 </div>
                 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4">
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Extension / Format</label>
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Target Folder</label>
                     <select
-                      value={uploadType}
-                      onChange={(e) => setUploadType(e.target.value)}
+                      value={uploadFolder}
+                      onChange={(e) => setUploadFolder(e.target.value)}
                       className="w-full h-10 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-xs focus:ring-2 focus:ring-indigo-500/40 text-slate-850 dark:text-white"
                     >
-                      <option value="PDF">PDF Document</option>
-                      <option value="DOCX">Word DOCX</option>
-                      <option value="XLSX">Excel Spreadsheet</option>
-                      <option value="CSV">CSV Data sheet</option>
-                      <option value="FIG">Figma Design File</option>
+                      {folderNames.map(name => (
+                        <option key={name} value={name}>{name}</option>
+                      ))}
                     </select>
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">File Size</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. 1.2 MB"
-                      value={uploadSize}
-                      onChange={(e) => setUploadSize(e.target.value)}
-                      className="w-full h-10 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-xs focus:ring-2 focus:ring-indigo-500/40 text-slate-800 dark:text-white"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Client Brand</label>
-                    <select
-                      value={uploadClient}
-                      onChange={(e) => setUploadClient(e.target.value)}
-                      className="w-full h-10 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-xs focus:ring-2 focus:ring-indigo-500/40 text-slate-850 dark:text-white"
-                    >
-                      {clientsList.length > 0 ? (
-                        clientsList.map((c) => (
-                          <option key={c.id} value={c.name}>{c.name}</option>
-                        ))
-                      ) : (
-                        <>
-                          <option value="Acme Corp">Acme Corp</option>
-                          <option value="Stark Industries">Stark Industries</option>
-                          <option value="Wayne Enterprises">Wayne Enterprises</option>
-                        </>
-                      )}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Uploaded By</label>
-                    <input
-                      type="text"
-                      required
-                      value={uploadOwner}
-                      onChange={(e) => setUploadOwner(e.target.value)}
-                      className="w-full h-10 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-xs focus:ring-2 focus:ring-indigo-500/40 text-slate-800 dark:text-white"
-                    />
                   </div>
                 </div>
 

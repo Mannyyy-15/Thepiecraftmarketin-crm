@@ -2839,27 +2839,7 @@ export async function getDocuments() {
     // Get documents from database
     let dbDocs = await db.select().from(schema.documents).orderBy(desc(schema.documents.createdAt));
 
-    // Dynamic Contracts: Query active projects with contractLink and merge them as virtual contract files
-    const projectsWithContracts = await db.select().from(schema.projects);
-    const virtualContracts = projectsWithContracts
-      .filter(p => p.contractLink && p.contractLink.trim() !== "")
-      .map(p => ({
-        id: `virtual-contract-${p.id}`,
-        name: `${p.name} — SOW & Agreement.pdf`,
-        clientName: p.clientName || "Unknown Client",
-        clientId: p.clientId,
-        type: "PDF",
-        size: "1.5 MB",
-        folder: "Contracts",
-        ownerName: "Admin",
-        createdAt: p.createdAt,
-        url: p.contractLink
-      }));
-
-    // Merge virtual contract records
-    const allDocs = [...virtualContracts, ...dbDocs];
-
-    return { success: true, data: allDocs };
+    return { success: true, data: dbDocs };
   } catch (error: any) {
     console.error("getDocuments Error:", error);
     return { success: false, data: [], error: error.message };
@@ -2950,6 +2930,23 @@ export async function deleteDocument(id: number) {
     return { success: true };
   } catch (error: any) {
     console.error("deleteDocument Error:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+export async function deleteFolder(folderName: string) {
+  try {
+    const session = await getAuthSession();
+    if (!session || session.role !== "admin") return { success: false, error: "Unauthorized." };
+    if (!db) return { success: false, error: "Database not connected." };
+
+    await db.delete(schema.documents).where(eq(schema.documents.folder, folderName));
+
+    revalidatePath("/admin/documents");
+    revalidatePath("/employee/documents");
+    return { success: true };
+  } catch (error: any) {
+    console.error("deleteFolder Error:", error);
     return { success: false, error: error.message };
   }
 }
@@ -3129,27 +3126,7 @@ export async function getClientDocuments() {
       ))
       .orderBy(desc(schema.documents.createdAt));
 
-    // Dynamic Contracts: Query active projects for this client with contractLink
-    const projectsWithContracts = await db.select()
-      .from(schema.projects)
-      .where(eq(schema.projects.clientId, clientRecord.id));
-      
-    const virtualContracts = projectsWithContracts
-      .filter(p => p.contractLink && p.contractLink.trim() !== "")
-      .map(p => ({
-        id: `virtual-contract-${p.id}`,
-        name: `${p.name} — SOW & Agreement.pdf`,
-        clientName: p.clientName || clientRecord.name,
-        clientId: p.clientId,
-        type: "PDF",
-        size: "1.5 MB",
-        folder: "Contracts",
-        ownerName: "Admin",
-        createdAt: p.createdAt,
-        url: p.contractLink
-      }));
-
-    return { success: true, data: [...virtualContracts, ...dbDocs] };
+    return { success: true, data: dbDocs };
   } catch (error: any) {
     console.error("getClientDocuments Error:", error);
     return { success: false, data: [], error: error.message };
