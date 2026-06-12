@@ -2240,7 +2240,7 @@ export async function createInvoiceFull(input: CreateInvoiceFullInput) {
       type: "PDF",
       size: "—",
       folder: "Invoices",
-      ownerName: session.name || "System",
+      ownerName: (session.name as string) || "System",
       url: "/admin/invoices",
     });
 

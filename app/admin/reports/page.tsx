@@ -231,10 +231,6 @@ export default function ReportsPage() {
         title="Reports"
         actions={
           <div className="flex gap-2">
-            <Button variant="outline" size="md" onClick={handleTriggerAISummary} className="border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-900 font-semibold text-xs flex items-center gap-1.5">
-              <Sparkles className="h-4 w-4 text-indigo-500 animate-pulse" />
-              AI Summary Digest
-            </Button>
             <Button size="md" onClick={() => setShowCreateModal(true)} className="bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs">
               <Plus className="h-4 w-4 mr-1" />
               Create Report
@@ -424,17 +420,15 @@ export default function ReportsPage() {
       {/* ========================================================================= */}
       {showCreateModal && (
         <div className="fixed inset-0 z-50 bg-slate-950/40 dark:bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4">
-          <Card className="w-full max-w-md animate-scaleIn border border-indigo-500/25 shadow-2xl">
-            <CardHeader className="py-4 border-b dark:border-slate-800">
-              <div className="flex justify-between items-center">
-                <CardTitle className="text-sm font-bold flex items-center gap-2">
-                  <Plus className="h-4.5 w-4.5 text-indigo-500 animate-spin" /> Generate Strategic Report
-                </CardTitle>
-                <button onClick={() => setShowCreateModal(false)} className="text-slate-400 hover:text-slate-655">
-                  <X className="h-4.5 w-4.5" />
-                </button>
-              </div>
+          <Card className="w-full max-w-md animate-scaleIn border border-indigo-500/25 shadow-2xl relative">
+            <CardHeader className="py-4 border-b dark:border-slate-800 pr-12">
+              <CardTitle className="text-sm font-bold flex items-center gap-2">
+                <Plus className="h-4.5 w-4.5 text-indigo-500 animate-spin" /> Generate Strategic Report
+              </CardTitle>
             </CardHeader>
+            <button onClick={() => setShowCreateModal(false)} className="absolute right-4 top-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
+              <X className="h-5 w-5" />
+            </button>
             <CardContent className="p-5">
               <form onSubmit={handleCreateReport} className="space-y-4">
                 <div>

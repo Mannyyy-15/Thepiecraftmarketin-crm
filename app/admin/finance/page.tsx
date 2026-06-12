@@ -72,7 +72,7 @@ export default function FinanceDashboard() {
   const chartData = mockChartData; // We map mock chart data to keep the graph looking alive.
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-8 animate-fadeIn max-w-7xl mx-auto">
+    <div className="space-y-6 animate-fadeIn">
       {/* HEADER */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>

@@ -572,12 +572,6 @@ export default function DocumentsPage() {
                       if (file) {
                         setUploadFile(file);
                         setUploadName(file.name);
-                        const ext = file.name.split('.').pop()?.toUpperCase() || "PDF";
-                        const validTypes = ["PDF","DOCX","XLSX","CSV","FIG"];
-                        if (validTypes.includes(ext)) setUploadType(ext);
-                        const sz = file.size;
-                        if (sz >= 1024 * 1024) setUploadSize(`${(sz / (1024 * 1024)).toFixed(1)} MB`);
-                        else setUploadSize(`${(sz / 1024).toFixed(0)} KB`);
                       }
                     }}
                     className="w-full text-xs text-slate-500 dark:text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border file:border-slate-200 dark:file:border-slate-700 file:text-xs file:font-semibold file:bg-white dark:file:bg-slate-900 file:text-slate-700 dark:file:text-slate-300 cursor-pointer"
