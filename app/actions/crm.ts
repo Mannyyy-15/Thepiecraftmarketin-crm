@@ -3836,10 +3836,46 @@ export async function updateAgencySettings(data: Partial<typeof schema.agencySet
     } else {
       await db.insert(schema.agencySettings).values(data as any);
     }
-    
+
     revalidatePath("/admin/settings");
     return { success: true };
   } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
+
+export async function clearAllData() {
+  try {
+    const session = await getAuthSession();
+    if (!session || session.role !== "admin") return { success: false, error: "Unauthorized." };
+    if (!db) return { success: false, error: "Database not connected." };
+
+    // Delete in FK-safe order (children before parents)
+    await db.delete(schema.attendanceLogs);
+    await db.delete(schema.fcmTokens);
+    await db.delete(schema.aiChatMessages);
+    await db.delete(schema.aiChats);
+    await db.delete(schema.notifications);
+    await db.delete(schema.activityLog);
+    await db.delete(schema.messages);
+    await db.delete(schema.tasks);
+    await db.delete(schema.metaCampaigns);
+    await db.delete(schema.invoices);
+    await db.delete(schema.documents);
+    await db.delete(schema.timesheets);
+    await db.delete(schema.expenses);
+    await db.delete(schema.attendance);
+    await db.delete(schema.leaves);
+    await db.delete(schema.projects);
+    await db.delete(schema.leads);
+    await db.delete(schema.users).where(eq(schema.users.role, "client"));
+    await db.delete(schema.users).where(eq(schema.users.role, "employee"));
+    await db.delete(schema.clients);
+
+    revalidatePath("/admin");
+    return { success: true };
+  } catch (err: any) {
+    console.error("clearAllData Error:", err);
     return { success: false, error: err.message };
   }
 }

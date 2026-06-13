@@ -4,10 +4,10 @@ import { useToast } from "@/providers/ToastProvider";
 import { useState, useEffect } from "react";
 import {
   Save, Building2, FileText, MapPin, Plug, Loader2, Wifi, Mail, KeyRound,
-  Crosshair, Landmark,
+  Crosshair, Landmark, Trash2, AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { getAgencySettings, updateAgencySettings } from "@/app/actions/crm";
+import { getAgencySettings, updateAgencySettings, clearAllData } from "@/app/actions/crm";
 import { getOfficeLocation, updateOfficeLocation, detectCurrentIp } from "@/app/actions/punch";
 
 const SECTIONS = [
@@ -26,6 +26,7 @@ export default function SettingsPage() {
   const [active, setActive] = useState<SectionKey>("profile");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [clearing, setClearing] = useState(false);
 
   // Agency settings
   const [s, setS] = useState<any>({
@@ -258,6 +259,38 @@ export default function SettingsPage() {
               </div>
             </div>
           )}
+        </div>
+      </div>
+
+      {/* ── DANGER ZONE ── */}
+      <div className="rounded-2xl border border-rose-200 dark:border-rose-900/40 bg-rose-50/50 dark:bg-rose-950/10 p-5 sm:p-6 space-y-4">
+        <div className="flex items-start gap-3">
+          <div className="h-9 w-9 rounded-lg bg-rose-100 dark:bg-rose-950/40 flex items-center justify-center shrink-0 mt-0.5">
+            <AlertTriangle className="h-4 w-4 text-rose-600 dark:text-rose-400" />
+          </div>
+          <div>
+            <h2 className="text-sm font-bold text-rose-900 dark:text-rose-300">Danger Zone</h2>
+            <p className="text-xs text-rose-700 dark:text-rose-400 mt-0.5 max-w-lg">
+              Permanently deletes all users (employees &amp; clients), clients, projects, tasks, invoices, messages, and all related data. Admin account and agency settings are preserved. This cannot be undone.
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center justify-end">
+          <button
+            disabled={clearing}
+            onClick={async () => {
+              const confirm = window.confirm("⚠️ This will permanently delete ALL data — users, clients, projects, invoices, messages, tasks. Admin account and settings are kept.\n\nType OK to confirm.");
+              if (!confirm) return;
+              setClearing(true);
+              const res = await clearAllData();
+              setClearing(false);
+              toast(res.success ? "All data cleared. Fresh start." : (res.error || "Failed to clear data."), res.success ? "success" : "error");
+            }}
+            className="inline-flex items-center gap-2 h-9 px-4 rounded-lg bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white text-sm font-bold transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+          >
+            {clearing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+            {clearing ? "Clearing…" : "Clear all data"}
+          </button>
         </div>
       </div>
     </div>

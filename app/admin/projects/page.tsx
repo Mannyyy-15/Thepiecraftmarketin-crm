@@ -49,6 +49,18 @@ const TYPES = {
     features: ["Platform & tech stack", "Domain & hosting", "Budget & pages count", "Repo + asset links"],
     steps: ["Core Info", "Technical", "Assets"],
   },
+  agency: {
+    label: "Agency Project",
+    Icon: Sparkles,
+    accent: "from-brand-500 to-brand-600",
+    border: "border-l-brand-500",
+    ring: "ring-brand-500/20 dark:ring-brand-500/20",
+    badgeBg: "bg-brand-50 dark:bg-brand-950/30 text-brand-600 dark:text-brand-400 border-brand-500/20",
+    statuses: ["planning", "in_progress", "in_review", "completed"],
+    description: "Internal ThePieCraft projects — our own website, CRM, tools, brand assets, R&D. No client billing.",
+    features: ["No client billing", "Internal team only", "Full task tracking", "Repo & asset links"],
+    steps: ["Details", "Technical"],
+  },
   other: {
     label: "Other",
     Icon: Zap,
@@ -350,12 +362,12 @@ export default function ProjectsPage() {
   const [deleting, setDeleting]   = useState<number | null>(null);
 
   const [search, setSearch]             = useState("");
-  const [serviceTab, setServiceTab]     = useState<"all" | "meta_ads" | "web_dev">("all");
+  const [serviceTab, setServiceTab]     = useState<"all" | "meta_ads" | "web_dev" | "agency">("all");
 
   // New project drawer
   const [drawerOpen, setDrawerOpen]   = useState(false);
   const [drawerStep, setDrawerStep]   = useState(0);
-  const [projectType, setProjectType] = useState<"meta_ads" | "web_dev">("meta_ads");
+  const [projectType, setProjectType] = useState<"meta_ads" | "web_dev" | "agency">("meta_ads");
   const [formTab, setFormTab]         = useState(0);
   const [form, setForm]               = useState({ ...BLANK });
   const [submitting, setSubmitting]   = useState(false);
@@ -473,7 +485,7 @@ export default function ProjectsPage() {
     setDrawerOpen(true);
   };
 
-  const switchTab = (tab: "all" | "meta_ads" | "web_dev") => {
+  const switchTab = (tab: "all" | "meta_ads" | "web_dev" | "agency") => {
     setServiceTab(tab);
   };
 
@@ -482,14 +494,17 @@ export default function ProjectsPage() {
     setSubmitting(true);
     try {
       const isMeta = projectType === "meta_ads";
+      const isAgency = projectType === "agency";
       const serviceDetails = isMeta
         ? JSON.stringify({ adAccountId: form.adAccountId, businessManagerId: form.businessManagerId, pixelId: form.pixelId, conversionLocation: form.conversionLocation, landingPage: form.landingPage, objective: form.objective, primaryKpi: form.primaryKpi, targetKpiValue: form.targetKpiValue })
+        : isAgency
+        ? JSON.stringify({ platform: form.platform, domain: form.domain, repoLink: form.repoLink })
         : JSON.stringify({ setupType: form.setupType, domainExpiry: form.domainExpiry, hostingExpiry: form.hostingExpiry, websiteType: form.websiteType, platform: form.platform, domain: form.domain, hostingProvider: form.hostingProvider, repoLink: form.repoLink, cmsNeeded: form.cmsNeeded, adminPanelNeeded: form.adminPanelNeeded, dbNeeded: form.dbNeeded, integrations: form.integrations, brandAssets: form.brandAssets, contentAssets: form.contentAssets, referenceLinks: form.referenceLinks, numPages: form.numPages, launchDate: form.launchDate, oldWebsiteUrl: form.oldWebsiteUrl });
 
       const fd = new FormData();
       fd.append("name", form.name);
-      fd.append("clientId", form.clientId || "");
-      fd.append("clientName", form.clientName);
+      fd.append("clientId", isAgency ? "" : (form.clientId === "__agency__" ? "" : form.clientId || ""));
+      fd.append("clientName", isAgency ? "ThePieCraft (Agency)" : form.clientName);
       fd.append("leadId", form.leadId);
       fd.append("projectType", projectType);
       fd.append("startDate", form.startDate);
@@ -499,13 +514,13 @@ export default function ProjectsPage() {
       fd.append("billingModel", isMeta ? "retainer" : "fixed_fee");
       fd.append("monthlyFee", isMeta ? form.monthlyFee || "0" : "0");
       fd.append("adSpendBudget", isMeta ? form.adSpendBudget || "0" : "0");
-      fd.append("budget", isMeta ? "0" : form.totalBudget || "0");
+      fd.append("budget", isMeta || isAgency ? "0" : form.totalBudget || "0");
       fd.append("serviceDetails", serviceDetails);
-      fd.append("billingCycleStart", form.billingCycleStart || "");
-      fd.append("contractDuration", form.contractDuration || "0");
-      fd.append("clientContactName", form.clientContactName || "");
-      fd.append("clientContactPhone", form.clientContactPhone || "");
-      fd.append("accessGranted", form.accessGranted ? "true" : "false");
+      fd.append("billingCycleStart", "");
+      fd.append("contractDuration", isAgency ? "0" : form.contractDuration || "0");
+      fd.append("clientContactName", isAgency ? "" : form.clientContactName || "");
+      fd.append("clientContactPhone", isAgency ? "" : form.clientContactPhone || "");
+      fd.append("accessGranted", isAgency ? "false" : (form.accessGranted ? "true" : "false"));
       fd.append("contractLink", isMeta ? form.contractLink || "" : "");
 
       const res = await createProject(fd);
@@ -606,14 +621,17 @@ export default function ProjectsPage() {
     return true;
   };
 
-  const allMeta  = projects.filter(p => p.projectType === "meta_ads");
-  const allWeb   = projects.filter(p => p.projectType === "web_dev");
-  const metaList = allMeta.filter(matchesFilter);
-  const webList  = allWeb.filter(matchesFilter);
+  const allMeta    = projects.filter(p => p.projectType === "meta_ads");
+  const allWeb     = projects.filter(p => p.projectType === "web_dev");
+  const allAgency  = projects.filter(p => p.projectType === "agency");
+  const metaList   = allMeta.filter(matchesFilter);
+  const webList    = allWeb.filter(matchesFilter);
+  const agencyList = allAgency.filter(matchesFilter);
 
   const showMeta   = serviceTab === "all" || serviceTab === "meta_ads";
   const showWeb    = serviceTab === "all" || serviceTab === "web_dev";
-  const hasResults = (showMeta && metaList.length > 0) || (showWeb && webList.length > 0);
+  const showAgency = serviceTab === "all" || serviceTab === "agency";
+  const hasResults = (showMeta && metaList.length > 0) || (showWeb && webList.length > 0) || (showAgency && agencyList.length > 0);
 
   const typeCfg = TYPES[projectType];
 
@@ -644,9 +662,10 @@ export default function ProjectsPage() {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-900 rounded-2xl">
             {([
-              { key: "all",      label: "All",      count: allMeta.length + allWeb.length },
+              { key: "all",      label: "All",      count: allMeta.length + allWeb.length + allAgency.length },
               { key: "meta_ads", label: "Meta Ads", Icon: Megaphone, count: allMeta.length },
               { key: "web_dev",  label: "Web Dev",  Icon: Code2,     count: allWeb.length  },
+              { key: "agency",   label: "Agency",   Icon: Sparkles,  count: allAgency.length },
             ] as const).map(tab => (
               <button key={tab.key} onClick={() => switchTab(tab.key)}
                 className={cn("flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer",
@@ -865,6 +884,76 @@ export default function ProjectsPage() {
             </section>
           )}
 
+          {/* Agency section */}
+          {showAgency && agencyList.length > 0 && (
+            <section>
+              <div className="flex items-center gap-2.5 mb-5">
+                <div className="h-7 w-7 rounded-lg bg-brand-500/10 dark:bg-brand-500/15 flex items-center justify-center">
+                  <Sparkles className="h-3.5 w-3.5 text-brand-500" />
+                </div>
+                <h2 className="text-sm font-bold text-slate-700 dark:text-slate-200">Agency Projects</h2>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-brand-50 dark:bg-brand-950/30 text-brand-600 dark:text-brand-400 border border-brand-500/20">{agencyList.length}</span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                {agencyList.map(p => {
+                  const tp = getTaskProgress(p.id);
+                  const pct = tp ? tp.pct : progressFromStatus(p.projectType, p.status);
+                  const lead = roster.find((u: any) => u.id === p.leadId);
+                  return (
+                    <div key={p.id} onClick={() => router.push(`/admin/projects/${p.id}`)} className="group rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-950 p-4 hover:shadow-md hover:border-brand-400/50 transition-all duration-200 cursor-pointer">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="h-9 w-9 rounded-xl bg-brand-500/10 flex items-center justify-center shrink-0">
+                            <Sparkles className="h-4 w-4 text-brand-500" />
+                          </div>
+                          <div className="min-w-0">
+                            <h3 className="text-sm font-bold text-slate-900 dark:text-white truncate">{p.name}</h3>
+                            <p className="text-[11px] text-slate-400 truncate">Internal · ThePieCraft</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-0.5 shrink-0 opacity-60 group-hover:opacity-100 transition-opacity">
+                          <button onClick={e => { e.stopPropagation(); setTaskModalProject(p); setNewTaskTitle(""); }} title="Tasks" aria-label="Manage tasks"
+                            className="h-7 w-7 rounded-lg text-slate-400 hover:text-brand-500 hover:bg-brand-50 dark:hover:bg-brand-950/20 flex items-center justify-center cursor-pointer transition-all">
+                            <ListTodo className="h-3.5 w-3.5" />
+                          </button>
+                          <button onClick={e => { e.stopPropagation(); openEdit(p); }} title="Edit" aria-label="Edit project"
+                            className="h-7 w-7 rounded-lg text-slate-400 hover:text-brand-500 hover:bg-brand-50 dark:hover:bg-brand-950/20 flex items-center justify-center cursor-pointer transition-all">
+                            <Edit2 className="h-3.5 w-3.5" />
+                          </button>
+                          <button onClick={e => { e.stopPropagation(); handleDelete(p.id, p.name); }} disabled={deleting === p.id} title="Delete" aria-label="Delete project"
+                            className="h-7 w-7 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 flex items-center justify-center cursor-pointer transition-all disabled:opacity-50">
+                            {deleting === p.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+                          </button>
+                        </div>
+                      </div>
+                      <div className="mt-3.5 flex items-center justify-between gap-2">
+                        <div>
+                          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Status</p>
+                          <p className="text-sm font-extrabold text-slate-800 dark:text-white mt-0.5 capitalize">{p.status?.replace(/_/g, " ") || "Planning"}</p>
+                        </div>
+                        {lead ? (
+                          <div className="flex items-center gap-1.5">
+                            <Avatar name={lead.name} size="xs" />
+                            <span className="text-xs font-semibold text-slate-600 dark:text-slate-300 truncate">{lead.name.split(" ")[0]}</span>
+                          </div>
+                        ) : <span className="text-[11px] text-slate-400 italic">Unassigned</span>}
+                      </div>
+                      {tp && tp.total > 0 && (
+                        <div className="mt-3">
+                          <Progress value={pct} size="sm" barClassName="bg-brand-500" />
+                          <div className="mt-1.5 flex items-center justify-between">
+                            <span className="text-[9px] text-slate-400">{tp.done} of {tp.total} tasks done</span>
+                            <span className="text-[9px] font-bold text-slate-500 dark:text-slate-400">{pct}%</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          )}
+
         </div>
       )}
 
@@ -1031,7 +1120,7 @@ export default function ProjectsPage() {
                 <p className="text-xs text-slate-500 dark:text-slate-400 mb-6 leading-relaxed">
                   Each service type has a tailored form — only the fields that matter for how you run that engagement.
                 </p>
-                {(["meta_ads", "web_dev"] as const).map(t => {
+                {(["meta_ads", "web_dev", "agency"] as const).map(t => {
                   const cfg = TYPES[t];
                   const TIcon = cfg.Icon;
                   return (
@@ -1630,6 +1719,86 @@ export default function ProjectsPage() {
                     </>
                   )}
 
+                  {/* ── AGENCY ───────────────────────────────────────────── */}
+                  {projectType === "agency" && (
+                    <>
+                      {formTab === 0 && (
+                        <>
+                          <SectionHeader icon={Sparkles} label="Project Details" />
+                          <div className="space-y-4">
+                            <div>
+                              <label className={LABEL}>Project Name *</label>
+                              <input required value={form.name} onChange={e => f({ name: e.target.value })} placeholder="e.g. ThePieCraft CRM v2, New Website" className={INPUT} />
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                              <div>
+                                <label className={LABEL}>Status</label>
+                                <select value={form.status} onChange={e => f({ status: e.target.value })} className={SELECT}>
+                                  {TYPES.agency.statuses.map(s => <option key={s} value={s}>{s.replace(/_/g, " ")}</option>)}
+                                </select>
+                              </div>
+                              <div>
+                                <label className={LABEL}>Priority</label>
+                                <div className="flex gap-1.5">
+                                  {["low", "medium", "high"].map(pr => (
+                                    <button key={pr} type="button" onClick={() => f({ priority: pr })}
+                                      className={cn("flex-1 h-11 border text-[10px] font-bold rounded-xl capitalize transition-all cursor-pointer",
+                                        form.priority === pr ? "bg-slate-900 border-slate-900 text-white dark:bg-white dark:border-white dark:text-slate-900" : "border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-900"
+                                      )}>{pr}</button>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                            <div>
+                              <label className={LABEL}>Assign to</label>
+                              <select value={form.leadId} onChange={e => f({ leadId: e.target.value })} className={SELECT}>
+                                <option value="">Select team member…</option>
+                                {roster.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+                              </select>
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                              <div>
+                                <label className={LABEL}>Start Date</label>
+                                <input type="date" value={form.startDate} onChange={e => f({ startDate: e.target.value })} className={INPUT} />
+                              </div>
+                              <div>
+                                <label className={LABEL}>Deadline</label>
+                                <input type="date" value={form.endDate} onChange={e => f({ endDate: e.target.value })} className={INPUT} />
+                              </div>
+                            </div>
+                          </div>
+                        </>
+                      )}
+                      {formTab === 1 && (
+                        <>
+                          <SectionHeader icon={FileCode2} label="Technical" />
+                          <div className="space-y-4">
+                            <div className="grid grid-cols-2 gap-3">
+                              <div>
+                                <label className={LABEL}>Stack / Platform</label>
+                                <select value={form.platform} onChange={e => f({ platform: e.target.value })} className={SELECT}>
+                                  <option value="Next.js">Next.js</option>
+                                  <option value="React">React</option>
+                                  <option value="WordPress">WordPress</option>
+                                  <option value="Custom">Custom</option>
+                                  <option value="Other">Other</option>
+                                </select>
+                              </div>
+                              <div>
+                                <label className={LABEL}>Domain / URL</label>
+                                <input value={form.domain} onChange={e => f({ domain: e.target.value })} placeholder="thepiecraft.com" className={INPUT} />
+                              </div>
+                            </div>
+                            <div>
+                              <label className={LABEL}>Repository Link</label>
+                              <input type="url" value={form.repoLink} onChange={e => f({ repoLink: e.target.value })} placeholder="https://github.com/…" className={INPUT} />
+                            </div>
+                          </div>
+                        </>
+                      )}
+                    </>
+                  )}
+
                 </div>
 
                 {/* Form footer */}
@@ -1646,7 +1815,7 @@ export default function ProjectsPage() {
                         Next <ChevronRight className="h-3.5 w-3.5 ml-0.5" />
                       </Button>
                     ) : (
-                      <Button type="submit" size="sm" disabled={submitting || !form.name || !form.clientName} className="bg-brand-600 hover:bg-brand-700 text-white font-bold active:scale-95 shadow-glow min-w-[130px] justify-center">
+                      <Button type="submit" size="sm" disabled={submitting || !form.name || (projectType !== "agency" && !form.clientName)} className="bg-brand-600 hover:bg-brand-700 text-white font-bold active:scale-95 shadow-glow min-w-[130px] justify-center">
                         {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <><CheckCircle2 className="h-4 w-4 mr-1.5" /> Create Project</>}
                       </Button>
                     )}
