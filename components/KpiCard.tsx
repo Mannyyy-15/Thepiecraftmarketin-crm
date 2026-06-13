@@ -81,52 +81,43 @@ export default function KpiCard({
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, y: 16 }}
+      initial={{ opacity: 0, y: 8 }}
       animate={isInView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-      className="group relative rounded-2xl border border-slate-200 dark:border-[#1e2b5e] bg-white dark:bg-[#0d1230] p-4 sm:p-5 shadow-card dark:shadow-[0_1px_4px_rgba(0,0,0,0.4)] overflow-hidden transition-all duration-200 hover:shadow-lg hover:-translate-y-1 hover:border-slate-300 dark:hover:border-[#2a3a7e] cursor-default"
+      transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+      className="group relative rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-4 overflow-hidden transition-colors duration-150 hover:border-slate-300 dark:hover:border-slate-700"
     >
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">
-            {title}
-          </p>
-          <p className="mt-1.5 text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight tabular-nums">
-            {displayValue}
-          </p>
-        </div>
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide truncate">
+          {title}
+        </p>
         {icon && (
-          <motion.div
-            initial={{ scale: 0.5, opacity: 0 }}
-            animate={isInView ? { scale: 1, opacity: 1 } : {}}
-            transition={{ type: "spring", damping: 14, stiffness: 300, delay: 0.15 }}
-            className={cn("h-9 w-9 rounded-xl flex items-center justify-center shrink-0", a.glow)}
-          >
+          <span className={cn("h-7 w-7 rounded-md flex items-center justify-center shrink-0", a.glow)}>
             {icon}
-          </motion.div>
+          </span>
         )}
       </div>
 
-      <div className="mt-3 flex items-end justify-between gap-2">
+      <p className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white tracking-tight tabular-nums">
+        {displayValue}
+      </p>
+
+      <div className="mt-2.5 flex items-end justify-between gap-2">
         {change && (
-          <motion.span
-            initial={{ opacity: 0, x: -8 }}
-            animate={isInView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.3, delay: 0.3 }}
+          <span
             className={cn(
-              "inline-flex items-center gap-1 text-xs font-semibold",
+              "inline-flex items-center gap-1 text-xs font-medium",
               changeType === "positive" && "text-emerald-600 dark:text-emerald-400",
               changeType === "negative" && "text-rose-600 dark:text-rose-400",
-              changeType === "neutral"  && "text-slate-500 dark:text-slate-400"
+              changeType === "neutral"  && "text-slate-400 dark:text-slate-500"
             )}
           >
             {changeType === "positive" && <ArrowUpRight className="w-3.5 h-3.5" />}
             {changeType === "negative" && <ArrowDownRight className="w-3.5 h-3.5" />}
             {change}
-          </motion.span>
+          </span>
         )}
 
-        <div className="hidden sm:block -mr-1 -mb-1 shrink-0">
+        <div className="hidden sm:block -mr-1 -mb-1 shrink-0 opacity-80">
           <SparklineChart data={sparkData} fill={a.fill} gradId={gradId} />
         </div>
       </div>

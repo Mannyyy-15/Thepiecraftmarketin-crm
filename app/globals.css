@@ -4,24 +4,25 @@
 
 @layer base {
   :root {
-    --background: #f4f6fd;
-    --foreground: #0c1130;
+    /* Neutral slate base — no blue tint. Brand colour is reserved for accents. */
+    --background: #f8fafc;
+    --foreground: #0f172a;
     --card: #ffffff;
-    --card-foreground: #0c1130;
-    --muted: #e8edf8;
-    --muted-foreground: #5a6a9a;
-    --border: #d0d9f0;
+    --card-foreground: #0f172a;
+    --muted: #f1f5f9;
+    --muted-foreground: #64748b;
+    --border: #e2e8f0;
     --ring: #263aa7;
   }
 
   .dark {
-    --background: #080d1e;
-    --foreground: #f0f4ff;
-    --card: #0d1230;
-    --card-foreground: #f0f4ff;
-    --muted: #141c42;
-    --muted-foreground: #7b8fc4;
-    --border: #1e2b5e;
+    --background: #0a0a0f;
+    --foreground: #f1f5f9;
+    --card: #0f1117;
+    --card-foreground: #f1f5f9;
+    --muted: #1e293b;
+    --muted-foreground: #94a3b8;
+    --border: #1e293b;
     --ring: #3a58e8;
   }
 
@@ -45,35 +46,16 @@
   }
 }
 
-/* Dark mode gradient background blobs */
+/* Dark-mode background: a single, barely-perceptible top glow — not glowing
+   orbs. Keeps the surface from looking dead-flat without screaming "template". */
 .dark body::before {
   content: "";
   position: fixed;
-  top: -20%;
-  right: -10%;
-  width: 60vw;
-  height: 60vw;
-  max-width: 700px;
-  max-height: 700px;
-  background: radial-gradient(ellipse at center, rgba(38, 58, 167, 0.18) 0%, transparent 70%);
+  inset: 0 0 auto 0;
+  height: 280px;
+  background: radial-gradient(ellipse 80% 100% at 50% 0%, rgba(38, 58, 167, 0.06) 0%, transparent 100%);
   pointer-events: none;
   z-index: 0;
-  filter: blur(60px);
-}
-
-.dark body::after {
-  content: "";
-  position: fixed;
-  bottom: -10%;
-  left: -5%;
-  width: 45vw;
-  height: 45vw;
-  max-width: 500px;
-  max-height: 500px;
-  background: radial-gradient(ellipse at center, rgba(58, 88, 232, 0.1) 0%, transparent 70%);
-  pointer-events: none;
-  z-index: 0;
-  filter: blur(80px);
 }
 
 /* Scrollbar — desktop only */
@@ -133,12 +115,25 @@
   background-image: radial-gradient(circle, rgba(58, 88, 232, 0.18) 1px, transparent 1px);
 }
 
-/* Gradient text */
+/* Gradient text — used only on intentional hero/marketing surfaces */
 .text-gradient-brand {
   background: linear-gradient(135deg, #263aa7 0%, #3a58e8 50%, #5f7ef1 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+}
+
+/* Sharp, professional table-header label (Linear/Stripe style).
+   Use on <th> or section column headers. */
+.th-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+.dark .th-label {
+  color: #64748b;
 }
 
 .text-gradient-portal {

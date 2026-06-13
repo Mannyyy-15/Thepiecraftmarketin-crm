@@ -65,10 +65,19 @@ const config: Config = {
       fontFamily: {
         sans: ["var(--font-jakarta)", "ui-sans-serif", "system-ui", "sans-serif"],
       },
+      borderRadius: {
+        // Restrained, intentional scale (Linear/Stripe/Vercel feel).
+        DEFAULT: "6px",
+        md: "8px",
+        lg: "8px",
+        xl: "10px",
+        "2xl": "12px",
+      },
       boxShadow: {
-        soft: "0 1px 2px 0 rgb(15 23 42 / 0.04), 0 1px 3px 0 rgb(15 23 42 / 0.06)",
-        card: "0 1px 2px 0 rgb(15 23 42 / 0.04)",
-        glow: "0 0 0 1px rgb(38 58 167 / 0.15), 0 8px 24px -8px rgb(38 58 167 / 0.35)",
+        // Hairline + barely-there depth. Borders do the structural work, not shadows.
+        soft: "0 1px 1px 0 rgb(15 23 42 / 0.03)",
+        card: "0 1px 1px 0 rgb(15 23 42 / 0.03)",
+        glow: "0 1px 2px 0 rgb(15 23 42 / 0.05)",
       },
       keyframes: {
         "fade-in": {
