@@ -3,6 +3,7 @@ import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from "@/providers/ToastProvider";
 import MobileBackHandler from "@/components/MobileBackHandler";
+import { GlobalSyncProvider } from "@/components/providers/GlobalSyncProvider";
 const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
   variable: "--font-jakarta",
@@ -45,10 +46,12 @@ export default function RootLayout({
         />
       </head>
       <body className="font-sans antialiased bg-background text-foreground">
-        <ToastProvider>
-          {children}
-          <MobileBackHandler />
-        </ToastProvider>
+        <GlobalSyncProvider>
+          <ToastProvider>
+            {children}
+            <MobileBackHandler />
+          </ToastProvider>
+        </GlobalSyncProvider>
       </body>
     </html>
   );

@@ -51,6 +51,7 @@
     "recharts": "^2.10.3",
     "resend": "^6.12.4",
     "tailwind-merge": "^2.2.1",
+    "whois-json": "^2.0.4",
     "zod": "^4.4.3"
   },
   "devDependencies": {
@@ -59,6 +60,7 @@
     "@types/nodemailer": "^8.0.1",
     "@types/react": "^18.2.48",
     "@types/react-dom": "^18.2.18",
+    "@types/whois-json": "^2.0.4",
     "autoprefixer": "^10.4.17",
     "drizzle-kit": "^0.31.10",
     "eslint": "^8.56.0",

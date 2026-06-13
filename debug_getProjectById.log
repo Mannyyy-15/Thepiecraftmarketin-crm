@@ -163,3 +163,188 @@
 [2026-06-12T10:41:22.684Z] Querying DB tables...
 [2026-06-12T10:41:22.744Z] DB Query finished. Projects found: 1
 [2026-06-12T10:41:22.745Z] Success: Found project Chaat Lounge
+[2026-06-13T07:42:11.922Z] Called getProjectById with ID: 8 (type: number)
+[2026-06-13T07:42:11.925Z] Session: {"id":1,"name":"admin","email":"admin@thepiecraft.com","role":"admin","iat":1781331231,"exp":1781417631}
+[2026-06-13T07:42:11.926Z] Querying DB tables...
+[2026-06-13T07:42:12.235Z] DB Query finished. Projects found: 1
+[2026-06-13T07:42:12.235Z] Success: Found project Thepiecraft Marketing
+[2026-06-13T07:42:12.293Z] Called getProjectById with ID: 8 (type: number)
+[2026-06-13T07:42:12.295Z] Session: {"id":1,"name":"admin","email":"admin@thepiecraft.com","role":"admin","iat":1781331231,"exp":1781417631}
+[2026-06-13T07:42:12.295Z] Querying DB tables...
+[2026-06-13T07:42:12.305Z] DB Query finished. Projects found: 1
+[2026-06-13T07:42:12.306Z] Success: Found project Thepiecraft Marketing
+[2026-06-13T07:58:39.137Z] Called getProjectById with ID: 9 (type: number)
+[2026-06-13T07:58:39.140Z] Session: {"id":1,"name":"admin","email":"admin@thepiecraft.com","role":"admin","iat":1781331231,"exp":1781417631}
+[2026-06-13T07:58:39.141Z] Querying DB tables...
+[2026-06-13T07:58:39.408Z] DB Query finished. Projects found: 1
+[2026-06-13T07:58:39.408Z] Success: Found project Thepiecraft Marketing
+[2026-06-13T07:58:39.479Z] Called getProjectById with ID: 9 (type: number)
+[2026-06-13T07:58:39.480Z] Session: {"id":1,"name":"admin","email":"admin@thepiecraft.com","role":"admin","iat":1781331231,"exp":1781417631}
+[2026-06-13T07:58:39.481Z] Querying DB tables...
+[2026-06-13T07:58:39.504Z] DB Query finished. Projects found: 1
+[2026-06-13T07:58:39.505Z] Success: Found project Thepiecraft Marketing
+[2026-06-13T08:00:05.517Z] Called getProjectById with ID: 9 (type: number)
+[2026-06-13T08:00:05.518Z] Session: {"id":1,"name":"admin","email":"admin@thepiecraft.com","role":"admin","iat":1781331231,"exp":1781417631}
+[2026-06-13T08:00:05.518Z] Querying DB tables...
+[2026-06-13T08:00:05.576Z] DB Query finished. Projects found: 1
+[2026-06-13T08:00:05.577Z] Success: Found project Thepiecraft Marketing
+[2026-06-13T08:00:05.643Z] Called getProjectById with ID: 9 (type: number)
+[2026-06-13T08:00:05.644Z] Session: {"id":1,"name":"admin","email":"admin@thepiecraft.com","role":"admin","iat":1781331231,"exp":1781417631}
+[2026-06-13T08:00:05.644Z] Querying DB tables...
+[2026-06-13T08:00:05.654Z] DB Query finished. Projects found: 1
+[2026-06-13T08:00:05.655Z] Success: Found project Thepiecraft Marketing
+[2026-06-13T08:25:15.072Z] Called getProjectById with ID: 9 (type: number)
+[2026-06-13T08:25:15.074Z] Session: {"id":1,"name":"admin","email":"admin@thepiecraft.com","role":"admin","iat":1781331231,"exp":1781417631}
+[2026-06-13T08:25:15.074Z] Querying DB tables...
+[2026-06-13T08:25:15.119Z] DB Query finished. Projects found: 1
+[2026-06-13T08:25:15.119Z] Success: Found project Thepiecraft Marketing
+[2026-06-13T08:25:15.175Z] Called getProjectById with ID: 9 (type: number)
+[2026-06-13T08:25:15.176Z] Session: {"id":1,"name":"admin","email":"admin@thepiecraft.com","role":"admin","iat":1781331231,"exp":1781417631}
+[2026-06-13T08:25:15.176Z] Querying DB tables...
+[2026-06-13T08:25:15.184Z] DB Query finished. Projects found: 1
+[2026-06-13T08:25:15.184Z] Success: Found project Thepiecraft Marketing
+[2026-06-13T08:29:00.290Z] Called getProjectById with ID: 9 (type: number)
+[2026-06-13T08:29:00.291Z] Session: {"id":1,"name":"admin","email":"admin@thepiecraft.com","role":"admin","iat":1781331231,"exp":1781417631}
+[2026-06-13T08:29:00.291Z] Querying DB tables...
+[2026-06-13T08:29:00.348Z] DB Query finished. Projects found: 1
+[2026-06-13T08:29:00.349Z] Success: Found project Thepiecraft Marketing
+[2026-06-13T08:29:00.412Z] Called getProjectById with ID: 9 (type: number)
+[2026-06-13T08:29:00.413Z] Session: {"id":1,"name":"admin","email":"admin@thepiecraft.com","role":"admin","iat":1781331231,"exp":1781417631}
+[2026-06-13T08:29:00.414Z] Querying DB tables...
+[2026-06-13T08:29:00.425Z] DB Query finished. Projects found: 1
+[2026-06-13T08:29:00.426Z] Success: Found project Thepiecraft Marketing
+[2026-06-13T08:29:31.117Z] Called getProjectById with ID: 10 (type: number)
+[2026-06-13T08:29:31.118Z] Session: {"id":1,"name":"admin","email":"admin@thepiecraft.com","role":"admin","iat":1781331231,"exp":1781417631}
+[2026-06-13T08:29:31.119Z] Querying DB tables...
+[2026-06-13T08:29:31.169Z] DB Query finished. Projects found: 1
+[2026-06-13T08:29:31.170Z] Success: Found project Thepiecraft Rugs
+[2026-06-13T08:29:31.226Z] Called getProjectById with ID: 10 (type: number)
+[2026-06-13T08:29:31.228Z] Session: {"id":1,"name":"admin","email":"admin@thepiecraft.com","role":"admin","iat":1781331231,"exp":1781417631}
+[2026-06-13T08:29:31.228Z] Querying DB tables...
+[2026-06-13T08:29:31.239Z] DB Query finished. Projects found: 1
+[2026-06-13T08:29:31.239Z] Success: Found project Thepiecraft Rugs
+[2026-06-13T08:29:39.838Z] Called getProjectById with ID: 10 (type: number)
+[2026-06-13T08:29:39.839Z] Session: {"id":1,"name":"admin","email":"admin@thepiecraft.com","role":"admin","iat":1781331231,"exp":1781417631}
+[2026-06-13T08:29:39.839Z] Querying DB tables...
+[2026-06-13T08:29:39.848Z] DB Query finished. Projects found: 1
+[2026-06-13T08:29:39.849Z] Success: Found project Thepiecraft Rugs
+[2026-06-13T08:29:39.899Z] Called getProjectById with ID: 10 (type: number)
+[2026-06-13T08:29:39.900Z] Session: {"id":1,"name":"admin","email":"admin@thepiecraft.com","role":"admin","iat":1781331231,"exp":1781417631}
+[2026-06-13T08:29:39.900Z] Querying DB tables...
+[2026-06-13T08:29:39.910Z] DB Query finished. Projects found: 1
+[2026-06-13T08:29:39.911Z] Success: Found project Thepiecraft Rugs
+[2026-06-13T08:29:55.778Z] Called getProjectById with ID: 10 (type: number)
+[2026-06-13T08:29:55.782Z] Session: {"id":1,"name":"admin","email":"admin@thepiecraft.com","role":"admin","iat":1781331231,"exp":1781417631}
+[2026-06-13T08:29:55.783Z] Querying DB tables...
+[2026-06-13T08:29:55.796Z] DB Query finished. Projects found: 1
+[2026-06-13T08:29:55.797Z] Success: Found project Thepiecraft Rugs
+[2026-06-13T08:30:11.015Z] Called getProjectById with ID: 10 (type: number)
+[2026-06-13T08:30:11.017Z] Session: {"id":1,"name":"admin","email":"admin@thepiecraft.com","role":"admin","iat":1781331231,"exp":1781417631}
+[2026-06-13T08:30:11.017Z] Querying DB tables...
+[2026-06-13T08:30:11.030Z] DB Query finished. Projects found: 1
+[2026-06-13T08:30:11.030Z] Success: Found project Thepiecraft Rugs
+[2026-06-13T08:30:11.083Z] Called getProjectById with ID: 10 (type: number)
+[2026-06-13T08:30:11.084Z] Session: {"id":1,"name":"admin","email":"admin@thepiecraft.com","role":"admin","iat":1781331231,"exp":1781417631}
+[2026-06-13T08:30:11.084Z] Querying DB tables...
+[2026-06-13T08:30:11.105Z] DB Query finished. Projects found: 1
+[2026-06-13T08:30:11.106Z] Success: Found project Thepiecraft Rugs
+[2026-06-13T10:11:25.719Z] Called getProjectById with ID: 1 (type: number)
+[2026-06-13T10:11:25.720Z] Session: {"id":1,"name":"admin","email":"admin@thepiecraft.com","role":"admin","iat":1781331231,"exp":1781417631}
+[2026-06-13T10:11:25.721Z] Querying DB tables...
+[2026-06-13T10:11:25.784Z] DB Query finished. Projects found: 1
+[2026-06-13T10:11:25.784Z] Success: Found project Thepiecraftmarketing
+[2026-06-13T10:11:25.838Z] Called getProjectById with ID: 1 (type: number)
+[2026-06-13T10:11:25.840Z] Session: {"id":1,"name":"admin","email":"admin@thepiecraft.com","role":"admin","iat":1781331231,"exp":1781417631}
+[2026-06-13T10:11:25.841Z] Querying DB tables...
+[2026-06-13T10:11:25.856Z] DB Query finished. Projects found: 1
+[2026-06-13T10:11:25.857Z] Success: Found project Thepiecraftmarketing
+[2026-06-13T10:11:58.230Z] Called getProjectById with ID: 1 (type: number)
+[2026-06-13T10:11:58.231Z] Session: {"id":1,"name":"admin","email":"admin@thepiecraft.com","role":"admin","iat":1781331231,"exp":1781417631}
+[2026-06-13T10:11:58.231Z] Querying DB tables...
+[2026-06-13T10:11:58.315Z] DB Query finished. Projects found: 1
+[2026-06-13T10:11:58.315Z] Success: Found project Thepiecraftmarketing
+[2026-06-13T10:11:58.376Z] Called getProjectById with ID: 1 (type: number)
+[2026-06-13T10:11:58.377Z] Session: {"id":1,"name":"admin","email":"admin@thepiecraft.com","role":"admin","iat":1781331231,"exp":1781417631}
+[2026-06-13T10:11:58.377Z] Querying DB tables...
+[2026-06-13T10:11:58.419Z] DB Query finished. Projects found: 1
+[2026-06-13T10:11:58.419Z] Success: Found project Thepiecraftmarketing
+[2026-06-13T10:13:32.545Z] Called getProjectById with ID: 1 (type: number)
+[2026-06-13T10:13:32.549Z] Session: {"id":1,"name":"admin","email":"admin@thepiecraft.com","role":"admin","iat":1781331231,"exp":1781417631}
+[2026-06-13T10:13:32.549Z] Querying DB tables...
+[2026-06-13T10:13:32.806Z] DB Query finished. Projects found: 1
+[2026-06-13T10:13:32.807Z] Success: Found project Thepiecraftmarketing
+[2026-06-13T10:13:32.889Z] Called getProjectById with ID: 1 (type: number)
+[2026-06-13T10:13:32.889Z] Session: {"id":1,"name":"admin","email":"admin@thepiecraft.com","role":"admin","iat":1781331231,"exp":1781417631}
+[2026-06-13T10:13:32.890Z] Querying DB tables...
+[2026-06-13T10:13:32.905Z] DB Query finished. Projects found: 1
+[2026-06-13T10:13:32.905Z] Success: Found project Thepiecraftmarketing
+[2026-06-13T10:13:37.355Z] Called getProjectById with ID: 1 (type: number)
+[2026-06-13T10:13:37.356Z] Session: {"id":1,"name":"admin","email":"admin@thepiecraft.com","role":"admin","iat":1781331231,"exp":1781417631}
+[2026-06-13T10:13:37.357Z] Querying DB tables...
+[2026-06-13T10:13:37.368Z] DB Query finished. Projects found: 1
+[2026-06-13T10:13:37.369Z] Success: Found project Thepiecraftmarketing
+[2026-06-13T10:13:37.427Z] Called getProjectById with ID: 1 (type: number)
+[2026-06-13T10:13:37.428Z] Session: {"id":1,"name":"admin","email":"admin@thepiecraft.com","role":"admin","iat":1781331231,"exp":1781417631}
+[2026-06-13T10:13:37.428Z] Querying DB tables...
+[2026-06-13T10:13:37.440Z] DB Query finished. Projects found: 1
+[2026-06-13T10:13:37.441Z] Success: Found project Thepiecraftmarketing
+[2026-06-13T10:18:18.989Z] Called getProjectById with ID: 1 (type: number)
+[2026-06-13T10:18:18.990Z] Session: {"id":1,"name":"admin","email":"admin@thepiecraft.com","role":"admin","iat":1781331231,"exp":1781417631}
+[2026-06-13T10:18:18.990Z] Querying DB tables...
+[2026-06-13T10:18:19.260Z] DB Query finished. Projects found: 1
+[2026-06-13T10:18:19.262Z] Success: Found project Thepiecraftmarketing
+[2026-06-13T10:18:19.356Z] Called getProjectById with ID: 1 (type: number)
+[2026-06-13T10:18:19.357Z] Session: {"id":1,"name":"admin","email":"admin@thepiecraft.com","role":"admin","iat":1781331231,"exp":1781417631}
+[2026-06-13T10:18:19.357Z] Querying DB tables...
+[2026-06-13T10:18:19.382Z] DB Query finished. Projects found: 1
+[2026-06-13T10:18:19.383Z] Success: Found project Thepiecraftmarketing
+[2026-06-13T10:32:23.949Z] Called getProjectById with ID: 1 (type: number)
+[2026-06-13T10:32:23.950Z] Session: {"id":1,"name":"admin","email":"admin@thepiecraft.com","role":"admin","iat":1781331231,"exp":1781417631}
+[2026-06-13T10:32:23.951Z] Querying DB tables...
+[2026-06-13T10:32:24.040Z] DB Query finished. Projects found: 1
+[2026-06-13T10:32:24.041Z] Success: Found project Thepiecraftmarketing
+[2026-06-13T10:32:24.123Z] Called getProjectById with ID: 1 (type: number)
+[2026-06-13T10:32:24.126Z] Session: {"id":1,"name":"admin","email":"admin@thepiecraft.com","role":"admin","iat":1781331231,"exp":1781417631}
+[2026-06-13T10:32:24.127Z] Querying DB tables...
+[2026-06-13T10:32:24.138Z] DB Query finished. Projects found: 1
+[2026-06-13T10:32:24.138Z] Success: Found project Thepiecraftmarketing
+[2026-06-13T10:37:21.778Z] Called getProjectById with ID: 1 (type: number)
+[2026-06-13T10:37:21.780Z] Session: {"id":1,"name":"admin","email":"admin@thepiecraft.com","role":"admin","iat":1781331231,"exp":1781417631}
+[2026-06-13T10:37:21.781Z] Querying DB tables...
+[2026-06-13T10:37:22.840Z] DB Query finished. Projects found: 1
+[2026-06-13T10:37:22.840Z] Success: Found project Thepiecraftmarketing
+[2026-06-13T10:38:20.853Z] Called getProjectById with ID: 1 (type: number)
+[2026-06-13T10:38:20.854Z] Session: {"id":1,"name":"admin","email":"admin@thepiecraft.com","role":"admin","iat":1781331231,"exp":1781417631}
+[2026-06-13T10:38:20.855Z] Querying DB tables...
+[2026-06-13T10:38:20.960Z] DB Query finished. Projects found: 1
+[2026-06-13T10:38:20.960Z] Success: Found project Thepiecraftmarketing
+[2026-06-13T10:57:16.647Z] Called getProjectById with ID: 1 (type: number)
+[2026-06-13T10:57:16.648Z] Session: {"id":1,"name":"admin","email":"admin@thepiecraft.com","role":"admin","iat":1781331231,"exp":1781417631}
+[2026-06-13T10:57:16.648Z] Querying DB tables...
+[2026-06-13T10:57:16.692Z] DB Query finished. Projects found: 1
+[2026-06-13T10:57:16.693Z] Success: Found project Thepiecraftmarketing
+[2026-06-13T10:57:16.763Z] Called getProjectById with ID: 1 (type: number)
+[2026-06-13T10:57:16.764Z] Session: {"id":1,"name":"admin","email":"admin@thepiecraft.com","role":"admin","iat":1781331231,"exp":1781417631}
+[2026-06-13T10:57:16.764Z] Querying DB tables...
+[2026-06-13T10:57:16.775Z] DB Query finished. Projects found: 1
+[2026-06-13T10:57:16.776Z] Success: Found project Thepiecraftmarketing
+[2026-06-13T10:58:20.872Z] Called getProjectById with ID: 1 (type: number)
+[2026-06-13T10:58:20.873Z] Session: {"id":1,"name":"admin","email":"admin@thepiecraft.com","role":"admin","iat":1781331231,"exp":1781417631}
+[2026-06-13T10:58:20.873Z] Querying DB tables...
+[2026-06-13T10:58:20.926Z] DB Query finished. Projects found: 1
+[2026-06-13T10:58:20.926Z] Success: Found project Thepiecraftmarketing
+[2026-06-13T10:58:20.983Z] Called getProjectById with ID: 1 (type: number)
+[2026-06-13T10:58:20.985Z] Session: {"id":1,"name":"admin","email":"admin@thepiecraft.com","role":"admin","iat":1781331231,"exp":1781417631}
+[2026-06-13T10:58:20.985Z] Querying DB tables...
+[2026-06-13T10:58:21.001Z] DB Query finished. Projects found: 1
+[2026-06-13T10:58:21.001Z] Success: Found project Thepiecraftmarketing
+[2026-06-13T11:18:00.743Z] Called getProjectById with ID: 2 (type: number)
+[2026-06-13T11:18:00.744Z] Session: {"id":1,"name":"admin","email":"admin@thepiecraft.com","role":"admin","iat":1781331231,"exp":1781417631}
+[2026-06-13T11:18:00.744Z] Querying DB tables...
+[2026-06-13T11:18:00.793Z] DB Query finished. Projects found: 1
+[2026-06-13T11:18:00.793Z] Success: Found project Thepiecraft Rugs
+[2026-06-13T11:18:00.856Z] Called getProjectById with ID: 2 (type: number)
+[2026-06-13T11:18:00.857Z] Session: {"id":1,"name":"admin","email":"admin@thepiecraft.com","role":"admin","iat":1781331231,"exp":1781417631}
+[2026-06-13T11:18:00.858Z] Querying DB tables...
+[2026-06-13T11:18:00.870Z] DB Query finished. Projects found: 1
+[2026-06-13T11:18:00.871Z] Success: Found project Thepiecraft Rugs

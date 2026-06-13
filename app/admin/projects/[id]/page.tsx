@@ -12,8 +12,8 @@ import {
   ArrowLeft, Building2, CalendarDays, CheckCircle2, CheckSquare,
   Code2, Crown, DollarSign, Edit2, FileText, Globe2,
   Link as LinkIcon, Loader2, Megaphone, Phone, Plus, Receipt,
-  Square, Trash2, Users, X, Zap, Target, ListTodo, SlidersHorizontal,
-  ChevronRight,
+  Trash2, Users, X, Zap, Target, ListTodo, SlidersHorizontal,
+  ChevronRight, Printer, GitCommit, AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
@@ -106,33 +106,54 @@ export default function ProjectDetailPage() {
   const [editForm, setEditForm]     = useState<any>({});
   const [editSaving, setEditSaving] = useState(false);
 
+  // GitHub integration
+  const [commits, setCommits] = useState<any[]>([]);
+  const [commitsLoading, setCommitsLoading] = useState(false);
+  const [commitsError, setCommitsError] = useState("");
+
   const load = useCallback(async () => {
     const numericId = Number(id);
-    if (!id || isNaN(numericId)) {
-      console.warn("ProjectDetailPage: id is not a valid number yet:", id);
-      return;
-    }
+    if (!id || isNaN(numericId)) return;
     setLoading(true);
     try {
-      console.log("ProjectDetailPage: loading project with ID:", numericId);
       const [pr, tr] = await Promise.all([getProjectById(numericId), getTeamUsers()]);
-      console.log("ProjectDetailPage: pr result:", pr);
       if (pr.success && pr.data) {
         setProject(pr.data);
         const p = pr.data as any;
         setNewAssignee(p.leadId ? String(p.leadId) : "");
-      } else {
-        console.error("ProjectDetailPage: failed to load project:", pr.error || "no data returned");
+        
+        // Fetch Github Commits
+        if (p.projectType === "web_dev") {
+          let sd: any = {};
+          try { sd = JSON.parse(p.serviceDetails || "{}"); } catch(e) {}
+          if (sd.repoLink) {
+            const match = sd.repoLink.match(/github\.com\/([^\/]+\/[^\/]+)/);
+            if (match && match[1]) {
+              const repo = match[1].replace(/\/$/, "");
+              setCommitsLoading(true);
+              fetch(`https://api.github.com/repos/${repo}/commits?per_page=5`)
+                .then(res => {
+                  if (res.status === 404 || res.status === 403) throw new Error("Private repository or not found. A GitHub API Token is required.");
+                  if (!res.ok) throw new Error("Failed to load commits.");
+                  return res.json();
+                })
+                .then(data => setCommits(data))
+                .catch(err => setCommitsError(err.message))
+                .finally(() => setCommitsLoading(false));
+            }
+          }
+        }
       }
       if (tr.success && tr.data) setRoster((tr.data as any[]).filter(u => u.role !== "client"));
     } catch (err) {
-      console.error("ProjectDetailPage: error inside load():", err);
+      console.error(err);
     } finally { setLoading(false); }
   }, [id]);
 
   useEffect(() => { load(); }, [load]);
 
   // ── derived ──────────────────────────────────────────────────────────────
+  const isAgency = !project?.clientId && project?.clientName === "Internal Agency Project";
   const sd       = parseDetails(project?.serviceDetails);
   const status   = STATUS_CONFIG[project?.status] || STATUS_CONFIG.planning;
   const TypeIcon = PROJ_TYPE_ICON[project?.projectType] || Zap;
@@ -150,7 +171,6 @@ export default function ProjectDetailPage() {
   const fee = project?.monthlyFee ? `₹${project.monthlyFee.toLocaleString()}/mo`
     : project?.budget ? `₹${project.budget.toLocaleString()}` : null;
 
-  // workload grouped by userId
   const workloadByUser: Record<number, { total: number; done: number }> = tasks.reduce((acc: any, t: any) => {
     if (!t.userId) return acc;
     if (!acc[t.userId]) acc[t.userId] = { total: 0, done: 0 };
@@ -159,16 +179,14 @@ export default function ProjectDetailPage() {
     return acc;
   }, {});
 
-  // roster sorted: lead first, then by task count desc
-  const teamWithWorkload = roster.map((u: any) => ({
-    ...u,
-    workload: workloadByUser[u.id] || { total: 0, done: 0 },
-    isLead: u.id === project?.leadId,
-  })).sort((a: any, b: any) => {
-    if (a.isLead && !b.isLead) return -1;
-    if (!a.isLead && b.isLead) return 1;
-    return b.workload.total - a.workload.total;
-  });
+  const teamWithWorkload = roster
+    .filter((u: any) => u.role !== "admin" && u.roleRaw !== "admin" && u.id !== project?.leadId)
+    .map((u: any) => ({
+      ...u,
+      workload: workloadByUser[u.id] || { total: 0, done: 0 },
+      isLead: false,
+    }))
+    .sort((a: any, b: any) => b.workload.total - a.workload.total);
 
   // ── handlers ─────────────────────────────────────────────────────────────
   const handleAssignLead = async (userId: number) => {
@@ -508,18 +526,36 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
 
           {/* Lead highlight */}
           {project.lead ? (
-            <div className="mb-4 flex items-center gap-3 px-3.5 py-3 rounded-xl bg-slate-50 border border-slate-200 dark:bg-slate-900/40 dark:border-slate-800">
-              <div className="relative shrink-0">
-                <Avatar name={project.lead.name} size="sm" />
-                <div className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-amber-400 flex items-center justify-center shadow-sm">
-                  <Crown className="h-2.5 w-2.5 text-white" />
+            <div className="mb-4 flex flex-col gap-3 px-3.5 py-3 rounded-xl bg-slate-50 border border-slate-200 dark:bg-slate-900/40 dark:border-slate-800">
+              <div className="flex items-center gap-3">
+                <div className="relative shrink-0">
+                  <Avatar name={project.lead.name} size="sm" />
+                  <div className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-amber-400 flex items-center justify-center shadow-sm">
+                    <Crown className="h-2.5 w-2.5 text-white" />
+                  </div>
                 </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[9px] font-bold text-brand-600 dark:text-brand-400 uppercase tracking-wider">Project Lead</p>
+                  <p className="text-sm font-bold text-slate-800 dark:text-white truncate">{project.lead.name}</p>
+                </div>
+                <span className="text-[8px] font-bold text-amber-600 bg-amber-50 dark:bg-amber-950/20 px-2 py-0.5 rounded-full border border-amber-200 dark:border-amber-800/40 shrink-0">LEAD</span>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[9px] font-bold text-brand-600 dark:text-brand-400 uppercase tracking-wider">Project Lead</p>
-                <p className="text-sm font-bold text-slate-800 dark:text-white truncate">{project.lead.name}</p>
-              </div>
-              <span className="text-[8px] font-bold text-amber-600 bg-amber-50 dark:bg-amber-950/20 px-2 py-0.5 rounded-full border border-amber-200 dark:border-amber-800/40 shrink-0">LEAD</span>
+              {(() => {
+                const wl = workloadByUser[project.lead.id] || { total: 0, done: 0 };
+                if (wl.total === 0) return <p className="text-[9px] text-slate-400 pl-[44px]">No tasks assigned</p>;
+                const pct = Math.round(wl.done / wl.total * 100);
+                return (
+                  <div className="pl-[44px]">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-[9px] text-slate-500 dark:text-slate-400">{wl.done}/{wl.total} tasks</span>
+                      <span className="text-[9px] font-bold text-brand-600 dark:text-brand-400">{pct}%</span>
+                    </div>
+                    <div className="h-1 w-full bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+                      <div className="h-full bg-brand-500 rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           ) : (
             <div className="mb-4 flex items-center gap-3 px-3.5 py-3 rounded-xl border border-dashed border-slate-200 dark:border-slate-800">
@@ -708,7 +744,8 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
         </BentoCard>
 
         {/* ── Client Contact ───────────────────────────────────────────────── */}
-        <BentoCard className="lg:col-span-4">
+        {!isAgency && (
+          <BentoCard className="lg:col-span-4">
           <SectionTitle icon={Users} label="Client Contact" />
           <div className="space-y-4">
             {project.client && (
@@ -744,9 +781,58 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
             )}
           </div>
         </BentoCard>
+        )}
+
+        {/* ── GitHub Commits (if Web Dev & has repoLink) ───────────────────── */}
+        {project.projectType === "web_dev" && sd.repoLink && (
+          <BentoCard className="lg:col-span-8">
+            <SectionTitle icon={GitCommit} label="Recent GitHub Commits" />
+            <div className="space-y-3">
+              {commitsLoading ? (
+                <div className="flex items-center justify-center py-6 text-slate-400">
+                  <Loader2 className="h-5 w-5 animate-spin mr-2" /> Fetching commits...
+                </div>
+              ) : commitsError ? (
+                <div className="flex items-start gap-2 text-xs text-rose-600 bg-rose-50 dark:bg-rose-950/20 p-3 rounded-xl border border-rose-200 dark:border-rose-900">
+                  <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
+                  <p>{commitsError}</p>
+                </div>
+              ) : commits.length === 0 ? (
+                <div className="text-xs text-slate-400">No commits found or invalid repository link.</div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {commits.map((c, idx) => (
+                    <div key={c.sha || idx} className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 p-3">
+                      <div className="flex items-center gap-2 mb-2">
+                        {c.author?.avatar_url ? (
+                          <img src={c.author.avatar_url} alt={c.author?.login} className="h-5 w-5 rounded-full" />
+                        ) : (
+                          <GitCommit className="h-4 w-4 text-brand-500" />
+                        )}
+                        <p className="text-[10px] font-bold text-slate-900 dark:text-white truncate">
+                          {c.author?.login || c.commit?.author?.name || "Unknown"}
+                        </p>
+                        <p className="text-[9px] text-slate-400 font-mono ml-auto">
+                          {c.sha?.slice(0, 7)}
+                        </p>
+                      </div>
+                      <p className="text-xs text-slate-700 dark:text-slate-300 font-medium truncate">
+                        {c.commit?.message?.split("\n")[0] || "—"}
+                      </p>
+                      <p className="text-[9px] text-slate-400 mt-1">
+                        {c.commit?.author?.date ? new Date(c.commit.author.date).toLocaleString("en-GB", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) : ""}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </BentoCard>
+        )}
 
         {/* ── Invoice History (full width) ─────────────────────────────────── */}
-        <BentoCard className="lg:col-span-12">
+        {!isAgency && (
+          <BentoCard className="lg:col-span-12">
           <SectionTitle icon={Receipt} label={`Invoice History (${invs.length})`} />
           {!invs.length ? (
             <EmptyState
@@ -800,6 +886,7 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
             </div>
           )}
         </BentoCard>
+        )}
 
       </div>{/* /grid */}
 

@@ -34,6 +34,8 @@ import {
   LogIn,
   LogOut,
   TrendingUp,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import KpiCard from "@/components/KpiCard";
 import { Badge } from "@/components/ui/Badge";
@@ -61,7 +63,14 @@ export default function TeamPage() {
   const [newName, setNewName] = useState("");
   const [newEmail, setNewEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [newSystemRole, setNewSystemRole] = useState("Web Developer"); // "Web Developer" | "Graphic Designer" | "Video Editor" | "Digital Marketing" | "Admin"
+    
+  // Invite member shift schedule states
+  const [inviteWorkingDays, setInviteWorkingDays] = useState<number[]>([1, 2, 3, 4, 5]);
+  const [inviteShiftStartTime, setInviteShiftStartTime] = useState("09:00 AM");
+  const [inviteShiftEndTime, setInviteShiftEndTime] = useState("05:00 PM");
+  const [inviteActiveShiftProfile, setInviteActiveShiftProfile] = useState("Standard Core Hours");
 
   // Inline role editing state
   const [editingMemberId, setEditingMemberId] = useState<string | null>(null);
@@ -72,6 +81,7 @@ export default function TeamPage() {
   const [shiftStartTime, setShiftStartTime] = useState("09:00 AM");
   const [shiftEndTime, setShiftEndTime] = useState("05:00 PM");
   const [activeShiftProfile, setActiveShiftProfile] = useState("Standard Core Hours");
+  const [showEditSchedule, setShowEditSchedule] = useState(false);
 
   // Attendance Overrides state from database
   const [attendanceOverrides, setAttendanceOverrides] = useState<Map<string, "present" | "half-day" | "vacation" | "sick" | "off">>(new Map());
@@ -526,6 +536,10 @@ export default function TeamPage() {
       const authRole = newSystemRole === "Admin" ? "admin" : "employee";
       formData.append("role", authRole);
       formData.append("systemRole", newSystemRole);
+      formData.append("workingDays", inviteWorkingDays.join(","));
+      formData.append("shiftStartTime", inviteShiftStartTime);
+      formData.append("shiftEndTime", inviteShiftEndTime);
+      formData.append("activeShiftProfile", inviteActiveShiftProfile);
 
       const result = await createUser(formData);
 
@@ -533,6 +547,9 @@ export default function TeamPage() {
         setNewName("");
         setNewEmail("");
         setNewPassword("");
+        setInviteWorkingDays([1, 2, 3, 4, 5]);
+        setInviteShiftStartTime("09:00 AM");
+        setInviteShiftEndTime("05:00 PM");
         setShowInviteForm(false);
         toast(`Successfully invited ${derivedName} to the team! Their account is now active in the database.`, "success");
         loadTeamData();
@@ -740,8 +757,9 @@ export default function TeamPage() {
   };
 
   const filteredTeam = members.filter((m) =>
-    m.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    m.role.toLowerCase().includes(searchQuery.toLowerCase())
+    m.roleRaw !== "admin" &&
+    (m.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    m.role.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   return (
@@ -797,29 +815,50 @@ export default function TeamPage() {
                 <form onSubmit={handleInvite} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 items-end">
                   <div>
                     <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">
-                      Email Address
+                      Email Prefix
                     </label>
-                    <input
-                      type="email"
-                      required
-                      placeholder="john@piecraft.com"
-                      value={newEmail}
-                      onChange={(e) => setNewEmail(e.target.value)}
-                      className="h-10 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white"
-                    />
+                    <div className="relative">
+                      <input
+                        type="text"
+                        required
+                        placeholder="john"
+                        value={newEmail ? newEmail.replace("@thepiecraft.com", "") : ""}
+                        onChange={(e) => {
+                          const val = e.target.value.replace("@thepiecraft.com", "").replace("@", "");
+                          if (val) {
+                            setNewEmail(val + "@thepiecraft.com");
+                          } else {
+                            setNewEmail("");
+                          }
+                        }}
+                        className="h-10 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 pl-3 pr-32 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white"
+                      />
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-xs text-slate-400 font-semibold select-none">
+                        @thepiecraft.com
+                      </div>
+                    </div>
                   </div>
                   <div>
                     <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">
                       Password
                     </label>
-                    <input
-                      type="password"
-                      required
-                      placeholder="Password for login"
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      className="h-10 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white"
-                    />
+                    <div className="relative">
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        required
+                        placeholder="Password for login"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        className="h-10 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 pl-3 pr-10 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                      >
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
                   </div>
                   <div>
                     <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">
@@ -836,6 +875,59 @@ export default function TeamPage() {
                       <option value="Digital Marketing">Digital Marketing</option>
                       <option value="Admin">Admin</option>
                     </select>
+                  </div>
+                  
+                  {/* Shift Days */}
+                  <div className="col-span-1 sm:col-span-2 md:col-span-4">
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
+                      Working Days
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day, idx) => (
+                        <button
+                          key={day}
+                          type="button"
+                          onClick={() => {
+                            setInviteWorkingDays(prev =>
+                              prev.includes(idx) ? prev.filter(d => d !== idx) : [...prev, idx]
+                            );
+                          }}
+                          className={`h-8 px-3 rounded-lg text-xs font-bold transition-all border ${
+                            inviteWorkingDays.includes(idx)
+                              ? "bg-brand-600 text-white border-brand-600 shadow-sm"
+                              : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-500 hover:border-brand-300 hover:text-brand-600"
+                          }`}
+                        >
+                          {day}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Shift Timings */}
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">
+                      Shift Start
+                    </label>
+                    <input
+                      type="text"
+                      value={inviteShiftStartTime}
+                      onChange={e => setInviteShiftStartTime(e.target.value)}
+                      placeholder="e.g. 09:30 AM"
+                      className="h-10 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">
+                      Shift End
+                    </label>
+                    <input
+                      type="text"
+                      value={inviteShiftEndTime}
+                      onChange={e => setInviteShiftEndTime(e.target.value)}
+                      placeholder="e.g. 06:30 PM"
+                      className="h-10 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white"
+                    />
                   </div>
                   <div>
                     <Button type="submit" className="h-10 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-sm">
@@ -905,19 +997,63 @@ export default function TeamPage() {
                         </div>
                       </div>
                       <div className="flex flex-wrap gap-2 text-right">
-                        <div className="border border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2.5 rounded-xl text-left min-w-[140px]">
-                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">Shift Hours</p>
-                          <p className="text-xs font-extrabold text-slate-800 dark:text-white mt-1.5 leading-none">
-                            {selectedEmpData.shiftStartTime} - {selectedEmpData.shiftEndTime}
-                          </p>
+                      {showEditSchedule ? (
+                        <div className="border border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 rounded-xl text-left w-full max-w-sm mt-4 md:mt-0 shadow-lg">
+                          <form onSubmit={async (e) => { await handleSaveShiftSchedule(e); setShowEditSchedule(false); }} className="space-y-4">
+                            <div>
+                              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Working Days</label>
+                              <div className="flex flex-wrap gap-1.5">
+                                {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day, idx) => (
+                                  <button
+                                    key={day}
+                                    type="button"
+                                    onClick={() => setWorkingDays(prev => prev.includes(idx) ? prev.filter(d => d !== idx) : [...prev, idx])}
+                                    className={`h-7 px-2 rounded-lg text-[10px] font-bold transition-all border ${
+                                      workingDays.includes(idx) ? "bg-brand-600 text-white border-brand-600" : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-500"
+                                    }`}
+                                  >{day}</button>
+                                ))}
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                              <div>
+                                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Shift Start</label>
+                                <input type="text" value={shiftStartTime} onChange={e => setShiftStartTime(e.target.value)} className="h-9 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-2 text-xs" />
+                              </div>
+                              <div>
+                                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Shift End</label>
+                                <input type="text" value={shiftEndTime} onChange={e => setShiftEndTime(e.target.value)} className="h-9 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-2 text-xs" />
+                              </div>
+                            </div>
+                            <div>
+                              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Shift Profile</label>
+                              <input type="text" value={activeShiftProfile} onChange={e => setActiveShiftProfile(e.target.value)} className="h-9 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-2 text-xs" />
+                            </div>
+                            <div className="flex gap-2 pt-1">
+                              <Button type="submit" className="h-8 flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs">Save</Button>
+                              <Button type="button" onClick={() => setShowEditSchedule(false)} className="h-8 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs">Cancel</Button>
+                            </div>
+                          </form>
                         </div>
-                        <div className="border border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2.5 rounded-xl text-left min-w-[140px]">
-                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">Active Profile</p>
-                          <p className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 mt-1.5 leading-none truncate max-w-[150px]" title={selectedEmpData.activeShiftProfile}>
-                            {selectedEmpData.activeShiftProfile}
-                          </p>
-                        </div>
-                      </div>
+                      ) : (
+                        <>
+                          <div onClick={() => setShowEditSchedule(true)} className="border border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2.5 rounded-xl text-left min-w-[140px] relative group cursor-pointer hover:border-indigo-400 transition-colors">
+                            <button className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity text-indigo-600"><Edit2 className="h-3.5 w-3.5" /></button>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">Shift Hours</p>
+                            <p className="text-xs font-extrabold text-slate-800 dark:text-white mt-1.5 leading-none">
+                              {selectedEmpData.shiftStartTime} - {selectedEmpData.shiftEndTime}
+                            </p>
+                          </div>
+                          <div onClick={() => setShowEditSchedule(true)} className="border border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2.5 rounded-xl text-left min-w-[140px] relative group cursor-pointer hover:border-indigo-400 transition-colors">
+                            <button className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity text-indigo-600"><Edit2 className="h-3.5 w-3.5" /></button>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">Active Profile</p>
+                            <p className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 mt-1.5 leading-none truncate max-w-[150px]" title={selectedEmpData.activeShiftProfile}>
+                              {selectedEmpData.activeShiftProfile}
+                            </p>
+                          </div>
+                        </>
+                      )}
+                    </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -1002,10 +1138,13 @@ export default function TeamPage() {
                           <h3 className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-5">
                             Today's Activity Log
                           </h3>
-                          <div className="flex-1 space-y-0 relative pl-5 border-l-2 border-slate-200 dark:border-[#1e2b5e]">
+                          <div className="relative pl-6 flex-1 flex flex-col justify-between py-1">
+                            {/* Vertical Line */}
+                            <div className="absolute left-[5px] top-2 bottom-2 w-[2px] bg-slate-200 dark:bg-[#1e2b5e] rounded-full" />
+                            
                             {/* Punch In */}
-                            <div className="relative pb-7">
-                              <span className={`absolute -left-[17px] top-0.5 h-3 w-3 rounded-full border-2 border-slate-50 dark:border-[#0d1230] transition-colors ${
+                            <div className="relative">
+                              <span className={`absolute -left-[23px] top-1.5 h-2.5 w-2.5 rounded-full border-2 border-slate-50 dark:border-[#0d1230] transition-colors ${
                                 todayRec?.punchInTime ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" : "bg-slate-300 dark:bg-slate-700"
                               }`} />
                               <div className="flex items-center justify-between">
@@ -1036,13 +1175,13 @@ export default function TeamPage() {
                                 </span>
                               </div>
                               {isPunchedOut && (
-                                <p className="text-xs text-slate-400 font-medium mt-1 ml-6">Shift ended · {totalHours}h total</p>
+                                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1 ml-6">Shift ended • {totalHours}h total</p>
                               )}
                               {isPunchedIn && (
                                 <p className="text-xs text-brand-500 dark:text-brand-400 font-medium mt-1 ml-6 animate-pulse">Active — awaiting check-out</p>
                               )}
                               {!todayRec?.punchInTime && (
-                                <p className="text-xs text-slate-400 font-medium mt-1 ml-6">Not started today</p>
+                                <p className="text-xs text-slate-500 dark:text-slate-500 font-medium mt-1 ml-6">Not started today</p>
                               )}
                             </div>
                           </div>
@@ -1123,7 +1262,7 @@ export default function TeamPage() {
                               onMouseEnter={() => handleMouseEnter(day)}
                               onMouseUp={() => handleMouseUp(day)}
                               className={cn(
-                                "aspect-square sm:aspect-auto sm:min-h-[95px] h-auto w-full rounded-2xl border p-1 sm:p-2 flex flex-col items-center sm:items-start justify-between transition-all duration-200 cursor-pointer hover:scale-[1.02] active:scale-98 relative group/cell",
+                                "aspect-square w-full rounded-2xl border p-1 sm:p-2 flex flex-col items-center sm:items-start transition-all duration-200 cursor-pointer hover:scale-[1.02] active:scale-98 relative group/cell overflow-hidden",
                                 style.bg,
                                 style.border,
                                 isSelectedForTask && "ring-2 ring-indigo-500 border-indigo-500 scale-[1.02] shadow-[0_0_12px_rgba(99,102,241,0.3)] z-10",
@@ -1442,7 +1581,6 @@ export default function TeamPage() {
                           value={selectedFilterProjectId}
                           onChange={(e) => {
                             setSelectedFilterProjectId(e.target.value);
-                            setNewTaskProjectId(e.target.value);
                           }}
                           className="h-10 w-full sm:w-56 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 text-sm font-bold focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white"
                         >
@@ -1481,14 +1619,25 @@ export default function TeamPage() {
                                 <input
                                   type="text"
                                   required
-                                  placeholder={selectedFilterProjectId ? "Add a task to the selected project..." : "Select a project above to add a task, or add standalone task..."}
+                                  placeholder="Task title..."
                                   value={newTaskTitle}
                                   onChange={(e) => setNewTaskTitle(e.target.value)}
                                   className="h-11 w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 px-4 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-brand-500/40 shadow-sm text-slate-800 dark:text-white"
                                 />
                               </div>
                               
-                              <div className="flex flex-wrap sm:flex-nowrap items-center gap-3 w-full xl:w-auto">
+                              <div className="flex flex-wrap sm:flex-nowrap items-center gap-3 w-full xl:w-auto mt-3 xl:mt-0">
+                                <select
+                                  value={newTaskProjectId}
+                                  onChange={(e) => setNewTaskProjectId(e.target.value)}
+                                  className="h-11 w-full sm:w-48 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white"
+                                >
+                                  <option value="">No Project</option>
+                                  {allProjects.map(p => (
+                                    <option key={p.id} value={p.id}>{p.name}</option>
+                                  ))}
+                                </select>
+
                                 <input
                                   type="date"
                                   value={newTaskDueDate}
@@ -2006,14 +2155,14 @@ export default function TeamPage() {
                     <div className="w-44 pl-6 shrink-0 flex items-center">
                       <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Team Member</span>
                     </div>
-                    <div className="flex-1 flex justify-between pr-4">
+                    <div className="flex-1 grid gap-1 pr-4" style={{ gridTemplateColumns: `repeat(${calDaysInMonth}, minmax(0, 1fr))` }}>
                       {Array.from({ length: calDaysInMonth }, (_, i) => i + 1).map((day) => {
                         const dowName = getDayOfWeekName(day);
                         const isWeekendDay = dowName === "Sun" || dowName === "Sat";
                         return (
                           <div
                             key={day}
-                            className={`w-6 flex flex-col items-center justify-center shrink-0 ${
+                            className={`flex flex-col items-center justify-center ${
                               isWeekendDay ? "opacity-40" : ""
                             }`}
                           >
@@ -2039,7 +2188,7 @@ export default function TeamPage() {
                       </div>
 
                       {/* Day cells columns */}
-                      <div className="flex-1 flex justify-between pr-4">
+                      <div className="flex-1 grid gap-1 pr-4" style={{ gridTemplateColumns: `repeat(${calDaysInMonth}, minmax(0, 1fr))` }}>
                         {Array.from({ length: calDaysInMonth }, (_, i) => i + 1).map((day) => {
                           const dayOfWeekIdx = getDayOfWeekIndex(day);
                           const isWeekendDay = !m.workingDays.includes(dayOfWeekIdx);
@@ -2049,12 +2198,13 @@ export default function TeamPage() {
                           const compactStyle = getStatusStyle(status, true) as any;
 
                           return (
-                            <div
-                              key={day}
-                              className={`w-6 h-6 rounded-lg text-[9px] font-extrabold flex items-center justify-center shrink-0 transition-all ${compactStyle.bg}`}
-                              title={`${m.name} — ${calMonthName} ${day}: ${status}`}
-                            >
-                              {compactStyle.symbol}
+                            <div key={day} className="flex justify-center items-center">
+                              <div
+                                className={`w-6 h-6 rounded-lg text-[9px] font-extrabold flex items-center justify-center shrink-0 transition-all ${compactStyle.bg}`}
+                                title={`${m.name} — ${calMonthName} ${day}: ${status}`}
+                              >
+                                {compactStyle.symbol}
+                              </div>
                             </div>
                           );
                         })}

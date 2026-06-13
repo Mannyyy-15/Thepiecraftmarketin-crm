@@ -19,11 +19,8 @@ import { cn } from "@/components/ui/cn";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { CardGridSkeleton } from "@/components/ui/Skeleton";
-import {
-  getProjects, createProject, deleteProject, getTeamUsers,
-  getProjectTasksGrouped, addProjectTask, deleteTask, toggleTaskStatus,
-  updateProject, getClientsEnriched,
-} from "@/app/actions/crm";
+import { createProject, updateProjectStatus, deleteProject, updateProject, getProjects, getTeamUsers, getProjectTasksGrouped, addProjectTask, deleteTask, toggleTaskStatus, getClientsEnriched } from "@/app/actions/crm";
+import { getDomainExpiry } from "@/app/actions/whois";
 import { getProjectStatusVariant, getProjectStatusLabel } from "@/lib/statusHelpers";
 
 // ── Service type config ───────────────────────────────────────────────────────
@@ -95,7 +92,7 @@ const BLANK: Record<string, any> = {
   objective: "leads", primaryKpi: "CPL", targetKpiValue: "",
   totalBudget: "",
   websiteType: "landing_page", platform: "Next.js",
-  domain: "", hostingProvider: "", repoLink: "",
+  setupType: "existing", domain: "", domainExpiry: "", hostingProvider: "Hostinger", hostingExpiry: "", repoLink: "",
   cmsNeeded: false, adminPanelNeeded: false, dbNeeded: false,
   integrations: "", brandAssets: "", contentAssets: "",
   referenceLinks: "", numPages: "", launchDate: "",
@@ -362,6 +359,7 @@ export default function ProjectsPage() {
   const [formTab, setFormTab]         = useState(0);
   const [form, setForm]               = useState({ ...BLANK });
   const [submitting, setSubmitting]   = useState(false);
+  const [fetchingWhois, setFetchingWhois] = useState(false);
 
   // Edit drawer
   const [editOpen, setEditOpen]           = useState(false);
@@ -391,6 +389,24 @@ export default function ProjectsPage() {
 
   useEffect(() => { load(); }, []);
 
+  const handleFetchWhois = async () => {
+    if (!form.domain) return;
+    setFetchingWhois(true);
+    try {
+      const res = await getDomainExpiry(form.domain);
+      if (res.success && res.expiryDate) {
+        f({ domainExpiry: res.expiryDate });
+        toast("Domain expiry fetched!", "success");
+      } else {
+        toast(res.error || "Could not fetch domain expiry.", "error");
+      }
+    } catch (e: any) {
+      toast(e.message || "Error fetching WHOIS.", "error");
+    } finally {
+      setFetchingWhois(false);
+    }
+  };
+
   const openDrawer = () => {
     setForm({ ...BLANK });
     setDrawerStep(0);
@@ -402,7 +418,8 @@ export default function ProjectsPage() {
   const openEdit = (p: any) => {
     const d = parseDetails(p.serviceDetails);
     setEditProject(p);
-    setEditForm({
+    setProjectType(p.projectType);
+    setForm({
       name: p.name || "",
       clientId: p.clientId ? String(p.clientId) : "",
       clientName: p.clientName || "",
@@ -420,9 +437,40 @@ export default function ProjectsPage() {
       clientContactPhone: p.clientContactPhone || "",
       accessGranted: p.accessGranted === 1,
       contractLink: p.contractLink || "",
+      
+      // web dev specific
+      setupType: d.setupType || "existing",
+      domain: d.domain || "",
+      domainExpiry: d.domainExpiry || "",
+      hostingProvider: d.hostingProvider || "",
+      hostingExpiry: d.hostingExpiry || "",
+      websiteType: d.websiteType || "landing_page",
+      platform: d.platform || "Next.js",
+      repoLink: d.repoLink || "",
+      oldWebsiteUrl: d.oldWebsiteUrl || "",
+      cmsNeeded: d.cmsNeeded || false,
+      adminPanelNeeded: d.adminPanelNeeded || false,
+      dbNeeded: d.dbNeeded || false,
+      integrations: d.integrations || "",
+      brandAssets: d.brandAssets || "",
+      contentAssets: d.contentAssets || "",
+      referenceLinks: d.referenceLinks || "",
+      numPages: d.numPages || "",
       launchDate: d.launchDate || "",
+      
+      // meta ads specific
+      adAccountId: d.adAccountId || "",
+      businessManagerId: d.businessManagerId || "",
+      pixelId: d.pixelId || "",
+      conversionLocation: d.conversionLocation || "website",
+      landingPage: d.landingPage || "",
+      objective: d.objective || "leads",
+      primaryKpi: d.primaryKpi || "CPL",
+      targetKpiValue: d.targetKpiValue || "",
     });
-    setEditOpen(true);
+    setFormTab(0);
+    setDrawerStep(1); // skip type selection
+    setDrawerOpen(true);
   };
 
   const switchTab = (tab: "all" | "meta_ads" | "web_dev") => {
@@ -436,7 +484,7 @@ export default function ProjectsPage() {
       const isMeta = projectType === "meta_ads";
       const serviceDetails = isMeta
         ? JSON.stringify({ adAccountId: form.adAccountId, businessManagerId: form.businessManagerId, pixelId: form.pixelId, conversionLocation: form.conversionLocation, landingPage: form.landingPage, objective: form.objective, primaryKpi: form.primaryKpi, targetKpiValue: form.targetKpiValue })
-        : JSON.stringify({ websiteType: form.websiteType, platform: form.platform, domain: form.domain, hostingProvider: form.hostingProvider, repoLink: form.repoLink, cmsNeeded: form.cmsNeeded, adminPanelNeeded: form.adminPanelNeeded, dbNeeded: form.dbNeeded, integrations: form.integrations, brandAssets: form.brandAssets, contentAssets: form.contentAssets, referenceLinks: form.referenceLinks, numPages: form.numPages, launchDate: form.launchDate, oldWebsiteUrl: form.oldWebsiteUrl });
+        : JSON.stringify({ setupType: form.setupType, domainExpiry: form.domainExpiry, hostingExpiry: form.hostingExpiry, websiteType: form.websiteType, platform: form.platform, domain: form.domain, hostingProvider: form.hostingProvider, repoLink: form.repoLink, cmsNeeded: form.cmsNeeded, adminPanelNeeded: form.adminPanelNeeded, dbNeeded: form.dbNeeded, integrations: form.integrations, brandAssets: form.brandAssets, contentAssets: form.contentAssets, referenceLinks: form.referenceLinks, numPages: form.numPages, launchDate: form.launchDate, oldWebsiteUrl: form.oldWebsiteUrl });
 
       const fd = new FormData();
       fd.append("name", form.name);
@@ -754,8 +802,40 @@ export default function ProjectsPage() {
                         </div>
                       </div>
 
+                      {/* Domain & Website Link Block */}
+                      {(d.domain || d.domainExpiry) && (
+                        <div className="mt-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl p-3 border border-slate-100 dark:border-slate-800/60">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="min-w-0">
+                              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Website</p>
+                              {d.domain ? (
+                                <a href={d.domain.startsWith('http') ? d.domain : `https://${d.domain}`} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="text-xs font-semibold text-brand-600 dark:text-brand-400 hover:underline truncate block flex items-center gap-1.5">
+                                  <Globe2 className="h-3 w-3 shrink-0" />
+                                  <span className="truncate">{d.domain.replace(/^https?:\/\//, '')}</span>
+                                </a>
+                              ) : (
+                                <p className="text-xs text-slate-500 italic">Not specified</p>
+                              )}
+                            </div>
+                            <div className="text-right shrink-0">
+                              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Domain Expiry</p>
+                              {d.domainExpiry ? (
+                                <div className="flex items-center gap-1.5 justify-end">
+                                  <CalendarDays className="h-3.5 w-3.5 text-slate-400" />
+                                  <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                                    {new Date(d.domainExpiry).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}
+                                  </span>
+                                </div>
+                              ) : (
+                                <p className="text-xs text-slate-500 italic">Unknown</p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
                       {/* Key figures: budget + lead dev */}
-                      <div className="mt-3.5 flex items-center justify-between gap-2">
+                      <div className="mt-4 flex items-center justify-between gap-2">
                         <div>
                           <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Budget</p>
                           <p className="text-sm font-extrabold text-slate-800 dark:text-white mt-0.5">{Number(p.budget) > 0 ? `₹${Number(p.budget).toLocaleString()}` : "—"}</p>
@@ -901,192 +981,7 @@ export default function ProjectsPage() {
       {/* ═══════════════════════════════════════════════════════════════════════
           EDIT PROJECT DRAWER
       ═══════════════════════════════════════════════════════════════════════ */}
-      {editOpen && editProject && (
-        <>
-          <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40" onClick={() => setEditOpen(false)} />
-          <div className="fixed right-0 top-0 h-full w-full max-w-[520px] bg-white dark:bg-slate-950 z-50 shadow-2xl flex flex-col animate-[slide-in-right_280ms_cubic-bezier(0.16,1,0.3,1)]">
-            {/* Header */}
-            <div className="shrink-0 px-6 pt-5 pb-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3">
-              <div className="min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className={cn("inline-flex items-center gap-1.5 text-[9px] font-bold px-2 py-0.5 rounded-full border",
-                    editProject.projectType === "meta_ads" ? TYPES.meta_ads.badgeBg : TYPES.web_dev.badgeBg
-                  )}>
-                    {editProject.projectType === "meta_ads" ? <Megaphone className="h-2.5 w-2.5" /> : <Code2 className="h-2.5 w-2.5" />}
-                    {editProject.projectType === "meta_ads" ? "Meta Ads" : "Web Development"}
-                  </span>
-                </div>
-                <h2 className="text-base font-bold text-slate-900 dark:text-white leading-tight truncate">Edit Project</h2>
-              </div>
-              <button onClick={() => setEditOpen(false)} aria-label="Close"
-                className="shrink-0 h-8 w-8 rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer">
-                <X className="h-4 w-4" />
-              </button>
-            </div>
 
-            {/* Form */}
-            <form onSubmit={handleUpdate} className="flex-1 flex flex-col overflow-hidden">
-              <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
-
-                <SectionHeader icon={Sparkles} label="General" />
-                <div className="space-y-4">
-                  <div>
-                    <label className={LABEL}>Project Name *</label>
-                    <input required value={editForm.name} onChange={e => ef({ name: e.target.value })} className={INPUT} />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className={LABEL}>Client</label>
-                      <select
-                        value={editForm.clientId || "__new__"}
-                        onChange={e => {
-                          const sel = clients.find((c: any) => String(c.id) === e.target.value);
-                          if (sel) {
-                            let contactName = "";
-                            let contactPhone = "";
-                            try {
-                              const det = JSON.parse(sel.details || "{}");
-                              contactName = det.contactName || "";
-                              contactPhone = det.contactPhone || "";
-                            } catch (err) {}
-                            ef({ 
-                              clientId: String(sel.id), 
-                              clientName: sel.name,
-                              clientContactName: contactName,
-                              clientContactPhone: contactPhone
-                            });
-                          } else {
-                            ef({ clientId: "", clientName: editForm.clientName || "", clientContactName: "", clientContactPhone: "" });
-                          }
-                        }}
-                        className={SELECT}>
-                        <option value="__new__">— New / type name —</option>
-                        {clients.map((c: any) => <option key={c.id} value={String(c.id)}>{c.name}</option>)}
-                      </select>
-                      {!editForm.clientId && (
-                        <input value={editForm.clientName} onChange={e => ef({ clientName: e.target.value })}
-                          placeholder="Client name" className={cn(INPUT, "mt-2")} />
-                      )}
-                    </div>
-                    <div>
-                      <label className={LABEL}>Status</label>
-                      <select value={editForm.status} onChange={e => ef({ status: e.target.value })} className={SELECT}>
-                        {(editProject.projectType === "meta_ads" ? META_STATUSES : WEBDEV_STATUSES).map(s => (
-                          <option key={s} value={s}>{getProjectStatusLabel(s)}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className={LABEL}>Assigned To</label>
-                      <select value={editForm.leadId} onChange={e => ef({ leadId: e.target.value })} className={SELECT}>
-                        <option value="">Unassigned</option>
-                        {roster.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
-                      </select>
-                    </div>
-                    <div>
-                      <label className={LABEL}>Priority</label>
-                      <div className="flex gap-1.5">
-                        {["low", "medium", "high"].map(pr => (
-                          <button key={pr} type="button" onClick={() => ef({ priority: pr })}
-                            className={cn("flex-1 h-11 border text-[10px] font-bold rounded-xl capitalize transition-all cursor-pointer",
-                              editForm.priority === pr ? "bg-slate-900 border-slate-900 text-white dark:bg-white dark:border-white dark:text-slate-900" : "border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-900"
-                            )}>{pr}</button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <SectionHeader icon={CalendarDays} label="Timeline" />
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className={LABEL}>Start Date</label>
-                    <input type="date" value={editForm.startDate} onChange={e => ef({ startDate: e.target.value })} className={INPUT} />
-                  </div>
-                  <div>
-                    <label className={LABEL}>Deadline</label>
-                    <input type="date" value={editForm.endDate} onChange={e => ef({ endDate: e.target.value })} className={INPUT} />
-                  </div>
-                </div>
-
-                <SectionHeader icon={DollarSign} label="Financials" />
-                {editProject.projectType === "meta_ads" ? (
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className={LABEL}>Monthly Fee</label>
-                      <div className="relative">
-                        <DollarSign className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
-                        <input type="number" min="0" value={editForm.monthlyFee} onChange={e => ef({ monthlyFee: e.target.value })} placeholder="3000" className={cn(INPUT, "pl-9")} />
-                      </div>
-                    </div>
-                    <div>
-                      <label className={LABEL}>Ad Spend Budget</label>
-                      <div className="relative">
-                        <TrendingUp className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
-                        <input type="number" min="0" value={editForm.adSpendBudget} onChange={e => ef({ adSpendBudget: e.target.value })} placeholder="12000" className={cn(INPUT, "pl-9")} />
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div>
-                    <label className={LABEL}>Project Budget</label>
-                    <div className="relative">
-                      <DollarSign className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
-                      <input type="number" min="0" value={editForm.totalBudget} onChange={e => ef({ totalBudget: e.target.value })} placeholder="8500" className={cn(INPUT, "pl-9")} />
-                    </div>
-                  </div>
-                )}
-
-                <SectionHeader icon={Users2} label="Client Contact" />
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className={LABEL}>Contact Name</label>
-                    <input value={editForm.clientContactName} onChange={e => ef({ clientContactName: e.target.value })} placeholder="Rohan Mehta" className={INPUT} />
-                  </div>
-                  <div>
-                    <label className={LABEL}>WhatsApp / Phone</label>
-                    <input value={editForm.clientContactPhone} onChange={e => ef({ clientContactPhone: e.target.value })} placeholder="+91 98765 43210" className={INPUT} />
-                  </div>
-                </div>
-
-                <SectionHeader icon={CalendarDays} label="Contract" />
-                <div className="space-y-3">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className={LABEL}>Billing Cycle Start</label>
-                      <input type="date" value={editForm.billingCycleStart} onChange={e => ef({ billingCycleStart: e.target.value })} className={INPUT} />
-                    </div>
-                    <div>
-                      <label className={LABEL}>Duration (months)</label>
-                      <input type="number" min="0" value={editForm.contractDuration} onChange={e => ef({ contractDuration: e.target.value })} placeholder="6" className={INPUT} />
-                    </div>
-                  </div>
-                  <ToggleRow label="Access granted — agency has platform access" value={editForm.accessGranted} onChange={() => ef({ accessGranted: !editForm.accessGranted })} />
-                  {editProject.projectType === "meta_ads" && (
-                    <div>
-                      <label className={LABEL}>Contract / SOW Link</label>
-                      <div className="relative">
-                        <LinkIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
-                        <input type="url" value={editForm.contractLink} onChange={e => ef({ contractLink: e.target.value })} placeholder="https://drive.google.com/…" className={cn(INPUT, "pl-10")} />
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-              </div>
-
-              <div className="shrink-0 px-6 py-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-900/20 flex items-center justify-end gap-2">
-                <Button type="button" variant="outline" size="sm" onClick={() => setEditOpen(false)}>Cancel</Button>
-                <Button type="submit" size="sm" disabled={editSubmitting || !editForm.name} className="bg-brand-600 hover:bg-brand-700 text-white font-bold min-w-[120px] justify-center">
-                  {editSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <><CheckCircle2 className="h-4 w-4 mr-1.5" /> Save Changes</>}
-                </Button>
-              </div>
-            </form>
-          </div>
-        </>
-      )}
 
       {/* ═══════════════════════════════════════════════════════════════════════
           DRAWER — New Project
@@ -1243,30 +1138,36 @@ export default function ProjectsPage() {
                             </div>
                           </div>
 
-                          <SectionHeader icon={Users2} label="Client Contact" />
-                          <div className="grid grid-cols-2 gap-3">
-                            <div>
-                              <label className={LABEL}>Contact Name</label>
-                              <input value={form.clientContactName} onChange={e => f({ clientContactName: e.target.value })} placeholder="e.g. Rohan Mehta" className={INPUT} />
-                            </div>
-                            <div>
-                              <label className={LABEL}>WhatsApp / Phone</label>
-                              <input value={form.clientContactPhone} onChange={e => f({ clientContactPhone: e.target.value })} placeholder="+91 98765 43210" className={INPUT} />
-                            </div>
-                          </div>
+                          {form.clientId !== "__agency__" && (
+                            <>
+                              <SectionHeader icon={Users2} label="Client Contact" />
+                              <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                  <label className={LABEL}>Contact Name</label>
+                                  <input value={form.clientContactName} onChange={e => f({ clientContactName: e.target.value })} placeholder="e.g. Rohan Mehta" className={INPUT} />
+                                </div>
+                                <div>
+                                  <label className={LABEL}>WhatsApp / Phone</label>
+                                  <input value={form.clientContactPhone} onChange={e => f({ clientContactPhone: e.target.value })} placeholder="+91 98765 43210" className={INPUT} />
+                                </div>
+                              </div>
+                            </>
+                          )}
 
                           <SectionHeader icon={CalendarDays} label="Timeline & Team" />
                           <div className="space-y-4">
-                            <div className="grid grid-cols-2 gap-3">
-                              <div>
-                                <label className={LABEL}>Start Date</label>
-                                <input type="date" value={form.startDate} onChange={e => f({ startDate: e.target.value })} className={INPUT} />
+                            {form.clientId !== "__agency__" && (
+                              <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                  <label className={LABEL}>Start Date</label>
+                                  <input type="date" value={form.startDate} onChange={e => f({ startDate: e.target.value })} className={INPUT} />
+                                </div>
+                                <div>
+                                  <label className={LABEL}>End Date</label>
+                                  <input type="date" value={form.endDate} onChange={e => f({ endDate: e.target.value })} className={INPUT} />
+                                </div>
                               </div>
-                              <div>
-                                <label className={LABEL}>End Date</label>
-                                <input type="date" value={form.endDate} onChange={e => f({ endDate: e.target.value })} className={INPUT} />
-                              </div>
-                            </div>
+                            )}
                             <div className="grid grid-cols-2 gap-3">
                               <div>
                                 <label className={LABEL}>Account Manager</label>
@@ -1361,44 +1262,48 @@ export default function ProjectsPage() {
 
                       {formTab === 2 && (
                         <>
-                          <SectionHeader icon={DollarSign} label="Billing" />
-                          <div className="grid grid-cols-2 gap-3">
-                            <div>
-                              <label className={LABEL}>Management Fee / mo</label>
-                              <div className="relative">
-                                <DollarSign className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
-                                <input type="number" min="0" value={form.monthlyFee} onChange={e => f({ monthlyFee: e.target.value })} placeholder="3000" className={cn(INPUT, "pl-9")} />
+                          {form.clientId !== "__agency__" && (
+                            <>
+                              <SectionHeader icon={DollarSign} label="Billing" />
+                              <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                  <label className={LABEL}>Management Fee / mo</label>
+                                  <div className="relative">
+                                    <DollarSign className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                                    <input type="number" min="0" value={form.monthlyFee} onChange={e => f({ monthlyFee: e.target.value })} placeholder="3000" className={cn(INPUT, "pl-9")} />
+                                  </div>
+                                </div>
+                                <div>
+                                  <label className={LABEL}>Ad Spend Budget / mo</label>
+                                  <div className="relative">
+                                    <TrendingUp className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                                    <input type="number" min="0" value={form.adSpendBudget} onChange={e => f({ adSpendBudget: e.target.value })} placeholder="12000" className={cn(INPUT, "pl-9")} />
+                                  </div>
+                                </div>
                               </div>
-                            </div>
-                            <div>
-                              <label className={LABEL}>Ad Spend Budget / mo</label>
-                              <div className="relative">
-                                <TrendingUp className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
-                                <input type="number" min="0" value={form.adSpendBudget} onChange={e => f({ adSpendBudget: e.target.value })} placeholder="12000" className={cn(INPUT, "pl-9")} />
-                              </div>
-                            </div>
-                          </div>
 
-                          <SectionHeader icon={CalendarDays} label="Contract" />
-                          <div className="space-y-4">
-                            <div className="grid grid-cols-2 gap-3">
-                              <div>
-                                <label className={LABEL}>Billing Cycle Start</label>
-                                <input type="date" value={form.billingCycleStart} onChange={e => f({ billingCycleStart: e.target.value })} className={INPUT} />
+                              <SectionHeader icon={CalendarDays} label="Contract" />
+                              <div className="space-y-4">
+                                <div className="grid grid-cols-2 gap-3">
+                                  <div>
+                                    <label className={LABEL}>Billing Cycle Start</label>
+                                    <input type="date" value={form.billingCycleStart} onChange={e => f({ billingCycleStart: e.target.value })} className={INPUT} />
+                                  </div>
+                                  <div>
+                                    <label className={LABEL}>Contract Duration (months)</label>
+                                    <input type="number" min="0" value={form.contractDuration} onChange={e => f({ contractDuration: e.target.value })} placeholder="6" className={INPUT} />
+                                  </div>
+                                </div>
+                                <div>
+                                  <label className={LABEL}>Contract / SOW Link</label>
+                                  <div className="relative">
+                                    <LinkIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                                    <input type="url" value={form.contractLink} onChange={e => f({ contractLink: e.target.value })} placeholder="https://drive.google.com/…" className={cn(INPUT, "pl-10")} />
+                                  </div>
+                                </div>
                               </div>
-                              <div>
-                                <label className={LABEL}>Contract Duration (months)</label>
-                                <input type="number" min="0" value={form.contractDuration} onChange={e => f({ contractDuration: e.target.value })} placeholder="6" className={INPUT} />
-                              </div>
-                            </div>
-                            <div>
-                              <label className={LABEL}>Contract / SOW Link</label>
-                              <div className="relative">
-                                <LinkIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
-                                <input type="url" value={form.contractLink} onChange={e => f({ contractLink: e.target.value })} placeholder="https://drive.google.com/…" className={cn(INPUT, "pl-10")} />
-                              </div>
-                            </div>
-                          </div>
+                            </>
+                          )}
 
                           <div>
                             <label className={LABEL}>Notes / Strategy Brief</label>
@@ -1425,6 +1330,10 @@ export default function ProjectsPage() {
                               <select
                                 value={form.clientId || "__new__"}
                                 onChange={e => {
+                                  if (e.target.value === "__agency__") {
+                                    f({ clientId: "__agency__", clientName: "Internal Agency Project", clientContactName: "", clientContactPhone: "" });
+                                    return;
+                                  }
                                   const sel = clients.find((c: any) => String(c.id) === e.target.value);
                                   if (sel) {
                                     let contactName = "";
@@ -1446,6 +1355,7 @@ export default function ProjectsPage() {
                                 }}
                                 className={SELECT}>
                                 <option value="__new__">— New client (type name) —</option>
+                                <option value="__agency__">Agency (Internal Project)</option>
                                 {clients.map((c: any) => <option key={c.id} value={String(c.id)}>{c.name}</option>)}
                               </select>
                               {!form.clientId && (
@@ -1453,28 +1363,45 @@ export default function ProjectsPage() {
                                   placeholder="New client name" className={cn(INPUT, "mt-2")} />
                               )}
                             </div>
-                          </div>
-
-                          <SectionHeader icon={Users2} label="Client Contact" />
-                          <div className="grid grid-cols-2 gap-3">
                             <div>
-                              <label className={LABEL}>Contact Name</label>
-                              <input value={form.clientContactName} onChange={e => f({ clientContactName: e.target.value })} placeholder="e.g. Rohan Mehta" className={INPUT} />
-                            </div>
-                            <div>
-                              <label className={LABEL}>WhatsApp / Phone</label>
-                              <input value={form.clientContactPhone} onChange={e => f({ clientContactPhone: e.target.value })} placeholder="+91 98765 43210" className={INPUT} />
+                              <label className={LABEL}>Setup Type</label>
+                              <select value={form.setupType || "existing"} onChange={e => f({ setupType: e.target.value })} className={SELECT}>
+                                <option value="existing">Existing Project</option>
+                                <option value="new">Make New (To Purchase)</option>
+                              </select>
                             </div>
                           </div>
 
-                          <SectionHeader icon={Globe2} label="Current Website" />
-                          <div>
-                            <label className={LABEL}>Old / Current Website URL</label>
-                            <div className="relative">
-                              <Globe2 className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
-                              <input type="url" value={form.oldWebsiteUrl} onChange={e => f({ oldWebsiteUrl: e.target.value })} placeholder="https://currentsite.com" className={cn(INPUT, "pl-10")} />
-                            </div>
-                          </div>
+                          {form.clientId !== "__agency__" && (
+                            <>
+                              <SectionHeader icon={Users2} label="Client Contact" />
+                              <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                  <label className={LABEL}>Contact Name</label>
+                                  <input value={form.clientContactName} onChange={e => f({ clientContactName: e.target.value })} placeholder="e.g. Rohan Mehta" className={INPUT} />
+                                </div>
+                                <div>
+                                  <label className={LABEL}>WhatsApp / Phone</label>
+                                  <input value={form.clientContactPhone} onChange={e => f({ clientContactPhone: e.target.value })} placeholder="+91 98765 43210" className={INPUT} />
+                                </div>
+                              </div>
+                            </>
+                          )}
+
+                          {form.setupType === "new" && (
+                            <>
+                              <SectionHeader icon={Globe2} label="Current Website (If Any)" />
+                              <div>
+                                <label className={LABEL}>Old / Current Website URL</label>
+                                <div className="relative">
+                                  <Globe2 className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                                  <input type="url" value={form.oldWebsiteUrl} onChange={e => f({ oldWebsiteUrl: e.target.value })} placeholder="https://currentsite.com" className={cn(INPUT, "pl-10")} />
+                                </div>
+                              </div>
+                            </>
+                          )}
+
+
 
                           <SectionHeader icon={SlidersHorizontal} label="Scope & Type" />
                           <div className="space-y-4">
@@ -1502,20 +1429,22 @@ export default function ProjectsPage() {
                                 </div>
                               </div>
                             </div>
-                            <div className="grid grid-cols-3 gap-3">
-                              <div>
-                                <label className={LABEL}>Start Date</label>
-                                <input type="date" value={form.startDate} onChange={e => f({ startDate: e.target.value })} className={INPUT} />
+                            {form.clientId !== "__agency__" && (
+                              <div className="grid grid-cols-3 gap-3">
+                                <div>
+                                  <label className={LABEL}>Start Date</label>
+                                  <input type="date" value={form.startDate} onChange={e => f({ startDate: e.target.value })} className={INPUT} />
+                                </div>
+                                <div>
+                                  <label className={LABEL}>Deadline</label>
+                                  <input type="date" value={form.endDate} onChange={e => f({ endDate: e.target.value })} className={INPUT} />
+                                </div>
+                                <div>
+                                  <label className={LABEL}>Launch Date</label>
+                                  <input type="date" value={form.launchDate} onChange={e => f({ launchDate: e.target.value })} className={INPUT} />
+                                </div>
                               </div>
-                              <div>
-                                <label className={LABEL}>Deadline</label>
-                                <input type="date" value={form.endDate} onChange={e => f({ endDate: e.target.value })} className={INPUT} />
-                              </div>
-                              <div>
-                                <label className={LABEL}>Launch Date</label>
-                                <input type="date" value={form.launchDate} onChange={e => f({ launchDate: e.target.value })} className={INPUT} />
-                              </div>
-                            </div>
+                            )}
                             <div>
                               <label className={LABEL}>Assign to</label>
                               <select value={form.leadId} onChange={e => f({ leadId: e.target.value })} className={SELECT}>
@@ -1542,84 +1471,160 @@ export default function ProjectsPage() {
                                   <option value="Custom">Custom</option>
                                 </select>
                               </div>
-                              <div>
-                                <label className={LABEL}>Domain</label>
-                                <input value={form.domain} onChange={e => f({ domain: e.target.value })} placeholder="example.com" className={INPUT} />
-                              </div>
+                              {form.setupType === "new" ? (
+                                <div>
+                                  <label className={LABEL}>Domain to Purchase</label>
+                                  <input value={form.domain} onChange={e => f({ domain: e.target.value })} placeholder="example.com" className={INPUT} />
+                                </div>
+                              ) : (
+                                <div>
+                                  <label className={LABEL}>Domain</label>
+                                  <input value={form.domain} onChange={e => f({ domain: e.target.value })} placeholder="example.com" className={INPUT} />
+                                </div>
+                              )}
                             </div>
-                            <div className="grid grid-cols-2 gap-3">
-                              <div>
-                                <label className={LABEL}>Hosting Provider</label>
-                                <input value={form.hostingProvider} onChange={e => f({ hostingProvider: e.target.value })} placeholder="Vercel, AWS, Hostinger…" className={INPUT} />
+                            
+                            {form.setupType === "new" ? (
+                              <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                  <label className={LABEL}>Preferred Hosting Provider</label>
+                                  <select value={form.hostingProvider} onChange={e => f({ hostingProvider: e.target.value })} className={SELECT}>
+                                    <option value="Hostinger">Hostinger</option>
+                                    <option value="GoDaddy">GoDaddy</option>
+                                    <option value="Vercel">Vercel</option>
+                                    <option value="AWS">AWS</option>
+                                    <option value="DigitalOcean">DigitalOcean</option>
+                                    <option value="Bluehost">Bluehost</option>
+                                    <option value="SiteGround">SiteGround</option>
+                                    <option value="Other">Other</option>
+                                  </select>
+                                </div>
                               </div>
-                              <div>
-                                <label className={LABEL}>Repository Link</label>
-                                <input type="url" value={form.repoLink} onChange={e => f({ repoLink: e.target.value })} placeholder="https://github.com/…" className={INPUT} />
-                              </div>
-                            </div>
+                            ) : (
+                              <>
+                                <div className="grid grid-cols-2 gap-3">
+                                  <div>
+                                    <label className={LABEL}>Hosting Provider</label>
+                                    <select value={form.hostingProvider} onChange={e => f({ hostingProvider: e.target.value })} className={SELECT}>
+                                      <option value="Hostinger">Hostinger</option>
+                                      <option value="GoDaddy">GoDaddy</option>
+                                      <option value="Vercel">Vercel</option>
+                                      <option value="AWS">AWS</option>
+                                      <option value="DigitalOcean">DigitalOcean</option>
+                                      <option value="Bluehost">Bluehost</option>
+                                      <option value="SiteGround">SiteGround</option>
+                                      <option value="Other">Other</option>
+                                    </select>
+                                  </div>
+                                  <div>
+                                    <label className={LABEL}>Repository Link</label>
+                                    <input type="url" value={form.repoLink} onChange={e => f({ repoLink: e.target.value })} placeholder="https://github.com/…" className={INPUT} />
+                                  </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-3">
+                                  <div>
+                                    <label className={cn(LABEL, "flex items-center justify-between")}>
+                                      <span>Domain Expiry</span>
+                                      {form.domain && (
+                                        <button type="button" onClick={handleFetchWhois} disabled={fetchingWhois} className="text-[10px] text-brand-600 font-bold hover:underline disabled:opacity-50">
+                                          {fetchingWhois ? "Fetching..." : "Auto-fetch"}
+                                        </button>
+                                      )}
+                                    </label>
+                                    <input type="date" value={form.domainExpiry || ""} onChange={e => f({ domainExpiry: e.target.value })} className={INPUT} />
+                                  </div>
+                                  <div>
+                                    <label className={LABEL}>Hosting Expiry</label>
+                                    <input type="date" value={form.hostingExpiry || ""} onChange={e => f({ hostingExpiry: e.target.value })} className={INPUT} />
+                                  </div>
+                                </div>
+                              </>
+                            )}
                           </div>
 
-                          <SectionHeader icon={Boxes} label="Requirements" />
-                          <div className="space-y-3">
-                            <div className="grid grid-cols-3 gap-2">
-                              {[{ key: "cmsNeeded", label: "CMS" }, { key: "adminPanelNeeded", label: "Admin Panel" }, { key: "dbNeeded", label: "Database" }].map(({ key, label }) => (
-                                <ToggleRow key={key} label={label} value={(form as any)[key]} onChange={() => f({ [key]: !(form as any)[key] })} />
-                              ))}
-                            </div>
-                            <div>
-                              <label className={LABEL}>Number of Pages</label>
-                              <input type="number" min="1" value={form.numPages} onChange={e => f({ numPages: e.target.value })} placeholder="5" className={INPUT} />
-                            </div>
-                          </div>
+                          {form.setupType !== "existing" && (
+                            <>
+                              <SectionHeader icon={Boxes} label="Requirements" />
+                              <div className="space-y-3">
+                                <div className="grid grid-cols-3 gap-2">
+                                  {[{ key: "cmsNeeded", label: "CMS" }, { key: "adminPanelNeeded", label: "Admin Panel" }, { key: "dbNeeded", label: "Database" }].map(({ key, label }) => (
+                                    <ToggleRow key={key} label={label} value={(form as any)[key]} onChange={() => f({ [key]: !(form as any)[key] })} />
+                                  ))}
+                                </div>
+                                <div>
+                                  <label className={LABEL}>Number of Pages</label>
+                                  <input type="number" min="1" value={form.numPages} onChange={e => f({ numPages: e.target.value })} placeholder="5" className={INPUT} />
+                                </div>
+                              </div>
+                            </>
+                          )}
                         </>
                       )}
 
                       {formTab === 2 && (
                         <>
-                          <SectionHeader icon={DollarSign} label="Budget" />
-                          <div>
-                            <label className={LABEL}>Project Budget (USD)</label>
-                            <div className="relative">
-                              <DollarSign className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
-                              <input type="number" min="0" value={form.totalBudget} onChange={e => f({ totalBudget: e.target.value })} placeholder="8500" className={cn(INPUT, "pl-9")} />
+                          {form.clientId === "__agency__" && form.setupType === "existing" && (
+                            <div className="flex flex-col items-center justify-center py-12 text-center">
+                              <div className="h-12 w-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4">
+                                <Boxes className="h-6 w-6 text-brand-500" />
+                              </div>
+                              <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-1">No additional details needed</h3>
+                              <p className="text-xs text-slate-500 max-w-[250px] mx-auto">Financial and asset details are not required for internal, existing projects. You can save the project now.</p>
                             </div>
-                          </div>
+                          )}
+                          {form.clientId !== "__agency__" && (
+                            <>
+                              <SectionHeader icon={DollarSign} label="Budget" />
+                              <div>
+                                <label className={LABEL}>Project Budget (USD)</label>
+                                <div className="relative">
+                                  <DollarSign className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                                  <input type="number" min="0" value={form.totalBudget} onChange={e => f({ totalBudget: e.target.value })} placeholder="8500" className={cn(INPUT, "pl-9")} />
+                                </div>
+                              </div>
 
-                          <SectionHeader icon={CalendarDays} label="Contract" />
-                          <div className="space-y-4">
-                            <div className="grid grid-cols-2 gap-3">
-                              <div>
-                                <label className={LABEL}>Billing Cycle Start</label>
-                                <input type="date" value={form.billingCycleStart} onChange={e => f({ billingCycleStart: e.target.value })} className={INPUT} />
+                              <SectionHeader icon={CalendarDays} label="Contract" />
+                              <div className="space-y-4">
+                                <div className="grid grid-cols-2 gap-3">
+                                  <div>
+                                    <label className={LABEL}>Billing Cycle Start</label>
+                                    <input type="date" value={form.billingCycleStart} onChange={e => f({ billingCycleStart: e.target.value })} className={INPUT} />
+                                  </div>
+                                  <div>
+                                    <label className={LABEL}>Contract Duration (months)</label>
+                                    <input type="number" min="0" value={form.contractDuration} onChange={e => f({ contractDuration: e.target.value })} placeholder="3" className={INPUT} />
+                                  </div>
+                                </div>
+                                <ToggleRow label="Access granted — agency has platform access" value={form.accessGranted} onChange={() => f({ accessGranted: !form.accessGranted })} />
                               </div>
-                              <div>
-                                <label className={LABEL}>Contract Duration (months)</label>
-                                <input type="number" min="0" value={form.contractDuration} onChange={e => f({ contractDuration: e.target.value })} placeholder="3" className={INPUT} />
-                              </div>
-                            </div>
-                          </div>
+                            </>
+                          )}
 
-                          <SectionHeader icon={Boxes} label="Integrations & Assets" />
-                          <div className="space-y-4">
-                            <div>
-                              <label className={LABEL}>Third-party Integrations</label>
-                              <input value={form.integrations} onChange={e => f({ integrations: e.target.value })} placeholder="payments, CRM, analytics, email, chat…" className={INPUT} />
-                            </div>
-                            <div className="grid grid-cols-2 gap-3">
-                              <div>
-                                <label className={LABEL}>Brand Assets URL</label>
-                                <input value={form.brandAssets} onChange={e => f({ brandAssets: e.target.value })} placeholder="Google Drive, Figma…" className={INPUT} />
+                          {form.setupType !== "existing" && (
+                            <>
+                              <SectionHeader icon={Boxes} label="Integrations & Assets" />
+                              <div className="space-y-4">
+                                <div>
+                                  <label className={LABEL}>Third-party Integrations</label>
+                                  <input value={form.integrations} onChange={e => f({ integrations: e.target.value })} placeholder="payments, CRM, analytics, email, chat…" className={INPUT} />
+                                </div>
+                                <div className="grid grid-cols-2 gap-3">
+                                  <div>
+                                    <label className={LABEL}>Brand Assets URL</label>
+                                    <input value={form.brandAssets} onChange={e => f({ brandAssets: e.target.value })} placeholder="Google Drive, Figma…" className={INPUT} />
+                                  </div>
+                                  <div>
+                                    <label className={LABEL}>Content URL</label>
+                                    <input value={form.contentAssets} onChange={e => f({ contentAssets: e.target.value })} placeholder="Docs, Notion, Drive…" className={INPUT} />
+                                  </div>
+                                </div>
+                                <div>
+                                  <label className={LABEL}>Reference / Inspiration Sites</label>
+                                  <textarea rows={2} value={form.referenceLinks} onChange={e => f({ referenceLinks: e.target.value })} placeholder="stripe.com, linear.app, vercel.com…" className={cn(INPUT, "h-auto py-2.5 resize-none")} />
+                                </div>
                               </div>
-                              <div>
-                                <label className={LABEL}>Content URL</label>
-                                <input value={form.contentAssets} onChange={e => f({ contentAssets: e.target.value })} placeholder="Docs, Notion, Drive…" className={INPUT} />
-                              </div>
-                            </div>
-                            <div>
-                              <label className={LABEL}>Reference / Inspiration Sites</label>
-                              <textarea rows={2} value={form.referenceLinks} onChange={e => f({ referenceLinks: e.target.value })} placeholder="stripe.com, linear.app, vercel.com…" className={cn(INPUT, "h-auto py-2.5 resize-none")} />
-                            </div>
-                          </div>
+                            </>
+                          )}
                         </>
                       )}
                     </>

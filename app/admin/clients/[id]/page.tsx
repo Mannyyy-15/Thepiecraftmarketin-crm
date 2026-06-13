@@ -125,11 +125,12 @@ export default function ClientDetailPage() {
     if (!targetId) { toast("Select which login account belongs to this client first.", "error"); return; }
     if (!newPass || newPass.length < 4) { toast("Enter a password (min 4 characters).", "error"); return; }
     setSavingPass(true);
-    const r = await resetClientPassword(targetId, newPass);
+    // Passing client.name ensures the user account's name is updated to exactly match the client profile, linking them
+    const r = await resetClientPassword(targetId, newPass, client?.name);
     setSavingPass(false);
     if (r.success) {
       setPassResult(newPass);
-      toast("Password updated. Share it with the client.", "success");
+      toast("Password updated and account successfully linked to this client.", "success");
       // refresh the login email if we just linked a different account
       const lr = await getClientLogin(Number(id));
       if (lr.success && lr.data) setLogin(lr.data);

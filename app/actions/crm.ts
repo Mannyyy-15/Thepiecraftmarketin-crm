@@ -12,6 +12,7 @@ import { sendEmail } from "@/lib/mailer";
 import { revalidatePath } from "next/cache";
 import bcrypt from "bcryptjs";
 import Razorpay from "razorpay";
+import { fetchUptimeMonitors } from "@/lib/uptimerobot";
 
 // Helper to check user session and get authenticated profile
 async function getAuthSession() {
@@ -274,8 +275,8 @@ export async function getClientLogin(clientId: number) {
   }
 }
 
-// Set a NEW password for a client's portal login (admin relays it to the client).
-export async function resetClientPassword(userId: number, newPassword: string) {
+// Reset a client's password (by admin) and optionally sync their name to auto-match the client profile
+export async function resetClientPassword(userId: number, newPassword: string, forceMatchName?: string) {
   try {
     const session = await getAuthSession();
     if (!session || session.role !== "admin") return { success: false, error: "Unauthorized." };
@@ -288,7 +289,12 @@ export async function resetClientPassword(userId: number, newPassword: string) {
     if (u[0].role !== "client") return { success: false, error: "Can only reset client accounts here." };
 
     const hashed = await bcrypt.hash(newPassword, 10);
-    await db.update(schema.users).set({ password: hashed }).where(eq(schema.users.id, userId));
+    const updateData: any = { password: hashed };
+    if (forceMatchName) {
+      updateData.name = forceMatchName;
+    }
+    
+    await db.update(schema.users).set(updateData).where(eq(schema.users.id, userId));
     return { success: true };
   } catch (error: any) {
     console.error("resetClientPassword Error:", error);
@@ -383,7 +389,7 @@ export async function createProject(formData: FormData) {
 
     await db.insert(schema.projects).values({
       name: name.trim(),
-      clientId: clientIdStr ? parseInt(clientIdStr) : null,
+      clientId: clientIdStr && clientIdStr !== "__agency__" ? parseInt(clientIdStr) : null,
       clientName: clientName?.trim() || null,
       projectType,
       budget,
@@ -2694,13 +2700,62 @@ export async function getWebDevDashboardData() {
     if (!session) return { success: false, data: { projects: [], tasks: [] } };
     if (!db) return { success: false, data: { projects: [], tasks: [] } };
 
-    const projectsList = await db.select().from(schema.projects).where(eq(schema.projects.projectType, "web_dev"));
-    const projectIds = projectsList.map(p => p.id);
+    // Use getProjects to automatically apply Admin / Employee / Client RBAC filters
+    const allProjRes = await getProjects();
+    if (!allProjRes.success) throw new Error(allProjRes.error || "Failed to load projects");
+
+    const projectsList = (allProjRes.data || []).filter((p: any) => p.projectType === "web_dev");
+    const projectIds = projectsList.map((p: any) => p.id);
     let allTasks: any[] = [];
     if (projectIds.length > 0) {
       allTasks = await db.select().from(schema.tasks).where(inArray(schema.tasks.projectId, projectIds));
     }
     return { success: true, data: { projects: projectsList, tasks: allTasks } };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function syncWebHealthMetrics() {
+  try {
+    const session = await getCurrentUser();
+    if (!session || session.role !== "admin") return { success: false, error: "Unauthorized" };
+    if (!db) return { success: false, error: "DB Error" };
+
+    const apiRes = await fetchUptimeMonitors();
+    if (!apiRes.success || !apiRes.monitors) {
+      throw new Error(apiRes.error || "Failed to fetch monitors");
+    }
+
+    const projectsList = await db.select().from(schema.projects).where(eq(schema.projects.projectType, "web_dev"));
+
+    let updatedCount = 0;
+
+    for (const project of projectsList) {
+      let sd: any = {};
+      try { sd = JSON.parse(project.serviceDetails || "{}"); } catch(e) {}
+      
+      const projectUrl = (sd.websiteUrl || project.name).replace(/^https?:\/\//, "").replace(/\/$/, "");
+      if (!projectUrl) continue;
+
+      const monitor = apiRes.monitors.find((m: any) => m.url.includes(projectUrl));
+      if (monitor) {
+        sd.uptime = monitor.uptimeRatio;
+        sd.response = monitor.averageResponseTime;
+        // status map: 2=operational, 9/8=outage, 0/1=degraded/pending
+        if (monitor.status === 2) sd.status = "operational";
+        else if (monitor.status === 9 || monitor.status === 8) sd.status = "outage";
+        else sd.status = "degraded";
+
+        await db.update(schema.projects)
+          .set({ serviceDetails: JSON.stringify(sd) })
+          .where(eq(schema.projects.id, project.id));
+        updatedCount++;
+      }
+    }
+
+    revalidatePath("/admin/website-dev");
+    return { success: true, updatedCount };
   } catch (error: any) {
     return { success: false, error: error.message };
   }

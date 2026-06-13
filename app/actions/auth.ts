@@ -138,6 +138,10 @@ export async function createUser(formData: FormData) {
     const password = formData.get("password") as string;
     const role = formData.get("role") as "admin" | "employee" | "client";
     const systemRole = (formData.get("systemRole") as string) || (role === "admin" ? "Admin" : "Web Developer");
+    const workingDays = (formData.get("workingDays") as string) || "1,2,3,4,5";
+    const shiftStartTime = (formData.get("shiftStartTime") as string) || "09:00 AM";
+    const shiftEndTime = (formData.get("shiftEndTime") as string) || "05:00 PM";
+    const activeShiftProfile = (formData.get("activeShiftProfile") as string) || "Standard Core Hours";
 
     if (!email || !password || !role) {
       return { success: false, error: "Email, password, and role are required." };
@@ -164,6 +168,10 @@ export async function createUser(formData: FormData) {
       password: hashedPassword,
       role,
       systemRole,
+      workingDays,
+      shiftStartTime,
+      shiftEndTime,
+      activeShiftProfile,
     });
 
     console.log(`[Database] Account created by Admin: ${email} (${role} - ${systemRole})`);
