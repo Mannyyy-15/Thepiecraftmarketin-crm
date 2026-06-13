@@ -63,3 +63,6 @@ update_ip.*
 /update_*.ts
 /update_*.js
 logs/
+
+# Local scratch/cleanup files
+scratch_*
