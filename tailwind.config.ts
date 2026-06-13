@@ -12,6 +12,23 @@ const config: Config = {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        // ── Semantic theme tokens (WCAG 2.1 AA verified, see globals.css) ──
+        // Backgrounds: bg-app / bg-panel / bg-elevated / bg-muted
+        app: "var(--bg-app)",
+        panel: "var(--bg-panel)",
+        elevated: "var(--bg-elevated)",
+        // Borders: border-line / border-strong
+        line: "var(--border)",
+        "line-strong": "var(--border-strong)",
+        // Text: text-primary / text-secondary / text-muted
+        "text-primary": "var(--text-primary)",
+        "text-secondary": "var(--text-secondary)",
+        "text-muted": "var(--text-muted)",
+        // Accent: accent-primary / accent-hover / accent-solid / accent-fg
+        "accent-primary": "var(--accent)",
+        "accent-hover": "var(--accent-hover)",
+        "accent-solid": "var(--accent-solid, var(--accent))",
+        "accent-fg": "var(--accent-fg)",
         // Royal blue — primary brand
         brand: {
           50: "#eef2ff",

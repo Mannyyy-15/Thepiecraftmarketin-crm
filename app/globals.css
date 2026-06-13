@@ -3,27 +3,68 @@
 @tailwind utilities;
 
 @layer base {
+  /* ─────────────────────────────────────────────────────────────────────────
+     Color system — zinc neutrals + royal-indigo accent. WCAG 2.1 AA verified.
+     Ratios (vs panel): primary 17.7/18.1, secondary 7.7/7.4, muted 4.8/5.6,
+     accent 6.6/6.3. No pure black; layered, intentional neutrals.
+     ───────────────────────────────────────────────────────────────────────── */
   :root {
-    /* Neutral slate base — no blue tint. Brand colour is reserved for accents. */
-    --background: #f8fafc;
-    --foreground: #0f172a;
-    --card: #ffffff;
-    --card-foreground: #0f172a;
-    --muted: #f1f5f9;
-    --muted-foreground: #64748b;
-    --border: #e2e8f0;
-    --ring: #263aa7;
+    /* Canvas layers */
+    --bg-app: #f7f7f8;        /* app background (1 step below panels) */
+    --bg-panel: #ffffff;      /* cards / panels */
+    --bg-elevated: #ffffff;   /* popovers / menus (paired with border) */
+    --bg-muted: #f4f4f5;      /* inset wells, table headers */
+
+    /* Borders */
+    --border: #e4e4e7;        /* hairline / decorative */
+    --border-strong: #d4d4d8; /* inputs / interactive boundaries */
+
+    /* Text */
+    --text-primary: #18181b;   /* 17.72:1 */
+    --text-secondary: #52525b; /* 7.73:1  */
+    --text-muted: #71717a;     /* 4.83:1  */
+
+    /* Accent (royal indigo) */
+    --accent: #2f4cdd;        /* 6.57:1 — links, icons, focus */
+    --accent-hover: #2138c4;  /* 8.65:1 */
+    --accent-fg: #ffffff;     /* text on solid accent — 6.57:1 */
+
+    /* Back-compat aliases (existing components read these) */
+    --background: var(--bg-app);
+    --foreground: var(--text-primary);
+    --card: var(--bg-panel);
+    --card-foreground: var(--text-primary);
+    --muted: var(--bg-muted);
+    --muted-foreground: var(--text-muted);
+    --ring: var(--accent);
   }
 
   .dark {
-    --background: #0a0a0f;
-    --foreground: #f1f5f9;
-    --card: #0f1117;
-    --card-foreground: #f1f5f9;
-    --muted: #1e293b;
-    --muted-foreground: #94a3b8;
-    --border: #1e293b;
-    --ring: #3a58e8;
+    /* Canvas layers — deep ink, never #000 */
+    --bg-app: #09090b;        /* app background (below panels) */
+    --bg-panel: #111114;      /* cards / panels */
+    --bg-elevated: #1a1a1f;   /* popovers / menus (crisp step up) */
+    --bg-muted: #0d0d10;      /* inset wells, table headers */
+
+    --border: #27272d;
+    --border-strong: #323239;
+
+    --text-primary: #fafafa;   /* 18.06:1 */
+    --text-secondary: #a1a1aa; /* 7.35:1  */
+    --text-muted: #8b8b94;     /* 5.58:1  */
+
+    --accent: #7c8cf8;        /* 6.25:1 — text/icons on dark */
+    --accent-hover: #8f9dfa;  /* 7.51:1 */
+    --accent-solid: #4a5fe0;  /* solid button bg — white text 5.24:1 */
+    --accent-fg: #ffffff;
+
+    --background: var(--bg-app);
+    --foreground: var(--text-primary);
+    --card: var(--bg-panel);
+    --card-foreground: var(--text-primary);
+    --muted: var(--bg-muted);
+    --muted-foreground: var(--text-muted);
+    --ring: var(--accent);
   }
 
   html {

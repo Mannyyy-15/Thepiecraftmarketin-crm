@@ -37,7 +37,7 @@ export default function PortalLayout({
         <PortalTopNav />
 
         <main className="flex-1 overflow-y-auto pb-28 lg:pb-0">
-          <div className="mx-auto max-w-7xl p-4 sm:p-6 lg:p-8">{children}</div>
+          <div className="p-4 sm:p-6">{children}</div>
         </main>
 
         {/* Floating Mobile Bottom Navigation */}
