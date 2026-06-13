@@ -115,6 +115,7 @@ export function getInvoiceStatusVariant(status: string): "success" | "warning" |
   switch (status) {
     case "paid": return "success";
     case "pending": return "warning";
+    case "sent": return "warning";
     case "overdue": return "danger";
     default: return "neutral";
   }
@@ -124,6 +125,7 @@ export function getInvoiceStatusLabel(status: string): string {
   switch (status) {
     case "paid": return "Paid";
     case "pending": return "Pending";
+    case "sent": return "Unpaid";
     case "overdue": return "Overdue";
     case "draft": return "Draft";
     default: return status;

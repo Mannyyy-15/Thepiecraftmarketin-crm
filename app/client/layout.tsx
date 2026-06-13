@@ -8,6 +8,7 @@ import {
   FilePieChart,
   CircleDollarSign,
   Files,
+  MessageSquareText,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ClientSidebar from "@/components/ClientSidebar";
@@ -18,6 +19,7 @@ const mainNavTabs = [
   { name: "Projects", href: "/client/projects", icon: FolderKanban, exact: false },
   { name: "Reports", href: "/client/reports", icon: FilePieChart, exact: false },
   { name: "Invoices", href: "/client/invoices", icon: CircleDollarSign, exact: false },
+  { name: "Messages", href: "/client/messages", icon: MessageSquareText, exact: false },
   { name: "Files", href: "/client/documents", icon: Files, exact: false },
 ];
 

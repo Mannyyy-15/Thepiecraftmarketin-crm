@@ -12,31 +12,12 @@ import {
   TrendingUp,
   RefreshCw,
 } from "lucide-react";
-import {
-  CartesianGrid,
-  Legend,
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
 import KpiCard from "@/components/KpiCard";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { getClientReports } from "@/app/actions/crm";
-
-const performanceData = [
-  { month: "Dec", roas: 2.4, ctr: 1.6 },
-  { month: "Jan", roas: 2.8, ctr: 1.9 },
-  { month: "Feb", roas: 3.1, ctr: 2.2 },
-  { month: "Mar", roas: 3.6, ctr: 2.8 },
-  { month: "Apr", roas: 3.9, ctr: 3.1 },
-  { month: "May", roas: 4.2, ctr: 3.4 },
-];
 
 const typeVariant: Record<string, "portal" | "brand" | "warning" | "info" | "neutral"> = {
   Monthly: "portal",
@@ -120,74 +101,37 @@ export default function ClientReportsPage() {
 
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
         <KpiCard
-          title="Avg ROAS"
-          value="4.2×"
-          change="+0.3× MoM"
-          changeType="positive"
+          title="Reports Delivered"
+          value={`${reports.length}`}
+          change="In your vault"
+          changeType="neutral"
           accent="portal"
+          icon={<FileText className="h-5 w-5" />}
+        />
+        <KpiCard
+          title="Latest Report"
+          value={featuredReport ? "Ready" : "—"}
+          change={featuredReport?.name ? (featuredReport.name.length > 18 ? featuredReport.name.slice(0, 18) + "…" : featuredReport.name) : "None yet"}
+          changeType="neutral"
+          accent="brand"
           icon={<TrendingUp className="h-5 w-5" />}
         />
         <KpiCard
-          title="CTR"
-          value="3.4%"
-          change="+0.3%"
-          changeType="positive"
-          accent="brand"
-        />
-        <KpiCard
-          title="Conv. Rate"
-          value="2.8%"
-          change="+0.1%"
-          changeType="positive"
+          title="This Month"
+          value={`${reports.filter((r: any) => { const d = new Date(r.createdAt); const n = new Date(); return d.getMonth() === n.getMonth() && d.getFullYear() === n.getFullYear(); }).length}`}
+          change="New reports"
+          changeType="neutral"
           accent="emerald"
         />
         <KpiCard
-          title="Reports Delivered"
+          title="Total Documents"
           value={`${reports.length}`}
-          change="Available in vault"
+          change="Downloadable"
           changeType="neutral"
           accent="amber"
-          icon={<FileText className="h-5 w-5" />}
+          icon={<Download className="h-5 w-5" />}
         />
       </div>
-
-      <Card>
-        <CardHeader>
-          <div>
-            <CardTitle>Performance Trend</CardTitle>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              ROAS (×) and CTR (%) across the last six months
-            </p>
-          </div>
-          <div className="hidden sm:flex items-center gap-3 text-xs">
-            <span className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
-              <span className="h-2 w-2 rounded-full bg-teal-500" /> ROAS
-            </span>
-            <span className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
-              <span className="h-2 w-2 rounded-full bg-indigo-500" /> CTR
-            </span>
-          </div>
-        </CardHeader>
-        <CardContent className="p-2 sm:p-4">
-          <div className="h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={performanceData} margin={{ top: 12, right: 16, left: -4, bottom: 0 }}>
-                <CartesianGrid stroke="currentColor" strokeOpacity={0.08} vertical={false} />
-                <XAxis dataKey="month" tickLine={false} axisLine={false} tick={{ fill: "currentColor", fontSize: 12, opacity: 0.6 }} />
-                <YAxis tickLine={false} axisLine={false} tick={{ fill: "currentColor", fontSize: 12, opacity: 0.6 }} />
-                <Tooltip
-                  contentStyle={{ borderRadius: 12, border: "1px solid rgba(99,102,241,0.2)", background: "rgba(8,13,30,0.97)", fontSize: 12, boxShadow: "0 4px 24px rgba(0,0,0,0.4)" }}
-                  labelStyle={{ color: "#94a3b8", fontWeight: 500 }}
-                  itemStyle={{ color: "#ffffff", fontWeight: 600 }}
-                />
-                <Legend wrapperStyle={{ fontSize: 12, paddingTop: 8 }} iconType="circle" />
-                <Line type="monotone" dataKey="roas" name="ROAS (×)" stroke="#14B8A6" strokeWidth={2.5} dot={{ r: 3, fill: "#14B8A6" }} />
-                <Line type="monotone" dataKey="ctr" name="CTR (%)" stroke="#6366F1" strokeWidth={2.5} dot={{ r: 3, fill: "#6366F1" }} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Featured + list */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">

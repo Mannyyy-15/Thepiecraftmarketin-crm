@@ -7,7 +7,6 @@ import {
   CheckCircle2,
   Clock,
   Download,
-  FileText,
   MessageSquare,
   Sparkles,
   Target,
@@ -25,50 +24,10 @@ import KpiCard from "@/components/KpiCard";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
-import { Avatar } from "@/components/ui/Avatar";
 import { Progress } from "@/components/ui/Progress";
 import { getCurrentUser } from "@/app/actions/auth";
 import { getClientDashboardData } from "@/app/actions/crm";
 import { getClientProjectStatusVariant, getProjectStatusLabel } from "@/lib/statusHelpers";
-
-// Local helper logic kept intact
-
-const engagementData = [
-  { week: "W1", sessions: 4.2, conversions: 1.1 },
-  { week: "W2", sessions: 5.1, conversions: 1.4 },
-  { week: "W3", sessions: 6.4, conversions: 2.0 },
-  { week: "W4", sessions: 7.8, conversions: 2.6 },
-  { week: "W5", sessions: 8.9, conversions: 3.1 },
-  { week: "W6", sessions: 9.4, conversions: 3.5 },
-];
-
-const updates = [
-  {
-    id: "u1",
-    title: "Landing page mockups approved",
-    detail:
-      "The design team has finalized the UI mockups based on your feedback. Moving into development this week.",
-    time: "Today at 10:45 AM",
-    who: "Lena Park",
-    accent: true,
-  },
-  {
-    id: "u2",
-    title: "Meta Ads Q4 launch — live",
-    detail:
-      "Campaigns are now live. We will monitor the learning phase over the next 48 hours and report back.",
-    time: "Yesterday",
-    who: "Mateo Alvarez",
-  },
-  {
-    id: "u3",
-    title: "Brand audit delivered",
-    detail:
-      "Audit report uploaded to your Files. Two priority recommendations attached.",
-    time: "May 18, 2026",
-    who: "Priya Shah",
-  },
-];
 
 export default function ClientOverviewPage() {
   const [user, setUser] = useState<{ name?: string; email?: string } | null>(null);
@@ -101,6 +60,12 @@ export default function ClientOverviewPage() {
     if (status === "completed") return 100;
     return 30;
   };
+
+  // Real "engagement" = each project's completion %, for the overview chart.
+  const progressData = projects.map((p: any) => ({
+    name: (p.name || "Project").length > 12 ? p.name.slice(0, 12) + "…" : (p.name || "Project"),
+    progress: typeof p.progress === "number" && p.progress > 0 ? p.progress : getProgressByStatus(p.status),
+  }));
 
   return (
     <div className="space-y-6">
@@ -175,47 +140,41 @@ export default function ClientOverviewPage() {
         <Card className="xl:col-span-2">
           <CardHeader>
             <div>
-              <CardTitle>Engagement Snapshot</CardTitle>
+              <CardTitle>Project Progress</CardTitle>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                Site sessions (k) and conversions (k) — last 6 weeks
+                Completion across your active engagements
               </p>
-            </div>
-            <div className="hidden sm:flex items-center gap-3 text-xs">
-              <span className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
-                <span className="h-2 w-2 rounded-full bg-portal-500" /> Sessions
-              </span>
-              <span className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
-                <span className="h-2 w-2 rounded-full bg-brand-500" /> Conversions
-              </span>
             </div>
           </CardHeader>
           <CardContent className="p-2 sm:p-4">
             <div className="h-64 sm:h-72">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={engagementData} margin={{ top: 12, right: 16, left: -4, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="sessGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#14B8A6" stopOpacity={0.4} />
-                      <stop offset="100%" stopColor="#14B8A6" stopOpacity={0} />
-                    </linearGradient>
-                    <linearGradient id="convGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#6366F1" stopOpacity={0.3} />
-                      <stop offset="100%" stopColor="#6366F1" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid stroke="currentColor" strokeOpacity={0.08} vertical={false} />
-                  <XAxis dataKey="week" tickLine={false} axisLine={false} tick={{ fill: "currentColor", fontSize: 12, opacity: 0.6 }} />
-                  <YAxis tickLine={false} axisLine={false} tick={{ fill: "currentColor", fontSize: 12, opacity: 0.6 }} tickFormatter={(v) => `${v}k`} />
-                  <Tooltip
-                    contentStyle={{ borderRadius: 12, border: "1px solid rgba(99,102,241,0.2)", background: "rgba(8,13,30,0.97)", fontSize: 12, boxShadow: "0 4px 24px rgba(0,0,0,0.4)" }}
-                    labelStyle={{ color: "#94a3b8", fontWeight: 500 }}
-                    itemStyle={{ color: "#ffffff", fontWeight: 600 }}
-                    formatter={(value: number) => `${value}k`}
-                  />
-                  <Area type="monotone" dataKey="sessions" stroke="#14B8A6" strokeWidth={2.5} fill="url(#sessGrad)" name="Sessions" />
-                  <Area type="monotone" dataKey="conversions" stroke="#6366F1" strokeWidth={2.5} fill="url(#convGrad)" name="Conversions" />
-                </AreaChart>
-              </ResponsiveContainer>
+              {progressData.length === 0 ? (
+                <div className="h-full flex flex-col items-center justify-center text-center gap-2">
+                  <Target className="h-7 w-7 text-slate-300 dark:text-slate-700" />
+                  <p className="text-xs text-slate-400">No active projects yet.</p>
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={progressData} margin={{ top: 12, right: 16, left: -4, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="progGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#14B8A6" stopOpacity={0.4} />
+                        <stop offset="100%" stopColor="#14B8A6" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid stroke="currentColor" strokeOpacity={0.08} vertical={false} />
+                    <XAxis dataKey="name" tickLine={false} axisLine={false} tick={{ fill: "currentColor", fontSize: 11, opacity: 0.6 }} />
+                    <YAxis domain={[0, 100]} tickLine={false} axisLine={false} tick={{ fill: "currentColor", fontSize: 12, opacity: 0.6 }} tickFormatter={(v) => `${v}%`} />
+                    <Tooltip
+                      contentStyle={{ borderRadius: 12, border: "1px solid rgba(20,184,166,0.2)", background: "rgba(8,13,30,0.97)", fontSize: 12, boxShadow: "0 4px 24px rgba(0,0,0,0.4)" }}
+                      labelStyle={{ color: "#94a3b8", fontWeight: 500 }}
+                      itemStyle={{ color: "#ffffff", fontWeight: 600 }}
+                      formatter={(value: number) => `${value}%`}
+                    />
+                    <Area type="monotone" dataKey="progress" stroke="#14B8A6" strokeWidth={2.5} fill="url(#progGrad)" name="Progress" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -354,43 +313,39 @@ export default function ClientOverviewPage() {
         </Card>
       </div>
 
-      {/* Recent updates timeline */}
+      {/* Milestones timeline (real, from project tasks) */}
       <Card>
         <CardHeader>
-          <CardTitle>Recent Updates</CardTitle>
-          <Button variant="ghost" size="sm" className="text-portal-700 dark:text-portal-300">
-            All updates <ArrowRight className="h-3.5 w-3.5" />
-          </Button>
+          <CardTitle>Milestones Timeline</CardTitle>
         </CardHeader>
         <CardContent>
-          <ol className="relative space-y-6">
-            {updates.map((u, i) => (
-              <li key={u.id} className="relative pl-8 sm:pl-10">
-                {/* connector */}
-                {i !== updates.length - 1 && (
-                  <span className="absolute left-3 sm:left-4 top-6 bottom-[-1.5rem] w-px bg-slate-200 dark:bg-slate-800" />
-                )}
-                <span
-                  className={`absolute left-0 top-0 inline-flex h-6 w-6 sm:h-8 sm:w-8 items-center justify-center rounded-full ring-4 ring-white dark:ring-slate-950 ${
-                    u.accent ? "bg-portal-500 text-white" : "bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
-                  }`}
-                >
-                  <FileText className="h-3 w-3 sm:h-4 sm:w-4" />
-                </span>
-                <div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className="text-sm font-semibold text-slate-900 dark:text-white">{u.title}</p>
-                    {u.accent && <Badge variant="portal">New</Badge>}
+          {upcomingMilestones.length === 0 ? (
+            <div className="flex flex-col items-center gap-2 py-8">
+              <Calendar className="h-7 w-7 text-slate-300 dark:text-slate-700" />
+              <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">No milestones scheduled.</p>
+              <p className="text-xs text-slate-400">Upcoming deliverables will appear here.</p>
+            </div>
+          ) : (
+            <ol className="relative space-y-6">
+              {upcomingMilestones.map((m: any, i: number) => (
+                <li key={m.id} className="relative pl-8 sm:pl-10">
+                  {i !== upcomingMilestones.length - 1 && (
+                    <span className="absolute left-3 sm:left-4 top-6 bottom-[-1.5rem] w-px bg-slate-200 dark:bg-slate-800" />
+                  )}
+                  <span className={`absolute left-0 top-0 inline-flex h-6 w-6 sm:h-8 sm:w-8 items-center justify-center rounded-full ring-4 ring-white dark:ring-slate-950 ${i === 0 ? "bg-portal-500 text-white" : "bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400"}`}>
+                    <Target className="h-3 w-3 sm:h-4 sm:w-4" />
+                  </span>
+                  <div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="text-sm font-semibold text-slate-900 dark:text-white">{m.title}</p>
+                      {i === 0 && <Badge variant="portal">Next up</Badge>}
+                    </div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{m.project} • Due {m.date}</p>
                   </div>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 flex items-center gap-1.5">
-                    <Avatar name={u.who} size="xs" />
-                    {u.who} • {u.time}
-                  </p>
-                  <p className="mt-2 text-sm text-slate-600 dark:text-slate-300 leading-relaxed">{u.detail}</p>
-                </div>
-              </li>
-            ))}
-          </ol>
+                </li>
+              ))}
+            </ol>
+          )}
         </CardContent>
       </Card>
     </div>

@@ -1915,6 +1915,34 @@ export async function getMessagingContacts() {
   }
 }
 
+// Contacts a client can message: their account lead (client.ownerId) + all admins.
+export async function getClientMessagingContacts() {
+  try {
+    const session = await getCurrentUser();
+    if (!session || session.role !== "client") return { success: false, data: [], meId: 0 };
+    if (!db) return { success: false, data: [], meId: 0 };
+
+    const meId = session.id as number;
+    const clientList = await db.select().from(schema.clients).where(eq(schema.clients.ownerId, meId));
+    const ownerIds = clientList.map(c => c.ownerId).filter(Boolean) as number[];
+
+    // Admins are always reachable.
+    const admins = await db.select({ id: schema.users.id, name: schema.users.name, email: schema.users.email, role: schema.users.role })
+      .from(schema.users).where(eq(schema.users.role, "admin"));
+
+    // Note: client.ownerId here points to the client's own user id (that's how
+    // login links to the record), so the real "account lead" is on the admin
+    // side. We expose admins as the agency contact for the client.
+    const map = new Map<number, any>();
+    for (const a of admins) if (a.id !== meId) map.set(a.id, a);
+
+    return { success: true, data: Array.from(map.values()), meId };
+  } catch (error: any) {
+    console.error("getClientMessagingContacts Error:", error);
+    return { success: false, data: [], meId: 0 };
+  }
+}
+
 // Register FCM Token for Push Notifications
 export async function registerFcmToken(token: string, deviceType?: string) {
   const session = await getAuthSession();

@@ -9,6 +9,7 @@ import {
   FilePieChart,
   CircleDollarSign,
   Files,
+  MessageSquareText,
   LifeBuoy,
   X,
   LogOut,
@@ -24,6 +25,7 @@ const navigation = [
   { name: "Projects", href: "/client/projects", icon: FolderKanban },
   { name: "Reports", href: "/client/reports", icon: FilePieChart },
   { name: "Invoices", href: "/client/invoices", icon: CircleDollarSign },
+  { name: "Messages", href: "/client/messages", icon: MessageSquareText },
   { name: "Files", href: "/client/documents", icon: Files },
 ];
 
