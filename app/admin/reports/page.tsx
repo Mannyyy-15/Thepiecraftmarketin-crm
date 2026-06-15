@@ -123,9 +123,8 @@ export default function ReportsPage() {
       const metrics = [
         { label: "Active Projects", value: isAgency ? projectsList.length : 1 },
         { label: "Timeframe", value: newTimeframe },
-        { label: "Tasks Completed", value: Math.floor(Math.random() * 50) + 10 },
-        { label: "Bugs Fixed", value: Math.floor(Math.random() * 15) },
-        { label: "Total Billables", value: "₹" + (Math.floor(Math.random() * 50000) + 10000).toLocaleString() },
+        { label: "Tasks Completed", value: "—" },
+        { label: "Total Billables", value: "—" },
         { label: "Health Score", value: isAgency ? "94%" : "98%" }
       ];
       

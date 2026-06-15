@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/Card";
 import {
   Wallet, TrendingUp, TrendingDown, Receipt, FileText, Loader2,
-  CheckCircle2, XCircle, AlertCircle, Coins, DollarSign
+  CheckCircle2, XCircle, Coins, DollarSign
 } from "lucide-react";
 import { FinancePageSkeleton } from "@/components/ui/Skeleton";
 import { 
@@ -53,24 +53,12 @@ export default function FinanceDashboard() {
 
   if (isLoading) return <FinancePageSkeleton />;
 
-  // Fallback mock data if the DB is completely empty so the UI still looks gorgeous
-  const hasData = data && (data.revenue > 0 || data.pendingAR > 0 || data.invoices.length > 0 || data.pendingExpenses.length > 0);
-  
-  const dRevenue = hasData ? data.revenue : 145000;
-  const dPending = hasData ? data.pendingAR : 32500;
-  const dCosts = hasData ? data.approvedCosts : 28400;
-  const dMargin = hasData ? data.margin : (145000 - 28400);
+  const dRevenue = data?.revenue ?? 0;
+  const dPending = data?.pendingAR ?? 0;
+  const dCosts = data?.approvedCosts ?? 0;
+  const dMargin = data?.margin ?? 0;
 
-  const mockChartData = [
-    { name: "Jan", revenue: 8400, costs: 2100 },
-    { name: "Feb", revenue: 12500, costs: 3800 },
-    { name: "Mar", revenue: 21000, costs: 5200 },
-    { name: "Apr", revenue: 18000, costs: 4100 },
-    { name: "May", revenue: 32000, costs: 8000 },
-    { name: "Jun", revenue: 41500, costs: 11200 },
-  ];
-
-  const chartData = mockChartData; // We map mock chart data to keep the graph looking alive.
+  const chartData = (data?.monthlyChart ?? []).map((m: any) => ({ name: m.month, revenue: m.revenue, costs: m.costs }));
 
   return (
     <div className="space-y-6 animate-fadeIn">
@@ -85,12 +73,6 @@ export default function FinanceDashboard() {
             Real-time AP/AR tracking, profitability margins, and team expense audits.
           </p>
         </div>
-        {!hasData && (
-          <div className="bg-amber-500/10 text-amber-600 dark:text-amber-400 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 border border-amber-500/20">
-            <AlertCircle className="h-4 w-4" />
-            Showing Mock Forecast (Database Empty)
-          </div>
-        )}
       </div>
 
       {/* KPI CARDS */}

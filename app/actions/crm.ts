@@ -2948,17 +2948,43 @@ export async function getFinanceDashboardData() {
       cost: (t.durationMinutes / 60) * HOURLY_RATE
     }));
 
-    return { 
-      success: true, 
-      data: { 
-        revenue, 
-        pendingAR, 
-        approvedCosts, 
+    // Build last-6-months chart data from real invoices + expenses
+    const now = new Date();
+    const monthlyData = Array.from({ length: 6 }, (_, i) => {
+      const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
+      return { month: d.toLocaleString("en", { month: "short" }), revenue: 0, costs: 0 };
+    });
+    allInvoices.forEach(inv => {
+      if (inv.status !== "paid" || !inv.createdAt) return;
+      const d = new Date(inv.createdAt);
+      const mIdx = monthlyData.findIndex(m => {
+        const base = new Date(now.getFullYear(), now.getMonth() - (5 - monthlyData.indexOf(m)), 1);
+        return d.getFullYear() === base.getFullYear() && d.getMonth() === base.getMonth();
+      });
+      if (mIdx !== -1) monthlyData[mIdx].revenue += inv.amount;
+    });
+    allExpenses.forEach(e => {
+      if (e.status !== "approved" || !e.createdAt) return;
+      const d = new Date(e.createdAt);
+      const mIdx = monthlyData.findIndex((m, i) => {
+        const base = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
+        return d.getFullYear() === base.getFullYear() && d.getMonth() === base.getMonth();
+      });
+      if (mIdx !== -1) monthlyData[mIdx].costs += e.amount;
+    });
+
+    return {
+      success: true,
+      data: {
+        revenue,
+        pendingAR,
+        approvedCosts,
         margin: revenue - approvedCosts,
-        invoices: enrichedInvoices.slice(0, 12), // recent invoices with client names
+        invoices: enrichedInvoices.slice(0, 12),
         pendingExpenses: mappedPendingExpenses,
-        pendingTimesheets: mappedPendingTimesheets
-      } 
+        pendingTimesheets: mappedPendingTimesheets,
+        monthlyChart: monthlyData,
+      }
     };
   } catch (error: any) {
     return { success: false, error: error.message };
@@ -3146,36 +3172,27 @@ export async function getReportsTrendAndAI() {
     const timesheetsList = await db.select().from(schema.timesheets);
     const usersList = await db.select().from(schema.users);
 
-    // Compute growth trend (Last 6 months ending with June 2026 as per workspace timeline)
-    // We map mockData fallback if database lacks historical records, but scale it dynamically
-    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
-    const monthlyData = months.map((monthName, idx) => {
-      // Calculate real numbers from db where possible or scale with idx
-      const clientsCount = Math.max(clientsList.length - (5 - idx), 2);
-      const projectsCount = Math.max(projectsList.length - (5 - idx), idx * 2 + 3);
-      
-      // Calculate timesheet hours for this month
-      let loggedHours = 0;
-      timesheetsList.forEach(t => {
-        if (t.durationMinutes) {
-          loggedHours += t.durationMinutes / 60;
-        }
-      });
-      const hoursCount = loggedHours > 0 ? Math.round((loggedHours / 6) * (idx + 1)) : 200 + (idx * 50);
+    // Compute real last-6-months trend from DB records
+    const now = new Date();
+    const monthlyData = Array.from({ length: 6 }, (_, i) => {
+      const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
+      const nextD = new Date(now.getFullYear(), now.getMonth() - (5 - i) + 1, 1);
+      const monthName = d.toLocaleString("en", { month: "short" });
 
-      return {
-        month: monthName,
-        clients: clientsCount,
-        projects: projectsCount,
-        hours: hoursCount
-      };
+      const clientsCount = clientsList.filter(c => c.createdAt && new Date(c.createdAt) < nextD).length;
+      const projectsCount = projectsList.filter(p => p.createdAt && new Date(p.createdAt) < nextD).length;
+      const hoursCount = timesheetsList
+        .filter(t => t.createdAt && new Date(t.createdAt) >= d && new Date(t.createdAt) < nextD)
+        .reduce((sum, t) => sum + Math.round((t.durationMinutes || 0) / 60), 0);
+
+      return { month: monthName, clients: clientsCount, projects: projectsCount, hours: hoursCount };
     });
 
     // Compute metrics for live AI Summary
     const activeClientsCount = clientsList.filter(c => c.stage !== "churned").length;
     const activeProjects = projectsList.filter(p => p.status === "in-progress" || p.status === "review");
-    const totalMRR = activeProjects.reduce((sum, p) => sum + (p.monthlyFee || 0), 0) || 45230;
-    const totalAdSpend = activeProjects.reduce((sum, p) => sum + (p.adSpendBudget || 0), 0) || 124500;
+    const totalMRR = activeProjects.reduce((sum, p) => sum + (p.monthlyFee || 0), 0);
+    const totalAdSpend = activeProjects.reduce((sum, p) => sum + (p.adSpendBudget || 0), 0);
 
     // Calculate team allocation: find user with max hours in timesheets
     const userHours: Record<number, number> = {};
@@ -3192,8 +3209,8 @@ export async function getReportsTrendAndAI() {
     });
 
     const peakUser = usersList.find(u => u.id === maxUserId);
-    const peakUserName = peakUser ? peakUser.name : "Sam Okafor";
-    const peakUserHoursPercent = maxHours > 0 ? Math.min(Math.round((maxHours / 160) * 100), 100) : 92;
+    const peakUserName = peakUser ? peakUser.name : "the team";
+    const peakUserHoursPercent = maxHours > 0 ? Math.min(Math.round((maxHours / 160) * 100), 100) : 0;
 
     const dynamicDigest = 
       `**EXECUTIVE DIGEST (LIVE CRM SYNTHESIS):**\n\n` +
