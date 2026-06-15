@@ -384,12 +384,7 @@ export default function ClientsPage() {
                 Auto-Generate
               </Button>
             )}
-            {activeTab !== "invoices" && (
-              <Button variant="outline" size="md" onClick={handleRepairPortalLinks} disabled={repairing} title="Re-link client portal accounts by matching login email">
-                <RefreshCw className={cn("h-4 w-4 mr-1.5", repairing && "animate-spin")} />
-                Repair Portal Links
-              </Button>
-            )}
+
             <Button onClick={() => activeTab === "invoices" ? (setInvDrawer(true), setInvForm({ ...BLANK_INVOICE })) : (setDrawerOpen(true), setDrawerStep(0), setForm({ ...BLANK_CLIENT }))}
               className="bg-brand-600 hover:bg-brand-700 text-white font-bold shadow-glow">
               <Plus className="h-4 w-4 mr-1" />
