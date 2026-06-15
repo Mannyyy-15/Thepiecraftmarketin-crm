@@ -174,8 +174,13 @@ export async function createUser(formData: FormData) {
       activeShiftProfile,
     });
 
+    // Fetch the newly created user's ID
+    const newUser = await db.select({ id: schema.users.id }).from(schema.users)
+      .where(eq(schema.users.email, email.trim().toLowerCase())).limit(1);
+    const newUserId = newUser[0]?.id ?? null;
+
     console.log(`[Database] Account created by Admin: ${email} (${role} - ${systemRole})`);
-    return { success: true, error: null };
+    return { success: true, error: null, userId: newUserId };
   } catch (error: any) {
     console.error("CreateUser Server Action Error:", error);
     return { success: false, error: error.message || "Failed to create user account." };

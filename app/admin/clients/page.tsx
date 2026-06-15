@@ -8,7 +8,7 @@ import {
   getClientsEnriched, onboardClient, updateClient, updateClientStage,
   updateClientChecklist, deleteClient, getTeamUsers, getProjects,
   getInvoices, createInvoice, updateInvoiceStatus, deleteInvoice,
-  autoGenerateInvoices,
+  autoGenerateInvoices, repairClientOwnerIds,
 } from "@/app/actions/crm";
 import {
   Building2, ChevronLeft, ChevronRight, CheckCircle2, DollarSign,
@@ -130,6 +130,9 @@ export default function ClientsPage() {
   const [editForm, setEditForm]               = useState<any>({});
   const [editSubmitting, setEditSubmitting]   = useState(false);
 
+  // portal link repair
+  const [repairing, setRepairing]             = useState(false);
+
   // three-dots menu
   const [menuOpenId, setMenuOpenId]           = useState<number | null>(null);
 
@@ -173,15 +176,21 @@ export default function ClientsPage() {
       const ur = await createUser(ufd);
       if (!ur.success) { toast(ur.error || "Failed to create portal account.", "error"); return; }
 
+      // ownerId must point to the client's own user account (not an employee)
+      // so the portal login resolves to their data correctly
+      const clientUserId = ur.userId ? String(ur.userId) : "";
+      if (!clientUserId) { toast("Created user but could not retrieve ID. Please re-link manually.", "error"); return; }
+
       const details = JSON.stringify({
         contactName: form.contactName, contactEmail: form.contactEmail,
         contactPhone: form.contactPhone, websiteUrl: form.websiteUrl,
         industry: form.industry, country: form.country,
         services: form.services, loginEmail: form.loginEmail,
+        accountManager: form.ownerId, // store employee account manager in details
       });
       const cfd = new FormData();
       cfd.append("name", form.name.trim());
-      cfd.append("ownerId", form.ownerId);
+      cfd.append("ownerId", clientUserId);
       cfd.append("details", details);
       const cr = await onboardClient(cfd);
       if (cr.success) {
@@ -206,16 +215,16 @@ export default function ClientsPage() {
     const d = parseDetails(c.details);
     setEditClient(c);
     setEditForm({
-      name:         c.name,
-      ownerId:      c.ownerId ? String(c.ownerId) : "",
-      stage:        c.stage,
-      contactName:  d.contactName  || "",
-      contactEmail: d.contactEmail || "",
-      contactPhone: d.contactPhone || "",
-      websiteUrl:   d.websiteUrl   || "",
-      industry:     d.industry     || "",
-      country:      d.country      || "",
-      services:     d.services     || "",
+      name:           c.name,
+      accountManager: d.accountManager || "",
+      stage:          c.stage,
+      contactName:    d.contactName  || "",
+      contactEmail:   d.contactEmail || "",
+      contactPhone:   d.contactPhone || "",
+      websiteUrl:     d.websiteUrl   || "",
+      industry:       d.industry     || "",
+      country:        d.country      || "",
+      services:       d.services     || "",
     });
     setEditOpen(true);
   };
@@ -238,6 +247,18 @@ export default function ClientsPage() {
   };
 
   const ef = (v: any) => setEditForm((p: any) => ({ ...p, ...v }));
+
+  const handleRepairPortalLinks = async () => {
+    setRepairing(true);
+    try {
+      const r = await repairClientOwnerIds();
+      if (r.success) {
+        await load();
+        toast(`Portal links repaired (${r.fixed} client${r.fixed === 1 ? "" : "s"} re-linked).`, "success");
+      } else toast(r.error || "Repair failed.", "error");
+    } catch (err: any) { toast(err.message, "error"); }
+    finally { setRepairing(false); }
+  };
 
   const handleMoveCard = async (id: number, dir: "left" | "right") => {
     const cols = ["contract_signed", "discovery", "integrations", "live"];
@@ -363,7 +384,13 @@ export default function ClientsPage() {
                 Auto-Generate
               </Button>
             )}
-            <Button onClick={() => activeTab === "invoices" ? (setInvDrawer(true), setInvForm({ ...BLANK_INVOICE })) : (setDrawerOpen(true), setDrawerStep(0), setForm({ ...BLANK_CLIENT, ownerId: roster[0]?.id?.toString() || "" }))}
+            {activeTab !== "invoices" && (
+              <Button variant="outline" size="md" onClick={handleRepairPortalLinks} disabled={repairing} title="Re-link client portal accounts by matching login email">
+                <RefreshCw className={cn("h-4 w-4 mr-1.5", repairing && "animate-spin")} />
+                Repair Portal Links
+              </Button>
+            )}
+            <Button onClick={() => activeTab === "invoices" ? (setInvDrawer(true), setInvForm({ ...BLANK_INVOICE })) : (setDrawerOpen(true), setDrawerStep(0), setForm({ ...BLANK_CLIENT }))}
               className="bg-brand-600 hover:bg-brand-700 text-white font-bold shadow-glow">
               <Plus className="h-4 w-4 mr-1" />
               {activeTab === "invoices" ? "New Invoice" : "Add Client"}
@@ -851,9 +878,10 @@ export default function ClientsPage() {
                 <SectionHeader icon={Sparkles} label="Account" />
                 <div className="space-y-4">
                   <div>
-                    <label className={LABEL}>Account Lead</label>
-                    <select value={editForm.ownerId || ""} onChange={e => ef({ ownerId: e.target.value })} className={SELECT}>
-                      {roster.map(u => <option key={u.id} value={u.id}>{u.name} ({u.role})</option>)}
+                    <label className={LABEL}>Account Manager</label>
+                    <select value={editForm.accountManager || ""} onChange={e => ef({ accountManager: e.target.value })} className={SELECT}>
+                      <option value="">Unassigned</option>
+                      {roster.filter((u: any) => u.role !== "client").map((u: any) => <option key={u.id} value={u.id}>{u.name} ({u.role})</option>)}
                     </select>
                   </div>
                   <div>

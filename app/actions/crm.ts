@@ -149,8 +149,8 @@ export async function updateClient(clientId: number, formData: FormData) {
     if (!db) return { success: false, error: "Database not connected." };
 
     const name     = (formData.get("name") as string)?.trim();
-    const ownerIdStr = formData.get("ownerId") as string;
     const stage    = (formData.get("stage") as string) || "contract_signed";
+    const accountManager = formData.get("accountManager") as string;
 
     if (!name) return { success: false, error: "Brand name is required." };
 
@@ -162,21 +162,51 @@ export async function updateClient(clientId: number, formData: FormData) {
       industry:     (formData.get("industry")     as string)?.trim() || "",
       country:      (formData.get("country")      as string)?.trim() || "",
       services:     (formData.get("services")     as string)?.trim() || "",
+      accountManager: accountManager || "",
     });
 
+    // NOTE: ownerId is NOT updated here — it must always point to the client's
+    // own portal user account so the client login resolves to their data.
     await db.update(schema.clients)
-      .set({
-        name,
-        ownerId: ownerIdStr ? parseInt(ownerIdStr) : null,
-        stage,
-        details,
-      })
+      .set({ name, stage, details })
       .where(eq(schema.clients.id, clientId));
 
     revalidatePath("/admin/clients");
     return { success: true };
   } catch (error: any) {
     console.error("updateClient Error:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+// Repair: re-link clients.ownerId to the matching portal user by loginEmail stored in details
+export async function repairClientOwnerIds() {
+  try {
+    const session = await getAuthSession();
+    if (!session || session.role !== "admin") return { success: false, error: "Unauthorized." };
+    if (!db) return { success: false, error: "Database not connected." };
+
+    const allClients = await db.select().from(schema.clients);
+    const allUsers = await db.select({ id: schema.users.id, email: schema.users.email, role: schema.users.role }).from(schema.users);
+    const clientUsers = allUsers.filter(u => u.role === "client");
+
+    let fixed = 0;
+    for (const c of allClients) {
+      let details: any = {};
+      try { details = JSON.parse(c.details || "{}"); } catch {}
+      const loginEmail = (details.loginEmail || "").trim().toLowerCase();
+      if (!loginEmail) continue;
+
+      const matchedUser = clientUsers.find(u => u.email === loginEmail);
+      if (matchedUser && c.ownerId !== matchedUser.id) {
+        await db.update(schema.clients).set({ ownerId: matchedUser.id }).where(eq(schema.clients.id, c.id));
+        fixed++;
+      }
+    }
+
+    revalidatePath("/admin/clients");
+    return { success: true, fixed };
+  } catch (error: any) {
     return { success: false, error: error.message };
   }
 }
