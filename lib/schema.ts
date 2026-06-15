@@ -51,6 +51,7 @@ export const projects = mysqlTable("projects", {
   contractLink: varchar("contract_link", { length: 500 }),                  // signed SOW / contract URL
   githubRepo: varchar("github_repo", { length: 255 }),                      // e.g. 'facebook/react' or full URL
   leadId: int("lead_id").references(() => users.id, { onDelete: "set null" }),
+  teamMemberIds: text("team_member_ids").default("[]"), // JSON array of user IDs assigned to this project
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

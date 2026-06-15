@@ -320,9 +320,7 @@ export async function getProjects() {
     if (session.role === "admin") {
       results = await db.select().from(schema.projects);
     } else if (session.role === "employee") {
-      // An employee is "on" a project if they are the lead OR they have any
-      // task assigned to them on that project. This makes the employee's
-      // Projects view reflect everything they actually work on.
+      // An employee sees a project if: they are leadId, in teamMemberIds, or have a task on it
       const uid = session.id as number;
       const taskRows = await db
         .select({ projectId: schema.tasks.projectId })
@@ -333,9 +331,14 @@ export async function getProjects() {
       );
 
       const allProjects = await db.select().from(schema.projects);
-      results = allProjects.filter(
-        p => p.leadId === uid || taskProjectIds.includes(p.id)
-      );
+      results = allProjects.filter(p => {
+        if (p.leadId === uid) return true;
+        if (taskProjectIds.includes(p.id)) return true;
+        try {
+          const members: number[] = JSON.parse(p.teamMemberIds || "[]");
+          return members.includes(uid);
+        } catch { return false; }
+      });
     } else {
       // Clients see projects mapped to their client account
       const clientProfile = await db.select().from(schema.clients).where(eq(schema.clients.ownerId, session.id as number)).limit(1);
@@ -384,6 +387,8 @@ export async function createProject(formData: FormData) {
     const clientContactPhone = formData.get("clientContactPhone") as string;
     const accessGranted = (formData.get("accessGranted") as string) === "true" ? 1 : 0;
     const contractLink = formData.get("contractLink") as string;
+    const teamMemberIdsRaw = formData.get("teamMemberIds") as string;
+    const teamMemberIds = teamMemberIdsRaw ? teamMemberIdsRaw : "[]";
 
     if (!name) return { success: false, error: "Project name is required." };
 
@@ -408,6 +413,7 @@ export async function createProject(formData: FormData) {
       accessGranted,
       contractLink: contractLink?.trim() || null,
       leadId: leadIdStr ? parseInt(leadIdStr) : null,
+      teamMemberIds,
     });
 
     revalidatePath("/admin/projects");
@@ -1516,13 +1522,20 @@ export async function getOverviewPageData() {
 
     const userId = session.id as number;
 
-    const [userRows, projects, timesheetsRaw, attendance, tasks] = await Promise.all([
+    const [userRows, allProjects, taskRows, timesheetsRaw, attendance, tasks] = await Promise.all([
       db.select().from(schema.users).where(eq(schema.users.id, userId)).limit(1),
-      db.select().from(schema.projects).where(eq(schema.projects.leadId, userId)),
+      db.select().from(schema.projects),
+      db.select({ projectId: schema.tasks.projectId }).from(schema.tasks).where(eq(schema.tasks.userId, userId)).catch(() => [] as { projectId: number | null }[]),
       db.select().from(schema.timesheets).where(eq(schema.timesheets.userId, userId)).catch(() => []),
       db.select().from(schema.attendance).where(eq(schema.attendance.userId, userId)),
       db.select().from(schema.tasks).where(eq(schema.tasks.userId, userId)).catch(() => []),
     ]);
+    const taskProjectIds = Array.from(new Set(taskRows.map((t: { projectId: number | null }) => t.projectId).filter((x): x is number => x != null)));
+    const projects = allProjects.filter(p => {
+      if (p.leadId === userId) return true;
+      if (taskProjectIds.includes(p.id)) return true;
+      try { const m: number[] = JSON.parse(p.teamMemberIds || "[]"); return m.includes(userId); } catch { return false; }
+    });
     const timesheets = timesheetsRaw;
 
     return {
@@ -2638,6 +2651,8 @@ export async function updateProject(projectId: number, formData: FormData) {
     const clientContactPhone = (formData.get("clientContactPhone") as string)?.trim() || null;
     const accessGranted = (formData.get("accessGranted") as string) === "true" ? 1 : 0;
     const contractLink = (formData.get("contractLink") as string)?.trim() || null;
+    const teamMemberIdsRaw = formData.get("teamMemberIds") as string;
+    const teamMemberIds = teamMemberIdsRaw ? teamMemberIdsRaw : "[]";
 
     if (!name) return { success: false, error: "Project name is required." };
 
@@ -2651,6 +2666,7 @@ export async function updateProject(projectId: number, formData: FormData) {
       name,
       clientName: clientName || null,
       leadId: newLeadId,
+      teamMemberIds,
       status: status || "planning",
       priority: priority || "medium",
       startDate,

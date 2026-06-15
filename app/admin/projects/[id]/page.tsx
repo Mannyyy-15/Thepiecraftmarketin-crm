@@ -179,8 +179,14 @@ export default function ProjectDetailPage() {
     return acc;
   }, {});
 
+  const projectTeamIds: number[] = (() => { try { return JSON.parse((project as any)?.teamMemberIds || "[]"); } catch { return []; } })();
   const teamWithWorkload = roster
-    .filter((u: any) => u.role !== "admin" && u.roleRaw !== "admin" && u.id !== project?.leadId)
+    .filter((u: any) => {
+      if (u.role === "admin" || u.roleRaw === "admin") return false;
+      if (u.id === project?.leadId) return false;
+      // Show if in teamMemberIds OR has tasks on this project
+      return projectTeamIds.includes(u.id) || workloadByUser[u.id]?.total > 0;
+    })
     .map((u: any) => ({
       ...u,
       workload: workloadByUser[u.id] || { total: 0, done: 0 },
@@ -260,6 +266,7 @@ export default function ProjectDetailPage() {
       status: project.status || "planning",
       priority: project.priority || "medium",
       leadId: project.leadId ? String(project.leadId) : "",
+      teamMemberIds: (() => { try { return JSON.parse((project as any).teamMemberIds || "[]"); } catch { return []; } })(),
       startDate: project.startDate || "",
       deadline: project.deadline || "",
       monthlyFee: project.monthlyFee || "",
@@ -280,7 +287,10 @@ export default function ProjectDetailPage() {
     setEditSaving(true);
     try {
       const fd = new FormData();
-      Object.entries(editForm).forEach(([k, v]) => fd.append(k, String(v ?? "")));
+      Object.entries(editForm).forEach(([k, v]) => {
+        if (k === "teamMemberIds") fd.append(k, JSON.stringify(Array.isArray(v) ? v : []));
+        else fd.append(k, String(v ?? ""));
+      });
       const r = await updateProject(project.id, fd);
       if (r.success) { setEditOpen(false); await load(); toast("Project updated.", "success"); }
       else toast(r.error || "Failed.", "error");
@@ -944,6 +954,20 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
                         <option value="">Unassigned</option>
                         {roster.map((u: any) => <option key={u.id} value={u.id}>{u.name}</option>)}
                       </select>
+                    </div>
+                    <div>
+                      <label className={LABEL}>Team Members</label>
+                      <div className="flex flex-wrap gap-2">
+                        {roster.filter((u: any) => u.role !== "admin").map((u: any) => {
+                          const checked = (editForm.teamMemberIds || []).includes(u.id);
+                          return (
+                            <button key={u.id} type="button"
+                              onClick={() => ef({ teamMemberIds: checked ? (editForm.teamMemberIds || []).filter((id: number) => id !== u.id) : [...(editForm.teamMemberIds || []), u.id] })}
+                              className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-all cursor-pointer ${checked ? "bg-brand-500 border-brand-500 text-white" : "border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-brand-400"}`}
+                            >{u.name}</button>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
                 </section>

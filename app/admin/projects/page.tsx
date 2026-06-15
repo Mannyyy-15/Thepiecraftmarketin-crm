@@ -96,7 +96,7 @@ function progressFromStatus(type: string, status: string) {
 
 // ── Blank form ────────────────────────────────────────────────────────────────
 const BLANK: Record<string, any> = {
-  name: "", clientId: "", clientName: "", leadId: "", startDate: "", endDate: "",
+  name: "", clientId: "", clientName: "", leadId: "", teamMemberIds: [] as number[], startDate: "", endDate: "",
   status: "planning", priority: "medium", notes: "",
   monthlyFee: "", adSpendBudget: "",
   adAccountId: "", businessManagerId: "", pixelId: "",
@@ -436,6 +436,7 @@ export default function ProjectsPage() {
       clientId: p.clientId ? String(p.clientId) : "",
       clientName: p.clientName || "",
       leadId: p.leadId ? String(p.leadId) : "",
+      teamMemberIds: (() => { try { return JSON.parse(p.teamMemberIds || "[]"); } catch { return []; } })(),
       status: p.status || "planning",
       priority: p.priority || "medium",
       startDate: p.startDate || "",
@@ -522,6 +523,7 @@ export default function ProjectsPage() {
       fd.append("clientContactPhone", isAgency ? "" : form.clientContactPhone || "");
       fd.append("accessGranted", isAgency ? "false" : (form.accessGranted ? "true" : "false"));
       fd.append("contractLink", isMeta ? form.contractLink || "" : "");
+      fd.append("teamMemberIds", JSON.stringify(form.teamMemberIds || []));
 
       const res = await createProject(fd);
       if (res.success) {
@@ -557,6 +559,7 @@ export default function ProjectsPage() {
       fd.append("clientContactPhone", editForm.clientContactPhone || "");
       fd.append("accessGranted", editForm.accessGranted ? "true" : "false");
       fd.append("contractLink", editForm.contractLink || "");
+      fd.append("teamMemberIds", JSON.stringify(editForm.teamMemberIds || []));
 
       const res = await updateProject(editProject.id, fd);
       if (res.success) {
@@ -1257,14 +1260,21 @@ export default function ProjectsPage() {
                                 </div>
                               </div>
                             )}
-                            <div className="grid grid-cols-2 gap-3">
-                              <div>
-                                <label className={LABEL}>Account Manager</label>
-                                <select value={form.leadId} onChange={e => f({ leadId: e.target.value })} className={SELECT}>
-                                  <option value="">Select…</option>
-                                  {roster.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
-                                </select>
+                            <div>
+                              <label className={LABEL}>Team Members</label>
+                              <div className="flex flex-wrap gap-2">
+                                {roster.map(u => {
+                                  const checked = (form.teamMemberIds || []).includes(u.id);
+                                  return (
+                                    <button key={u.id} type="button"
+                                      onClick={() => f({ teamMemberIds: checked ? (form.teamMemberIds || []).filter((id: number) => id !== u.id) : [...(form.teamMemberIds || []), u.id] })}
+                                      className={cn("px-3 py-1.5 rounded-lg border text-xs font-medium transition-all cursor-pointer", checked ? "bg-brand-500 border-brand-500 text-white" : "border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-brand-400")}
+                                    >{u.name}</button>
+                                  );
+                                })}
                               </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
                               <div>
                                 <label className={LABEL}>Priority</label>
                                 <div className="flex gap-1.5">
@@ -1535,11 +1545,18 @@ export default function ProjectsPage() {
                               </div>
                             )}
                             <div>
-                              <label className={LABEL}>Assign to</label>
-                              <select value={form.leadId} onChange={e => f({ leadId: e.target.value })} className={SELECT}>
-                                <option value="">Select developer…</option>
-                                {roster.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
-                              </select>
+                              <label className={LABEL}>Team Members</label>
+                              <div className="flex flex-wrap gap-2">
+                                {roster.map(u => {
+                                  const checked = (form.teamMemberIds || []).includes(u.id);
+                                  return (
+                                    <button key={u.id} type="button"
+                                      onClick={() => f({ teamMemberIds: checked ? (form.teamMemberIds || []).filter((id: number) => id !== u.id) : [...(form.teamMemberIds || []), u.id] })}
+                                      className={cn("px-3 py-1.5 rounded-lg border text-xs font-medium transition-all cursor-pointer", checked ? "bg-brand-500 border-brand-500 text-white" : "border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-brand-400")}
+                                    >{u.name}</button>
+                                  );
+                                })}
+                              </div>
                             </div>
                           </div>
                         </>
@@ -1750,11 +1767,18 @@ export default function ProjectsPage() {
                               </div>
                             </div>
                             <div>
-                              <label className={LABEL}>Assign to</label>
-                              <select value={form.leadId} onChange={e => f({ leadId: e.target.value })} className={SELECT}>
-                                <option value="">Select team member…</option>
-                                {roster.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
-                              </select>
+                              <label className={LABEL}>Team Members</label>
+                              <div className="flex flex-wrap gap-2">
+                                {roster.map(u => {
+                                  const checked = (form.teamMemberIds || []).includes(u.id);
+                                  return (
+                                    <button key={u.id} type="button"
+                                      onClick={() => f({ teamMemberIds: checked ? (form.teamMemberIds || []).filter((id: number) => id !== u.id) : [...(form.teamMemberIds || []), u.id] })}
+                                      className={cn("px-3 py-1.5 rounded-lg border text-xs font-medium transition-all cursor-pointer", checked ? "bg-brand-500 border-brand-500 text-white" : "border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-brand-400")}
+                                    >{u.name}</button>
+                                  );
+                                })}
+                              </div>
                             </div>
                             <div className="grid grid-cols-2 gap-3">
                               <div>
