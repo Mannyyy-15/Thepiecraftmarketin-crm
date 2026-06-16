@@ -27,11 +27,6 @@ jobs:
         env:
           NODE_OPTIONS: --max-old-space-size=4096
         
-      - name: Install Cocoapods
-        run: |
-          cd ios/App
-          pod install
-
       - name: Build unsigned iOS App
         run: |
           cd ios/App
