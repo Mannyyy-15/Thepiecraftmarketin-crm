@@ -1,0 +1,57 @@
+name: iOS Build
+
+on:
+  workflow_dispatch: # Allows manual trigger from GitHub UI
+  push:
+    branches:
+      - main
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build Next.js & Sync Capacitor
+        run: node build-capacitor.mjs
+        
+      - name: Install Cocoapods
+        run: |
+          cd ios/App
+          pod install
+
+      - name: Build unsigned iOS App
+        run: |
+          cd ios/App
+          xcodebuild -workspace App.xcworkspace \
+            -scheme App \
+            -configuration Release \
+            -sdk iphoneos \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            build
+
+      - name: Package to IPA
+        run: |
+          cd ios/App
+          mkdir -p Payload
+          mv build/Release-iphoneos/App.app Payload/
+          zip -r ThePieCraft-CRM-App-iOS.ipa Payload
+
+      - name: Upload iOS IPA Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ThePieCraft-CRM-App-iOS
+          path: ios/App/ThePieCraft-CRM-App-iOS.ipa
+          retention-days: 7
