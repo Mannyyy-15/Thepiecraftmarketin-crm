@@ -9,27 +9,33 @@
      accent 6.6/6.3. No pure black; layered, intentional neutrals.
      ───────────────────────────────────────────────────────────────────────── */
   :root {
-    /* Canvas layers */
-    --bg-app: #f7f7f8;        /* app background (1 step below panels) */
+    /* Canvas layers — warm off-white, ref: dashboard screenshot */
+    --bg-app: #f0f0f2;        /* page canvas — warm light grey */
     --bg-panel: #ffffff;      /* cards / panels */
-    --bg-elevated: #ffffff;   /* popovers / menus (paired with border) */
-    --bg-muted: #f4f4f5;      /* inset wells, table headers */
+    --bg-elevated: #ffffff;   /* popovers / menus */
+    --bg-muted: #f7f7f9;      /* inset wells, table headers */
 
-    /* Borders */
-    --border: #e4e4e7;        /* hairline / decorative */
-    --border-strong: #d4d4d8; /* inputs / interactive boundaries */
+    /* Borders — very subtle, mostly replaced by shadow */
+    --border: #e8e8ed;
+    --border-strong: #d1d1d8;
 
     /* Text */
-    --text-primary: #18181b;   /* 17.72:1 */
-    --text-secondary: #52525b; /* 7.73:1  */
-    --text-muted: #71717a;     /* 4.83:1  */
+    --text-primary: #111114;
+    --text-secondary: #4b4b5a;
+    --text-muted: #8888a0;
 
-    /* Accent (royal indigo) */
-    --accent: #2f4cdd;        /* 6.57:1 — links, icons, focus */
-    --accent-hover: #2138c4;  /* 8.65:1 */
-    --accent-fg: #ffffff;     /* text on solid accent — 6.57:1 */
+    /* Accent — electric blue (matches dark mode) */
+    --accent: #3b82f6;
+    --accent-hover: #2563eb;
+    --accent-solid: #1d4ed8;
+    --accent-fg: #ffffff;
 
-    /* Back-compat aliases (existing components read these) */
+    /* Card shadow — no border, just elevation */
+    --shadow-card: 0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.06);
+    --shadow-card-hover: 0 2px 8px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.10);
+    --shadow-nav: 0 8px 32px rgba(0,0,0,0.10), 0 1px 0 rgba(255,255,255,0.8) inset;
+
+    /* Back-compat aliases */
     --background: var(--bg-app);
     --foreground: var(--text-primary);
     --card: var(--bg-panel);
@@ -40,23 +46,25 @@
   }
 
   .dark {
-    /* Canvas layers — deep ink, never #000 */
-    --bg-app: #09090b;        /* app background (below panels) */
-    --bg-panel: #111114;      /* cards / panels */
-    --bg-elevated: #1a1a1f;   /* popovers / menus (crisp step up) */
-    --bg-muted: #0d0d10;      /* inset wells, table headers */
+    /* Canvas layers — deep charcoal, reference: dashboard screenshot */
+    --bg-app: #161618;        /* page canvas — dark but not black */
+    --bg-panel: #1f1f1f;      /* cards / panels — one step lighter */
+    --bg-elevated: #303030;   /* inputs, dropdowns, popovers */
+    --bg-muted: #1f1f1f;      /* table headers, inset wells */
 
-    --border: #27272d;
-    --border-strong: #323239;
+    --border: #303030;        /* subtle card borders */
+    --border-strong: #38383f; /* inputs, interactive */
 
-    --text-primary: #fafafa;   /* 18.06:1 */
-    --text-secondary: #a1a1aa; /* 7.35:1  */
-    --text-muted: #8b8b94;     /* 5.58:1  */
+    --text-primary: #ffffff;  /* pure white — high contrast hero text */
+    --text-secondary: #9999a8;/* mid-grey — labels, secondary info */
+    --text-muted: #5a5a68;    /* de-emphasised, placeholders */
 
-    --accent: #7c8cf8;        /* 6.25:1 — text/icons on dark */
-    --accent-hover: #8f9dfa;  /* 7.51:1 */
-    --accent-solid: #4a5fe0;  /* solid button bg — white text 5.24:1 */
+    /* Electric blue accent — replaces neon green from reference */
+    --accent: #3b82f6;        /* blue-500 — vivid on dark */
+    --accent-hover: #60a5fa;  /* blue-400 — hover state */
+    --accent-solid: #2563eb;  /* blue-600 — solid buttons */
     --accent-fg: #ffffff;
+    --accent-glow: rgba(59, 130, 246, 0.25); /* glow for KPI cards */
 
     --background: var(--bg-app);
     --foreground: var(--text-primary);
@@ -87,17 +95,6 @@
   }
 }
 
-/* Dark-mode background: a single, barely-perceptible top glow — not glowing
-   orbs. Keeps the surface from looking dead-flat without screaming "template". */
-.dark body::before {
-  content: "";
-  position: fixed;
-  inset: 0 0 auto 0;
-  height: 280px;
-  background: radial-gradient(ellipse 80% 100% at 50% 0%, rgba(38, 58, 167, 0.06) 0%, transparent 100%);
-  pointer-events: none;
-  z-index: 0;
-}
 
 /* Scrollbar — desktop only */
 @media (min-width: 768px) {
@@ -113,10 +110,10 @@
     border-radius: 4px;
   }
   .dark ::-webkit-scrollbar-thumb {
-    background: #1e2b5e;
+    background: #38383f;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #8fa8f7;
+    background: #3b82f6;
   }
 }
 
@@ -134,31 +131,35 @@
 /* Bento card */
 .bento {
   background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 1rem;
-  box-shadow: 0 1px 2px 0 rgb(15 23 42 / 0.04);
+  border-radius: 20px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.03), 0 6px 20px rgba(0,0,0,0.05);
 }
 
 /* Glass card — used in dark mode panels */
 .glass {
-  background: rgba(13, 18, 48, 0.6);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(38, 58, 167, 0.25);
+  background: rgba(30, 30, 33, 0.82);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+/* KPI accent glow card — electric blue inner glow like reference */
+.dark .kpi-glow {
+  box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.18), 0 4px 24px rgba(59, 130, 246, 0.12);
 }
 
 .dot-grid {
-  background-image: radial-gradient(circle, rgba(38, 58, 167, 0.1) 1px, transparent 1px);
+  background-image: radial-gradient(circle, rgba(59, 130, 246, 0.12) 1px, transparent 1px);
   background-size: 20px 20px;
 }
 
 .dark .dot-grid {
-  background-image: radial-gradient(circle, rgba(58, 88, 232, 0.18) 1px, transparent 1px);
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
 }
 
 /* Gradient text — used only on intentional hero/marketing surfaces */
 .text-gradient-brand {
-  background: linear-gradient(135deg, #263aa7 0%, #3a58e8 50%, #5f7ef1 100%);
+  background: linear-gradient(135deg, #2563eb 0%, #3b82f6 50%, #60a5fa 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -178,7 +179,7 @@
 }
 
 .text-gradient-portal {
-  background: linear-gradient(135deg, #0D9488 0%, #14B8A6 50%, #263aa7 100%);
+  background: linear-gradient(135deg, #0D9488 0%, #14B8A6 50%, #2563eb 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;

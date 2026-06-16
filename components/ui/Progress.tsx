@@ -21,7 +21,7 @@ export function Progress({ value, className, barClassName, size = "md" }: Progre
   return (
     <div
       className={cn(
-        "w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800",
+        "w-full overflow-hidden rounded-full bg-slate-100 dark:bg-[#28282d]",
         size === "sm" ? "h-1.5" : "h-2",
         className
       )}
@@ -32,7 +32,7 @@ export function Progress({ value, className, barClassName, size = "md" }: Progre
     >
       <div
         className={cn(
-          "h-full rounded-full bg-gradient-to-r from-brand-500 to-brand-600 transition-[width] duration-700 ease-out",
+          "h-full rounded-full bg-gradient-to-r from-[#3b82f6] to-[#2563eb] transition-[width] duration-700 ease-out",
           barClassName
         )}
         style={{ width: `${displayValue}%` }}

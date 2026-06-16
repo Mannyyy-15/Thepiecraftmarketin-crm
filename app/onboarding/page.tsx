@@ -18,7 +18,7 @@ const slides = [
     ],
     graphic: "pie",
     chips: [
-      { label: "12 Active Clients", color: "#3A58E8", bg: "#1a2a6e" },
+      { label: "12 Active Clients", color: "#3A58E8", bg: "#1e3a5f" },
       { label: "₹2.4L Revenue", color: "#14B8A6", bg: "#0d3d38" },
     ],
     accent: "#3A58E8",
@@ -36,7 +36,7 @@ const slides = [
     graphic: "clients",
     chips: [
       { label: "Onboarded ✓", color: "#14B8A6", bg: "#0d3d38" },
-      { label: "3 Projects Active", color: "#3A58E8", bg: "#1a2a6e" },
+      { label: "3 Projects Active", color: "#3A58E8", bg: "#1e3a5f" },
     ],
     accent: "#5F7EF1",
   },
@@ -52,7 +52,7 @@ const slides = [
     ],
     graphic: "features",
     chips: [
-      { label: "7 Members Online", color: "#3A58E8", bg: "#1a2a6e" },
+      { label: "7 Members Online", color: "#3A58E8", bg: "#1e3a5f" },
       { label: "Leave Approved", color: "#14B8A6", bg: "#0d3d38" },
     ],
     accent: "#8FA8F7",
@@ -87,7 +87,7 @@ const slides = [
     graphic: "rocket",
     chips: [
       { label: "Ready to launch 🚀", color: "#14B8A6", bg: "#0d3d38" },
-      { label: "All features ✓", color: "#3A58E8", bg: "#1a2a6e" },
+      { label: "All features ✓", color: "#3A58E8", bg: "#1e3a5f" },
     ],
     accent: "#14B8A6",
   },
@@ -134,8 +134,8 @@ function ClientsIcon({ animated }: { animated: boolean }) {
       <rect x="30" y="48" width="140" height="104" rx="8" fill="#0d1940" />
       <rect x="30" y="48" width="140" height="104" rx="8" stroke="#3A58E8" strokeWidth="0.5" strokeOpacity="0.4" />
       {/* Header bar */}
-      <rect x="30" y="48" width="140" height="24" rx="8" fill="#1a2a6e" />
-      <rect x="30" y="60" width="140" height="12" fill="#1a2a6e" />
+      <rect x="30" y="48" width="140" height="24" rx="8" fill="#1e3a5f" />
+      <rect x="30" y="60" width="140" height="12" fill="#1e3a5f" />
       <circle cx="44" cy="60" r="4" fill="#3A58E8" />
       <rect x="52" y="57" width="40" height="6" rx="3" fill="#3A58E8" opacity="0.6" />
       {/* Client rows */}
@@ -144,7 +144,7 @@ function ClientsIcon({ animated }: { animated: boolean }) {
           <circle cx="44" cy={88 + i * 22} r="8" fill={["#3A58E8", "#14B8A6", "#5F7EF1"][i]} opacity="0.8" />
           <rect x="56" y={84 + i * 22} width="50" height="5" rx="2.5" fill="#f0f4ff" opacity="0.7" />
           <rect x="56" y={92 + i * 22} width="30" height="4" rx="2" fill="#7b8fc4" opacity="0.5" />
-          <rect x={130} y={84 + i * 22} width="28" height="14" rx="4" fill={["#1a2a6e", "#0d3d38", "#2a1a6e"][i]} />
+          <rect x={130} y={84 + i * 22} width="28" height="14" rx="4" fill={["#1e3a5f", "#0d3d38", "#2a1a6e"][i]} />
           <rect x={134} y={88 + i * 22} width="20" height="6" rx="3" fill={["#3A58E8", "#14B8A6", "#8FA8F7"][i]} opacity="0.8" />
         </g>
       ))}
@@ -169,9 +169,9 @@ function FeaturesIcon({ animated }: { animated: boolean }) {
       {/* Phone frame */}
       <rect x="64" y="36" width="72" height="128" rx="12" fill="#0d1940" />
       <rect x="64" y="36" width="72" height="128" rx="12" stroke="#3A58E8" strokeWidth="0.8" strokeOpacity="0.4" />
-      <rect x="88" y="40" width="24" height="4" rx="2" fill="#1a2a6e" />
+      <rect x="88" y="40" width="24" height="4" rx="2" fill="#1e3a5f" />
       {/* Punch in status */}
-      <circle cx="100" cy="72" r="16" fill="#1a2a6e" />
+      <circle cx="100" cy="72" r="16" fill="#1e3a5f" />
       <motion.circle cx="100" cy="72" r="16" fill="none" stroke="#14B8A6" strokeWidth="2"
         strokeDasharray="100"
         strokeDashoffset={animated ? 100 : 20}
@@ -184,14 +184,14 @@ function FeaturesIcon({ animated }: { animated: boolean }) {
       {/* Time rows */}
       {[0, 1, 2].map(i => (
         <g key={i}>
-          <rect x="72" y={100 + i * 18} width="56" height="12" rx="3" fill="#1a2a6e" opacity="0.8" />
+          <rect x="72" y={100 + i * 18} width="56" height="12" rx="3" fill="#1e3a5f" opacity="0.8" />
           <circle cx="80" cy={106 + i * 18} r="3" fill={["#3A58E8", "#14B8A6", "#5F7EF1"][i]} />
           <rect x="86" y={103 + i * 18} width="24" height="4" rx="2" fill="#f0f4ff" opacity="0.6" />
           <rect x="112" y={103 + i * 18} width="12" height="4" rx="2" fill={["#3A58E8", "#14B8A6", "#8FA8F7"][i]} opacity="0.7" />
         </g>
       ))}
       {/* Side floating card */}
-      <rect x="140" y="70" width="40" height="28" rx="5" fill="#1a2a6e" />
+      <rect x="140" y="70" width="40" height="28" rx="5" fill="#1e3a5f" />
       <rect x="140" y="70" width="40" height="28" rx="5" stroke="#5F7EF1" strokeWidth="0.5" strokeOpacity="0.6" />
       <text x="160" y="83" textAnchor="middle" fill="#8FA8F7" fontSize="6">TEAM</text>
       <text x="160" y="93" textAnchor="middle" fill="#f0f4ff" fontSize="9" fontWeight="bold">7/10</text>
@@ -355,25 +355,25 @@ export default function OnboardingPage() {
 
   if (!mounted) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#080d1e]">
-        <div className="w-8 h-8 border-2 border-[#3a58e8] border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-[#101012]">
+        <div className="w-8 h-8 border-2 border-[#3b82f6] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="relative min-h-screen w-full bg-[#080d1e] text-[#f0f4ff] overflow-hidden font-sans">
+    <div className="relative min-h-screen w-full bg-[#101012] text-[#f0f4ff] overflow-hidden font-sans">
 
       {/* ── Background ─────────────────────────────────────── */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute w-[700px] h-[700px] rounded-full bg-[#3a58e8]/[0.06] blur-[120px] -top-48 -left-48" />
+        <div className="absolute w-[700px] h-[700px] rounded-full bg-[#3b82f6]/[0.06] blur-[120px] -top-48 -left-48" />
         <div className="absolute w-[500px] h-[500px] rounded-full bg-[#14B8A6]/[0.04] blur-[100px] -bottom-32 -right-32" />
-        <div className="absolute w-[300px] h-[300px] rounded-full bg-[#3a58e8]/[0.04] blur-[80px] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+        <div className="absolute w-[300px] h-[300px] rounded-full bg-[#3b82f6]/[0.04] blur-[80px] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
         {/* Grid pattern */}
         <svg className="absolute inset-0 w-full h-full opacity-[0.025]" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
-              <path d="M 48 0 L 0 0 0 48" fill="none" stroke="#3a58e8" strokeWidth="1" />
+              <path d="M 48 0 L 0 0 0 48" fill="none" stroke="#3b82f6" strokeWidth="1" />
             </pattern>
           </defs>
           <rect width="100%" height="100%" fill="url(#grid)" />
@@ -387,7 +387,7 @@ export default function OnboardingPage() {
         <div className="hidden lg:flex lg:w-[48%] xl:w-[45%] flex-col items-center justify-center relative border-r border-white/[0.04] px-12 py-16">
           {/* Logo */}
           <div className="absolute top-8 left-8 flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#3a58e8] to-[#5f7ef1] flex items-center justify-center shadow-lg shadow-[#3a58e8]/40">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#3b82f6] to-[#60a5fa] flex items-center justify-center shadow-lg shadow-[#3b82f6]/40">
               <span className="text-white font-bold text-lg">P</span>
             </div>
             <div>
@@ -453,11 +453,11 @@ export default function OnboardingPage() {
 
           {/* Decorative bottom text */}
           <div className="absolute bottom-8 left-8 right-8 flex items-center gap-3 opacity-25">
-            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[#3a58e8] to-transparent" />
+            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[#3b82f6] to-transparent" />
             <span className="text-[9px] font-semibold text-[#7b8fc4] uppercase tracking-widest whitespace-nowrap">
               ThePieCraft CRM v2.0
             </span>
-            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[#3a58e8] to-transparent" />
+            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[#3b82f6] to-transparent" />
           </div>
         </div>
 
@@ -467,7 +467,7 @@ export default function OnboardingPage() {
           {/* Mobile header */}
           <div className="flex items-center justify-between mb-6 lg:hidden">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#3a58e8] to-[#5f7ef1] flex items-center justify-center shadow-md shadow-[#3a58e8]/30">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#3b82f6] to-[#60a5fa] flex items-center justify-center shadow-md shadow-[#3b82f6]/30">
                 <span className="text-white font-bold text-base">P</span>
               </div>
               <span className="text-sm font-bold text-white">ThePieCraft</span>
@@ -478,7 +478,7 @@ export default function OnboardingPage() {
           {/* Progress bar */}
           <div className="w-full h-0.5 bg-[#1a2040] rounded-full mb-10 lg:mt-16 overflow-hidden">
             <motion.div
-              className="h-full rounded-full bg-gradient-to-r from-[#3a58e8] to-[#5f7ef1]"
+              className="h-full rounded-full bg-gradient-to-r from-[#3b82f6] to-[#60a5fa]"
               initial={false}
               animate={{ width: `${((current + 1) / slides.length) * 100}%` }}
               transition={{ duration: 0.4, ease: "easeOut" }}
@@ -535,8 +535,8 @@ export default function OnboardingPage() {
                 transition={{ duration: 0.38, ease: [0.16, 1, 0.3, 1] }}
               >
                 {/* Badge */}
-                <div className="inline-flex items-center gap-1.5 mb-5 px-3 py-1 rounded-full bg-[#1a2a6e]/60 border border-[#3a58e8]/30">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#3a58e8]" />
+                <div className="inline-flex items-center gap-1.5 mb-5 px-3 py-1 rounded-full bg-[#1e3a5f]/60 border border-[#3b82f6]/30">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#3b82f6]" />
                   <span className="text-xs font-semibold text-[#8fa8f7] uppercase tracking-widest">{slide.badge}</span>
                 </div>
 
@@ -562,8 +562,8 @@ export default function OnboardingPage() {
                       transition={{ delay: 0.15 + i * 0.08 }}
                       className="flex items-center gap-3"
                     >
-                      <div className="flex-shrink-0 w-5 h-5 rounded-full bg-[#1a2a6e] border border-[#3a58e8]/50 flex items-center justify-center">
-                        <Check className="w-2.5 h-2.5 text-[#5f7ef1]" />
+                      <div className="flex-shrink-0 w-5 h-5 rounded-full bg-[#1e3a5f] border border-[#3b82f6]/50 flex items-center justify-center">
+                        <Check className="w-2.5 h-2.5 text-[#60a5fa]" />
                       </div>
                       <span className="text-sm text-[#c4d0f0] font-medium">{f}</span>
                     </motion.div>
@@ -587,10 +587,10 @@ export default function OnboardingPage() {
                   <div
                     className={`h-1.5 rounded-full transition-all duration-300 ${
                       i === current
-                        ? "w-7 bg-[#3a58e8]"
+                        ? "w-7 bg-[#3b82f6]"
                         : i < current
-                        ? "w-2 bg-[#3a58e8]/40"
-                        : "w-2 bg-[#1e2f87]/60 hover:bg-[#263aa7]"
+                        ? "w-2 bg-[#3b82f6]/40"
+                        : "w-2 bg-white/10 hover:bg-white/20"
                     }`}
                   />
                 </button>
@@ -619,10 +619,10 @@ export default function OnboardingPage() {
                 style={{
                   background: isLast
                     ? `linear-gradient(135deg, #14B8A6, #0d9488)`
-                    : `linear-gradient(135deg, #3a58e8, #5f7ef1)`,
+                    : `linear-gradient(135deg, #3b82f6, #60a5fa)`,
                   boxShadow: isLast
                     ? `0 4px 24px #14B8A640`
-                    : `0 4px 24px #3a58e840`,
+                    : `0 4px 24px #3b82f640`,
                 }}
               >
                 <span className="text-white">{isLast ? "Get Started" : "Next"}</span>

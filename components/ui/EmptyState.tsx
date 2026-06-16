@@ -12,7 +12,7 @@ interface EmptyStateProps {
 export function EmptyState({ icon, title, description, action, className }: EmptyStateProps) {
   return (
     <div className={cn("flex flex-col items-center justify-center text-center px-6 py-12", className)}>
-      <div className="w-12 h-12 rounded-2xl bg-brand-50 dark:bg-brand-500/10 text-brand-600 dark:text-brand-300 flex items-center justify-center mb-4 animate-pop">
+      <div className="w-12 h-12 rounded-[20px] bg-slate-100 dark:bg-[#28282d] text-slate-500 dark:text-[#9999a8] flex items-center justify-center mb-4 animate-pop">
         {icon}
       </div>
       <h3 className="text-base font-semibold text-slate-900 dark:text-white animate-slide-up" style={{ animationDelay: "60ms" }}>

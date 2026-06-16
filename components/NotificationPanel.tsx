@@ -26,18 +26,18 @@ interface NotificationPanelProps {
 }
 
 const ICONS: Record<string, { icon: LucideIcon; color: string; bg: string }> = {
-  punch_in:           { icon: Fingerprint, color: "text-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-950/30" },
-  punch_out:          { icon: DoorOpen,    color: "text-amber-500",   bg: "bg-amber-50 dark:bg-amber-950/30" },
-  leave_request:      { icon: Send,        color: "text-indigo-500",  bg: "bg-indigo-50 dark:bg-indigo-950/30" },
-  leave_approved:     { icon: ThumbsUp,    color: "text-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-950/30" },
-  leave_rejected:     { icon: ThumbsDown,  color: "text-rose-500",    bg: "bg-rose-50 dark:bg-rose-950/30" },
-  expense_claim:      { icon: Receipt,     color: "text-purple-500",  bg: "bg-purple-50 dark:bg-purple-950/30" },
-  expense_approved:   { icon: ThumbsUp,    color: "text-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-950/30" },
-  expense_rejected:   { icon: ThumbsDown,  color: "text-rose-500",    bg: "bg-rose-50 dark:bg-rose-950/30" },
-  timesheet_approved: { icon: ThumbsUp,    color: "text-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-950/30" },
-  timesheet_rejected: { icon: ThumbsDown,  color: "text-rose-500",    bg: "bg-rose-50 dark:bg-rose-950/30" },
+  punch_in:           { icon: Fingerprint, color: "text-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-500/10" },
+  punch_out:          { icon: DoorOpen,    color: "text-amber-500",   bg: "bg-amber-50 dark:bg-amber-500/10" },
+  leave_request:      { icon: Send,        color: "text-[#3b82f6]",   bg: "bg-blue-50 dark:bg-blue-500/10" },
+  leave_approved:     { icon: ThumbsUp,    color: "text-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-500/10" },
+  leave_rejected:     { icon: ThumbsDown,  color: "text-rose-500",    bg: "bg-rose-50 dark:bg-rose-500/10" },
+  expense_claim:      { icon: Receipt,     color: "text-amber-500",   bg: "bg-amber-50 dark:bg-amber-500/10" },
+  expense_approved:   { icon: ThumbsUp,    color: "text-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-500/10" },
+  expense_rejected:   { icon: ThumbsDown,  color: "text-rose-500",    bg: "bg-rose-50 dark:bg-rose-500/10" },
+  timesheet_approved: { icon: ThumbsUp,    color: "text-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-500/10" },
+  timesheet_rejected: { icon: ThumbsDown,  color: "text-rose-500",    bg: "bg-rose-50 dark:bg-rose-500/10" },
 };
-const DEFAULT_ICON = { icon: Bell, color: "text-slate-500", bg: "bg-slate-100 dark:bg-slate-800" };
+const DEFAULT_ICON = { icon: Bell, color: "text-[#8888a0] dark:text-[#5a5a68]", bg: "bg-slate-100 dark:bg-[#28282d]" };
 
 function formatDate(createdAt: Date | string | null): string {
   if (!createdAt) return "";
@@ -128,17 +128,17 @@ function SwipeableNotification({
   };
 
   return (
-    <div className="relative overflow-hidden rounded-2xl" style={{ touchAction: "pan-y" }}>
+    <div className="relative overflow-hidden rounded-[20px]" style={{ touchAction: "pan-y" }}>
       <div
         ref={cardRef}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
-        className={`relative flex items-start gap-3 rounded-2xl p-3.5 cursor-grab active:cursor-grabbing select-none border ${
+        className={`relative flex items-start gap-3 rounded-[20px] p-3.5 cursor-grab active:cursor-grabbing select-none border ${
           n.read
-            ? "bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800/60"
-            : "bg-white dark:bg-slate-900 border-indigo-200 dark:border-indigo-900/40 shadow-sm"
+            ? "bg-white dark:bg-[#1e1e21] border-[#f0f0f2] dark:border-[#2a2a30]"
+            : "bg-white dark:bg-[#1e1e21] border-[#3b82f6]/20 dark:border-[#3b82f6]/20 shadow-sm"
         }`}
         style={{ willChange: "transform, opacity" }}
       >
@@ -154,7 +154,7 @@ function SwipeableNotification({
             <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mt-0.5 line-clamp-2">{n.message}</p>
           )}
         </div>
-        {!n.read && <span className="absolute top-3.5 right-3.5 h-2 w-2 rounded-full bg-indigo-500 pointer-events-none" />}
+        {!n.read && <span className="absolute top-3.5 right-3.5 h-2 w-2 rounded-full bg-[#3b82f6] pointer-events-none" />}
       </div>
     </div>
   );
@@ -209,7 +209,7 @@ export default function NotificationPanel({
 
       {/* Sliding panel */}
       <aside
-        className="bg-slate-50 dark:bg-slate-950 shadow-2xl flex flex-col transition-transform duration-300 ease-out"
+        className="bg-[#f7f7f9] dark:bg-[#1f1f1f] shadow-2xl flex flex-col transition-transform duration-300 ease-out"
         role="dialog"
         aria-label="Notifications"
         style={{
@@ -222,10 +222,10 @@ export default function NotificationPanel({
         }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 pt-5 pb-4 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800/80">
+        <div className="flex items-center justify-between px-4 pt-5 pb-4 bg-white dark:bg-[#1f1f1f] border-b border-[#f0f0f2] dark:border-[#303030]">
           <button
             onClick={onClose}
-            className="h-9 w-9 -ml-1 flex items-center justify-center rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+            className="h-9 w-9 -ml-1 flex items-center justify-center rounded-xl text-[#4b4b5a] dark:text-[#9999a8] hover:bg-[#f0f0f2] dark:hover:bg-[#303030] transition-colors cursor-pointer"
             aria-label="Close notifications"
           >
             <ArrowLeft className="h-5 w-5" />
@@ -234,7 +234,7 @@ export default function NotificationPanel({
           {unread > 0 ? (
             <button
               onClick={onMarkAllRead}
-              className="text-[11px] font-bold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 cursor-pointer px-2 py-1 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-950/30 transition-colors"
+              className="text-[11px] font-bold text-[#3b82f6] hover:text-[#2563eb] dark:text-[#60a5fa] cursor-pointer px-2 py-1 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-colors"
             >
               Mark all
             </button>
@@ -247,7 +247,7 @@ export default function NotificationPanel({
         <div className="flex-1 overflow-y-auto px-3 py-4">
           {notifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center px-6">
-              <div className="h-14 w-14 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 flex items-center justify-center mb-3">
+              <div className="h-14 w-14 rounded-[20px] bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center mb-3">
                 <Check className="h-7 w-7 text-emerald-500" />
               </div>
               <p className="text-sm font-bold text-slate-700 dark:text-slate-200">You're all caught up</p>

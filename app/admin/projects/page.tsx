@@ -115,14 +115,14 @@ const BLANK: Record<string, any> = {
 };
 
 // ── Style constants ───────────────────────────────────────────────────────────
-const INPUT   = "h-11 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/30 text-slate-800 dark:text-white placeholder:text-slate-400 transition-all";
-const SELECT  = "h-11 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/30 text-slate-800 dark:text-white cursor-pointer transition-all";
+const INPUT   = "h-11 w-full rounded-2xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#303030] px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#3b82f6]/30 text-slate-800 dark:text-white placeholder:text-[#8888a0] dark:placeholder:text-[#5a5a68] transition-all";
+const SELECT  = "h-11 w-full rounded-2xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#303030] px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#3b82f6]/30 text-slate-800 dark:text-white cursor-pointer transition-all";
 const LABEL   = "block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1.5";
 
 function SectionHeader({ icon: Icon, label }: { icon: React.ElementType; label: string }) {
   return (
     <div className="flex items-center gap-2.5 mb-5">
-      <div className="h-6 w-6 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
+      <div className="h-6 w-6 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
         <Icon className="h-3 w-3 text-slate-500 dark:text-slate-400" />
       </div>
       <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">{label}</span>
@@ -133,7 +133,7 @@ function SectionHeader({ icon: Icon, label }: { icon: React.ElementType; label: 
 
 function ToggleRow({ label, value, onChange }: { label: string; value: boolean; onChange: () => void }) {
   return (
-    <div className="flex items-center justify-between rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/60 px-3.5 py-2.5 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900 transition-all" onClick={onChange}>
+    <div className="flex items-center justify-between rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/60 px-3.5 py-2.5 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900 transition-all" onClick={onChange}>
       <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">{label}</span>
       <div className={cn("h-5 w-9 rounded-full transition-all relative border-2 shrink-0", value ? "bg-emerald-500 border-emerald-500" : "bg-slate-200 dark:bg-slate-700 border-slate-200 dark:border-slate-700")}>
         <span className={cn("absolute top-0.5 h-3 w-3 rounded-full bg-white shadow transition-transform", value ? "translate-x-4" : "translate-x-0.5")} />
@@ -171,13 +171,13 @@ function printDocument(project: any, roster: any[], tasks: any[]) {
   *{margin:0;padding:0;box-sizing:border-box;}
   body{font-family:Inter,sans-serif;color:#0f172a;background:#fff;padding:48px;}
   .header{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:24px;border-bottom:2px solid #e2e8f0;margin-bottom:32px;}
-  .agency{font-size:22px;font-weight:800;color:#6366f1;letter-spacing:-0.5px;}
+  .agency{font-size:22px;font-weight:800;color:#2563eb;letter-spacing:-0.5px;}
   .agency-sub{font-size:11px;color:#94a3b8;margin-top:2px;}
   .doc-meta{text-align:right;}
-  .doc-type{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#6366f1;}
+  .doc-type{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#2563eb;}
   .doc-ref{font-size:12px;color:#64748b;margin-top:4px;}
   .section{margin-bottom:28px;}
-  .section-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#6366f1;border-bottom:1px solid #e2e8f0;padding-bottom:8px;margin-bottom:16px;}
+  .section-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#2563eb;border-bottom:1px solid #e2e8f0;padding-bottom:8px;margin-bottom:16px;}
   .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
   .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
   .field-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin-bottom:3px;}
@@ -192,7 +192,7 @@ function printDocument(project: any, roster: any[], tasks: any[]) {
   .priority-high{background:#fef2f2;color:#ef4444;}
   .priority-low{background:#f8fafc;color:#94a3b8;}
   .progress-bar-bg{height:6px;background:#f1f5f9;border-radius:3px;margin:8px 0;}
-  .progress-bar-fill{height:6px;background:#6366f1;border-radius:3px;}
+  .progress-bar-fill{height:6px;background:#2563eb;border-radius:3px;}
   .chip{display:inline-block;padding:4px 10px;border:1px solid #e2e8f0;border-radius:20px;font-size:10px;color:#475569;font-weight:600;margin:2px;}
   .footer{margin-top:40px;padding-top:20px;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;}
   .footer-text{font-size:10px;color:#94a3b8;}
@@ -663,21 +663,21 @@ export default function ProjectsPage() {
       {/* ── Filter bar ─────────────────────────────────────────────────────── */}
       <div className="space-y-3">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-900 rounded-2xl">
+          <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-[#303030] rounded-[20px]">
             {([
               { key: "all",      label: "All",      count: allMeta.length + allWeb.length + allAgency.length },
-              { key: "meta_ads", label: "Meta Ads", Icon: Megaphone, count: allMeta.length },
-              { key: "web_dev",  label: "Web Dev",  Icon: Code2,     count: allWeb.length  },
               { key: "agency",   label: "Agency",   Icon: Sparkles,  count: allAgency.length },
+              { key: "web_dev",  label: "Web Dev",  Icon: Code2,     count: allWeb.length  },
+              { key: "meta_ads", label: "Meta Ads", Icon: Megaphone, count: allMeta.length },
             ] as const).map(tab => (
               <button key={tab.key} onClick={() => switchTab(tab.key)}
-                className={cn("flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer",
-                  serviceTab === tab.key ? "bg-white dark:bg-slate-800 shadow-sm text-slate-900 dark:text-white" : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+                className={cn("flex items-center gap-1.5 px-3.5 py-1.5 rounded-2xl text-xs font-bold transition-all cursor-pointer",
+                  serviceTab === tab.key ? "bg-white dark:bg-[#1f1f1f] shadow-sm text-slate-900 dark:text-white" : "text-slate-500 dark:text-[#9999a8] hover:text-slate-700 dark:hover:text-white"
                 )}>
                 {"Icon" in tab && <tab.Icon className="h-3 w-3" />}
                 {tab.label}
                 <span className={cn("text-[9px] font-bold px-1.5 py-0.5 rounded-full transition-all",
-                  serviceTab === tab.key ? "bg-brand-100 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400" : "bg-slate-200 dark:bg-slate-800 text-slate-500"
+                  serviceTab === tab.key ? "bg-slate-100 dark:bg-[#303030] text-slate-600 dark:text-[#9999a8]" : "bg-slate-200 dark:bg-[#303030] text-slate-400 dark:text-[#5a5a68]"
                 )}>
                   {tab.count}
                 </span>
@@ -687,7 +687,7 @@ export default function ProjectsPage() {
           <div className="relative w-full sm:w-64">
             <Search className="pointer-events-none absolute inset-y-0 left-3 h-full w-3.5 text-slate-400" />
             <input type="search" placeholder="Search projects or clients…" value={search} onChange={e => setSearch(e.target.value)}
-              className="h-9 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 pl-9 pr-3 text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-900 dark:text-white transition-all" />
+              className="h-9 w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 pl-9 pr-3 text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-900 dark:text-white transition-all" />
           </div>
         </div>
       </div>
@@ -707,7 +707,7 @@ export default function ProjectsPage() {
           {showMeta && metaList.length > 0 && (
             <section>
               <div className="flex items-center gap-2.5 mb-5">
-                <div className="h-7 w-7 rounded-lg bg-indigo-500/10 dark:bg-indigo-500/15 flex items-center justify-center">
+                <div className="h-7 w-7 rounded-xl bg-indigo-500/10 dark:bg-indigo-500/15 flex items-center justify-center">
                   <Megaphone className="h-3.5 w-3.5 text-indigo-500" />
                 </div>
                 <h2 className="text-sm font-bold text-slate-700 dark:text-slate-200">Meta Ads</h2>
@@ -720,11 +720,11 @@ export default function ProjectsPage() {
                   const pct = tp ? tp.pct : progressFromStatus(p.projectType, p.status);
                   const lead = roster.find((u: any) => u.id === p.leadId);
                   return (
-                    <div key={p.id} onClick={() => router.push(`/admin/projects/${p.id}`)} className="group rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-950 p-4 hover:shadow-md hover:border-indigo-400/50 transition-all duration-200 cursor-pointer">
+                    <div key={p.id} onClick={() => router.push(`/admin/projects/${p.id}`)} className="group rounded-[20px] border border-slate-200/80 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] p-4 hover:shadow-md dark:hover:border-[#3b82f6]/30 transition-all duration-200 cursor-pointer">
                       {/* Header: name + client, actions */}
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex items-center gap-2.5 min-w-0">
-                          <div className="h-9 w-9 rounded-xl bg-indigo-500/10 flex items-center justify-center shrink-0">
+                          <div className="h-9 w-9 rounded-2xl bg-indigo-500/10 flex items-center justify-center shrink-0">
                             <Megaphone className="h-4 w-4 text-indigo-500" />
                           </div>
                           <div className="min-w-0">
@@ -734,15 +734,15 @@ export default function ProjectsPage() {
                         </div>
                         <div className="flex items-center gap-0.5 shrink-0 opacity-60 group-hover:opacity-100 transition-opacity">
                           <button onClick={e => { e.stopPropagation(); setTaskModalProject(p); setNewTaskTitle(""); }} title="Tasks" aria-label="Manage tasks"
-                            className="h-7 w-7 rounded-lg text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-950/20 flex items-center justify-center cursor-pointer transition-all">
+                            className="h-7 w-7 rounded-xl text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-950/20 flex items-center justify-center cursor-pointer transition-all">
                             <ListTodo className="h-3.5 w-3.5" />
                           </button>
                           <button onClick={e => { e.stopPropagation(); openEdit(p); }} title="Edit" aria-label="Edit project"
-                            className="h-7 w-7 rounded-lg text-slate-400 hover:text-brand-500 hover:bg-brand-50 dark:hover:bg-brand-950/20 flex items-center justify-center cursor-pointer transition-all">
+                            className="h-7 w-7 rounded-xl text-slate-400 hover:text-brand-500 hover:bg-brand-50 dark:hover:bg-brand-950/20 flex items-center justify-center cursor-pointer transition-all">
                             <Edit2 className="h-3.5 w-3.5" />
                           </button>
                           <button onClick={e => { e.stopPropagation(); handleDelete(p.id, p.name); }} disabled={deleting === p.id} title="Delete" aria-label="Delete project"
-                            className="h-7 w-7 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 flex items-center justify-center cursor-pointer transition-all disabled:opacity-50">
+                            className="h-7 w-7 rounded-xl text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 flex items-center justify-center cursor-pointer transition-all disabled:opacity-50">
                             {deleting === p.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
                           </button>
                         </div>
@@ -783,7 +783,7 @@ export default function ProjectsPage() {
           {showWeb && webList.length > 0 && (
             <section>
               <div className="flex items-center gap-2.5 mb-5">
-                <div className="h-7 w-7 rounded-lg bg-emerald-500/10 dark:bg-emerald-500/15 flex items-center justify-center">
+                <div className="h-7 w-7 rounded-xl bg-emerald-500/10 dark:bg-emerald-500/15 flex items-center justify-center">
                   <Code2 className="h-3.5 w-3.5 text-emerald-500" />
                 </div>
                 <h2 className="text-sm font-bold text-slate-700 dark:text-slate-200">Web Development</h2>
@@ -796,11 +796,11 @@ export default function ProjectsPage() {
                   const pct = tp ? tp.pct : progressFromStatus(p.projectType, p.status);
                   const lead = roster.find((u: any) => u.id === p.leadId);
                   return (
-                    <div key={p.id} onClick={() => router.push(`/admin/projects/${p.id}`)} className="group rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-950 p-4 hover:shadow-md hover:border-emerald-400/50 transition-all duration-200 cursor-pointer">
+                    <div key={p.id} onClick={() => router.push(`/admin/projects/${p.id}`)} className="group rounded-[20px] border border-slate-200/80 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] p-4 hover:shadow-md dark:hover:border-emerald-500/30 transition-all duration-200 cursor-pointer">
                       {/* Header: name + client, actions */}
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex items-center gap-2.5 min-w-0">
-                          <div className="h-9 w-9 rounded-xl bg-emerald-500/10 flex items-center justify-center shrink-0">
+                          <div className="h-9 w-9 rounded-2xl bg-emerald-500/10 flex items-center justify-center shrink-0">
                             <Code2 className="h-4 w-4 text-emerald-500" />
                           </div>
                           <div className="min-w-0">
@@ -810,15 +810,15 @@ export default function ProjectsPage() {
                         </div>
                         <div className="flex items-center gap-0.5 shrink-0 opacity-60 group-hover:opacity-100 transition-opacity">
                           <button onClick={e => { e.stopPropagation(); setTaskModalProject(p); setNewTaskTitle(""); }} title="Tasks" aria-label="Manage tasks"
-                            className="h-7 w-7 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 flex items-center justify-center cursor-pointer transition-all">
+                            className="h-7 w-7 rounded-xl text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 flex items-center justify-center cursor-pointer transition-all">
                             <ListTodo className="h-3.5 w-3.5" />
                           </button>
                           <button onClick={e => { e.stopPropagation(); openEdit(p); }} title="Edit" aria-label="Edit project"
-                            className="h-7 w-7 rounded-lg text-slate-400 hover:text-brand-500 hover:bg-brand-50 dark:hover:bg-brand-950/20 flex items-center justify-center cursor-pointer transition-all">
+                            className="h-7 w-7 rounded-xl text-slate-400 hover:text-brand-500 hover:bg-brand-50 dark:hover:bg-brand-950/20 flex items-center justify-center cursor-pointer transition-all">
                             <Edit2 className="h-3.5 w-3.5" />
                           </button>
                           <button onClick={e => { e.stopPropagation(); handleDelete(p.id, p.name); }} disabled={deleting === p.id} title="Delete" aria-label="Delete project"
-                            className="h-7 w-7 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 flex items-center justify-center cursor-pointer transition-all disabled:opacity-50">
+                            className="h-7 w-7 rounded-xl text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 flex items-center justify-center cursor-pointer transition-all disabled:opacity-50">
                             {deleting === p.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
                           </button>
                         </div>
@@ -826,7 +826,7 @@ export default function ProjectsPage() {
 
                       {/* Domain & Website Link Block */}
                       {(d.domain || d.domainExpiry) && (
-                        <div className="mt-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl p-3 border border-slate-100 dark:border-slate-800/60">
+                        <div className="mt-4 bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-3 border border-slate-100 dark:border-slate-800/60">
                           <div className="flex items-center justify-between gap-2">
                             <div className="min-w-0">
                               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Website</p>
@@ -891,7 +891,7 @@ export default function ProjectsPage() {
           {showAgency && agencyList.length > 0 && (
             <section>
               <div className="flex items-center gap-2.5 mb-5">
-                <div className="h-7 w-7 rounded-lg bg-brand-500/10 dark:bg-brand-500/15 flex items-center justify-center">
+                <div className="h-7 w-7 rounded-xl bg-brand-500/10 dark:bg-brand-500/15 flex items-center justify-center">
                   <Sparkles className="h-3.5 w-3.5 text-brand-500" />
                 </div>
                 <h2 className="text-sm font-bold text-slate-700 dark:text-slate-200">Agency Projects</h2>
@@ -903,10 +903,10 @@ export default function ProjectsPage() {
                   const pct = tp ? tp.pct : progressFromStatus(p.projectType, p.status);
                   const lead = roster.find((u: any) => u.id === p.leadId);
                   return (
-                    <div key={p.id} onClick={() => router.push(`/admin/projects/${p.id}`)} className="group rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-950 p-4 hover:shadow-md hover:border-brand-400/50 transition-all duration-200 cursor-pointer">
+                    <div key={p.id} onClick={() => router.push(`/admin/projects/${p.id}`)} className="group rounded-[20px] border border-slate-200/80 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] p-4 hover:shadow-md dark:hover:border-[#3b82f6]/30 transition-all duration-200 cursor-pointer">
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex items-center gap-2.5 min-w-0">
-                          <div className="h-9 w-9 rounded-xl bg-brand-500/10 flex items-center justify-center shrink-0">
+                          <div className="h-9 w-9 rounded-2xl bg-brand-500/10 flex items-center justify-center shrink-0">
                             <Sparkles className="h-4 w-4 text-brand-500" />
                           </div>
                           <div className="min-w-0">
@@ -916,15 +916,15 @@ export default function ProjectsPage() {
                         </div>
                         <div className="flex items-center gap-0.5 shrink-0 opacity-60 group-hover:opacity-100 transition-opacity">
                           <button onClick={e => { e.stopPropagation(); setTaskModalProject(p); setNewTaskTitle(""); }} title="Tasks" aria-label="Manage tasks"
-                            className="h-7 w-7 rounded-lg text-slate-400 hover:text-brand-500 hover:bg-brand-50 dark:hover:bg-brand-950/20 flex items-center justify-center cursor-pointer transition-all">
+                            className="h-7 w-7 rounded-xl text-slate-400 hover:text-brand-500 hover:bg-brand-50 dark:hover:bg-brand-950/20 flex items-center justify-center cursor-pointer transition-all">
                             <ListTodo className="h-3.5 w-3.5" />
                           </button>
                           <button onClick={e => { e.stopPropagation(); openEdit(p); }} title="Edit" aria-label="Edit project"
-                            className="h-7 w-7 rounded-lg text-slate-400 hover:text-brand-500 hover:bg-brand-50 dark:hover:bg-brand-950/20 flex items-center justify-center cursor-pointer transition-all">
+                            className="h-7 w-7 rounded-xl text-slate-400 hover:text-brand-500 hover:bg-brand-50 dark:hover:bg-brand-950/20 flex items-center justify-center cursor-pointer transition-all">
                             <Edit2 className="h-3.5 w-3.5" />
                           </button>
                           <button onClick={e => { e.stopPropagation(); handleDelete(p.id, p.name); }} disabled={deleting === p.id} title="Delete" aria-label="Delete project"
-                            className="h-7 w-7 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 flex items-center justify-center cursor-pointer transition-all disabled:opacity-50">
+                            className="h-7 w-7 rounded-xl text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 flex items-center justify-center cursor-pointer transition-all disabled:opacity-50">
                             {deleting === p.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
                           </button>
                         </div>
@@ -967,7 +967,7 @@ export default function ProjectsPage() {
         <>
           <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40" onClick={() => setTaskModalProject(null)} />
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="w-full max-w-lg bg-white dark:bg-slate-950 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col max-h-[90vh]">
+            <div className="w-full max-w-lg bg-white dark:bg-slate-950 rounded-[20px] shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col max-h-[90vh]">
               {/* Header */}
               <div className="shrink-0 px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3">
                 <div className="min-w-0">
@@ -977,7 +977,7 @@ export default function ProjectsPage() {
                   </div>
                   <h2 className="text-sm font-bold text-slate-900 dark:text-white truncate">{taskModalProject.name}</h2>
                 </div>
-                <button onClick={() => setTaskModalProject(null)} className="shrink-0 h-8 w-8 rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"><X className="h-4 w-4" /></button>
+                <button onClick={() => setTaskModalProject(null)} className="shrink-0 h-8 w-8 rounded-2xl flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"><X className="h-4 w-4" /></button>
               </div>
 
               {/* Task list */}
@@ -990,7 +990,7 @@ export default function ProjectsPage() {
                   </div>
                 ) : (
                   taskModalTasks.map((task: any) => (
-                    <div key={task.id} className={cn("flex items-center gap-3 p-3 rounded-xl border transition-all",
+                    <div key={task.id} className={cn("flex items-center gap-3 p-3 rounded-2xl border transition-all",
                       task.done === 1 ? "border-slate-100 dark:border-slate-800/60 bg-slate-50/50 dark:bg-slate-900/30" : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950"
                     )}>
                       <button
@@ -1015,7 +1015,7 @@ export default function ProjectsPage() {
                       <button
                         onClick={() => handleTaskDelete(task.id)}
                         disabled={deletingTask === task.id}
-                        className="shrink-0 h-6 w-6 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 flex items-center justify-center cursor-pointer transition-all"
+                        className="shrink-0 h-6 w-6 rounded-xl text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 flex items-center justify-center cursor-pointer transition-all"
                         aria-label="Delete task"
                       >
                         {deletingTask === task.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3" />}
@@ -1050,12 +1050,12 @@ export default function ProjectsPage() {
                     value={newTaskTitle}
                     onChange={e => setNewTaskTitle(e.target.value)}
                     onKeyDown={e => e.key === "Enter" && handleAddTask()}
-                    className="flex-1 h-9 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-xs text-slate-800 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/30 transition-all"
+                    className="flex-1 h-9 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-xs text-slate-800 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/30 transition-all"
                   />
                   <div className="flex gap-1.5">
                     {["low", "medium", "high"].map(pr => (
                       <button key={pr} type="button" onClick={() => setNewTaskPriority(pr)}
-                        className={cn("h-9 px-2.5 rounded-xl border text-[10px] font-bold capitalize transition-all cursor-pointer",
+                        className={cn("h-9 px-2.5 rounded-2xl border text-[10px] font-bold capitalize transition-all cursor-pointer",
                           newTaskPriority === pr ? "bg-slate-900 dark:bg-white border-transparent text-white dark:text-slate-900" : "border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-900"
                         )}>{pr}</button>
                     ))}
@@ -1090,7 +1090,7 @@ export default function ProjectsPage() {
                 <div className="flex items-center gap-3 min-w-0">
                   {drawerStep === 1 && (
                     <button type="button" onClick={() => { setDrawerStep(0); setFormTab(0); }}
-                      className="shrink-0 h-8 w-8 rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer" aria-label="Back">
+                      className="shrink-0 h-8 w-8 rounded-2xl flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer" aria-label="Back">
                       <ChevronLeft className="h-4 w-4" />
                     </button>
                   )}
@@ -1111,7 +1111,7 @@ export default function ProjectsPage() {
                   </div>
                 </div>
                 <button onClick={closeDrawer} aria-label="Close"
-                  className="shrink-0 h-8 w-8 rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer">
+                  className="shrink-0 h-8 w-8 rounded-2xl flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer">
                   <X className="h-4 w-4" />
                 </button>
               </div>
@@ -1129,9 +1129,9 @@ export default function ProjectsPage() {
                   return (
                     <button key={t} type="button"
                       onClick={() => { setProjectType(t); setForm(p => ({ ...p, status: cfg.statuses[0] })); setDrawerStep(1); setFormTab(0); }}
-                      className="w-full flex items-start gap-4 p-5 border-2 border-slate-200 dark:border-slate-800 hover:border-brand-500 dark:hover:border-brand-500 rounded-2xl cursor-pointer text-left transition-all group bg-white dark:bg-slate-900/50 hover:bg-brand-500/[0.02]"
+                      className="w-full flex items-start gap-4 p-5 border-2 border-slate-200 dark:border-slate-800 hover:border-brand-500 dark:hover:border-brand-500 rounded-[20px] cursor-pointer text-left transition-all group bg-white dark:bg-slate-900/50 hover:bg-brand-500/[0.02]"
                     >
-                      <div className={cn("h-12 w-12 rounded-2xl flex items-center justify-center bg-gradient-to-br text-white shadow-sm shrink-0 mt-0.5", cfg.accent)}>
+                      <div className={cn("h-12 w-12 rounded-[20px] flex items-center justify-center bg-gradient-to-br text-white shadow-sm shrink-0 mt-0.5", cfg.accent)}>
                         <TIcon className="h-5 w-5" />
                       </div>
                       <div className="flex-1 min-w-0">
@@ -1268,7 +1268,7 @@ export default function ProjectsPage() {
                                   return (
                                     <button key={u.id} type="button"
                                       onClick={() => f({ teamMemberIds: checked ? (form.teamMemberIds || []).filter((id: number) => id !== u.id) : [...(form.teamMemberIds || []), u.id] })}
-                                      className={cn("px-3 py-1.5 rounded-lg border text-xs font-medium transition-all cursor-pointer", checked ? "bg-brand-500 border-brand-500 text-white" : "border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-brand-400")}
+                                      className={cn("px-3 py-1.5 rounded-xl border text-xs font-medium transition-all cursor-pointer", checked ? "bg-brand-500 border-brand-500 text-white" : "border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-brand-400")}
                                     >{u.name}</button>
                                   );
                                 })}
@@ -1280,7 +1280,7 @@ export default function ProjectsPage() {
                                 <div className="flex gap-1.5">
                                   {["low", "medium", "high"].map(pr => (
                                     <button key={pr} type="button" onClick={() => f({ priority: pr })}
-                                      className={cn("flex-1 h-11 border text-[10px] font-bold rounded-xl capitalize transition-all cursor-pointer",
+                                      className={cn("flex-1 h-11 border text-[10px] font-bold rounded-2xl capitalize transition-all cursor-pointer",
                                         form.priority === pr ? "bg-slate-900 border-slate-900 text-white dark:bg-white dark:border-white dark:text-slate-900" : "border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-900"
                                       )}>{pr}</button>
                                   ))}
@@ -1326,7 +1326,7 @@ export default function ProjectsPage() {
                               <div className="grid grid-cols-3 gap-2">
                                 {[{ val: "website", label: "Website" }, { val: "whatsapp", label: "WhatsApp" }, { val: "instant_form", label: "Lead Form" }].map(({ val, label }) => (
                                   <button key={val} type="button" onClick={() => f({ conversionLocation: val })}
-                                    className={cn("h-10 border text-xs font-bold rounded-xl transition-all cursor-pointer",
+                                    className={cn("h-10 border text-xs font-bold rounded-2xl transition-all cursor-pointer",
                                       form.conversionLocation === val ? "bg-indigo-600 border-indigo-600 text-white shadow-sm" : "border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-900"
                                     )}>{label}</button>
                                 ))}
@@ -1521,7 +1521,7 @@ export default function ProjectsPage() {
                                 <div className="flex gap-1.5">
                                   {["low", "medium", "high"].map(pr => (
                                     <button key={pr} type="button" onClick={() => f({ priority: pr })}
-                                      className={cn("flex-1 h-11 border text-[10px] font-bold rounded-xl capitalize transition-all cursor-pointer",
+                                      className={cn("flex-1 h-11 border text-[10px] font-bold rounded-2xl capitalize transition-all cursor-pointer",
                                         form.priority === pr ? "bg-slate-900 border-slate-900 text-white dark:bg-white dark:border-white dark:text-slate-900" : "border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-900"
                                       )}>{pr}</button>
                                   ))}
@@ -1552,7 +1552,7 @@ export default function ProjectsPage() {
                                   return (
                                     <button key={u.id} type="button"
                                       onClick={() => f({ teamMemberIds: checked ? (form.teamMemberIds || []).filter((id: number) => id !== u.id) : [...(form.teamMemberIds || []), u.id] })}
-                                      className={cn("px-3 py-1.5 rounded-lg border text-xs font-medium transition-all cursor-pointer", checked ? "bg-brand-500 border-brand-500 text-white" : "border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-brand-400")}
+                                      className={cn("px-3 py-1.5 rounded-xl border text-xs font-medium transition-all cursor-pointer", checked ? "bg-brand-500 border-brand-500 text-white" : "border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-brand-400")}
                                     >{u.name}</button>
                                   );
                                 })}
@@ -1759,7 +1759,7 @@ export default function ProjectsPage() {
                                 <div className="flex gap-1.5">
                                   {["low", "medium", "high"].map(pr => (
                                     <button key={pr} type="button" onClick={() => f({ priority: pr })}
-                                      className={cn("flex-1 h-11 border text-[10px] font-bold rounded-xl capitalize transition-all cursor-pointer",
+                                      className={cn("flex-1 h-11 border text-[10px] font-bold rounded-2xl capitalize transition-all cursor-pointer",
                                         form.priority === pr ? "bg-slate-900 border-slate-900 text-white dark:bg-white dark:border-white dark:text-slate-900" : "border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-900"
                                       )}>{pr}</button>
                                   ))}
@@ -1774,7 +1774,7 @@ export default function ProjectsPage() {
                                   return (
                                     <button key={u.id} type="button"
                                       onClick={() => f({ teamMemberIds: checked ? (form.teamMemberIds || []).filter((id: number) => id !== u.id) : [...(form.teamMemberIds || []), u.id] })}
-                                      className={cn("px-3 py-1.5 rounded-lg border text-xs font-medium transition-all cursor-pointer", checked ? "bg-brand-500 border-brand-500 text-white" : "border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-brand-400")}
+                                      className={cn("px-3 py-1.5 rounded-xl border text-xs font-medium transition-all cursor-pointer", checked ? "bg-brand-500 border-brand-500 text-white" : "border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-brand-400")}
                                     >{u.name}</button>
                                   );
                                 })}

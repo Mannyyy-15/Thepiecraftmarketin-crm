@@ -15,14 +15,14 @@ type Variant =
 // border + text). Squared by default (not pill) and no decorative pulse — colour
 // is used for utility only.
 const styles: Record<Variant, string> = {
-  default: "bg-slate-50 text-slate-600 border-slate-200 dark:bg-slate-800/60 dark:text-slate-300 dark:border-slate-700",
-  brand:   "bg-brand-50 text-brand-700 border-brand-200 dark:bg-brand-500/10 dark:text-brand-300 dark:border-brand-500/20",
-  portal:  "bg-portal-50 text-portal-700 border-portal-200 dark:bg-portal-500/10 dark:text-portal-300 dark:border-portal-500/20",
+  default: "bg-slate-50 text-slate-600 border-slate-200 dark:bg-[#28282d] dark:text-[#9999a8] dark:border-[#38383f]",
+  brand:   "bg-blue-50 text-blue-700 border-blue-200 dark:bg-[#28282d] dark:text-[#9999a8] dark:border-[#38383f]",
+  portal:  "bg-teal-50 text-teal-700 border-teal-200 dark:bg-teal-500/10 dark:text-teal-300 dark:border-teal-500/20",
   success: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/20",
   warning: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:border-amber-500/20",
   danger:  "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-500/10 dark:text-rose-300 dark:border-rose-500/20",
-  info:    "bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-500/10 dark:text-sky-300 dark:border-sky-500/20",
-  neutral: "bg-slate-50 text-slate-600 border-slate-200 dark:bg-slate-800/60 dark:text-slate-300 dark:border-slate-700",
+  info:    "bg-sky-50 text-sky-700 border-sky-200 dark:bg-[#28282d] dark:text-[#9999a8] dark:border-[#38383f]",
+  neutral: "bg-slate-50 text-slate-600 border-slate-200 dark:bg-[#28282d] dark:text-[#9999a8] dark:border-[#38383f]",
 };
 
 const dotColors: Record<Variant, string> = {

@@ -84,7 +84,7 @@ export default function FinanceDashboard() {
                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Total Revenue</p>
                 <h3 className="text-3xl font-black text-slate-900 dark:text-white">₹{dRevenue.toLocaleString()}</h3>
               </div>
-              <div className="h-10 w-10 bg-emerald-500/20 rounded-xl flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+              <div className="h-10 w-10 bg-emerald-500/20 rounded-2xl flex items-center justify-center text-emerald-600 dark:text-emerald-400">
                 <Wallet className="h-5 w-5" />
               </div>
             </div>
@@ -98,7 +98,7 @@ export default function FinanceDashboard() {
                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Pending Cash (A/R)</p>
                 <h3 className="text-3xl font-black text-slate-900 dark:text-white">₹{dPending.toLocaleString()}</h3>
               </div>
-              <div className="h-10 w-10 bg-indigo-500/20 rounded-xl flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+              <div className="h-10 w-10 bg-indigo-500/20 rounded-2xl flex items-center justify-center text-indigo-600 dark:text-indigo-400">
                 <FileText className="h-5 w-5" />
               </div>
             </div>
@@ -112,7 +112,7 @@ export default function FinanceDashboard() {
                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Approved Costs</p>
                 <h3 className="text-3xl font-black text-slate-900 dark:text-white">₹{dCosts.toLocaleString()}</h3>
               </div>
-              <div className="h-10 w-10 bg-rose-500/20 rounded-xl flex items-center justify-center text-rose-600 dark:text-rose-400">
+              <div className="h-10 w-10 bg-rose-500/20 rounded-2xl flex items-center justify-center text-rose-600 dark:text-rose-400">
                 <TrendingDown className="h-5 w-5" />
               </div>
             </div>
@@ -126,7 +126,7 @@ export default function FinanceDashboard() {
                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Net Margin</p>
                 <h3 className="text-3xl font-black text-slate-900 dark:text-white">₹{dMargin.toLocaleString()}</h3>
               </div>
-              <div className="h-10 w-10 bg-blue-500/20 rounded-xl flex items-center justify-center text-blue-600 dark:text-blue-400">
+              <div className="h-10 w-10 bg-blue-500/20 rounded-2xl flex items-center justify-center text-blue-600 dark:text-blue-400">
                 <TrendingUp className="h-5 w-5" />
               </div>
             </div>
@@ -138,7 +138,7 @@ export default function FinanceDashboard() {
         
         {/* CHARTS */}
         <div className="lg:col-span-2 space-y-6">
-          <Card className="border-slate-200 dark:border-slate-800/80 shadow-soft bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl">
+          <Card className="border-slate-200 dark:border-[#303030] shadow-soft bg-white/50 dark:bg-[#1f1f1f]/50 backdrop-blur-xl">
             <CardHeader>
               <CardTitle className="text-sm font-bold flex items-center gap-2">
                 <DollarSign className="h-4.5 w-4.5 text-emerald-500" />
@@ -186,7 +186,7 @@ export default function FinanceDashboard() {
           </Card>
 
           {/* INVOICES */}
-          <Card className="border-slate-200 dark:border-slate-800/80 shadow-soft bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl">
+          <Card className="border-slate-200 dark:border-[#303030] shadow-soft bg-white/50 dark:bg-[#1f1f1f]/50 backdrop-blur-xl">
             <CardHeader>
               <CardTitle className="text-sm font-bold flex items-center gap-2">
                 <Receipt className="h-4.5 w-4.5 text-indigo-500" />
@@ -199,7 +199,7 @@ export default function FinanceDashboard() {
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
                     <thead>
-                      <tr className="border-b border-slate-200 dark:border-slate-800 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                      <tr className="border-b border-slate-200 dark:border-[#303030] text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                         <th className="pb-3 px-2 font-semibold">Invoice #</th>
                         <th className="pb-3 px-2 font-semibold">Client</th>
                         <th className="pb-3 px-2 font-semibold hidden sm:table-cell">Due</th>
@@ -209,7 +209,7 @@ export default function FinanceDashboard() {
                     </thead>
                     <tbody className="text-sm">
                       {data.invoices.map((inv: any) => (
-                        <tr key={inv.id} className="border-b border-slate-100 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                        <tr key={inv.id} className="border-b border-slate-100 dark:border-[#303030]/50 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                           <td className="py-3 px-2 font-semibold text-slate-900 dark:text-white">{inv.invoiceNumber}</td>
                           <td className="py-3 px-2 text-slate-600 dark:text-slate-300">{inv.clientName || "—"}</td>
                           <td className="py-3 px-2 text-slate-500 hidden sm:table-cell">{inv.dueDate || "—"}</td>
@@ -222,11 +222,11 @@ export default function FinanceDashboard() {
                                 await updateInvoiceStatus(inv.id, s, s === "paid" ? new Date().toISOString().slice(0, 10) : undefined);
                                 fetchData();
                               }}
-                              className={`text-[10px] font-bold uppercase tracking-wider rounded-lg px-2 py-1 border cursor-pointer ${
+                              className={`text-[10px] font-bold uppercase tracking-wider rounded-xl px-2 py-1 border cursor-pointer ${
                                 inv.status === 'paid' ? 'text-emerald-600 border-emerald-200 bg-emerald-50 dark:bg-emerald-950/20' :
                                 inv.status === 'overdue' ? 'text-rose-600 border-rose-200 bg-rose-50 dark:bg-rose-950/20' :
                                 inv.status === 'sent' ? 'text-blue-600 border-blue-200 bg-blue-50 dark:bg-blue-950/20' :
-                                'text-slate-500 border-slate-200 bg-slate-50 dark:bg-slate-900'
+                                'text-slate-500 border-slate-200 bg-slate-50 dark:bg-[#1f1f1f]'
                               }`}
                             >
                               <option value="draft">Draft</option>
@@ -241,7 +241,7 @@ export default function FinanceDashboard() {
                   </table>
                 </div>
               ) : (
-                <div className="text-center py-8 text-slate-500 border border-dashed border-slate-200 dark:border-slate-800 rounded-xl">
+                <div className="text-center py-8 text-slate-500 border border-dashed border-slate-200 dark:border-[#303030] rounded-2xl">
                   <Receipt className="h-8 w-8 mx-auto mb-2 opacity-50" />
                   <p className="text-sm font-semibold">No invoices issued yet.</p>
                 </div>
@@ -252,14 +252,14 @@ export default function FinanceDashboard() {
 
         {/* APPROVAL INBOX */}
         <div className="space-y-6">
-          <Card className="border-slate-200 dark:border-slate-800/80 shadow-soft bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl relative overflow-hidden">
+          <Card className="border-slate-200 dark:border-[#303030] shadow-soft bg-white/50 dark:bg-[#1f1f1f]/50 backdrop-blur-xl relative overflow-hidden">
             {isActioning && (
               <div className="absolute inset-0 z-10 bg-white/50 dark:bg-slate-950/50 backdrop-blur-sm flex items-center justify-center">
                 <Loader2 className="h-6 w-6 animate-spin text-indigo-500" />
               </div>
             )}
             
-            <CardHeader className="bg-slate-50/50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-800/80">
+            <CardHeader className="bg-slate-50/50 dark:bg-[#1f1f1f]/50 border-b border-slate-100 dark:border-[#303030]">
               <CardTitle className="text-sm font-bold flex items-center gap-2">
                 <CheckCircle2 className="h-4.5 w-4.5 text-rose-500" />
                 Action Inbox
@@ -269,12 +269,12 @@ export default function FinanceDashboard() {
             <CardContent className="p-0">
               <div className="divide-y divide-slate-100 dark:divide-slate-800/80">
                 {/* EXPENSES */}
-                <div className="p-4 bg-slate-50/30 dark:bg-slate-900/20">
+                <div className="p-4 bg-slate-50/30 dark:bg-[#1f1f1f]/20">
                   <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Pending Expenses</h4>
                   {data?.pendingExpenses?.length > 0 ? (
                     <div className="space-y-3">
                       {data.pendingExpenses.map((exp: any) => (
-                        <div key={exp.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 shadow-sm">
+                        <div key={exp.id} className="bg-white dark:bg-[#1f1f1f] border border-slate-200 dark:border-[#303030] rounded-2xl p-3 shadow-sm">
                           <div className="flex justify-between items-start mb-2">
                             <div>
                               <p className="text-xs font-bold text-slate-900 dark:text-white">{exp.userName}</p>
@@ -283,10 +283,10 @@ export default function FinanceDashboard() {
                             <span className="text-sm font-black text-rose-500">${exp.amount}</span>
                           </div>
                           <div className="flex gap-2 mt-3">
-                            <button onClick={() => handleExpenseAction(exp.id, 'approved')} className="flex-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold py-1.5 rounded-lg transition-colors flex items-center justify-center gap-1">
+                            <button onClick={() => handleExpenseAction(exp.id, 'approved')} className="flex-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold py-1.5 rounded-xl transition-colors flex items-center justify-center gap-1">
                               <CheckCircle2 className="h-3.5 w-3.5" /> Approve
                             </button>
-                            <button onClick={() => handleExpenseAction(exp.id, 'rejected')} className="flex-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 text-xs font-bold py-1.5 rounded-lg transition-colors flex items-center justify-center gap-1">
+                            <button onClick={() => handleExpenseAction(exp.id, 'rejected')} className="flex-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 text-xs font-bold py-1.5 rounded-xl transition-colors flex items-center justify-center gap-1">
                               <XCircle className="h-3.5 w-3.5" /> Reject
                             </button>
                           </div>
@@ -299,12 +299,12 @@ export default function FinanceDashboard() {
                 </div>
 
                 {/* TIMESHEETS */}
-                <div className="p-4 bg-slate-50/30 dark:bg-slate-900/20">
+                <div className="p-4 bg-slate-50/30 dark:bg-[#1f1f1f]/20">
                   <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Pending Timesheets</h4>
                   {data?.pendingTimesheets?.length > 0 ? (
                     <div className="space-y-3">
                       {data.pendingTimesheets.map((ts: any) => (
-                        <div key={ts.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 shadow-sm">
+                        <div key={ts.id} className="bg-white dark:bg-[#1f1f1f] border border-slate-200 dark:border-[#303030] rounded-2xl p-3 shadow-sm">
                           <div className="flex justify-between items-start mb-2">
                             <div>
                               <p className="text-xs font-bold text-slate-900 dark:text-white">{ts.userName}</p>
@@ -313,10 +313,10 @@ export default function FinanceDashboard() {
                             <span className="text-sm font-black text-slate-600 dark:text-slate-300">~${ts.cost}</span>
                           </div>
                           <div className="flex gap-2 mt-3">
-                            <button onClick={() => handleTimesheetAction(ts.id, 'approved')} className="flex-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold py-1.5 rounded-lg transition-colors flex items-center justify-center gap-1">
+                            <button onClick={() => handleTimesheetAction(ts.id, 'approved')} className="flex-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold py-1.5 rounded-xl transition-colors flex items-center justify-center gap-1">
                               <CheckCircle2 className="h-3.5 w-3.5" /> Approve
                             </button>
-                            <button onClick={() => handleTimesheetAction(ts.id, 'rejected')} className="flex-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 text-xs font-bold py-1.5 rounded-lg transition-colors flex items-center justify-center gap-1">
+                            <button onClick={() => handleTimesheetAction(ts.id, 'rejected')} className="flex-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 text-xs font-bold py-1.5 rounded-xl transition-colors flex items-center justify-center gap-1">
                               <XCircle className="h-3.5 w-3.5" /> Reject
                             </button>
                           </div>

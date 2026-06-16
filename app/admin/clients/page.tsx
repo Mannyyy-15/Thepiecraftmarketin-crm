@@ -55,8 +55,8 @@ const BLANK_INVOICE = {
   clientId: "", projectId: "", amount: "", dueDate: "", notes: "",
 };
 
-const INPUT  = "h-11 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white placeholder:text-slate-400 transition-all";
-const SELECT = "h-11 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white cursor-pointer transition-all";
+const INPUT  = "h-11 w-full rounded-2xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white placeholder:text-slate-400 transition-all";
+const SELECT = "h-11 w-full rounded-2xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white cursor-pointer transition-all";
 const LABEL  = "block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5";
 
 const STAGE_CONFIG: Record<string, { label: string; dot: string; pill: string }> = {
@@ -67,7 +67,7 @@ const STAGE_CONFIG: Record<string, { label: string; dot: string; pill: string }>
 };
 
 const INV_STATUS: Record<string, { label: string; pill: string }> = {
-  draft:   { label: "Draft",   pill: "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700" },
+  draft:   { label: "Draft",   pill: "bg-slate-100 dark:bg-[#303030] text-slate-500 dark:text-slate-400 border-slate-200 dark:border-[#38383f]" },
   sent:    { label: "Sent",    pill: "bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 border-blue-500/20" },
   paid:    { label: "Paid",    pill: "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 border-emerald-500/20" },
   overdue: { label: "Overdue", pill: "bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 border-rose-500/20" },
@@ -84,11 +84,11 @@ function parseDetails(raw: string | null | undefined) {
 function SectionHeader({ icon: Icon, label }: { icon: React.ElementType; label: string }) {
   return (
     <div className="flex items-center gap-2.5 mb-4">
-      <div className="h-6 w-6 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
+      <div className="h-6 w-6 rounded-xl bg-slate-100 dark:bg-[#303030] flex items-center justify-center shrink-0">
         <Icon className="h-3 w-3 text-slate-500" />
       </div>
       <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{label}</span>
-      <div className="flex-1 h-px bg-slate-100 dark:bg-slate-800" />
+      <div className="flex-1 h-px bg-slate-100 dark:bg-[#303030]" />
     </div>
   );
 }
@@ -403,16 +403,16 @@ export default function ClientsPage() {
       </div>
 
       {/* Tab switcher */}
-      <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-900 rounded-2xl w-fit">
+      <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-[#1f1f1f] rounded-[20px] w-fit">
         {TABS.map(tab => (
           <button key={tab.key} onClick={() => setActiveTab(tab.key)}
-            className={cn("flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap",
-              activeTab === tab.key ? "bg-white dark:bg-slate-800 shadow-sm text-slate-900 dark:text-white" : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+            className={cn("flex items-center gap-1.5 px-3.5 py-1.5 rounded-2xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap",
+              activeTab === tab.key ? "bg-white dark:bg-[#303030] shadow-sm text-slate-900 dark:text-white" : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
             )}>
             {tab.label}
             {tab.count != null && (
               <span className={cn("text-[9px] font-bold px-1.5 py-0.5 rounded-full transition-all",
-                activeTab === tab.key ? "bg-brand-100 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400" : "bg-slate-200 dark:bg-slate-800 text-slate-500"
+                activeTab === tab.key ? "bg-brand-100 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400" : "bg-slate-200 dark:bg-[#303030] text-slate-500"
               )}>{tab.count}</span>
             )}
           </button>
@@ -426,7 +426,7 @@ export default function ClientsPage() {
             <div className="relative w-full sm:w-72">
               <Search className="pointer-events-none absolute inset-y-0 left-3 h-full w-3.5 text-slate-400" />
               <input type="search" placeholder="Search clients, industry, contact…" value={search} onChange={e => setSearch(e.target.value)}
-                className="h-9 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 pl-9 pr-3 text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-900 dark:text-white" />
+                className="h-9 w-full rounded-2xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] pl-9 pr-3 text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-900 dark:text-white" />
             </div>
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{filtered.length} client{filtered.length !== 1 ? "s" : ""}</span>
           </div>
@@ -454,30 +454,30 @@ export default function ClientsPage() {
                   : (siteUrl || null);
                 return (
                       <div key={c.id}
-                        className="group relative flex flex-col rounded-2xl border border-slate-200 dark:border-slate-800/70 bg-white dark:bg-slate-900 overflow-hidden hover:shadow-glow hover:border-indigo-500/50 transition-all duration-200 cursor-pointer"
+                        className="group relative flex flex-col rounded-[20px] border border-slate-200 dark:border-[#303030]/70 bg-white dark:bg-[#1f1f1f] overflow-hidden hover:shadow-glow hover:border-indigo-500/50 transition-all duration-200 cursor-pointer"
                         onClick={() => { setMenuOpenId(null); router.push(`/admin/clients/${c.id}`); }}>
 
                         {/* ── Banner + overlapping avatar (matches team cards) ── */}
                         <div className="relative h-16 bg-brand-hero">
                           <div className="absolute -bottom-6 left-4">
-                            <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-brand-500 to-violet-600 text-sm font-extrabold text-white flex items-center justify-center shadow-lg ring-4 ring-white dark:ring-slate-900">
+                            <div className="h-14 w-14 rounded-[20px] bg-gradient-to-br from-brand-500 to-violet-600 text-sm font-extrabold text-white flex items-center justify-center shadow-lg ring-4 ring-white dark:ring-slate-900">
                               {initials || "?"}
                             </div>
                           </div>
                           {/* Menu */}
                           <div className="absolute top-2.5 right-2.5 z-10" onClick={e => e.stopPropagation()}>
                             <button onClick={() => setMenuOpenId(menuOpenId === c.id ? null : c.id)}
-                              className="h-7 w-7 rounded-lg text-white/80 hover:text-white hover:bg-white/20 flex items-center justify-center transition-all cursor-pointer">
+                              className="h-7 w-7 rounded-xl text-white/80 hover:text-white hover:bg-white/20 flex items-center justify-center transition-all cursor-pointer">
                               <MoreHorizontal className="h-4 w-4" />
                             </button>
                             {menuOpenId === c.id && (
-                              <div className="absolute right-0 top-8 z-20 w-44 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl p-1.5 space-y-0.5">
+                              <div className="absolute right-0 top-8 z-20 w-44 rounded-2xl bg-white dark:bg-[#1f1f1f] border border-slate-200 dark:border-[#303030] shadow-xl p-1.5 space-y-0.5">
                                 <button onClick={() => { openEditClient(c); setMenuOpenId(null); }}
-                                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer">
+                                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer">
                                   <Edit2 className="h-3.5 w-3.5 text-slate-400" /> Edit Client
                                 </button>
                                 <button onClick={() => { handleDeleteClient(c.id, c.name); setMenuOpenId(null); }}
-                                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-all cursor-pointer">
+                                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-all cursor-pointer">
                                   <Trash2 className="h-3.5 w-3.5" /> Delete Client
                                 </button>
                               </div>
@@ -503,7 +503,7 @@ export default function ClientsPage() {
                             {/* Contact */}
                             {(d.contactName || d.contactPhone || d.contactEmail) && (
                               <div className="flex items-center gap-2.5">
-                                <div className="h-6 w-6 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
+                                <div className="h-6 w-6 rounded-xl bg-slate-100 dark:bg-[#303030] flex items-center justify-center shrink-0">
                                   <User className="h-3 w-3 text-slate-400" />
                                 </div>
                                 <div className="min-w-0 flex-1">
@@ -513,7 +513,7 @@ export default function ClientsPage() {
                                 {d.contactPhone && (
                                   <a href={`https://wa.me/${d.contactPhone.replace(/\D/g, "")}`} target="_blank" rel="noreferrer"
                                     onClick={e => e.stopPropagation()}
-                                    className="shrink-0 inline-flex items-center gap-1 text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200/60 dark:border-emerald-800/40 px-2 py-1 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all">
+                                    className="shrink-0 inline-flex items-center gap-1 text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200/60 dark:border-emerald-800/40 px-2 py-1 rounded-xl hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all">
                                     WhatsApp
                                   </a>
                                 )}
@@ -524,12 +524,12 @@ export default function ClientsPage() {
                             {(hasWebDev || hasMetaAds) && (
                               <div className="flex flex-wrap gap-1.5">
                                 {hasWebDev && (
-                                  <span className="inline-flex items-center gap-1 text-[9px] font-bold px-2 py-1 rounded-lg border text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/30 border-violet-200 dark:border-violet-800/50">
+                                  <span className="inline-flex items-center gap-1 text-[9px] font-bold px-2 py-1 rounded-xl border text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/30 border-violet-200 dark:border-violet-800/50">
                                     <Code2 className="h-2.5 w-2.5" /> Web Development
                                   </span>
                                 )}
                                 {hasMetaAds && (
-                                  <span className="inline-flex items-center gap-1 text-[9px] font-bold px-2 py-1 rounded-lg border text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800/50">
+                                  <span className="inline-flex items-center gap-1 text-[9px] font-bold px-2 py-1 rounded-xl border text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800/50">
                                     <Megaphone className="h-2.5 w-2.5" /> Meta Ads
                                   </span>
                                 )}
@@ -539,17 +539,17 @@ export default function ClientsPage() {
 
                           {/* ── Conditional footer: web → site, ads → Instagram, else nothing ── */}
                           {((hasWebDev && siteUrl) || (hasMetaAds && instaUrl)) && (
-                            <div className="flex items-center gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+                            <div className="flex items-center gap-2 pt-3 border-t border-slate-100 dark:border-[#303030]">
                               {hasWebDev && siteUrl && (
                                 <a href={siteUrl} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()}
-                                  className="flex-1 inline-flex items-center justify-center gap-1.5 text-[10px] font-bold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/20 border border-violet-200/60 dark:border-violet-800/40 px-2.5 py-1.5 rounded-lg hover:bg-violet-100 dark:hover:bg-violet-950/40 transition-all truncate">
+                                  className="flex-1 inline-flex items-center justify-center gap-1.5 text-[10px] font-bold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/20 border border-violet-200/60 dark:border-violet-800/40 px-2.5 py-1.5 rounded-xl hover:bg-violet-100 dark:hover:bg-violet-950/40 transition-all truncate">
                                   <Globe className="h-3 w-3 shrink-0" />
                                   <span className="truncate">{siteLabel || "Visit Site"}</span>
                                 </a>
                               )}
                               {hasMetaAds && instaUrl && (
                                 <a href={instaUrl} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()}
-                                  className="flex-1 inline-flex items-center justify-center gap-1.5 text-[10px] font-bold text-pink-600 dark:text-pink-400 bg-pink-50 dark:bg-pink-950/20 border border-pink-200/60 dark:border-pink-800/40 px-2.5 py-1.5 rounded-lg hover:bg-pink-100 dark:hover:bg-pink-950/40 transition-all truncate">
+                                  className="flex-1 inline-flex items-center justify-center gap-1.5 text-[10px] font-bold text-pink-600 dark:text-pink-400 bg-pink-50 dark:bg-pink-950/20 border border-pink-200/60 dark:border-pink-800/40 px-2.5 py-1.5 rounded-xl hover:bg-pink-100 dark:hover:bg-pink-950/40 transition-all truncate">
                                   <Instagram className="h-3 w-3 shrink-0" />
                                   <span className="truncate">Instagram</span>
                                 </a>
@@ -573,14 +573,14 @@ export default function ClientsPage() {
             <div className="relative w-full sm:w-72">
               <Search className="pointer-events-none absolute inset-y-0 left-3 h-full w-3.5 text-slate-400" />
               <input type="search" placeholder="Search by number, client…" value={invSearch} onChange={e => setInvSearch(e.target.value)}
-                className="h-9 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 pl-9 pr-3 text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-900 dark:text-white" />
+                className="h-9 w-full rounded-2xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] pl-9 pr-3 text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-900 dark:text-white" />
             </div>
             <div className="flex items-center gap-1.5 flex-wrap">
               <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mr-1">Status</span>
               {["all", "draft", "sent", "paid", "overdue"].map(s => (
                 <button key={s} onClick={() => setInvStatus(s)}
                   className={cn("text-[10px] font-bold px-2.5 py-0.5 rounded-full border transition-all cursor-pointer",
-                    invStatus === s ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-transparent" : "bg-white dark:bg-slate-900 text-slate-500 border-slate-200 dark:border-slate-800 hover:border-slate-400")}>
+                    invStatus === s ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-transparent" : "bg-white dark:bg-[#1f1f1f] text-slate-500 border-slate-200 dark:border-[#303030] hover:border-slate-400")}>
                   {s === "all" ? "All" : (INV_STATUS[s]?.label || s)}
                 </button>
               ))}
@@ -588,16 +588,16 @@ export default function ClientsPage() {
           </div>
 
           {loading ? (
-            <div className="h-48 rounded-2xl bg-slate-100 dark:bg-slate-900/60 animate-pulse border border-slate-200/40 dark:border-slate-800/30" />
+            <div className="h-48 rounded-[20px] bg-slate-100 dark:bg-[#1f1f1f]/60 animate-pulse border border-slate-200/40 dark:border-[#303030]/30" />
           ) : filteredInvoices.length === 0 ? (
             <EmptyState icon={<Receipt className="h-5 w-5" />} title="No invoices" description={invStatus !== "all" ? "No invoices with that status." : "Create your first invoice or use Auto-Generate."}
               action={<Button size="sm" onClick={() => setInvDrawer(true)} className="bg-brand-600 text-white"><Plus className="h-3.5 w-3.5 mr-1" /> New Invoice</Button>} />
           ) : (
-            <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-950 overflow-hidden">
+            <div className="rounded-[20px] border border-slate-200/80 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-xs">
                   <thead>
-                    <tr className="border-b border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/30">
+                    <tr className="border-b border-slate-100 dark:border-[#303030] bg-slate-50/60 dark:bg-[#1f1f1f]/30">
                       <th className="text-left px-4 py-3 text-[9px] font-bold text-slate-400 uppercase tracking-wider">Invoice</th>
                       <th className="text-left px-4 py-3 text-[9px] font-bold text-slate-400 uppercase tracking-wider">Client</th>
                       <th className="text-left px-4 py-3 text-[9px] font-bold text-slate-400 uppercase tracking-wider hidden md:table-cell">Project</th>
@@ -632,7 +632,7 @@ export default function ClientsPage() {
                           </td>
                           <td className="px-4 py-3.5">
                             <button onClick={() => handleDeleteInvoice(inv.id, inv.invoiceNumber)}
-                              className="h-7 w-7 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 flex items-center justify-center transition-all cursor-pointer">
+                              className="h-7 w-7 rounded-xl text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 flex items-center justify-center transition-all cursor-pointer">
                               <Trash2 className="h-3.5 w-3.5" />
                             </button>
                           </td>
@@ -653,10 +653,10 @@ export default function ClientsPage() {
       {drawerOpen && (
         <>
           <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40" onClick={() => setDrawerOpen(false)} />
-          <div className="fixed right-0 top-0 h-full w-full max-w-[540px] bg-white dark:bg-slate-950 z-50 shadow-2xl flex flex-col animate-[slide-in-right_280ms_cubic-bezier(0.16,1,0.3,1)]">
+          <div className="fixed right-0 top-0 h-full w-full max-w-[540px] bg-white dark:bg-[#1f1f1f] z-50 shadow-2xl flex flex-col animate-[slide-in-right_280ms_cubic-bezier(0.16,1,0.3,1)]">
 
             {/* Header */}
-            <div className="shrink-0 px-6 pt-5 pb-4 border-b border-slate-200 dark:border-slate-800">
+            <div className="shrink-0 px-6 pt-5 pb-4 border-b border-slate-200 dark:border-[#303030]">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">New Client</p>
@@ -664,7 +664,7 @@ export default function ClientsPage() {
                     {drawerStep === 0 ? "Brand Profile" : drawerStep === 1 ? "Contact & Lead" : "Portal Access"}
                   </h2>
                 </div>
-                <button onClick={() => setDrawerOpen(false)} className="h-8 w-8 rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer">
+                <button onClick={() => setDrawerOpen(false)} className="h-8 w-8 rounded-2xl flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer">
                   <X className="h-4 w-4" />
                 </button>
               </div>
@@ -676,12 +676,12 @@ export default function ClientsPage() {
                       className={cn("flex items-center gap-1.5 text-[10px] font-bold transition-all cursor-pointer",
                         drawerStep === i ? "text-brand-600 dark:text-brand-400" : drawerStep > i ? "text-slate-500" : "text-slate-400")}>
                       <span className={cn("h-5 w-5 rounded-full flex items-center justify-center text-[9px] font-extrabold shrink-0 transition-all",
-                        drawerStep === i ? "bg-brand-600 text-white" : drawerStep > i ? "bg-brand-100 dark:bg-brand-900/40 text-brand-600" : "bg-slate-200 dark:bg-slate-800 text-slate-500")}>
+                        drawerStep === i ? "bg-brand-600 text-white" : drawerStep > i ? "bg-brand-100 dark:bg-brand-900/40 text-brand-600" : "bg-slate-200 dark:bg-[#303030] text-slate-500")}>
                         {drawerStep > i ? <CheckCircle2 className="h-3 w-3" /> : i + 1}
                       </span>
                       {label}
                     </button>
-                    {i < 2 && <div className={cn("flex-1 h-px transition-all", drawerStep > i ? "bg-brand-300 dark:bg-brand-700" : "bg-slate-200 dark:bg-slate-800")} />}
+                    {i < 2 && <div className={cn("flex-1 h-px transition-all", drawerStep > i ? "bg-brand-300 dark:bg-brand-700" : "bg-slate-200 dark:bg-[#303030]")} />}
                   </Fragment>
                 ))}
               </div>
@@ -753,7 +753,7 @@ export default function ClientsPage() {
                 {drawerStep === 2 && (
                   <>
                     <SectionHeader icon={Laptop} label="Portal Access" />
-                    <div className="p-4 rounded-2xl bg-brand-500/5 border border-brand-500/10 space-y-2 mb-2">
+                    <div className="p-4 rounded-[20px] bg-brand-500/5 border border-brand-500/10 space-y-2 mb-2">
                       <p className="text-xs font-bold text-slate-800 dark:text-white">Client Portal Login</p>
                       <p className="text-[11px] text-slate-500 leading-relaxed">These credentials let the client sign in to view reports, projects, and invoices on their portal.</p>
                     </div>
@@ -776,7 +776,7 @@ export default function ClientsPage() {
               </div>
 
               {/* Footer */}
-              <div className="shrink-0 px-6 py-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-900/20 flex items-center justify-between gap-3">
+              <div className="shrink-0 px-6 py-4 border-t border-slate-200 dark:border-[#303030] bg-slate-50/40 dark:bg-[#1f1f1f]/20 flex items-center justify-between gap-3">
                 <p className="text-[10px] font-semibold text-slate-400">Step {drawerStep + 1} of 3</p>
                 <div className="flex gap-2">
                   {drawerStep > 0 && (
@@ -807,16 +807,16 @@ export default function ClientsPage() {
       {editOpen && editClient && (
         <>
           <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40" onClick={() => setEditOpen(false)} />
-          <div className="fixed right-0 top-0 h-full w-full max-w-[540px] bg-white dark:bg-slate-950 z-50 shadow-2xl flex flex-col animate-[slide-in-right_280ms_cubic-bezier(0.16,1,0.3,1)]">
+          <div className="fixed right-0 top-0 h-full w-full max-w-[540px] bg-white dark:bg-[#1f1f1f] z-50 shadow-2xl flex flex-col animate-[slide-in-right_280ms_cubic-bezier(0.16,1,0.3,1)]">
 
             {/* Header */}
-            <div className="shrink-0 px-6 pt-5 pb-4 border-b border-slate-200 dark:border-slate-800">
+            <div className="shrink-0 px-6 pt-5 pb-4 border-b border-slate-200 dark:border-[#303030]">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Edit Client</p>
                   <h2 className="text-base font-bold text-slate-900 dark:text-white mt-0.5">{editClient.name}</h2>
                 </div>
-                <button onClick={() => setEditOpen(false)} className="h-8 w-8 rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer">
+                <button onClick={() => setEditOpen(false)} className="h-8 w-8 rounded-2xl flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer">
                   <X className="h-4 w-4" />
                 </button>
               </div>
@@ -893,7 +893,7 @@ export default function ClientsPage() {
               </div>
 
               {/* Footer */}
-              <div className="shrink-0 px-6 py-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-900/20 flex items-center justify-end gap-3">
+              <div className="shrink-0 px-6 py-4 border-t border-slate-200 dark:border-[#303030] bg-slate-50/40 dark:bg-[#1f1f1f]/20 flex items-center justify-end gap-3">
                 <Button type="button" variant="outline" size="sm" onClick={() => setEditOpen(false)}>Cancel</Button>
                 <Button type="submit" size="sm" disabled={editSubmitting || !editForm.name}
                   className="bg-brand-600 text-white font-bold active:scale-95 min-w-[120px] justify-center">
@@ -911,15 +911,15 @@ export default function ClientsPage() {
       {invDrawer && (
         <>
           <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40" onClick={() => setInvDrawer(false)} />
-          <div className="fixed right-0 top-0 h-full w-full max-w-[480px] bg-white dark:bg-slate-950 z-50 shadow-2xl flex flex-col animate-[slide-in-right_280ms_cubic-bezier(0.16,1,0.3,1)]">
+          <div className="fixed right-0 top-0 h-full w-full max-w-[480px] bg-white dark:bg-[#1f1f1f] z-50 shadow-2xl flex flex-col animate-[slide-in-right_280ms_cubic-bezier(0.16,1,0.3,1)]">
 
-            <div className="shrink-0 px-6 pt-5 pb-4 border-b border-slate-200 dark:border-slate-800">
+            <div className="shrink-0 px-6 pt-5 pb-4 border-b border-slate-200 dark:border-[#303030]">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Billing</p>
                   <h2 className="text-base font-bold text-slate-900 dark:text-white mt-0.5">New Invoice</h2>
                 </div>
-                <button onClick={() => setInvDrawer(false)} className="h-8 w-8 rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer">
+                <button onClick={() => setInvDrawer(false)} className="h-8 w-8 rounded-2xl flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer">
                   <X className="h-4 w-4" />
                 </button>
               </div>
@@ -977,7 +977,7 @@ export default function ClientsPage() {
 
               </div>
 
-              <div className="shrink-0 px-6 py-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-900/20 flex justify-end gap-2">
+              <div className="shrink-0 px-6 py-4 border-t border-slate-200 dark:border-[#303030] bg-slate-50/40 dark:bg-[#1f1f1f]/20 flex justify-end gap-2">
                 <Button type="button" variant="outline" size="sm" onClick={() => setInvDrawer(false)}>Cancel</Button>
                 <Button type="submit" size="sm" disabled={invSubmitting || !invForm.clientId || !invForm.amount}
                   className="bg-brand-600 text-white font-bold active:scale-95 shadow-glow min-w-[140px] justify-center">
@@ -1004,7 +1004,7 @@ function KanbanCard({ client, ownerName, onMove, onToggleCheck }: {
   const extraProjects = (client.linkedProjects?.length ?? 0) - 1;
 
   return (
-    <div className="group bg-white dark:bg-slate-900/70 rounded-2xl border border-slate-200/80 dark:border-slate-800/60 hover:border-brand-400/40 dark:hover:border-brand-600/50 hover:shadow-md dark:hover:shadow-black/30 transition-all duration-200 overflow-hidden">
+    <div className="group bg-white dark:bg-[#1f1f1f]/70 rounded-[20px] border border-slate-200/80 dark:border-[#303030]/60 hover:border-brand-400/40 dark:hover:border-brand-600/50 hover:shadow-md dark:hover:shadow-black/30 transition-all duration-200 overflow-hidden">
       {/* Stage color strip */}
       <div className={cn("h-0.5 w-full", STAGE_CONFIG[client.stage]?.dot.replace("bg-", "bg-") ?? "bg-slate-300")} />
 
@@ -1012,7 +1012,7 @@ function KanbanCard({ client, ownerName, onMove, onToggleCheck }: {
         {/* Header: avatar + name + move arrows */}
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-brand-500 to-violet-500 text-[11px] font-bold text-white flex items-center justify-center shrink-0 shadow-sm">
+            <div className="h-8 w-8 rounded-2xl bg-gradient-to-br from-brand-500 to-violet-500 text-[11px] font-bold text-white flex items-center justify-center shrink-0 shadow-sm">
               {initials || "?"}
             </div>
             <div className="min-w-0">
@@ -1025,14 +1025,14 @@ function KanbanCard({ client, ownerName, onMove, onToggleCheck }: {
           <div className="flex gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
             {client.stage !== "contract_signed" && (
               <button onClick={() => onMove(client.id, "left")}
-                className="h-6 w-6 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-slate-700 dark:hover:text-white flex items-center justify-center cursor-pointer transition-all hover:bg-slate-100 dark:hover:bg-slate-700"
+                className="h-6 w-6 rounded-xl bg-slate-50 dark:bg-[#303030] border border-slate-200 dark:border-[#38383f] text-slate-400 hover:text-slate-700 dark:hover:text-white flex items-center justify-center cursor-pointer transition-all hover:bg-slate-100 dark:hover:bg-slate-700"
                 aria-label="Move back">
                 <ArrowLeft className="h-3 w-3" />
               </button>
             )}
             {client.stage !== "live" && (
               <button onClick={() => onMove(client.id, "right")}
-                className="h-6 w-6 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 flex items-center justify-center cursor-pointer transition-all hover:bg-brand-50 dark:hover:bg-brand-950/30"
+                className="h-6 w-6 rounded-xl bg-slate-50 dark:bg-[#303030] border border-slate-200 dark:border-[#38383f] text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 flex items-center justify-center cursor-pointer transition-all hover:bg-brand-50 dark:hover:bg-brand-950/30"
                 aria-label="Advance">
                 <ArrowRight className="h-3 w-3" />
               </button>
@@ -1064,7 +1064,7 @@ function KanbanCard({ client, ownerName, onMove, onToggleCheck }: {
             </div>
           ) : (
             <div className="flex items-center gap-2">
-              <div className="h-5 w-5 rounded-md bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 flex items-center justify-center shrink-0">
+              <div className="h-5 w-5 rounded-md bg-slate-50 dark:bg-[#303030]/60 border border-slate-100 dark:border-[#303030] flex items-center justify-center shrink-0">
                 <Layers className="h-3 w-3 text-slate-300 dark:text-slate-600" />
               </div>
               <span className="text-[11px] text-slate-400 dark:text-slate-600 font-medium italic">No project</span>
@@ -1074,7 +1074,7 @@ function KanbanCard({ client, ownerName, onMove, onToggleCheck }: {
           {/* Contact */}
           {(d.contactName || d.contactPhone || d.contactEmail) && (
             <div className="flex items-center gap-2">
-              <div className="h-5 w-5 rounded-md bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 flex items-center justify-center shrink-0">
+              <div className="h-5 w-5 rounded-md bg-slate-50 dark:bg-[#303030]/60 border border-slate-100 dark:border-[#303030] flex items-center justify-center shrink-0">
                 <Phone className="h-3 w-3 text-slate-400 dark:text-slate-500" />
               </div>
               <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 truncate">

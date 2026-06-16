@@ -247,7 +247,7 @@ export default function LoginPage() {
       </div>
 
       {/* Right Panel: Stunning Branding Showcase (Hidden on Mobile) */}
-      <div className="hidden lg:flex w-1/2 relative bg-[#0a0f1c] items-center justify-center overflow-hidden border-l border-slate-800/50">
+      <div className="hidden lg:flex w-1/2 relative bg-[#101012] items-center justify-center overflow-hidden border-l border-slate-800/50">
         
         {/* Abstract Gradient Orbs */}
         <div className="absolute top-[-10%] left-[-10%] w-[40vw] h-[40vw] rounded-full bg-indigo-600/20 blur-[120px] mix-blend-screen animate-[pulse_8s_ease-in-out_infinite]" />

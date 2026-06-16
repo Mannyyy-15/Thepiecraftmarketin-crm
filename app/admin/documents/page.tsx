@@ -352,7 +352,7 @@ export default function DocumentsPage() {
         title="Documents"
         actions={
           <div className="flex gap-2">
-            <Button variant="outline" size="md" onClick={() => setShowFolderModal(true)} className="border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-900 font-semibold text-xs">
+            <Button variant="outline" size="md" onClick={() => setShowFolderModal(true)} className="border border-slate-200 dark:border-[#303030] text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-900 font-semibold text-xs">
               <Plus className="h-4 w-4 mr-1 text-indigo-500" />
               New Folder
             </Button>
@@ -369,20 +369,20 @@ export default function DocumentsPage() {
         <h2 className="text-sm font-semibold text-slate-900 dark:text-white mb-3">Folders</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
           {folders.map((f) => (
-            <Card key={f.name} onClick={() => setActiveFolder(f.name)} className="p-4 hover:shadow-glow cursor-pointer transition-all border border-slate-200 dark:border-slate-800 relative group overflow-visible">
+            <Card key={f.name} onClick={() => setActiveFolder(f.name)} className="p-4 hover:shadow-glow cursor-pointer transition-all border border-slate-200 dark:border-[#303030] relative group overflow-visible">
               <div className="absolute top-2 right-2 z-10">
                 <button 
                   onClick={(e) => {
                     e.stopPropagation();
                     setOpenFolderDropdownId(openFolderDropdownId === f.name ? null : f.name);
                   }}
-                  className={`p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:hover:text-slate-200 dark:hover:bg-slate-800 transition-all ${openFolderDropdownId === f.name ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
+                  className={`p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:hover:text-slate-200 dark:hover:bg-slate-800 transition-all ${openFolderDropdownId === f.name ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
                 >
                   <MoreHorizontal className="h-4 w-4" />
                 </button>
                 {openFolderDropdownId === f.name && (
                   <div 
-                    className="absolute right-0 top-8 mt-1 w-36 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-50 py-1 flex flex-col animate-scaleIn"
+                    className="absolute right-0 top-8 mt-1 w-36 bg-white dark:bg-[#1f1f1f] border border-slate-200 dark:border-[#303030] rounded-2xl shadow-xl z-50 py-1 flex flex-col animate-scaleIn"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <button 
@@ -397,7 +397,7 @@ export default function DocumentsPage() {
                   </div>
                 )}
               </div>
-              <div className={`h-10 w-10 rounded-xl bg-gradient-to-br ${f.accent} text-white flex items-center justify-center mb-3 shadow-md`}>
+              <div className={`h-10 w-10 rounded-2xl bg-gradient-to-br ${f.accent} text-white flex items-center justify-center mb-3 shadow-md`}>
                 <Folder className="h-5 w-5" />
               </div>
               <p className="text-sm font-semibold text-slate-900 dark:text-white truncate pr-6">{f.name}</p>
@@ -409,7 +409,7 @@ export default function DocumentsPage() {
 
       {/* Main Files Table Card */}
       <Card className="border border-slate-200 dark:border-slate-850">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 sm:p-5 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 sm:p-5 border-b border-slate-200 dark:border-[#303030] bg-slate-50/50 dark:bg-slate-950/20">
           <div className="flex items-center gap-3">
             {activeFolder && (
               <Button variant="outline" size="sm" onClick={() => setActiveFolder(null)} className="h-8 px-2">
@@ -430,7 +430,7 @@ export default function DocumentsPage() {
               placeholder="Search files by name, client, owner…"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-9 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 pl-9 pr-3 text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white"
+              className="h-9 w-full rounded-2xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] pl-9 pr-3 text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white"
             />
           </div>
         </div>
@@ -441,7 +441,7 @@ export default function DocumentsPage() {
                 <tr key={d.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-900/40 group">
                   <td className="px-5 py-3.5">
                     <div className="flex items-center gap-3">
-                      <div className={`h-9 w-9 rounded-xl flex items-center justify-center shrink-0 ${typeColor[d.type] ?? "bg-slate-100 dark:bg-slate-800 text-slate-500"}`}>
+                      <div className={`h-9 w-9 rounded-2xl flex items-center justify-center shrink-0 ${typeColor[d.type] ?? "bg-slate-100 dark:bg-[#303030] text-slate-500"}`}>
                         {iconForType[d.type] ?? <File className="h-4 w-4" />}
                       </div>
                       {d.url ? (
@@ -469,13 +469,13 @@ export default function DocumentsPage() {
                       <button 
                         aria-label="More Options" 
                         onClick={() => setOpenDropdownId(openDropdownId === d.id ? null : d.id)}
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
                       >
                         <MoreHorizontal className="h-4 w-4" />
                       </button>
                     </div>
                     {openDropdownId === d.id && (
-                      <div className="absolute right-10 top-10 mt-1 w-32 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-50 py-1 flex flex-col animate-scaleIn">
+                      <div className="absolute right-10 top-10 mt-1 w-32 bg-white dark:bg-[#1f1f1f] border border-slate-200 dark:border-[#303030] rounded-2xl shadow-xl z-50 py-1 flex flex-col animate-scaleIn">
                         {d.url && (
                           <button onClick={() => { setPreviewDoc({url: d.url, name: d.name}); setOpenDropdownId(null); }} className="flex items-center gap-2 px-3 py-2 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 w-full text-left transition-colors">
                             <Eye className="h-3.5 w-3.5" /> Preview
@@ -513,7 +513,7 @@ export default function DocumentsPage() {
       {showFolderModal && (
         <div className="fixed inset-0 z-50 bg-slate-950/40 dark:bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4">
           <Card className="w-full max-w-md animate-scaleIn border border-indigo-500/25 shadow-2xl">
-            <CardHeader className="py-4 border-b dark:border-slate-800">
+            <CardHeader className="py-4 border-b dark:border-[#303030]">
               <div className="flex justify-between items-center">
                 <CardTitle className="text-sm font-bold flex items-center gap-2">
                   <FolderPlus className="h-4.5 w-4.5 text-indigo-500" /> Create Custom Folder
@@ -533,10 +533,10 @@ export default function DocumentsPage() {
                     placeholder="e.g. Legal Agreements"
                     value={newFolderName}
                     onChange={(e) => setNewFolderName(e.target.value)}
-                    className="w-full h-10 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-xs focus:ring-2 focus:ring-indigo-500/40 text-slate-800 dark:text-white"
+                    className="w-full h-10 rounded-2xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] px-3 text-xs focus:ring-2 focus:ring-indigo-500/40 text-slate-800 dark:text-white"
                   />
                 </div>
-                <button type="submit" className="w-full h-10 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-md transition-colors">
+                <button type="submit" className="w-full h-10 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-2xl shadow-md transition-colors">
                   Create Folder
                 </button>
               </form>
@@ -551,7 +551,7 @@ export default function DocumentsPage() {
       {showUploadModal && (
         <div className="fixed inset-0 z-50 bg-slate-950/40 dark:bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4">
           <Card className="w-full max-w-md animate-scaleIn border border-indigo-500/25 shadow-2xl">
-            <CardHeader className="py-4 border-b dark:border-slate-800">
+            <CardHeader className="py-4 border-b dark:border-[#303030]">
               <div className="flex justify-between items-center">
                 <CardTitle className="text-sm font-bold flex items-center gap-2">
                   <Upload className="h-4.5 w-4.5 text-brand-500 animate-bounce" /> Upload Document Asset
@@ -574,7 +574,7 @@ export default function DocumentsPage() {
                         setUploadName(file.name);
                       }
                     }}
-                    className="w-full text-xs text-slate-500 dark:text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border file:border-slate-200 dark:file:border-slate-700 file:text-xs file:font-semibold file:bg-white dark:file:bg-slate-900 file:text-slate-700 dark:file:text-slate-300 cursor-pointer"
+                    className="w-full text-xs text-slate-500 dark:text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border file:border-slate-200 dark:file:border-slate-700 file:text-xs file:font-semibold file:bg-white dark:file:bg-slate-900 file:text-slate-700 dark:file:text-slate-300 cursor-pointer"
                   />
                 </div>
 
@@ -586,7 +586,7 @@ export default function DocumentsPage() {
                     placeholder="e.g. Acme Marketing Strategy Q4"
                     value={uploadName}
                     onChange={(e) => setUploadName(e.target.value)}
-                    className="w-full h-10 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-xs focus:ring-2 focus:ring-indigo-500/40 text-slate-800 dark:text-white"
+                    className="w-full h-10 rounded-2xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] px-3 text-xs focus:ring-2 focus:ring-indigo-500/40 text-slate-800 dark:text-white"
                   />
                 </div>
                 
@@ -596,7 +596,7 @@ export default function DocumentsPage() {
                     <select
                       value={uploadFolder}
                       onChange={(e) => setUploadFolder(e.target.value)}
-                      className="w-full h-10 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-xs focus:ring-2 focus:ring-indigo-500/40 text-slate-850 dark:text-white"
+                      className="w-full h-10 rounded-2xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] px-3 text-xs focus:ring-2 focus:ring-indigo-500/40 text-slate-850 dark:text-white"
                     >
                       {folderNames.map(name => (
                         <option key={name} value={name}>{name}</option>
@@ -605,7 +605,7 @@ export default function DocumentsPage() {
                   </div>
                 </div>
 
-                <button type="submit" className="w-full h-10 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-md transition-colors">
+                <button type="submit" className="w-full h-10 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-2xl shadow-md transition-colors">
                   Upload Asset
                 </button>
               </form>
@@ -623,16 +623,16 @@ export default function DocumentsPage() {
         {toasts.map((t) => (
           <div
             key={t.id}
-            className={`pointer-events-auto p-4 rounded-xl shadow-xl flex items-center justify-between gap-3 border transition-all animate-slideIn ${
+            className={`pointer-events-auto p-4 rounded-2xl shadow-xl flex items-center justify-between gap-3 border transition-all animate-slideIn ${
               t.type === "warning"
                 ? "bg-amber-50 dark:bg-amber-950/20 border-amber-500/20 text-amber-800 dark:text-amber-300"
                 : t.type === "info"
-                ? "bg-slate-100 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-705 dark:text-slate-355"
+                ? "bg-slate-100 dark:bg-[#1f1f1f] border-slate-200 dark:border-[#303030] text-slate-705 dark:text-slate-355"
                 : "bg-emerald-50 dark:bg-emerald-950/20 border-emerald-500/20 text-emerald-800 dark:text-emerald-300"
             }`}
           >
             <div className="flex items-center gap-2.5">
-              <div className={`h-6 w-6 rounded-lg flex items-center justify-center shrink-0 ${
+              <div className={`h-6 w-6 rounded-xl flex items-center justify-center shrink-0 ${
                 t.type === "warning" ? "bg-amber-500/10 text-amber-500" : t.type === "info" ? "bg-slate-500/10 text-slate-500" : "bg-emerald-500/10 text-emerald-500"
               }`}>
                 <Check className="h-4 w-4" />

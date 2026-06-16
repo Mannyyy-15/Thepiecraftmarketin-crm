@@ -241,7 +241,7 @@ export default function ReportsPage() {
       {/* AI Summary Loading / Result Card */}
       {(aiGenerating || aiResult) && (
         <Card className="border border-indigo-500/25 bg-indigo-50/5 dark:bg-indigo-500/5 overflow-hidden animate-fadeIn">
-          <CardHeader className="py-4 border-b border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/10">
+          <CardHeader className="py-4 border-b border-slate-100 dark:border-[#303030]/80 bg-slate-50/50 dark:bg-[#1f1f1f]/10">
             <CardTitle className="text-sm font-bold flex items-center gap-2">
               <Cpu className="h-4.5 w-4.5 text-indigo-500 animate-spin" />
               Strategic AI Analyst Desk
@@ -261,7 +261,7 @@ export default function ReportsPage() {
                     {aiStep === 5 && "Compiling final executive agency digest..."}
                   </span>
                 </div>
-                <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                <div className="w-full bg-slate-100 dark:bg-[#303030] h-1.5 rounded-full overflow-hidden">
                   <div 
                     className="bg-indigo-600 h-full rounded-full transition-all duration-300"
                     style={{ width: `${(aiStep / 5) * 100}%` }}
@@ -272,7 +272,7 @@ export default function ReportsPage() {
               <div className="relative">
                 <button 
                   onClick={() => setAiResult(null)}
-                  className="absolute top-0 right-0 h-6 w-6 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center cursor-pointer"
+                  className="absolute top-0 right-0 h-6 w-6 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center cursor-pointer"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -294,7 +294,7 @@ export default function ReportsPage() {
               Clients, projects, billable hours — last 6 months
             </p>
           </div>
-          <select className="h-8 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 text-xs font-medium text-slate-705 dark:text-slate-255 focus:outline-none focus:ring-2 focus:ring-brand-500/40">
+          <select className="h-8 rounded-xl border border-slate-200 dark:border-[#38383f] bg-white dark:bg-[#1f1f1f] px-2.5 text-xs font-medium text-slate-705 dark:text-slate-255 focus:outline-none focus:ring-2 focus:ring-brand-500/40">
             <option>Last 6 months</option>
             <option>YTD</option>
             <option>Last year</option>
@@ -324,7 +324,7 @@ export default function ReportsPage() {
 
       {/* Recent Reports Listing with Dynamic Interactive State */}
       <Card className="overflow-hidden border border-slate-200 dark:border-slate-850">
-        <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 sm:p-5 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20">
+        <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 sm:p-5 border-b border-slate-200 dark:border-[#303030] bg-slate-50/50 dark:bg-slate-950/20">
           <div>
             <CardTitle>Recent Reports</CardTitle>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Filter generated PDFs or run instant client-facing conversion performance charts.</p>
@@ -332,12 +332,12 @@ export default function ReportsPage() {
           <div className="flex flex-wrap items-center gap-2">
             
             {/* Filter buttons */}
-            <div className="flex rounded-xl bg-slate-100 dark:bg-slate-900 p-0.5 text-xs font-semibold">
+            <div className="flex rounded-2xl bg-slate-100 dark:bg-[#1f1f1f] p-0.5 text-xs font-semibold">
               {["All", "Monthly", "Quarterly", "Custom", "Audit"].map((type) => (
                 <button
                   key={type}
                   onClick={() => setTypeFilter(type)}
-                  className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
+                  className={`px-3 py-1.5 rounded-xl transition-colors cursor-pointer ${
                     typeFilter === type
                       ? "bg-white dark:bg-slate-850 text-indigo-650 dark:text-indigo-400 shadow-sm"
                       : "text-slate-500 hover:text-slate-800 dark:hover:text-white"
@@ -356,7 +356,7 @@ export default function ReportsPage() {
                 placeholder="Search title…"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-9 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 pl-8 pr-3 text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white"
+                className="h-9 w-full rounded-2xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] pl-8 pr-3 text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white"
               />
             </div>
 
@@ -370,7 +370,7 @@ export default function ReportsPage() {
                         r.name?.toLowerCase().includes("seo") || r.name?.toLowerCase().includes("audit") ? "Audit" : "Custom";
             return (
               <div key={r.id} className="flex items-center gap-4 p-4 sm:p-5 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors duration-150 group">
-                <div className="h-10 w-10 rounded-xl bg-brand-50 dark:bg-brand-500/10 text-brand-600 dark:text-brand-300 flex items-center justify-center shrink-0 shadow-sm">
+                <div className="h-10 w-10 rounded-2xl bg-brand-50 dark:bg-brand-500/10 text-brand-600 dark:text-brand-300 flex items-center justify-center shrink-0 shadow-sm">
                   <FileText className="h-5 w-5" />
                 </div>
                 <div className="min-w-0 flex-1">
@@ -388,17 +388,17 @@ export default function ReportsPage() {
                 <div className="flex items-center gap-2">
                   {r.url && (
                     <>
-                      <Button variant="outline" size="sm" onClick={() => setPreviewDoc({url: r.url, name: r.name})} className="border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 font-semibold text-xs">
+                      <Button variant="outline" size="sm" onClick={() => setPreviewDoc({url: r.url, name: r.name})} className="border border-slate-200 dark:border-[#303030] text-slate-700 dark:text-slate-200 font-semibold text-xs">
                         <Eye className="h-3.5 w-3.5 mr-1" /> <span className="hidden sm:inline">Preview</span>
                       </Button>
-                      <a href={r.url} download={r.name} className="inline-flex items-center justify-center whitespace-nowrap rounded-md h-8 px-3 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold text-xs transition-colors">
+                      <a href={r.url} download={r.name} className="inline-flex items-center justify-center whitespace-nowrap rounded-md h-8 px-3 border border-slate-200 dark:border-[#303030] text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold text-xs transition-colors">
                         <Download className="h-3.5 w-3.5 mr-1 text-emerald-500" /> <span className="hidden sm:inline">PDF</span>
                       </a>
                     </>
                   )}
                   <button
                     onClick={() => handleDeleteReport(r.id, r.name)}
-                    className="h-8 w-8 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 flex items-center justify-center shrink-0 transition-all cursor-pointer"
+                    className="h-8 w-8 rounded-xl text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 flex items-center justify-center shrink-0 transition-all cursor-pointer"
                     title="Delete Report"
                   >
                     <Trash2 className="h-4 w-4" />
@@ -420,7 +420,7 @@ export default function ReportsPage() {
       {showCreateModal && (
         <div className="fixed inset-0 z-50 bg-slate-950/40 dark:bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4">
           <Card className="w-full max-w-md animate-scaleIn border border-indigo-500/25 shadow-2xl relative">
-            <CardHeader className="py-4 border-b dark:border-slate-800 pr-12">
+            <CardHeader className="py-4 border-b dark:border-[#303030] pr-12">
               <CardTitle className="text-sm font-bold flex items-center gap-2">
                 <Plus className="h-4.5 w-4.5 text-indigo-500 animate-spin" /> Generate Strategic Report
               </CardTitle>
@@ -438,7 +438,7 @@ export default function ReportsPage() {
                     placeholder="e.g. Acme Corp — Conversion Audit"
                     value={newTitle}
                     onChange={(e) => setNewTitle(e.target.value)}
-                    className="w-full h-10 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-xs focus:ring-2 focus:ring-indigo-500/40 text-slate-800 dark:text-white"
+                    className="w-full h-10 rounded-2xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] px-3 text-xs focus:ring-2 focus:ring-indigo-500/40 text-slate-800 dark:text-white"
                   />
                 </div>
                 
@@ -448,7 +448,7 @@ export default function ReportsPage() {
                     <select
                       value={newScope}
                       onChange={(e) => setNewScope(e.target.value)}
-                      className="w-full h-10 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-xs focus:ring-2 focus:ring-indigo-500/40 text-slate-850 dark:text-white"
+                      className="w-full h-10 rounded-2xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] px-3 text-xs focus:ring-2 focus:ring-indigo-500/40 text-slate-850 dark:text-white"
                     >
                       <option value="Agency">Overall Agency</option>
                       <option value="Project">Specific Project</option>
@@ -459,7 +459,7 @@ export default function ReportsPage() {
                     <select
                       value={newTimeframe}
                       onChange={(e) => setNewTimeframe(e.target.value)}
-                      className="w-full h-10 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-xs focus:ring-2 focus:ring-indigo-500/40 text-slate-850 dark:text-white"
+                      className="w-full h-10 rounded-2xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] px-3 text-xs focus:ring-2 focus:ring-indigo-500/40 text-slate-850 dark:text-white"
                     >
                       <option value="This Week">This Week</option>
                       <option value="This Month">This Month</option>
@@ -476,7 +476,7 @@ export default function ReportsPage() {
                     <select
                       value={newProject}
                       onChange={(e) => setNewProject(e.target.value)}
-                      className="w-full h-10 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-xs focus:ring-2 focus:ring-indigo-500/40 text-slate-850 dark:text-white"
+                      className="w-full h-10 rounded-2xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] px-3 text-xs focus:ring-2 focus:ring-indigo-500/40 text-slate-850 dark:text-white"
                     >
                       {projectsList.length > 0 ? (
                         projectsList.map((p) => (
@@ -489,7 +489,7 @@ export default function ReportsPage() {
                   </div>
                 )}
 
-                <button type="submit" disabled={isGeneratingPdf} className="w-full h-10 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-md transition-colors disabled:opacity-50">
+                <button type="submit" disabled={isGeneratingPdf} className="w-full h-10 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-2xl shadow-md transition-colors disabled:opacity-50">
                   {isGeneratingPdf ? "Generating PDF..." : "Compile Report"}
                 </button>
               </form>
@@ -505,14 +505,14 @@ export default function ReportsPage() {
         {toasts.map((t) => (
           <div
             key={t.id}
-            className={`pointer-events-auto p-4 rounded-xl shadow-xl flex items-center justify-between gap-3 border transition-all animate-slideIn ${
+            className={`pointer-events-auto p-4 rounded-2xl shadow-xl flex items-center justify-between gap-3 border transition-all animate-slideIn ${
               t.type === "info"
                 ? "bg-indigo-50 dark:bg-indigo-950/20 border-indigo-500/20 text-indigo-800 dark:text-indigo-300"
                 : "bg-emerald-50 dark:bg-emerald-950/20 border-emerald-500/20 text-emerald-800 dark:text-emerald-300"
             }`}
           >
             <div className="flex items-center gap-2.5">
-              <div className={`h-6 w-6 rounded-lg flex items-center justify-center shrink-0 ${
+              <div className={`h-6 w-6 rounded-xl flex items-center justify-center shrink-0 ${
                 t.type === "info" ? "bg-indigo-500/10 text-indigo-500" : "bg-emerald-500/10 text-emerald-500"
               }`}>
                 <Check className="h-4 w-4" />

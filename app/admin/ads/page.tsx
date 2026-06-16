@@ -238,7 +238,7 @@ export default function AdsPage() {
             <Button
               variant="outline"
               size="md"
-              className="bg-white/50 dark:bg-slate-900/50 backdrop-blur-md border-indigo-200/50 dark:border-indigo-500/20 text-indigo-700 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-all shadow-sm"
+              className="bg-white/50 dark:bg-[#1f1f1f]/50 backdrop-blur-md border-indigo-200/50 dark:border-indigo-500/20 text-indigo-700 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-all shadow-sm"
               onClick={handleSyncAPI}
             >
               <RefreshCw className="h-4 w-4 mr-1.5" />
@@ -247,7 +247,7 @@ export default function AdsPage() {
             <Button
               variant="outline"
               size="md"
-              className="bg-white/50 dark:bg-slate-900/50 backdrop-blur-md border-indigo-200/50 dark:border-indigo-500/20 text-indigo-700 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-all shadow-sm"
+              className="bg-white/50 dark:bg-[#1f1f1f]/50 backdrop-blur-md border-indigo-200/50 dark:border-indigo-500/20 text-indigo-700 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-all shadow-sm"
               onClick={() => toast(`AI Insight: Campaigns overall ROAS is ${avgRoas.toFixed(2)}x. Total budget utilization is high. Keep scale on best performer.`, "info")}
             >
               <Sparkles className="h-4 w-4 mr-1.5" />
@@ -278,14 +278,14 @@ export default function AdsPage() {
                 <div className="flex justify-between items-center">
                   <div>
                     <CardTitle className="text-sm font-bold flex items-center gap-2 text-brand-900 dark:text-brand-100">
-                      <div className="h-6 w-6 rounded-md bg-white dark:bg-slate-800 flex items-center justify-center shadow-sm">
+                      <div className="h-6 w-6 rounded-md bg-white dark:bg-[#303030] flex items-center justify-center shadow-sm">
                         <Activity className="h-3.5 w-3.5 text-brand-500" />
                       </div>
                       Start Brand Marketing Campaign
                     </CardTitle>
                     <CardDescription className="text-xs mt-1 text-brand-700/70 dark:text-brand-300/60">Define the metrics and push to the live network.</CardDescription>
                   </div>
-                  <button onClick={() => setShowAddForm(false)} className="h-8 w-8 rounded-full bg-white/50 dark:bg-slate-800/50 flex items-center justify-center text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white transition-all shadow-sm">
+                  <button onClick={() => setShowAddForm(false)} className="h-8 w-8 rounded-full bg-white/50 dark:bg-[#303030]/50 flex items-center justify-center text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white transition-all shadow-sm">
                     <X className="h-4 w-4" />
                   </button>
                 </div>
@@ -295,12 +295,12 @@ export default function AdsPage() {
                   <div className="col-span-1 md:col-span-2">
                     <label className="block text-[10px] font-extrabold text-brand-900/60 dark:text-brand-100/50 uppercase tracking-widest mb-1.5">Campaign Title</label>
                     <input type="text" required value={name} onChange={(e) => setName(e.target.value)}
-                      className="h-11 w-full rounded-xl border border-white/40 dark:border-slate-800/60 bg-white/60 dark:bg-slate-900/40 px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white backdrop-blur-md shadow-sm transition-all" />
+                      className="h-11 w-full rounded-2xl border border-white/40 dark:border-[#303030]/60 bg-white/60 dark:bg-[#1f1f1f]/40 px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white backdrop-blur-md shadow-sm transition-all" />
                   </div>
                   <div className="col-span-1 md:col-span-2">
                     <label className="block text-[10px] font-extrabold text-brand-900/60 dark:text-brand-100/50 uppercase tracking-widest mb-1.5">Client</label>
                     <select value={client} onChange={(e) => setClient(e.target.value)}
-                      className="h-11 w-full rounded-xl border border-white/40 dark:border-slate-800/60 bg-white/60 dark:bg-slate-900/40 px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white backdrop-blur-md shadow-sm transition-all">
+                      className="h-11 w-full rounded-2xl border border-white/40 dark:border-[#303030]/60 bg-white/60 dark:bg-[#1f1f1f]/40 px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white backdrop-blur-md shadow-sm transition-all">
                       {clientsList.length > 0 ? (
                         clientsList.map((c) => (
                           <option key={c.id} value={c.name}>{c.name}</option>
@@ -317,7 +317,7 @@ export default function AdsPage() {
                   <div>
                     <label className="block text-[10px] font-extrabold text-brand-900/60 dark:text-brand-100/50 uppercase tracking-widest mb-1.5">Platform</label>
                     <select value={platform} onChange={(e) => setPlatform(e.target.value)}
-                      className="h-11 w-full rounded-xl border border-white/40 dark:border-slate-800/60 bg-white/60 dark:bg-slate-900/40 px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white backdrop-blur-md shadow-sm transition-all">
+                      className="h-11 w-full rounded-2xl border border-white/40 dark:border-[#303030]/60 bg-white/60 dark:bg-[#1f1f1f]/40 px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white backdrop-blur-md shadow-sm transition-all">
                       <option value="Meta Ads">Meta Ads</option>
                       <option value="Google Ads">Google Ads</option>
                     </select>
@@ -325,18 +325,18 @@ export default function AdsPage() {
                   <div>
                     <label className="block text-[10px] font-extrabold text-brand-900/60 dark:text-brand-100/50 uppercase tracking-widest mb-1.5">Target ROAS</label>
                     <input type="number" step="0.1" required value={roas} onChange={(e) => setRoas(Number(e.target.value))}
-                      className="h-11 w-full rounded-xl border border-white/40 dark:border-slate-800/60 bg-white/60 dark:bg-slate-900/40 px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white backdrop-blur-md shadow-sm transition-all" />
+                      className="h-11 w-full rounded-2xl border border-white/40 dark:border-[#303030]/60 bg-white/60 dark:bg-[#1f1f1f]/40 px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white backdrop-blur-md shadow-sm transition-all" />
                   </div>
                   <div>
                     <label className="block text-[10px] font-extrabold text-brand-900/60 dark:text-brand-100/50 uppercase tracking-widest mb-1.5">Spend (USD)</label>
                     <input type="number" required value={spend} onChange={(e) => setSpend(Number(e.target.value))}
-                      className="h-11 w-full rounded-xl border border-white/40 dark:border-slate-800/60 bg-white/60 dark:bg-slate-900/40 px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white backdrop-blur-md shadow-sm transition-all" />
+                      className="h-11 w-full rounded-2xl border border-white/40 dark:border-[#303030]/60 bg-white/60 dark:bg-[#1f1f1f]/40 px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white backdrop-blur-md shadow-sm transition-all" />
                   </div>
                   <div className="flex gap-3 md:col-span-2">
                     <div className="flex-1">
                       <label className="block text-[10px] font-extrabold text-brand-900/60 dark:text-brand-100/50 uppercase tracking-widest mb-1.5">Launch Status</label>
                       <select value={status} onChange={(e) => setStatus(e.target.value as any)}
-                        className="h-11 w-full rounded-xl border border-white/40 dark:border-slate-800/60 bg-white/60 dark:bg-slate-900/40 px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white backdrop-blur-md shadow-sm transition-all">
+                        className="h-11 w-full rounded-2xl border border-white/40 dark:border-[#303030]/60 bg-white/60 dark:bg-[#1f1f1f]/40 px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white backdrop-blur-md shadow-sm transition-all">
                         <option value="active">Active</option>
                         <option value="paused">Paused</option>
                         <option value="draft">Draft</option>
@@ -386,8 +386,8 @@ export default function AdsPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        <Card className="lg:col-span-2 shadow-sm border-slate-200/60 dark:border-slate-800/60 bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl">
-          <CardHeader className="border-b border-slate-100 dark:border-slate-800/60 pb-4">
+        <Card className="lg:col-span-2 shadow-sm border-slate-200/60 dark:border-[#303030]/60 bg-white/95 dark:bg-[#1f1f1f]/95 backdrop-blur-xl">
+          <CardHeader className="border-b border-slate-100 dark:border-[#303030]/60 pb-4">
             <div className="flex justify-between items-center">
               <div>
                 <CardTitle className="text-lg">Network Performance</CardTitle>
@@ -423,8 +423,8 @@ export default function AdsPage() {
           </CardContent>
         </Card>
 
-        <Card className="shadow-sm border-slate-200/60 dark:border-slate-800/60 bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl">
-          <CardHeader className="border-b border-slate-100 dark:border-slate-800/60 pb-4">
+        <Card className="shadow-sm border-slate-200/60 dark:border-[#303030]/60 bg-white/95 dark:bg-[#1f1f1f]/95 backdrop-blur-xl">
+          <CardHeader className="border-b border-slate-100 dark:border-[#303030]/60 pb-4">
             <CardTitle className="text-lg">ROAS Leaderboard</CardTitle>
           </CardHeader>
           <CardContent className="p-4 sm:p-6">
@@ -465,16 +465,16 @@ export default function AdsPage() {
         </Card>
       </div>
 
-      <Card className="overflow-hidden shadow-md border-slate-200/80 dark:border-slate-800/80 rounded-2xl">
-        <CardHeader className="flex flex-row items-center justify-between bg-slate-50/50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-800 p-5">
+      <Card className="overflow-hidden shadow-md border-slate-200/80 dark:border-[#303030] rounded-[20px]">
+        <CardHeader className="flex flex-row items-center justify-between bg-slate-50/50 dark:bg-[#1f1f1f]/50 border-b border-slate-100 dark:border-[#303030] p-5">
           <CardTitle className="text-lg">Active Campaigns</CardTitle>
-          <Button variant="outline" size="sm" onClick={() => setSortByRoas(!sortByRoas)} className="text-xs font-bold rounded-xl bg-white dark:bg-slate-950 shadow-sm">
+          <Button variant="outline" size="sm" onClick={() => setSortByRoas(!sortByRoas)} className="text-xs font-bold rounded-2xl bg-white dark:bg-[#1f1f1f] shadow-sm">
             <TrendingUp className="h-3.5 w-3.5 mr-1.5" /> {sortByRoas ? "Reset Sort" : "Sort by ROAS"}
           </Button>
         </CardHeader>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="text-[10px] uppercase tracking-widest font-extrabold text-slate-400 bg-slate-100/50 dark:bg-slate-900/80">
+            <thead className="text-[10px] uppercase tracking-widest font-extrabold text-slate-400 bg-slate-100/50 dark:bg-[#1f1f1f]/80">
               <tr>
                 <th className="px-6 py-4 text-left">Campaign Name</th>
                 <th className="px-6 py-4 text-left hidden md:table-cell">Client</th>
@@ -486,7 +486,7 @@ export default function AdsPage() {
                 <th className="px-6 py-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 bg-white dark:bg-slate-950">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 bg-white dark:bg-[#1f1f1f]">
               {processedCampaigns.map((c) => (
                 <motion.tr 
                   key={c.id} 
@@ -500,7 +500,7 @@ export default function AdsPage() {
                     <div className="text-[11px] font-semibold text-indigo-500 uppercase tracking-wider">{c.platform}</div>
                   </td>
                   <td className="px-6 py-4 hidden md:table-cell">
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 dark:bg-[#303030] text-xs font-semibold text-slate-700 dark:text-slate-300">
                       {c.client}
                     </span>
                   </td>
@@ -516,7 +516,7 @@ export default function AdsPage() {
                   <td className="px-6 py-4 text-right font-black tabular-nums text-base">
                     <span className={cn(
                       c.roas >= 3 ? "text-emerald-500" : c.roas >= 1.5 ? "text-amber-500" : "text-rose-500",
-                      "bg-opacity-10 px-2 py-0.5 rounded-lg"
+                      "bg-opacity-10 px-2 py-0.5 rounded-xl"
                     )}>
                       {c.roas.toFixed(2)}×
                     </span>
@@ -530,14 +530,14 @@ export default function AdsPage() {
                     <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
                         onClick={() => toggleCampaignStatus(c.id)}
-                        className="h-8 w-8 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-600 hover:text-indigo-600 dark:hover:text-indigo-400 flex items-center justify-center cursor-pointer transition-all shadow-sm"
+                        className="h-8 w-8 rounded-full bg-white dark:bg-[#303030] border border-slate-200 dark:border-[#38383f] hover:border-indigo-300 dark:hover:border-indigo-600 hover:text-indigo-600 dark:hover:text-indigo-400 flex items-center justify-center cursor-pointer transition-all shadow-sm"
                         title={c.status === "active" ? "Pause Campaign" : "Activate Campaign"}
                       >
                         {c.status === "active" ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
                       </button>
                       <button
                         onClick={() => handleDeleteCampaign(c.id, c.name)}
-                        className="h-8 w-8 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-rose-300 dark:hover:border-rose-600 hover:text-rose-600 dark:hover:text-rose-400 flex items-center justify-center cursor-pointer transition-all shadow-sm"
+                        className="h-8 w-8 rounded-full bg-white dark:bg-[#303030] border border-slate-200 dark:border-[#38383f] hover:border-rose-300 dark:hover:border-rose-600 hover:text-rose-600 dark:hover:text-rose-400 flex items-center justify-center cursor-pointer transition-all shadow-sm"
                         title="Delete Campaign"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
@@ -557,7 +557,7 @@ export default function AdsPage() {
 // Internal component for the premium glassmorphic KPI cards
 function PremiumKpiCard({ title, value, icon, gradient, iconColor }: any) {
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-white/40 dark:border-slate-800/60 bg-white/60 dark:bg-slate-900/40 p-5 shadow-lg backdrop-blur-xl group hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+    <div className="relative overflow-hidden rounded-[20px] border border-white/40 dark:border-[#303030]/60 bg-white/60 dark:bg-[#1f1f1f]/40 p-5 shadow-lg backdrop-blur-xl group hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
       {/* Background glow */}
       <div className={`absolute -inset-10 bg-gradient-to-br ${gradient} opacity-40 blur-2xl group-hover:opacity-60 transition-opacity duration-500`} />
       
@@ -567,7 +567,7 @@ function PremiumKpiCard({ title, value, icon, gradient, iconColor }: any) {
           <h3 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">{value}</h3>
         </div>
         
-        <div className="h-12 w-12 rounded-xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm flex items-center justify-center rotate-3 group-hover:rotate-6 transition-transform">
+        <div className="h-12 w-12 rounded-2xl bg-white dark:bg-[#303030] border border-slate-100 dark:border-[#38383f] shadow-sm flex items-center justify-center rotate-3 group-hover:rotate-6 transition-transform">
           <div className={iconColor}>{icon}</div>
         </div>
       </div>

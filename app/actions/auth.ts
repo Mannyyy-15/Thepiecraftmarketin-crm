@@ -7,6 +7,8 @@ import * as schema from "@/lib/schema";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { SignJWT, jwtVerify } from "jose";
+import fs from "fs";
+import path from "path";
 
 const JWT_SECRET = process.env.JWT_SECRET || "7f5ae1278fd908819ab26c6d093b137e0c4a45a33c1f01c9a62ef3ff3c4372ab";
 const key = new TextEncoder().encode(JWT_SECRET);
@@ -69,9 +71,10 @@ export async function login(state: any, formData: FormData) {
     // Generate JWT payload
     const sessionPayload = {
       id: user.id,
-      name: user.email.split("@")[0],
+      name: user.name || user.email.split("@")[0],
       email: user.email,
       role: user.role,
+      avatarUrl: user.avatarUrl,
     };
 
     // Encrypt JWT
@@ -199,5 +202,56 @@ export async function getCurrentUser() {
     return payload; // Returns { id, name, email, role }
   } catch (error) {
     return null;
+  }
+}
+
+/**
+ * Uploads a profile avatar, updates the database, and re-issues the JWT
+ */
+export async function updateUserAvatar(formData: FormData) {
+  try {
+    const session = await getCurrentUser();
+    if (!session) return { success: false, error: "Unauthorized" };
+    if (!db) return { success: false, error: "Database not connected" };
+
+    const file = formData.get("file") as File;
+    if (!file) return { success: false, error: "No file provided" };
+
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+
+    const uploadDir = path.join(process.cwd(), "public", "uploads", "avatars");
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+
+    const safeName = `${session.id}_${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
+    const filePath = path.join(uploadDir, safeName);
+    fs.writeFileSync(filePath, buffer);
+
+    const avatarUrl = `/uploads/avatars/${safeName}`;
+
+    // Update DB
+    await db.update(schema.users).set({ avatarUrl }).where(eq(schema.users.id, session.id as number));
+
+    // Update JWT
+    const newSessionPayload = {
+      ...session,
+      avatarUrl,
+    };
+    const token = await encrypt(newSessionPayload);
+    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+    cookies().set("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      expires: expiresAt,
+      sameSite: "lax",
+      path: "/",
+    });
+
+    return { success: true, avatarUrl };
+  } catch (e: any) {
+    console.error("Avatar Upload Error:", e);
+    return { success: false, error: e.message || "Failed to upload avatar" };
   }
 }

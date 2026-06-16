@@ -19,15 +19,14 @@ interface KpiCardProps {
   accent?: "brand" | "portal" | "emerald" | "amber" | "rose";
 }
 
-const accentMap = {
-  brand:   { fill: "#263aa7", glow: "bg-brand-50 dark:bg-brand-600/20 text-brand-600 dark:text-brand-300" },
-  portal:  { fill: "#14B8A6", glow: "bg-portal-50 dark:bg-portal-500/10 text-portal-600 dark:text-portal-300" },
-  emerald: { fill: "#10B981", glow: "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-300" },
-  amber:   { fill: "#F59E0B", glow: "bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-300" },
-  rose:    { fill: "#F43F5E", glow: "bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-300" },
+const accentFill = {
+  brand:   "#3b82f6",
+  portal:  "#14B8A6",
+  emerald: "#10B981",
+  amber:   "#F59E0B",
+  rose:    "#F43F5E",
 } as const;
 
-// Parse a value string into prefix / number / suffix so we can count it up
 function parseNumericValue(val: string) {
   const m = val.match(/^([^0-9-]*)(-?[0-9]+(?:\.[0-9]+)?)(.*)$/);
   if (!m) return null;
@@ -64,7 +63,7 @@ export default function KpiCard({
   spark,
   accent = "brand",
 }: KpiCardProps) {
-  const a = accentMap[accent];
+  const fill = accentFill[accent];
   const sparkData = (spark ?? [3, 5, 4, 6, 8, 7, 9, 11, 10, 13, 12, 15]).map((v, i) => ({ i, v }));
   const gradId = `kpi-grad-${accent}-${title.replace(/\s+/g, "")}`;
 
@@ -84,41 +83,45 @@ export default function KpiCard({
       initial={{ opacity: 0, y: 8 }}
       animate={isInView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-      className="group relative rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-4 overflow-hidden transition-colors duration-150 hover:border-slate-300 dark:hover:border-slate-700"
+      className={cn(
+        "group relative rounded-[20px] bg-white dark:bg-[#1f1f1f] p-6 overflow-hidden transition-all duration-200",
+        "shadow-[0_1px_4px_rgba(0,0,0,0.03),_0_6px_20px_rgba(0,0,0,0.05)] hover:shadow-[0_2px_8px_rgba(0,0,0,0.06),_0_10px_28px_rgba(0,0,0,0.09)]",
+        "dark:shadow-none dark:border dark:border-[#303030] dark:hover:border-[#38383f]"
+      )}
     >
-      <div className="flex items-center justify-between gap-2">
-        <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide truncate">
+      <div className="flex items-start justify-between gap-2 mb-3">
+        <p className="text-[11px] font-semibold text-[#8888a0] dark:text-[#5a5a68] uppercase tracking-widest leading-none">
           {title}
         </p>
         {icon && (
-          <span className={cn("h-7 w-7 rounded-md flex items-center justify-center shrink-0", a.glow)}>
+          <span className="text-[#8888a0] dark:text-[#5a5a68] shrink-0 [&>svg]:h-4 [&>svg]:w-4">
             {icon}
           </span>
         )}
       </div>
 
-      <p className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white tracking-tight tabular-nums">
+      <p className="text-[28px] font-black text-[#111114] dark:text-white tracking-tight tabular-nums leading-none">
         {displayValue}
       </p>
 
-      <div className="mt-2.5 flex items-end justify-between gap-2">
-        {change && (
+      <div className="mt-3 flex items-end justify-between gap-2">
+        {change ? (
           <span
             className={cn(
-              "inline-flex items-center gap-1 text-xs font-medium",
+              "inline-flex items-center gap-0.5 text-xs font-semibold",
               changeType === "positive" && "text-emerald-600 dark:text-emerald-400",
-              changeType === "negative" && "text-rose-600 dark:text-rose-400",
-              changeType === "neutral"  && "text-slate-400 dark:text-slate-500"
+              changeType === "negative" && "text-rose-500 dark:text-rose-400",
+              changeType === "neutral"  && "text-[#8888a0] dark:text-[#5a5a68]"
             )}
           >
             {changeType === "positive" && <ArrowUpRight className="w-3.5 h-3.5" />}
             {changeType === "negative" && <ArrowDownRight className="w-3.5 h-3.5" />}
             {change}
           </span>
-        )}
+        ) : <span />}
 
-        <div className="hidden sm:block -mr-1 -mb-1 shrink-0 opacity-80">
-          <SparklineChart data={sparkData} fill={a.fill} gradId={gradId} />
+        <div className="hidden sm:block -mr-2 -mb-2 shrink-0 opacity-70">
+          <SparklineChart data={sparkData} fill={fill} gradId={gradId} />
         </div>
       </div>
     </motion.div>

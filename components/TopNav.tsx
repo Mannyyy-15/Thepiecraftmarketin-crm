@@ -66,12 +66,12 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
   const pathname = usePathname();
   const router = useRouter();
   const title = titleFromPath(pathname);
-  const [user, setUser] = useState<{ name: string; email: string } | null>(null);
+  const [user, setUser] = useState<{ name: string; email: string; role: string; avatarUrl?: string } | null>(null);
 
   useEffect(() => {
     getCurrentUser().then((res) => {
       if (res) {
-        setUser({ name: res.name as string, email: res.email as string });
+        setUser({ name: res.name as string, email: res.email as string, role: res.role as string, avatarUrl: res.avatarUrl as string });
       }
     });
   }, []);
@@ -307,7 +307,7 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
 
   return (
     <>
-      <header className="z-30 mx-3 mt-3 sm:mx-4 sm:mt-4 lg:mx-6 lg:mt-5 flex h-14 sm:h-16 shrink-0 items-center gap-3 rounded-2xl border border-slate-200/80 dark:border-brand-900/50 bg-white/85 dark:bg-[#080d1e]/90 backdrop-blur-xl shadow-soft px-3 sm:px-4">
+      <header className="z-30 mx-3 mt-3 sm:mx-4 sm:mt-4 lg:mx-6 lg:mt-5 flex h-14 sm:h-16 shrink-0 items-center gap-3 rounded-[20px] bg-white/90 dark:bg-[#1f1f1f]/95 backdrop-blur-xl px-4 sm:px-5 shadow-[0_2px_12px_rgba(0,0,0,0.07)] dark:shadow-none dark:border dark:border-[#303030]">
         {onMenuClick && (
         <button
           type="button"
@@ -332,10 +332,10 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
           className="relative hidden sm:block w-64 md:w-80 cursor-pointer group"
         >
           <Search className="pointer-events-none absolute inset-y-0 left-3 h-full w-4 text-slate-400 group-hover:text-brand-500 transition-colors" />
-          <div className="h-9 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 pl-9 pr-12 text-sm text-slate-450 dark:text-slate-500 flex items-center select-none">
+          <div className="h-9 w-full rounded-xl border border-[#e8e8ed] dark:border-[#303030] bg-[#f7f7f9] dark:bg-[#303030] pl-9 pr-12 text-sm text-[#8888a0] dark:text-[#5a5a68] flex items-center select-none">
             Search clients, projects, settings…
           </div>
-          <kbd className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center gap-0.5 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-1.5 py-0.5 text-[10px] font-medium text-slate-500 dark:text-slate-400">
+          <kbd className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center gap-0.5 rounded-md border border-slate-200 dark:border-[#38383f] bg-white dark:bg-[#303030] px-1.5 py-0.5 text-[10px] font-medium text-slate-500 dark:text-[#9999a8]">
             <Command className="h-2.5 w-2.5" />K
           </kbd>
         </div>
@@ -349,10 +349,10 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
               setShowNotifications(false);
               setShowProfileMenu(false);
             }}
-            className={`inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 transition-all cursor-pointer ${
-              showQuickActions 
-                ? "bg-brand-600 text-white shadow-glow border-brand-600" 
-                : "bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800"
+            className={`inline-flex h-9 w-9 items-center justify-center rounded-xl border transition-all cursor-pointer ${
+              showQuickActions
+                ? "bg-[#3b82f6] text-white border-[#3b82f6] shadow-[0_2px_8px_rgba(59,130,246,0.4)]"
+                : "border-[#e8e8ed] dark:border-[#303030] bg-white dark:bg-[#303030] text-slate-600 dark:text-slate-300 hover:bg-[#f7f7f9] dark:hover:bg-[#38383f]"
             }`}
             title="Quick Action Toolbar"
           >
@@ -361,7 +361,7 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
 
           {/* Quick Actions Dropdown Menu */}
           {showQuickActions && (
-            <div className="absolute right-0 mt-2.5 w-56 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-2.5 shadow-xl z-50 animate-fadeIn">
+            <div className="absolute right-0 mt-2.5 w-56 rounded-2xl border border-[#f0f0f2] dark:border-[#303030] bg-white dark:bg-[#1f1f1f] p-2.5 shadow-[0_4px_24px_rgba(0,0,0,0.10)] dark:shadow-none z-50 animate-fadeIn">
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-2.5 py-1 mb-1">Quick Tools</p>
               
               <button
@@ -385,7 +385,7 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
                 <Briefcase className="h-3.5 w-3.5" /> Create Project
               </button>
 
-              <div className="border-t border-slate-100 dark:border-slate-800/80 my-1.5" />
+              <div className="border-t border-slate-100 dark:border-[#303030] my-1.5" />
 
               <button
                 onClick={() => { setActiveModal("hours"); setShowQuickActions(false); }}
@@ -408,7 +408,7 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
         <button
           type="button"
           onClick={() => router.push('/admin/messages')}
-          className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-brand-50 dark:hover:bg-brand-500/10 hover:text-brand-600 dark:hover:text-brand-400 transition-colors cursor-pointer"
+          className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-[#e8e8ed] dark:border-[#303030] bg-white dark:bg-[#303030] text-slate-600 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
           aria-label="Messages"
           title="Messages"
         >
@@ -424,16 +424,16 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
               setShowQuickActions(false);
               setShowProfileMenu(false);
             }}
-            className={`relative inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 transition-all cursor-pointer ${
+            className={`relative inline-flex h-9 w-9 items-center justify-center rounded-xl border transition-all cursor-pointer ${
               showNotifications
-                ? "bg-slate-100 dark:bg-slate-800 text-brand-600"
-                : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                ? "border-[#e8e8ed] dark:border-[#303030] bg-[#f7f7f9] dark:bg-[#303030] text-[#3b82f6]"
+                : "border-[#e8e8ed] dark:border-[#303030] bg-white dark:bg-[#303030] text-slate-600 dark:text-slate-300 hover:bg-[#f7f7f9] dark:hover:bg-[#38383f]"
             }`}
             aria-label="Notifications"
           >
             <Bell className="h-4 w-4" />
             {hasUnread && (
-              <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-rose-500 ring-2 ring-white dark:ring-slate-950 animate-pulse" />
+              <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-rose-500 ring-2 ring-white dark:ring-[#1f1f1f] animate-pulse" />
             )}
           </button>
         </div>
@@ -462,16 +462,16 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
             className="cursor-pointer rounded-full focus:outline-none focus:ring-2 focus:ring-brand-500/40"
             aria-label="Profile menu"
           >
-            <Avatar name={user?.name || "User"} status="online" size="sm" />
+            <Avatar name={user?.name || "User"} role={user?.role} src={user?.avatarUrl} status="online" size="sm" />
           </button>
 
           {showProfileMenu && (
             <>
               {/* backdrop */}
               <div className="fixed inset-0 z-40" onClick={() => setShowProfileMenu(false)} />
-              <div className="absolute right-0 mt-2.5 w-56 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl z-50 overflow-hidden animate-fadeIn">
+              <div className="absolute right-0 mt-2.5 w-56 rounded-2xl border border-[#f0f0f2] dark:border-[#303030] bg-white dark:bg-[#1f1f1f] shadow-[0_4px_24px_rgba(0,0,0,0.10)] dark:shadow-none z-50 overflow-hidden animate-fadeIn">
                 {/* User info */}
-                <div className="px-4 py-3.5 border-b border-slate-100 dark:border-slate-800/80">
+                <div className="px-4 py-3.5 border-b border-[#f0f0f2] dark:border-[#303030]">
                   <p className="text-xs font-bold text-slate-900 dark:text-white truncate">{user?.name || "User"}</p>
                   <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate mt-0.5">{user?.email || ""}</p>
                 </div>
@@ -480,7 +480,7 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
                   {/* Theme toggle row */}
                   <button
                     onClick={toggleTheme}
-                    className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer group"
+                    className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-[#28282d] transition-colors cursor-pointer group"
                   >
                     <div className="flex items-center gap-2.5">
                       {isDark
@@ -492,12 +492,12 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
                       </span>
                     </div>
                     {/* Toggle switch */}
-                    <div className={`relative h-5 w-9 rounded-full border transition-colors ${isDark ? "bg-brand-600 border-brand-600" : "bg-slate-200 border-slate-300"}`}>
+                    <div className={`relative h-5 w-9 rounded-full border transition-colors ${isDark ? "bg-[#3b82f6] border-[#3b82f6]" : "bg-slate-200 border-slate-300"}`}>
                       <div className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-all duration-200 ${isDark ? "left-4" : "left-0.5"}`} />
                     </div>
                   </button>
 
-                  <div className="border-t border-slate-100 dark:border-slate-800 my-1" />
+                  <div className="border-t border-slate-100 dark:border-[#303030] my-1" />
 
                   <button
                     onClick={() => { setShowProfileMenu(false); setShowLogoutModal(true); }}
@@ -523,12 +523,12 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
           className="fixed inset-0 z-50 bg-slate-950/40 dark:bg-slate-950/70 backdrop-blur-md flex items-start justify-center pt-[10vh] px-4 animate-fadeIn"
           onClick={() => setShowSearchModal(false)}
         >
-          <div 
-            className="w-full max-w-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl overflow-hidden animate-scaleIn"
+          <div
+            className="w-full max-w-2xl bg-white dark:bg-[#1f1f1f] border border-slate-200 dark:border-[#303030] rounded-2xl shadow-2xl overflow-hidden animate-scaleIn"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Search Input Box */}
-            <div className="relative p-4 border-b border-slate-100 dark:border-slate-800/80">
+            <div className="relative p-4 border-b border-slate-100 dark:border-[#303030]">
               <Search className="absolute left-7 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none" />
               <input
                 type="search"
@@ -536,7 +536,7 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
                 placeholder="Search resources, client brands, dev tickets, or team rosters..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-11 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-850 rounded-xl pl-11 pr-12 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500/40"
+                className="w-full h-11 bg-slate-50 dark:bg-[#303030] border border-slate-200 dark:border-[#38383f] rounded-xl pl-11 pr-12 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#3b82f6]/40"
               />
               <button
                 onClick={() => setShowSearchModal(false)}
@@ -559,21 +559,21 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
                     setShowSearchModal(false);
                     router.push(item.url);
                   }}
-                  className="w-full text-left p-2.5 rounded-xl text-slate-700 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-indigo-600 dark:hover:text-white flex items-center justify-between cursor-pointer group transition-all"
+                  className="w-full text-left p-2.5 rounded-xl text-slate-700 dark:text-[#9999a8] hover:bg-slate-50 dark:hover:bg-[#28282d] hover:text-blue-600 dark:hover:text-white flex items-center justify-between cursor-pointer group transition-all"
                 >
                   <div className="min-w-0 flex-1 flex items-center gap-3">
-                    <div className="h-7 w-7 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
+                    <div className="h-7 w-7 rounded-lg bg-slate-100 dark:bg-[#303030] flex items-center justify-center shrink-0">
                       {item.category === "Client" && <Globe className="h-3.5 w-3.5 text-blue-500" />}
                       {item.category === "Project" && <Briefcase className="h-3.5 w-3.5 text-emerald-500" />}
                       {item.category === "Team" && <Users className="h-3.5 w-3.5 text-amber-500" />}
                       {item.category === "Page" && <FileText className="h-3.5 w-3.5 text-indigo-500" />}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-xs font-bold truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400">{item.title}</p>
+                      <p className="text-xs font-bold truncate group-hover:text-blue-600 dark:group-hover:text-blue-400">{item.title}</p>
                       <p className="text-[10px] text-slate-450 dark:text-slate-500 truncate leading-snug">{item.details}</p>
                     </div>
                   </div>
-                  <span className="text-[9px] font-bold uppercase px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 shrink-0 select-none">
+                  <span className="text-[9px] font-bold uppercase px-2 py-0.5 rounded bg-slate-100 dark:bg-[#303030] text-slate-500 shrink-0 select-none">
                     {item.category}
                   </span>
                 </div>
@@ -586,9 +586,9 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
               )}
             </div>
 
-            <div className="p-3 border-t border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/20 text-[10px] text-slate-450 dark:text-slate-500 flex justify-between">
-              <span>Press <kbd className="bg-white dark:bg-slate-800 px-1 border rounded shadow-sm">Enter</kbd> to select</span>
-              <span>Press <kbd className="bg-white dark:bg-slate-800 px-1 border rounded shadow-sm">Esc</kbd> to close</span>
+            <div className="p-3 border-t border-slate-100 dark:border-[#303030] bg-slate-50/50 dark:bg-[#1f1f1f]/80 text-[10px] text-slate-450 dark:text-[#5a5a68] flex justify-between">
+              <span>Press <kbd className="bg-white dark:bg-[#303030] px-1 border dark:border-[#38383f] rounded shadow-sm">Enter</kbd> to select</span>
+              <span>Press <kbd className="bg-white dark:bg-[#303030] px-1 border dark:border-[#38383f] rounded shadow-sm">Esc</kbd> to close</span>
             </div>
           </div>
         </div>
@@ -602,7 +602,7 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
       {activeModal === "client" && (
         <div className="fixed inset-0 z-50 bg-slate-950/40 dark:bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4">
           <Card className="w-full max-w-md animate-scaleIn border border-brand-500/20 shadow-2xl">
-            <CardHeader className="py-4 border-b dark:border-slate-800">
+            <CardHeader className="py-4 border-b dark:border-[#303030]">
               <div className="flex justify-between items-center">
                 <CardTitle className="text-sm font-bold flex items-center gap-2">
                   <Globe className="h-4.5 w-4.5 text-indigo-500" /> Quick Onboard Client
@@ -622,7 +622,7 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
                     placeholder="e.g. Umbrella Corp"
                     value={qClientName}
                     onChange={(e) => setQClientName(e.target.value)}
-                    className="w-full h-10 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-xs focus:ring-2 focus:ring-indigo-500/40"
+                    className="w-full h-10 rounded-xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#303030] px-3 text-xs focus:ring-2 focus:ring-[#3b82f6]/40"
                   />
                 </div>
                 <div>
@@ -630,7 +630,7 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
                   <select
                     value={qClientIndustry}
                     onChange={(e) => setQClientIndustry(e.target.value)}
-                    className="w-full h-10 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-xs focus:ring-2 focus:ring-indigo-500/40"
+                    className="w-full h-10 rounded-xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#303030] px-3 text-xs focus:ring-2 focus:ring-[#3b82f6]/40"
                   >
                     <option value="SaaS">SaaS / Software</option>
                     <option value="E-commerce">E-commerce</option>
@@ -639,7 +639,7 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
                     <option value="Defense">Aerospace & Defense</option>
                   </select>
                 </div>
-                <button type="submit" className="w-full h-10 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-md transition-colors">
+                <button type="submit" className="w-full h-10 bg-[#3b82f6] hover:bg-[#2563eb] text-white text-xs font-bold rounded-xl shadow-md transition-colors">
                   Onboard Brand
                 </button>
               </form>
@@ -652,7 +652,7 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
       {activeModal === "employee" && (
         <div className="fixed inset-0 z-50 bg-slate-950/40 dark:bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4">
           <Card className="w-full max-w-md animate-scaleIn border border-brand-500/20 shadow-2xl">
-            <CardHeader className="py-4 border-b dark:border-slate-800">
+            <CardHeader className="py-4 border-b dark:border-[#303030]">
               <div className="flex justify-between items-center">
                 <CardTitle className="text-sm font-bold flex items-center gap-2">
                   <Users className="h-4.5 w-4.5 text-indigo-500" /> Invite Team Member
@@ -672,7 +672,7 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
                     placeholder="e.g. John Doe"
                     value={qEmpName}
                     onChange={(e) => setQEmpName(e.target.value)}
-                    className="w-full h-10 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-xs focus:ring-2 focus:ring-indigo-500/40"
+                    className="w-full h-10 rounded-xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#303030] px-3 text-xs focus:ring-2 focus:ring-[#3b82f6]/40"
                   />
                 </div>
                 <div>
@@ -683,10 +683,10 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
                     placeholder="e.g. Frontend Engineer"
                     value={qEmpRole}
                     onChange={(e) => setQEmpRole(e.target.value)}
-                    className="w-full h-10 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-xs focus:ring-2 focus:ring-indigo-500/40"
+                    className="w-full h-10 rounded-xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#303030] px-3 text-xs focus:ring-2 focus:ring-[#3b82f6]/40"
                   />
                 </div>
-                <button type="submit" className="w-full h-10 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-md transition-colors">
+                <button type="submit" className="w-full h-10 bg-[#3b82f6] hover:bg-[#2563eb] text-white text-xs font-bold rounded-xl shadow-md transition-colors">
                   Generate Invite Token
                 </button>
               </form>
@@ -699,7 +699,7 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
       {activeModal === "project" && (
         <div className="fixed inset-0 z-50 bg-slate-950/40 dark:bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4">
           <Card className="w-full max-w-md animate-scaleIn border border-brand-500/20 shadow-2xl">
-            <CardHeader className="py-4 border-b dark:border-slate-800">
+            <CardHeader className="py-4 border-b dark:border-[#303030]">
               <div className="flex justify-between items-center">
                 <CardTitle className="text-sm font-bold flex items-center gap-2">
                   <Briefcase className="h-4.5 w-4.5 text-indigo-500" /> Create Project
@@ -719,7 +719,7 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
                     placeholder="e.g. E-Commerce Redesign"
                     value={qProjTitle}
                     onChange={(e) => setQProjTitle(e.target.value)}
-                    className="w-full h-10 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-xs focus:ring-2 focus:ring-indigo-500/40"
+                    className="w-full h-10 rounded-xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#303030] px-3 text-xs focus:ring-2 focus:ring-[#3b82f6]/40"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
@@ -728,7 +728,7 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
                     <select
                       value={qProjClient}
                       onChange={(e) => setQProjClient(e.target.value)}
-                      className="w-full h-10 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-xs focus:ring-2 focus:ring-indigo-500/40"
+                      className="w-full h-10 rounded-xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#303030] px-3 text-xs focus:ring-2 focus:ring-[#3b82f6]/40"
                     >
                       {searchData.clients.map((c) => (
                         <option key={c.id} value={c.name}>{c.name}</option>
@@ -740,7 +740,7 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
                     <select
                       value={qProjType}
                       onChange={(e) => setQProjType(e.target.value as any)}
-                      className="w-full h-10 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-xs focus:ring-2 focus:ring-indigo-500/40"
+                      className="w-full h-10 rounded-xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#303030] px-3 text-xs focus:ring-2 focus:ring-[#3b82f6]/40"
                     >
                       <option value="Website">Website</option>
                       <option value="Meta Ads">Meta Ads</option>
@@ -750,7 +750,7 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
                     </select>
                   </div>
                 </div>
-                <button type="submit" className="w-full h-10 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-md transition-colors">
+                <button type="submit" className="w-full h-10 bg-[#3b82f6] hover:bg-[#2563eb] text-white text-xs font-bold rounded-xl shadow-md transition-colors">
                   Create Project Card
                 </button>
               </form>
@@ -763,7 +763,7 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
       {activeModal === "hours" && (
         <div className="fixed inset-0 z-50 bg-slate-950/40 dark:bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4">
           <Card className="w-full max-w-md animate-scaleIn border border-brand-500/20 shadow-2xl">
-            <CardHeader className="py-4 border-b dark:border-slate-800">
+            <CardHeader className="py-4 border-b dark:border-[#303030]">
               <div className="flex justify-between items-center">
                 <CardTitle className="text-sm font-bold flex items-center gap-2">
                   <Clock className="h-4.5 w-4.5 text-emerald-500" /> Log Billable Hours
@@ -784,12 +784,12 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
                     required
                     value={qHours}
                     onChange={(e) => setQHours(e.target.value)}
-                    className="w-full h-10 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-xs focus:ring-2 focus:ring-indigo-500/40"
+                    className="w-full h-10 rounded-xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#303030] px-3 text-xs focus:ring-2 focus:ring-[#3b82f6]/40"
                   />
                 </div>
                 <div>
                   <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Associated Engagement</label>
-                  <select className="w-full h-10 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-xs focus:ring-2 focus:ring-indigo-500/40">
+                  <select className="w-full h-10 rounded-xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#303030] px-3 text-xs focus:ring-2 focus:ring-[#3b82f6]/40">
                     {searchData.projects.map((p) => (
                       <option key={p.id} value={p.id}>{p.name}</option>
                     ))}
@@ -808,7 +808,7 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
       {activeModal === "expense" && (
         <div className="fixed inset-0 z-50 bg-slate-950/40 dark:bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4">
           <Card className="w-full max-w-md animate-scaleIn border border-brand-500/20 shadow-2xl">
-            <CardHeader className="py-4 border-b dark:border-slate-800">
+            <CardHeader className="py-4 border-b dark:border-[#303030]">
               <div className="flex justify-between items-center">
                 <CardTitle className="text-sm font-bold flex items-center gap-2">
                   <DollarSign className="h-4.5 w-4.5 text-rose-500" /> Submit Expense Claim
@@ -829,7 +829,7 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
                     placeholder="e.g. 125"
                     value={qExpenseAmount}
                     onChange={(e) => setQExpenseAmount(e.target.value)}
-                    className="w-full h-10 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-xs focus:ring-2 focus:ring-indigo-500/40"
+                    className="w-full h-10 rounded-xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#303030] px-3 text-xs focus:ring-2 focus:ring-[#3b82f6]/40"
                   />
                 </div>
                 <div>
@@ -840,7 +840,7 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
                     placeholder="e.g. Team lunch with Stark Acme representatives"
                     value={qExpenseDesc}
                     onChange={(e) => setQExpenseDesc(e.target.value)}
-                    className="w-full h-10 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-xs focus:ring-2 focus:ring-indigo-500/40"
+                    className="w-full h-10 rounded-xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#303030] px-3 text-xs focus:ring-2 focus:ring-[#3b82f6]/40"
                   />
                 </div>
                 <button type="submit" className="w-full h-10 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl shadow-md transition-colors">

@@ -288,14 +288,14 @@ export default function WebsiteDevPage() {
                 <div className="flex justify-between items-center">
                   <div>
                     <CardTitle className="text-sm font-bold flex items-center gap-2 text-brand-900 dark:text-brand-100">
-                      <div className="h-6 w-6 rounded-md bg-white dark:bg-slate-800 flex items-center justify-center shadow-sm">
+                      <div className="h-6 w-6 rounded-md bg-white dark:bg-[#303030] flex items-center justify-center shadow-sm">
                         <Code2 className="h-3.5 w-3.5 text-brand-500" />
                       </div>
                       Create Engineering Ticket
                     </CardTitle>
                     <CardDescription className="text-xs mt-1 text-brand-700/70 dark:text-brand-300/60">Define the engineering task and commit to the backlog.</CardDescription>
                   </div>
-                  <button onClick={() => setShowTicketForm(false)} className="h-8 w-8 rounded-full bg-white/50 dark:bg-slate-800/50 flex items-center justify-center text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white transition-all shadow-sm">
+                  <button onClick={() => setShowTicketForm(false)} className="h-8 w-8 rounded-full bg-white/50 dark:bg-[#303030]/50 flex items-center justify-center text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white transition-all shadow-sm">
                     <X className="h-4 w-4" />
                   </button>
                 </div>
@@ -305,17 +305,17 @@ export default function WebsiteDevPage() {
                   <div className="md:col-span-2">
                     <label className="block text-[10px] font-extrabold text-brand-900/60 dark:text-brand-100/50 uppercase tracking-widest mb-1.5">Ticket Title</label>
                     <input type="text" required placeholder="e.g. Integrate Stripe Checkout" value={tTitle} onChange={(e) => setTTitle(e.target.value)}
-                      className="h-11 w-full rounded-xl border border-white/40 dark:border-slate-800/60 bg-white/60 dark:bg-slate-900/40 px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white backdrop-blur-md shadow-sm transition-all" />
+                      className="h-11 w-full rounded-2xl border border-white/40 dark:border-[#303030]/60 bg-white/60 dark:bg-[#1f1f1f]/40 px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white backdrop-blur-md shadow-sm transition-all" />
                   </div>
                   <div>
                     <label className="block text-[10px] font-extrabold text-brand-900/60 dark:text-brand-100/50 uppercase tracking-widest mb-1.5">Code Repository</label>
                     <input type="text" required value={tRepo} onChange={(e) => setTRepo(e.target.value)}
-                      className="h-11 w-full rounded-xl border border-white/40 dark:border-slate-800/60 bg-white/60 dark:bg-slate-900/40 px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white backdrop-blur-md shadow-sm transition-all" />
+                      className="h-11 w-full rounded-2xl border border-white/40 dark:border-[#303030]/60 bg-white/60 dark:bg-[#1f1f1f]/40 px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white backdrop-blur-md shadow-sm transition-all" />
                   </div>
                   <div>
                     <label className="block text-[10px] font-extrabold text-brand-900/60 dark:text-brand-100/50 uppercase tracking-widest mb-1.5">Severity Priority</label>
                     <select value={tPriority} onChange={(e) => setTPriority(e.target.value as any)}
-                      className="h-11 w-full rounded-xl border border-white/40 dark:border-slate-800/60 bg-white/60 dark:bg-slate-900/40 px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white backdrop-blur-md shadow-sm transition-all">
+                      className="h-11 w-full rounded-2xl border border-white/40 dark:border-[#303030]/60 bg-white/60 dark:bg-[#1f1f1f]/40 px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white backdrop-blur-md shadow-sm transition-all">
                       <option value="low">Low</option>
                       <option value="medium">Medium</option>
                       <option value="high">High</option>
@@ -325,7 +325,7 @@ export default function WebsiteDevPage() {
                   <div>
                     <label className="block text-[10px] font-extrabold text-brand-900/60 dark:text-brand-100/50 uppercase tracking-widest mb-1.5">Assign Lead Dev</label>
                     <select value={tAssignee} onChange={(e) => setTAssignee(e.target.value)}
-                      className="h-11 w-full rounded-xl border border-white/40 dark:border-slate-800/60 bg-white/60 dark:bg-slate-900/40 px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white backdrop-blur-md shadow-sm transition-all">
+                      className="h-11 w-full rounded-2xl border border-white/40 dark:border-[#303030]/60 bg-white/60 dark:bg-[#1f1f1f]/40 px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white backdrop-blur-md shadow-sm transition-all">
                       <option>Priya Shah</option>
                       <option>Sam Okafor</option>
                       <option>Mateo Alvarez</option>
@@ -355,14 +355,14 @@ export default function WebsiteDevPage() {
                 <div className="flex justify-between items-center">
                   <div>
                     <CardTitle className="text-sm font-bold flex items-center gap-2 text-emerald-900 dark:text-emerald-100">
-                      <div className="h-6 w-6 rounded-md bg-white dark:bg-slate-800 flex items-center justify-center shadow-sm">
+                      <div className="h-6 w-6 rounded-md bg-white dark:bg-[#303030] flex items-center justify-center shadow-sm">
                         <Globe className="h-3.5 w-3.5 text-emerald-500" />
                       </div>
                       Register Domain Monitor
                     </CardTitle>
                     <CardDescription className="text-xs mt-1 text-emerald-700/70 dark:text-emerald-300/60">Initialize tracking for a new client site.</CardDescription>
                   </div>
-                  <button onClick={() => setShowSiteForm(false)} className="h-8 w-8 rounded-full bg-white/50 dark:bg-slate-800/50 flex items-center justify-center text-slate-500 hover:text-slate-800 transition-all shadow-sm">
+                  <button onClick={() => setShowSiteForm(false)} className="h-8 w-8 rounded-full bg-white/50 dark:bg-[#303030]/50 flex items-center justify-center text-slate-500 hover:text-slate-800 transition-all shadow-sm">
                     <X className="h-4 w-4" />
                   </button>
                 </div>
@@ -373,23 +373,23 @@ export default function WebsiteDevPage() {
                   <div>
                     <label className="block text-[10px] font-extrabold text-emerald-900/60 dark:text-emerald-100/50 uppercase tracking-widest mb-1.5">Domain URL</label>
                     <input type="text" required value={sName} onChange={(e) => setSName(e.target.value)}
-                      className="h-11 w-full rounded-xl border border-white/40 dark:border-slate-800/60 bg-white/60 dark:bg-slate-900/40 px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-slate-800 dark:text-white backdrop-blur-md shadow-sm transition-all" />
+                      className="h-11 w-full rounded-2xl border border-white/40 dark:border-[#303030]/60 bg-white/60 dark:bg-[#1f1f1f]/40 px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-slate-800 dark:text-white backdrop-blur-md shadow-sm transition-all" />
                   </div>
                   <div>
                     <label className="block text-[10px] font-extrabold text-emerald-900/60 dark:text-emerald-100/50 uppercase tracking-widest mb-1.5">Target Response (ms)</label>
                     <input type="number" required value={sResponse} onChange={(e) => setSResponse(Number(e.target.value))}
-                      className="h-11 w-full rounded-xl border border-white/40 dark:border-slate-800/60 bg-white/60 dark:bg-slate-900/40 px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-slate-800 dark:text-white backdrop-blur-md shadow-sm transition-all" />
+                      className="h-11 w-full rounded-2xl border border-white/40 dark:border-[#303030]/60 bg-white/60 dark:bg-[#1f1f1f]/40 px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-slate-800 dark:text-white backdrop-blur-md shadow-sm transition-all" />
                   </div>
                   <div>
                     <label className="block text-[10px] font-extrabold text-emerald-900/60 dark:text-emerald-100/50 uppercase tracking-widest mb-1.5">Expected Uptime (%)</label>
                     <input type="number" step="0.01" required value={sUptime} onChange={(e) => setSUptime(Number(e.target.value))}
-                      className="h-11 w-full rounded-xl border border-white/40 dark:border-slate-800/60 bg-white/60 dark:bg-slate-900/40 px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-slate-800 dark:text-white backdrop-blur-md shadow-sm transition-all" />
+                      className="h-11 w-full rounded-2xl border border-white/40 dark:border-[#303030]/60 bg-white/60 dark:bg-[#1f1f1f]/40 px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-slate-800 dark:text-white backdrop-blur-md shadow-sm transition-all" />
                   </div>
                   <div className="flex gap-3">
                     <div className="flex-1">
                       <label className="block text-[10px] font-extrabold text-emerald-900/60 dark:text-emerald-100/50 uppercase tracking-widest mb-1.5">Ping Status</label>
                       <select value={sStatus} onChange={(e) => setSStatus(e.target.value as any)}
-                        className="h-11 w-full rounded-xl border border-white/40 dark:border-slate-800/60 bg-white/60 dark:bg-slate-900/40 px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-slate-800 dark:text-white backdrop-blur-md shadow-sm transition-all">
+                        className="h-11 w-full rounded-2xl border border-white/40 dark:border-[#303030]/60 bg-white/60 dark:bg-[#1f1f1f]/40 px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-slate-800 dark:text-white backdrop-blur-md shadow-sm transition-all">
                         <option value="operational">Operational</option>
                         <option value="degraded">Degraded</option>
                         <option value="outage">Outage</option>
@@ -441,8 +441,8 @@ export default function WebsiteDevPage() {
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
         
         {/* Engineering Backlog */}
-        <Card className="xl:col-span-2 overflow-hidden shadow-sm border-slate-200/60 dark:border-slate-800/60 bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl">
-          <CardHeader className="flex flex-row items-center justify-between border-b border-slate-100 dark:border-slate-800/60 pb-4">
+        <Card className="xl:col-span-2 overflow-hidden shadow-sm border-slate-200/60 dark:border-[#303030]/60 bg-white/95 dark:bg-[#1f1f1f]/95 backdrop-blur-xl">
+          <CardHeader className="flex flex-row items-center justify-between border-b border-slate-100 dark:border-[#303030]/60 pb-4">
             <div>
               <CardTitle className="text-lg">Engineering Backlog</CardTitle>
               <div className="mt-1 flex items-center gap-2">
@@ -453,11 +453,11 @@ export default function WebsiteDevPage() {
                 <p className="text-xs font-bold text-slate-500">{tasks.length} active tickets</p>
               </div>
             </div>
-            <Button variant="outline" size="sm" onClick={() => setShowTicketForm(true)} className="text-xs font-bold rounded-xl bg-white dark:bg-slate-950 shadow-sm border-slate-200 dark:border-slate-800">
+            <Button variant="outline" size="sm" onClick={() => setShowTicketForm(true)} className="text-xs font-bold rounded-2xl bg-white dark:bg-[#1f1f1f] shadow-sm border-slate-200 dark:border-[#303030]">
               <Plus className="h-3.5 w-3.5 mr-1.5" /> Add Ticket
             </Button>
           </CardHeader>
-          <div className="divide-y divide-slate-100 dark:divide-slate-800/60 p-2 sm:p-4 bg-slate-50/50 dark:bg-slate-900/20">
+          <div className="divide-y divide-slate-100 dark:divide-slate-800/60 p-2 sm:p-4 bg-slate-50/50 dark:bg-[#1f1f1f]/20">
             {tasks.map((t) => {
               const isCompleted = t.status === "done";
               return (
@@ -466,8 +466,8 @@ export default function WebsiteDevPage() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   className={cn(
-                    "group flex items-center gap-4 p-4 rounded-xl border mb-2 transition-all duration-200 bg-white dark:bg-slate-950 shadow-sm hover:shadow-md",
-                    isCompleted ? "opacity-60 border-slate-200/50 dark:border-slate-800/50" : "border-slate-200 dark:border-slate-800 hover:border-brand-300 dark:hover:border-brand-700/50"
+                    "group flex items-center gap-4 p-4 rounded-2xl border mb-2 transition-all duration-200 bg-white dark:bg-[#1f1f1f] shadow-sm hover:shadow-md",
+                    isCompleted ? "opacity-60 border-slate-200/50 dark:border-[#303030]/50" : "border-slate-200 dark:border-[#303030] hover:border-brand-300 dark:hover:border-brand-700/50"
                   )}
                 >
                   <div className="relative flex items-center justify-center shrink-0">
@@ -486,7 +486,7 @@ export default function WebsiteDevPage() {
                       <Badge variant={priorityVariant[t.priority]} className="text-[9px] uppercase font-extrabold tracking-wider">{t.priority}</Badge>
                     </div>
                     <div className="mt-2 flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400 flex-wrap">
-                      <span className="inline-flex items-center gap-1.5 font-medium bg-slate-100 dark:bg-slate-900 px-2 py-0.5 rounded-md text-[10px]">
+                      <span className="inline-flex items-center gap-1.5 font-medium bg-slate-100 dark:bg-[#1f1f1f] px-2 py-0.5 rounded-md text-[10px]">
                         <GitBranch className="h-3 w-3" /> {t.repo}
                       </span>
                       
@@ -496,7 +496,7 @@ export default function WebsiteDevPage() {
                         onChange={(e) => handleInlineStatusChange(t.id, e.target.value as any)}
                         className={cn(
                           "rounded-md border bg-transparent px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide focus:outline-none transition-colors cursor-pointer",
-                          isCompleted ? "border-emerald-200 text-emerald-600 dark:border-emerald-900 dark:text-emerald-400" : "border-slate-200 text-slate-600 dark:border-slate-700 dark:text-slate-300 hover:border-brand-300 dark:hover:border-brand-700"
+                          isCompleted ? "border-emerald-200 text-emerald-600 dark:border-emerald-900 dark:text-emerald-400" : "border-slate-200 text-slate-600 dark:border-[#38383f] dark:text-slate-300 hover:border-brand-300 dark:hover:border-brand-700"
                         )}
                       >
                         <option value="todo">To Do</option>
@@ -515,7 +515,7 @@ export default function WebsiteDevPage() {
 
                   <button
                     onClick={() => handleDeleteTask(t.id, t.title)}
-                    className="h-8 w-8 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-rose-500 hover:border-rose-300 dark:hover:border-rose-700 flex items-center justify-center cursor-pointer transition-all shadow-sm opacity-0 group-hover:opacity-100 shrink-0"
+                    className="h-8 w-8 rounded-full bg-white dark:bg-[#1f1f1f] border border-slate-200 dark:border-[#38383f] text-slate-400 hover:text-rose-500 hover:border-rose-300 dark:hover:border-rose-700 flex items-center justify-center cursor-pointer transition-all shadow-sm opacity-0 group-hover:opacity-100 shrink-0"
                     title="Delete Ticket"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
@@ -531,8 +531,8 @@ export default function WebsiteDevPage() {
 
         {/* Site Health Tracker */}
         <div className="space-y-4">
-          <Card className="shadow-sm border-slate-200/60 dark:border-slate-800/60 bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl">
-            <CardHeader className="flex flex-row items-center justify-between border-b border-slate-100 dark:border-slate-800/60 pb-4">
+          <Card className="shadow-sm border-slate-200/60 dark:border-[#303030]/60 bg-white/95 dark:bg-[#1f1f1f]/95 backdrop-blur-xl">
+            <CardHeader className="flex flex-row items-center justify-between border-b border-slate-100 dark:border-[#303030]/60 pb-4">
               <div>
                 <CardTitle className="text-lg">Network Health</CardTitle>
                 <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-1">Live Managed Domains</p>
@@ -543,19 +543,19 @@ export default function WebsiteDevPage() {
                   size="sm" 
                   onClick={handleSyncHealth} 
                   disabled={syncingHealth}
-                  className="h-8 px-3 rounded-full flex items-center justify-center bg-white dark:bg-slate-950 shadow-sm border-slate-200 dark:border-slate-800 text-xs font-bold"
+                  className="h-8 px-3 rounded-full flex items-center justify-center bg-white dark:bg-[#1f1f1f] shadow-sm border-slate-200 dark:border-[#303030] text-xs font-bold"
                 >
                   <RefreshCw className={cn("h-3.5 w-3.5 mr-1.5", syncingHealth && "animate-spin")} />
                   {syncingHealth ? "Syncing..." : "Sync Live Data"}
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => setShowSiteForm(true)} className="h-8 w-8 p-0 rounded-full flex items-center justify-center bg-white dark:bg-slate-950 shadow-sm border-slate-200 dark:border-slate-800">
+                <Button variant="outline" size="sm" onClick={() => setShowSiteForm(true)} className="h-8 w-8 p-0 rounded-full flex items-center justify-center bg-white dark:bg-[#1f1f1f] shadow-sm border-slate-200 dark:border-[#303030]">
                   <Plus className="h-4 w-4" />
                 </Button>
               </div>
             </CardHeader>
-            <CardContent className="p-4 space-y-3 bg-slate-50/30 dark:bg-slate-900/10">
+            <CardContent className="p-4 space-y-3 bg-slate-50/30 dark:bg-[#1f1f1f]/10">
               {sitesList.map((s) => (
-                <div key={s.name} className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-4 group relative hover:border-brand-500/30 transition-all shadow-sm">
+                <div key={s.name} className="rounded-2xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] p-4 group relative hover:border-brand-500/30 transition-all shadow-sm">
                   <div className="flex items-center justify-between">
                     <div className="min-w-0">
                       <p className="text-sm font-bold text-slate-900 dark:text-white truncate flex items-center gap-2">
@@ -586,7 +586,7 @@ export default function WebsiteDevPage() {
                       
                       <button
                         onClick={() => handleDeleteSite(s.name)}
-                        className="h-8 w-8 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-rose-500 hover:border-rose-300 dark:hover:border-rose-700 flex items-center justify-center cursor-pointer transition-all shadow-sm opacity-0 group-hover:opacity-100 shrink-0"
+                        className="h-8 w-8 rounded-full bg-white dark:bg-[#1f1f1f] border border-slate-200 dark:border-[#38383f] text-slate-400 hover:text-rose-500 hover:border-rose-300 dark:hover:border-rose-700 flex items-center justify-center cursor-pointer transition-all shadow-sm opacity-0 group-hover:opacity-100 shrink-0"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>
@@ -605,7 +605,7 @@ export default function WebsiteDevPage() {
 
       {/* -------------------- SITE INSPECTOR -------------------- */}
       <div className="mt-12 space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-[#303030] pb-4">
           <div>
             <h2 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
               <Search className="h-6 w-6 text-brand-500" />
@@ -623,7 +623,7 @@ export default function WebsiteDevPage() {
                 fetchCommits(repo);
               }
             }}
-            className="h-11 rounded-xl border-2 border-brand-500/20 bg-brand-50/50 dark:bg-brand-900/10 px-4 text-sm font-bold shadow-sm focus:ring-2 focus:ring-brand-500 w-full sm:w-72"
+            className="h-11 rounded-2xl border-2 border-brand-500/20 bg-brand-50/50 dark:bg-brand-900/10 px-4 text-sm font-bold shadow-sm focus:ring-2 focus:ring-brand-500 w-full sm:w-72"
           >
             <option value="">Select a Project to Inspect...</option>
             {sitesList.map((s: any) => (
@@ -666,8 +666,8 @@ function SiteInspectorView({ site, commits, commitsLoading, commitsError, fetchC
   return (
     <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
       {/* Lighthouse Scores */}
-      <Card className="shadow-sm border-slate-200/60 dark:border-slate-800/60 bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl">
-        <CardHeader className="pb-4 border-b border-slate-100 dark:border-slate-800/60">
+      <Card className="shadow-sm border-slate-200/60 dark:border-[#303030]/60 bg-white/95 dark:bg-[#1f1f1f]/95 backdrop-blur-xl">
+        <CardHeader className="pb-4 border-b border-slate-100 dark:border-[#303030]/60">
           <CardTitle className="text-lg flex items-center gap-2"><GaugeCircle className="h-4.5 w-4.5 text-emerald-500" /> PageSpeed Scores</CardTitle>
           <CardDescription className="text-xs">Live Lighthouse API metrics</CardDescription>
         </CardHeader>
@@ -680,25 +680,25 @@ function SiteInspectorView({ site, commits, commitsLoading, commitsError, fetchC
       </Card>
       
       {/* Infrastructure & Security */}
-      <Card className="shadow-sm border-slate-200/60 dark:border-slate-800/60 bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl">
-        <CardHeader className="pb-4 border-b border-slate-100 dark:border-slate-800/60">
+      <Card className="shadow-sm border-slate-200/60 dark:border-[#303030]/60 bg-white/95 dark:bg-[#1f1f1f]/95 backdrop-blur-xl">
+        <CardHeader className="pb-4 border-b border-slate-100 dark:border-[#303030]/60">
           <CardTitle className="text-lg flex items-center gap-2"><ShieldCheck className="h-4.5 w-4.5 text-blue-500" /> Infrastructure</CardTitle>
           <CardDescription className="text-xs">Hosting and security details</CardDescription>
         </CardHeader>
         <CardContent className="p-4 space-y-4">
-          <div className="flex justify-between items-center p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
+          <div className="flex justify-between items-center p-3 rounded-2xl bg-slate-50 dark:bg-[#1f1f1f] border border-slate-100 dark:border-[#303030]">
             <span className="text-xs font-bold text-slate-500">Tech Stack</span>
             <span className="text-sm font-black">{mockData.stack}</span>
           </div>
-          <div className="flex justify-between items-center p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
+          <div className="flex justify-between items-center p-3 rounded-2xl bg-slate-50 dark:bg-[#1f1f1f] border border-slate-100 dark:border-[#303030]">
             <span className="text-xs font-bold text-slate-500">Hosting</span>
             <span className="text-sm font-black">{mockData.provider}</span>
           </div>
-          <div className="flex justify-between items-center p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
+          <div className="flex justify-between items-center p-3 rounded-2xl bg-slate-50 dark:bg-[#1f1f1f] border border-slate-100 dark:border-[#303030]">
             <span className="text-xs font-bold text-slate-500">SSL Expiry</span>
             <span className="text-sm font-black text-emerald-600 dark:text-emerald-400">{mockData.sslExpiry}</span>
           </div>
-          <div className="flex justify-between items-center p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
+          <div className="flex justify-between items-center p-3 rounded-2xl bg-slate-50 dark:bg-[#1f1f1f] border border-slate-100 dark:border-[#303030]">
             <span className="text-xs font-bold text-slate-500">Domain Expiry</span>
             <span className="text-sm font-black text-amber-600 dark:text-amber-400">{site.domainExpiry}</span>
           </div>
@@ -706,8 +706,8 @@ function SiteInspectorView({ site, commits, commitsLoading, commitsError, fetchC
       </Card>
 
       {/* Monitoring & Traffic */}
-      <Card className="shadow-sm border-slate-200/60 dark:border-slate-800/60 bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl">
-        <CardHeader className="pb-4 border-b border-slate-100 dark:border-slate-800/60">
+      <Card className="shadow-sm border-slate-200/60 dark:border-[#303030]/60 bg-white/95 dark:bg-[#1f1f1f]/95 backdrop-blur-xl">
+        <CardHeader className="pb-4 border-b border-slate-100 dark:border-[#303030]/60">
           <CardTitle className="text-lg flex items-center gap-2"><Activity className="h-4.5 w-4.5 text-rose-500" /> Monitoring</CardTitle>
           <CardDescription className="text-xs">Traffic & Application Health</CardDescription>
         </CardHeader>
@@ -734,8 +734,8 @@ function SiteInspectorView({ site, commits, commitsLoading, commitsError, fetchC
       </Card>
 
       {/* GitHub Commits Feed (Moved into Site Inspector) */}
-      <Card className="xl:col-span-3 shadow-sm border-slate-200/60 dark:border-slate-800/60 bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl overflow-hidden">
-        <CardHeader className="flex flex-row items-center justify-between border-b border-slate-100 dark:border-slate-800/60 pb-4">
+      <Card className="xl:col-span-3 shadow-sm border-slate-200/60 dark:border-[#303030]/60 bg-white/95 dark:bg-[#1f1f1f]/95 backdrop-blur-xl overflow-hidden">
+        <CardHeader className="flex flex-row items-center justify-between border-b border-slate-100 dark:border-[#303030]/60 pb-4">
           <div>
             <CardTitle className="text-lg flex items-center gap-2">
               <GitCommit className="h-4.5 w-4.5 text-brand-500" />
@@ -747,7 +747,7 @@ function SiteInspectorView({ site, commits, commitsLoading, commitsError, fetchC
             size="sm"
             variant="outline"
             onClick={() => fetchCommits(site.githubRepo || `thepiecraftmarketing/${site.name.replace(/\s+/g, '-').toLowerCase()}`)}
-            className="h-9 w-9 p-0 rounded-xl flex items-center justify-center"
+            className="h-9 w-9 p-0 rounded-2xl flex items-center justify-center"
           >
             <RefreshCw className={`h-3.5 w-3.5 ${commitsLoading ? "animate-spin" : ""}`} />
           </Button>
@@ -756,7 +756,7 @@ function SiteInspectorView({ site, commits, commitsLoading, commitsError, fetchC
           {commitsLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
               {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 p-3 space-y-2">
+                <div key={i} className="rounded-2xl border border-slate-200 dark:border-[#303030] bg-slate-50 dark:bg-[#1f1f1f]/60 p-3 space-y-2">
                   <div className="flex items-center gap-2">
                     <Skeleton className="h-7 w-7 rounded-full shrink-0" />
                     <div className="space-y-1">
@@ -770,14 +770,14 @@ function SiteInspectorView({ site, commits, commitsLoading, commitsError, fetchC
               ))}
             </div>
           ) : commitsError ? (
-            <div className="flex items-center gap-2 rounded-xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 p-4 text-sm text-rose-600 dark:text-rose-400">
+            <div className="flex items-center gap-2 rounded-2xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 p-4 text-sm text-rose-600 dark:text-rose-400">
               <AlertTriangle className="h-4 w-4 shrink-0" />
               {commitsError}
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
               {commits.map((c: any, idx: number) => (
-                <div key={c.sha || idx} className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 p-3 hover:border-brand-300 dark:hover:border-brand-700/50 transition-all group">
+                <div key={c.sha || idx} className="rounded-2xl border border-slate-200 dark:border-[#303030] bg-slate-50 dark:bg-[#1f1f1f] p-3 hover:border-brand-300 dark:hover:border-brand-700/50 transition-all group">
                   <div className="flex items-start gap-2.5 mb-2">
                     {c.author?.avatar_url ? (
                       <img src={c.author.avatar_url} alt={c.author?.login} className="h-7 w-7 rounded-full border-2 border-brand-200 dark:border-brand-900 shrink-0" />
@@ -804,7 +804,7 @@ function SiteInspectorView({ site, commits, commitsLoading, commitsError, fetchC
                 </div>
               ))}
               {commits.length === 0 && (
-                <div className="col-span-4 text-center py-6 text-slate-400 text-sm border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">
+                <div className="col-span-4 text-center py-6 text-slate-400 text-sm border-2 border-dashed border-slate-200 dark:border-[#303030] rounded-[20px]">
                   No commits found for this repository.
                 </div>
               )}
@@ -819,7 +819,7 @@ function SiteInspectorView({ site, commits, commitsLoading, commitsError, fetchC
 function ScoreRing({ label, score }: { label: string; score: number }) {
   const color = score >= 90 ? "text-emerald-500" : score >= 50 ? "text-amber-500" : "text-rose-500";
   return (
-    <div className="flex flex-col items-center justify-center p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 hover:shadow-md transition-all">
+    <div className="flex flex-col items-center justify-center p-4 bg-slate-50 dark:bg-[#1f1f1f] rounded-[20px] border border-slate-100 dark:border-[#303030] hover:shadow-md transition-all">
       <div className="relative h-16 w-16 flex items-center justify-center">
         <svg className="h-full w-full transform -rotate-90" viewBox="0 0 36 36">
           <path className="text-slate-200 dark:text-slate-800" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeWidth="3" />
@@ -835,7 +835,7 @@ function ScoreRing({ label, score }: { label: string; score: number }) {
   // Internal component for the premium glassmorphic KPI cards
 function StatsCard({ title, value, icon, gradient, iconColor }: any) {
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-white/40 dark:border-slate-800/60 bg-white/60 dark:bg-slate-900/40 p-5 shadow-lg backdrop-blur-xl group hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+    <div className="relative overflow-hidden rounded-[20px] border border-white/40 dark:border-[#303030]/60 bg-white/60 dark:bg-[#1f1f1f]/40 p-5 shadow-lg backdrop-blur-xl group hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
       <div className={`absolute -right-12 -top-12 h-32 w-32 rounded-full bg-gradient-to-br ${gradient} blur-3xl opacity-50 group-hover:opacity-70 transition-opacity`} />
       <div className="relative">
         <div className="flex items-start justify-between">
@@ -845,7 +845,7 @@ function StatsCard({ title, value, icon, gradient, iconColor }: any) {
               {value}
             </p>
           </div>
-          <div className={cn("rounded-xl bg-white dark:bg-slate-950 p-2.5 shadow-sm border border-slate-100 dark:border-slate-800", iconColor)}>
+          <div className={cn("rounded-2xl bg-white dark:bg-[#1f1f1f] p-2.5 shadow-sm border border-slate-100 dark:border-[#303030]", iconColor)}>
             {icon}
           </div>
         </div>

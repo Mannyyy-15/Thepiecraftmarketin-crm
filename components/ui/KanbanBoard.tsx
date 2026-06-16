@@ -92,8 +92,8 @@ export function KanbanBoard({ initialTasks }: { initialTasks: KanbanTask[] }) {
             key={col.id}
             className={`flex-shrink-0 w-80 flex flex-col gap-3 rounded-2xl p-3 sm:p-4 border transition-colors duration-200 snap-center ${
               isDraggingOver 
-                ? "bg-slate-100/50 dark:bg-slate-800/30 border-brand-500/50" 
-                : "bg-slate-50 dark:bg-slate-900/40 border-slate-200/60 dark:border-slate-800"
+                ? "bg-slate-100/50 dark:bg-[#28282d]/30 border-brand-500/50" 
+                : "bg-slate-50 dark:bg-[#1e1e21]/40 border-slate-200/60 dark:border-[#2a2a30]"
             }`}
             onDragOver={(e) => handleDragOver(e, col.id)}
             onDragLeave={handleDragLeave}
@@ -105,7 +105,7 @@ export function KanbanBoard({ initialTasks }: { initialTasks: KanbanTask[] }) {
                 <col.icon className={`h-4 w-4 ${col.color}`} />
                 <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100">{col.label}</h3>
               </div>
-              <span className="flex items-center justify-center h-5 min-w-[20px] px-1.5 rounded-full bg-slate-200 dark:bg-slate-800 text-[10px] font-extrabold text-slate-600 dark:text-slate-400">
+              <span className="flex items-center justify-center h-5 min-w-[20px] px-1.5 rounded-full bg-slate-200 dark:bg-[#28282d] text-[10px] font-extrabold text-slate-600 dark:text-slate-400">
                 {colTasks.length}
               </span>
             </div>
@@ -117,10 +117,10 @@ export function KanbanBoard({ initialTasks }: { initialTasks: KanbanTask[] }) {
                   key={task.id}
                   draggable
                   onDragStart={(e) => handleDragStart(e, task.id)}
-                  className={`group relative bg-white dark:bg-slate-950 p-4 rounded-xl border shadow-sm transition-all duration-200 cursor-grab active:cursor-grabbing hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 ${
+                  className={`group relative bg-white dark:bg-[#1e1e21] p-4 rounded-xl border shadow-sm transition-all duration-200 cursor-grab active:cursor-grabbing hover:shadow-md hover:border-slate-300 dark:hover:border-[#38383f] ${
                     draggedTaskId === task.id ? "opacity-50 scale-95" : "opacity-100"
                   } ${
-                    col.id === "done" ? "border-emerald-500/20 opacity-80" : "border-slate-200 dark:border-slate-800/60"
+                    col.id === "done" ? "border-emerald-500/20 opacity-80" : "border-slate-200 dark:border-[#2a2a30]/60"
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2 mb-2">
@@ -146,7 +146,7 @@ export function KanbanBoard({ initialTasks }: { initialTasks: KanbanTask[] }) {
                       </div>
                     )}
                     {task.dueDate && (
-                      <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-900 px-1.5 py-0.5 rounded">
+                      <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-[#1e1e21] px-1.5 py-0.5 rounded">
                         {new Date(task.dueDate).toLocaleDateString([], { month: "short", day: "numeric" })}
                       </span>
                     )}

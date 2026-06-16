@@ -6,7 +6,7 @@ export function Skeleton({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "animate-pulse rounded-lg bg-slate-200 dark:bg-slate-800",
+        "animate-pulse rounded-xl bg-slate-200 dark:bg-[#303030]",
         className
       )}
     />
@@ -23,7 +23,7 @@ export function PageHeaderSkeleton() {
         <Skeleton className="h-7 w-48" />
         <Skeleton className="h-3.5 w-72" />
       </div>
-      <Skeleton className="h-9 w-28 rounded-xl shrink-0" />
+      <Skeleton className="h-9 w-28 rounded-2xl shrink-0" />
     </div>
   );
 }
@@ -36,11 +36,11 @@ export function KpiCardsSkeleton({ count = 4 }: { count?: number }) {
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
-          className="rounded-2xl border border-slate-200/80 dark:border-slate-800/60 bg-white dark:bg-slate-900 p-5 space-y-3"
+          className="rounded-[20px] border border-slate-200/80 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] p-5 space-y-3"
         >
           <div className="flex items-center justify-between">
             <Skeleton className="h-3.5 w-24" />
-            <Skeleton className="h-9 w-9 rounded-xl" />
+            <Skeleton className="h-9 w-9 rounded-2xl" />
           </div>
           <Skeleton className="h-7 w-28" />
           <Skeleton className="h-3 w-20" />
@@ -63,7 +63,7 @@ export function TableRowsSkeleton({
   return (
     <>
       {Array.from({ length: rows }).map((_, i) => (
-        <tr key={i} className="border-b border-slate-100 dark:border-slate-800">
+        <tr key={i} className="border-b border-slate-100 dark:border-[#303030]">
           {Array.from({ length: cols }).map((_, j) => (
             <td key={j} className="px-5 sm:px-6 py-4">
               <Skeleton className={cn("h-4", widths[(i + j) % widths.length])} />
@@ -89,7 +89,7 @@ export function KanbanSkeleton({
       {Array.from({ length: columns }).map((_, ci) => (
         <div
           key={ci}
-          className="min-w-[260px] w-64 flex-shrink-0 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 p-4 space-y-3"
+          className="min-w-[260px] w-64 flex-shrink-0 rounded-[20px] bg-slate-50 dark:bg-[#303030] border border-slate-200 dark:border-[#303030] p-4 space-y-3"
         >
           <div className="flex items-center justify-between mb-1">
             <Skeleton className="h-4 w-24" />
@@ -98,7 +98,7 @@ export function KanbanSkeleton({
           {Array.from({ length: cardsPerColumn }).map((_, ki) => (
             <div
               key={ki}
-              className="rounded-xl border border-slate-200/80 dark:border-slate-800/60 bg-white dark:bg-slate-900 p-4 space-y-3"
+              className="rounded-2xl border border-slate-200/80 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] p-4 space-y-3"
             >
               <Skeleton className="h-4 w-full" />
               <Skeleton className="h-3.5 w-2/3" />
@@ -122,7 +122,7 @@ export function MemberGridSkeleton({ count = 6 }: { count?: number }) {
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
-          className="rounded-2xl border border-slate-200/80 dark:border-slate-800/60 bg-white dark:bg-slate-900 p-5 space-y-4"
+          className="rounded-[20px] border border-slate-200/80 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] p-5 space-y-4"
         >
           <div className="flex items-center gap-3">
             <Skeleton className="h-12 w-12 rounded-full shrink-0" />
@@ -130,7 +130,7 @@ export function MemberGridSkeleton({ count = 6 }: { count?: number }) {
               <Skeleton className="h-4 w-28" />
               <Skeleton className="h-3 w-20" />
             </div>
-            <Skeleton className="h-7 w-7 rounded-lg shrink-0" />
+            <Skeleton className="h-7 w-7 rounded-xl shrink-0" />
           </div>
           <div className="space-y-2">
             <Skeleton className="h-3.5 w-full" />
@@ -152,7 +152,7 @@ export function ConversationListSkeleton({ count = 6 }: { count?: number }) {
   return (
     <div className="space-y-1 p-2">
       {Array.from({ length: count }).map((_, i) => (
-        <div key={i} className="flex items-center gap-3 px-3 py-3 rounded-xl">
+        <div key={i} className="flex items-center gap-3 px-3 py-3 rounded-2xl">
           <Skeleton className="h-10 w-10 rounded-full shrink-0" />
           <div className="flex-1 space-y-1.5 min-w-0">
             <Skeleton className="h-3.5 w-28" />
@@ -196,7 +196,7 @@ export function CalendarSkeleton() {
       {Array.from({ length: 5 }).map((_, ri) => (
         <div key={ri} className="grid grid-cols-7 gap-1">
           {Array.from({ length: 7 }).map((_, ci) => (
-            <Skeleton key={ci} className="h-10 w-full rounded-xl" />
+            <Skeleton key={ci} className="h-10 w-full rounded-2xl" />
           ))}
         </div>
       ))}
@@ -212,7 +212,7 @@ export function TaskListSkeleton({ count = 4 }: { count?: number }) {
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
-          className="flex items-center gap-3 rounded-xl border border-slate-100 dark:border-slate-800 p-3"
+          className="flex items-center gap-3 rounded-2xl border border-slate-100 dark:border-[#303030] p-3"
         >
           <Skeleton className="h-5 w-5 rounded-md shrink-0" />
           <div className="flex-1 space-y-1.5">
@@ -236,7 +236,7 @@ export function AdsPageSkeleton() {
       {/* Campaign tiles */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="rounded-2xl border border-slate-200/80 dark:border-slate-800/60 bg-white dark:bg-slate-900 p-5 space-y-4">
+          <div key={i} className="rounded-[20px] border border-slate-200/80 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] p-5 space-y-4">
             <div className="flex items-start justify-between gap-3">
               <div className="space-y-2 flex-1">
                 <Skeleton className="h-4 w-36" />
@@ -253,19 +253,19 @@ export function AdsPageSkeleton() {
               ))}
             </div>
             <div className="flex gap-2 pt-1">
-              <Skeleton className="h-8 flex-1 rounded-xl" />
-              <Skeleton className="h-8 w-8 rounded-xl" />
+              <Skeleton className="h-8 flex-1 rounded-2xl" />
+              <Skeleton className="h-8 w-8 rounded-2xl" />
             </div>
           </div>
         ))}
       </div>
       {/* Chart area */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2 rounded-2xl border border-slate-200/80 dark:border-slate-800/60 bg-white dark:bg-slate-900 p-5 space-y-4">
+        <div className="lg:col-span-2 rounded-[20px] border border-slate-200/80 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] p-5 space-y-4">
           <Skeleton className="h-4 w-32" />
-          <Skeleton className="h-48 w-full rounded-xl" />
+          <Skeleton className="h-48 w-full rounded-2xl" />
         </div>
-        <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800/60 bg-white dark:bg-slate-900 p-5 space-y-3">
+        <div className="rounded-[20px] border border-slate-200/80 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] p-5 space-y-3">
           <Skeleton className="h-4 w-28" />
           {Array.from({ length: 5 }).map((_, i) => (
             <div key={i} className="flex items-center gap-3">
@@ -289,34 +289,34 @@ export function WebsiteDevPageSkeleton() {
       {/* 4 KPI cards */}
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-5">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="rounded-2xl border border-slate-200/80 dark:border-slate-800/60 bg-white dark:bg-slate-900 p-5 space-y-3">
+          <div key={i} className="rounded-[20px] border border-slate-200/80 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] p-5 space-y-3">
             <div className="flex justify-between items-start">
               <div className="space-y-2">
                 <Skeleton className="h-3 w-20" />
                 <Skeleton className="h-8 w-24" />
                 <Skeleton className="h-5 w-16 rounded-md" />
               </div>
-              <Skeleton className="h-12 w-12 rounded-xl" />
+              <Skeleton className="h-12 w-12 rounded-2xl" />
             </div>
           </div>
         ))}
       </div>
       {/* Backlog + Sites */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
-        <div className="xl:col-span-2 rounded-2xl border border-slate-200/80 dark:border-slate-800/60 bg-white dark:bg-slate-900 p-5 space-y-3">
-          <div className="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-slate-800">
+        <div className="xl:col-span-2 rounded-[20px] border border-slate-200/80 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] p-5 space-y-3">
+          <div className="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-[#303030]">
             <Skeleton className="h-5 w-36" />
-            <Skeleton className="h-8 w-24 rounded-xl" />
+            <Skeleton className="h-8 w-24 rounded-2xl" />
           </div>
           <TaskListSkeleton count={5} />
         </div>
-        <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800/60 bg-white dark:bg-slate-900 p-5 space-y-3">
-          <div className="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-slate-800">
+        <div className="rounded-[20px] border border-slate-200/80 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] p-5 space-y-3">
+          <div className="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-[#303030]">
             <Skeleton className="h-5 w-32" />
-            <Skeleton className="h-8 w-8 rounded-xl" />
+            <Skeleton className="h-8 w-8 rounded-2xl" />
           </div>
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="rounded-xl border border-slate-200 dark:border-slate-800 p-4 space-y-2">
+            <div key={i} className="rounded-2xl border border-slate-200 dark:border-[#303030] p-4 space-y-2">
               <div className="flex justify-between items-center">
                 <Skeleton className="h-4 w-32" />
                 <Skeleton className="h-6 w-20 rounded-full" />
@@ -327,14 +327,14 @@ export function WebsiteDevPageSkeleton() {
         </div>
       </div>
       {/* GitHub commits */}
-      <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800/60 bg-white dark:bg-slate-900 p-5 space-y-4">
-        <div className="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-slate-800">
+      <div className="rounded-[20px] border border-slate-200/80 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] p-5 space-y-4">
+        <div className="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-[#303030]">
           <Skeleton className="h-5 w-40" />
-          <Skeleton className="h-8 w-36 rounded-xl" />
+          <Skeleton className="h-8 w-36 rounded-2xl" />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
           {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 p-3 space-y-2">
+            <div key={i} className="rounded-2xl border border-slate-200 dark:border-[#303030] bg-slate-50 dark:bg-[#1f1f1f]/60 p-3 space-y-2">
               <div className="flex items-center gap-2">
                 <Skeleton className="h-7 w-7 rounded-full shrink-0" />
                 <div className="space-y-1">
@@ -365,9 +365,9 @@ export function ClientDetailSkeleton() {
         <Skeleton className="h-3.5 w-28" />
       </div>
       {/* Header card */}
-      <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800/60 bg-white dark:bg-slate-900 p-6 space-y-4">
+      <div className="rounded-[20px] border border-slate-200/80 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] p-6 space-y-4">
         <div className="flex items-start gap-4">
-          <Skeleton className="h-16 w-16 rounded-2xl shrink-0" />
+          <Skeleton className="h-16 w-16 rounded-[20px] shrink-0" />
           <div className="flex-1 space-y-2">
             <Skeleton className="h-6 w-48" />
             <Skeleton className="h-4 w-32" />
@@ -376,7 +376,7 @@ export function ClientDetailSkeleton() {
               <Skeleton className="h-6 w-24 rounded-full" />
             </div>
           </div>
-          <Skeleton className="h-9 w-28 rounded-xl shrink-0" />
+          <Skeleton className="h-9 w-28 rounded-2xl shrink-0" />
         </div>
         {/* Progress bar */}
         <div className="space-y-2">
@@ -390,19 +390,19 @@ export function ClientDetailSkeleton() {
       {/* Tabs */}
       <div className="flex gap-2">
         {Array.from({ length: 4 }).map((_, i) => (
-          <Skeleton key={i} className="h-8 w-24 rounded-xl" />
+          <Skeleton key={i} className="h-8 w-24 rounded-2xl" />
         ))}
       </div>
       {/* Content grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2 space-y-4">
-          <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800/60 bg-white dark:bg-slate-900 p-5 space-y-3">
+          <div className="rounded-[20px] border border-slate-200/80 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] p-5 space-y-3">
             <Skeleton className="h-5 w-32" />
             <TaskListSkeleton count={4} />
           </div>
         </div>
         <div className="space-y-4">
-          <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800/60 bg-white dark:bg-slate-900 p-5 space-y-3">
+          <div className="rounded-[20px] border border-slate-200/80 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] p-5 space-y-3">
             <Skeleton className="h-5 w-28" />
             <ActivityFeedSkeleton count={4} />
           </div>
@@ -424,7 +424,7 @@ export function ProjectDetailSkeleton() {
         <Skeleton className="h-3.5 w-36" />
       </div>
       {/* Project header card */}
-      <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800/60 bg-white dark:bg-slate-900 p-6 space-y-4">
+      <div className="rounded-[20px] border border-slate-200/80 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] p-6 space-y-4">
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-2 flex-1">
             <div className="flex items-center gap-2">
@@ -438,8 +438,8 @@ export function ProjectDetailSkeleton() {
             </div>
           </div>
           <div className="flex gap-2 shrink-0">
-            <Skeleton className="h-9 w-24 rounded-xl" />
-            <Skeleton className="h-9 w-24 rounded-xl" />
+            <Skeleton className="h-9 w-24 rounded-2xl" />
+            <Skeleton className="h-9 w-24 rounded-2xl" />
           </div>
         </div>
         {/* Progress */}
@@ -462,15 +462,15 @@ export function ProjectDetailSkeleton() {
       </div>
       {/* Tasks section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        <div className="lg:col-span-2 rounded-2xl border border-slate-200/80 dark:border-slate-800/60 bg-white dark:bg-slate-900 p-5 space-y-3">
+        <div className="lg:col-span-2 rounded-[20px] border border-slate-200/80 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] p-5 space-y-3">
           <div className="flex justify-between items-center">
             <Skeleton className="h-5 w-32" />
-            <Skeleton className="h-8 w-24 rounded-xl" />
+            <Skeleton className="h-8 w-24 rounded-2xl" />
           </div>
           <TaskListSkeleton count={5} />
         </div>
         <div className="space-y-4">
-          <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800/60 bg-white dark:bg-slate-900 p-5 space-y-3">
+          <div className="rounded-[20px] border border-slate-200/80 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] p-5 space-y-3">
             <Skeleton className="h-5 w-28" />
             <ActivityFeedSkeleton count={5} />
           </div>
@@ -487,15 +487,15 @@ export function ProjectBoardSkeleton() {
     <div className="space-y-6">
       {/* Controls bar */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 justify-between">
-        <Skeleton className="h-9 w-72 rounded-xl" />
-        <Skeleton className="h-9 w-36 rounded-xl" />
+        <Skeleton className="h-9 w-72 rounded-2xl" />
+        <Skeleton className="h-9 w-36 rounded-2xl" />
       </div>
       {/* Project cards grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {Array.from({ length: 6 }).map((_, i) => (
           <div
             key={i}
-            className="rounded-2xl border border-slate-200/80 dark:border-slate-800/60 bg-white dark:bg-slate-900 p-5 space-y-4"
+            className="rounded-[20px] border border-slate-200/80 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] p-5 space-y-4"
           >
             <div className="flex items-start justify-between gap-2">
               <div className="space-y-1.5 flex-1">
@@ -516,13 +516,13 @@ export function ProjectBoardSkeleton() {
                 <Skeleton key={j} className="h-5 w-14 rounded-full" />
               ))}
             </div>
-            <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-slate-800">
+            <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-[#303030]">
               <div className="flex -space-x-2">
                 {Array.from({ length: 3 }).map((_, j) => (
                   <Skeleton key={j} className="h-7 w-7 rounded-full ring-2 ring-white dark:ring-slate-900" />
                 ))}
               </div>
-              <Skeleton className="h-7 w-24 rounded-lg" />
+              <Skeleton className="h-7 w-24 rounded-xl" />
             </div>
           </div>
         ))}
@@ -540,15 +540,15 @@ export function FinancePageSkeleton() {
       <KpiCardsSkeleton count={4} />
       {/* Chart + AR summary */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        <div className="lg:col-span-2 rounded-2xl border border-slate-200/80 dark:border-slate-800/60 bg-white dark:bg-slate-900 p-5 space-y-4">
+        <div className="lg:col-span-2 rounded-[20px] border border-slate-200/80 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] p-5 space-y-4">
           <Skeleton className="h-5 w-40" />
-          <Skeleton className="h-48 w-full rounded-xl" />
+          <Skeleton className="h-48 w-full rounded-2xl" />
         </div>
-        <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800/60 bg-white dark:bg-slate-900 p-5 space-y-3">
+        <div className="rounded-[20px] border border-slate-200/80 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] p-5 space-y-3">
           <Skeleton className="h-5 w-32" />
           {Array.from({ length: 5 }).map((_, i) => (
             <div key={i} className="flex items-center justify-between gap-3 py-1.5">
-              <Skeleton className="h-9 w-9 rounded-xl shrink-0" />
+              <Skeleton className="h-9 w-9 rounded-2xl shrink-0" />
               <div className="flex-1 space-y-1.5">
                 <Skeleton className="h-3.5 w-3/4" />
                 <Skeleton className="h-3 w-1/2" />
@@ -561,8 +561,8 @@ export function FinancePageSkeleton() {
       {/* Expense + timesheet tables */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
         {[0, 1].map(k => (
-          <div key={k} className="rounded-2xl border border-slate-200/80 dark:border-slate-800/60 bg-white dark:bg-slate-900 overflow-hidden">
-            <div className="p-5 border-b border-slate-100 dark:border-slate-800 space-y-1">
+          <div key={k} className="rounded-[20px] border border-slate-200/80 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] overflow-hidden">
+            <div className="p-5 border-b border-slate-100 dark:border-[#303030] space-y-1">
               <Skeleton className="h-4 w-40" />
               <Skeleton className="h-3 w-56" />
             </div>
@@ -587,8 +587,8 @@ export function DocumentsPageSkeleton() {
         <Skeleton className="h-4 w-20 mb-3" />
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="rounded-2xl border border-slate-200/80 dark:border-slate-800/60 bg-white dark:bg-slate-900 p-4 space-y-3">
-              <Skeleton className="h-10 w-10 rounded-xl" />
+            <div key={i} className="rounded-[20px] border border-slate-200/80 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] p-4 space-y-3">
+              <Skeleton className="h-10 w-10 rounded-2xl" />
               <Skeleton className="h-4 w-24" />
               <Skeleton className="h-3 w-16" />
             </div>
@@ -596,12 +596,12 @@ export function DocumentsPageSkeleton() {
         </div>
       </div>
       {/* File table */}
-      <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800/60 bg-white dark:bg-slate-900 overflow-hidden">
-        <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+      <div className="rounded-[20px] border border-slate-200/80 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] overflow-hidden">
+        <div className="p-5 border-b border-slate-100 dark:border-[#303030] flex items-center justify-between">
           <Skeleton className="h-4 w-24" />
           <div className="flex gap-2">
-            <Skeleton className="h-9 w-48 rounded-xl" />
-            <Skeleton className="h-9 w-24 rounded-xl" />
+            <Skeleton className="h-9 w-48 rounded-2xl" />
+            <Skeleton className="h-9 w-24 rounded-2xl" />
           </div>
         </div>
         <table className="w-full">
@@ -621,13 +621,13 @@ export function ReportsPageSkeleton() {
       <KpiCardsSkeleton count={4} />
       {/* Filter bar */}
       <div className="flex items-center gap-3">
-        <Skeleton className="h-9 w-64 rounded-xl" />
-        <Skeleton className="h-9 w-36 rounded-xl" />
-        <Skeleton className="h-9 w-28 rounded-xl" />
+        <Skeleton className="h-9 w-64 rounded-2xl" />
+        <Skeleton className="h-9 w-36 rounded-2xl" />
+        <Skeleton className="h-9 w-28 rounded-2xl" />
       </div>
       {/* Reports table */}
-      <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800/60 bg-white dark:bg-slate-900 overflow-hidden">
-        <div className="p-5 border-b border-slate-100 dark:border-slate-800">
+      <div className="rounded-[20px] border border-slate-200/80 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] overflow-hidden">
+        <div className="p-5 border-b border-slate-100 dark:border-[#303030]">
           <Skeleton className="h-4 w-32" />
         </div>
         <table className="w-full">
@@ -644,9 +644,9 @@ export function CardGridSkeleton({ count = 6 }: { count?: number }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
       {Array.from({ length: count }).map((_, i) => (
-        <div key={i} className="rounded-2xl border border-slate-200/80 dark:border-slate-800/60 bg-white dark:bg-slate-900 p-5 space-y-4">
+        <div key={i} className="rounded-[20px] border border-slate-200/80 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] p-5 space-y-4">
           <div className="flex items-start gap-3">
-            <Skeleton className="h-12 w-12 rounded-xl shrink-0" />
+            <Skeleton className="h-12 w-12 rounded-2xl shrink-0" />
             <div className="flex-1 space-y-1.5">
               <Skeleton className="h-4 w-36" />
               <Skeleton className="h-3 w-24" />
@@ -660,7 +660,7 @@ export function CardGridSkeleton({ count = 6 }: { count?: number }) {
             </div>
             <Skeleton className="h-2 w-full rounded-full" />
           </div>
-          <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-[#303030]">
             <div className="flex gap-1.5">
               <Skeleton className="h-5 w-16 rounded-full" />
               <Skeleton className="h-5 w-14 rounded-full" />

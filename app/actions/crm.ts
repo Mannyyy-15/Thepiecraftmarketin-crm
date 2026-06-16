@@ -1526,12 +1526,17 @@ export async function getAdminDashboardData() {
       value: totalProjects > 0 ? Math.round((count / totalProjects) * 100) : 0
     })).sort((a, b) => b.value - a.value);
 
+    const activeWebsites = projectList.filter(p =>
+      p.projectType === "web_dev" && p.status !== "completed" && p.status !== "cancelled" && p.status !== "archived"
+    ).length;
+
     return {
       success: true,
       data: {
         activeClientsCount,
         monthlyRevenue,
         totalAdSpend,
+        activeWebsites,
         recentProjects: formattedProjects,
         revenueData: last6Months.map(m => ({ month: m.month, revenue: m.revenue, spend: m.spend })),
         channelData: channelData.length > 0 ? channelData : [{ name: "No Projects", value: 100 }]
@@ -2273,6 +2278,7 @@ export interface InvoiceServiceItem {
 export interface CreateInvoiceFullInput {
   clientId?: number | null;
   projectId?: number | null;
+  type?: "invoice" | "proposal" | "contract";
   billToName: string;
   billToEmail?: string;
   billToAddress?: string;
@@ -2283,6 +2289,18 @@ export interface CreateInvoiceFullInput {
   paymentTerms?: string;    // e.g. "50% advance, balance on delivery"
   dueDate?: string;
   notes?: string;           // overall invoice note / terms
+  
+  // Proposal-specific
+  proposalIntro?: string;
+  proposalGoals?: string;
+  proposalScope?: string;
+  proposalNextSteps?: string;
+
+  // Contract-specific
+  contractParties?: string;
+  contractScope?: string;
+  contractTerms?: string;
+
   status?: "draft" | "sent";
 }
 
@@ -2302,14 +2320,20 @@ export async function createInvoiceFull(input: CreateInvoiceFullInput) {
     const taxAmount = Math.round((subtotal * taxPercent) / 100);
     const total = Math.max(0, subtotal + taxAmount - discount);
 
-    // Auto-generate invoice number: INV-YYYYMM-XXXX
+    // Auto-generate document number based on type
     const now = new Date();
-    const prefix = `INV-${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}`;
+    const docType = input.type || "invoice";
+    let typePrefix = "INV";
+    if (docType === "proposal") typePrefix = "PROP";
+    else if (docType === "contract") typePrefix = "CONT";
+
+    const prefix = `${typePrefix}-${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}`;
     const countRows = await db.select({ id: schema.invoices.id }).from(schema.invoices);
     const invoiceNumber = `${prefix}-${String(countRows.length + 1).padStart(4, "0")}`;
 
     const payload = {
       v: 2,
+      type: docType,
       billTo: { name: input.billToName.trim(), email: input.billToEmail?.trim() || "", address: input.billToAddress?.trim() || "" },
       items: items.map(i => ({
         service: i.service.trim(),
@@ -2322,6 +2346,14 @@ export async function createInvoiceFull(input: CreateInvoiceFullInput) {
       servicePeriod: input.servicePeriod?.trim() || "",
       paymentTerms: input.paymentTerms?.trim() || "",
       note: input.notes?.trim() || "",
+      // Extended fields
+      proposalIntro: input.proposalIntro?.trim() || "",
+      proposalGoals: input.proposalGoals?.trim() || "",
+      proposalScope: input.proposalScope?.trim() || "",
+      proposalNextSteps: input.proposalNextSteps?.trim() || "",
+      contractParties: input.contractParties?.trim() || "",
+      contractScope: input.contractScope?.trim() || "",
+      contractTerms: input.contractTerms?.trim() || "",
     };
 
     await db.insert(schema.invoices).values({
@@ -3318,7 +3350,11 @@ export async function getClientInvoices() {
 
     const data = rows.map(inv => {
       let items: any[] = [];
-      try { const p = JSON.parse(inv.notes || "{}"); if (Array.isArray(p.items)) items = p.items; } catch {}
+      let payload: any = {};
+      try { 
+        payload = JSON.parse(inv.notes || "{}"); 
+        if (Array.isArray(payload.items)) items = payload.items; 
+      } catch {}
       return {
         id: inv.id,
         invoiceNumber: inv.invoiceNumber,
@@ -3328,6 +3364,7 @@ export async function getClientInvoices() {
         paidDate: inv.paidDate,
         createdAt: inv.createdAt,
         items,
+        payload,
       };
     });
     return { success: true, data };

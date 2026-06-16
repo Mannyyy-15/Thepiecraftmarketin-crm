@@ -77,7 +77,7 @@ export default function DashboardLayout({
 
         {/* Floating Mobile Bottom Navigation */}
         <div className="lg:hidden fixed bottom-4 left-4 right-4 z-40 select-none">
-          <nav className="bg-white/95 dark:bg-slate-950/95 backdrop-blur-2xl border border-slate-200/70 dark:border-slate-800/70 rounded-[26px] shadow-[0_8px_40px_rgba(0,0,0,0.14)] dark:shadow-[0_8px_40px_rgba(0,0,0,0.45)]">
+          <nav className="bg-white/95 dark:bg-[#1f1f1f]/95 backdrop-blur-2xl border border-[#f0f0f2] dark:border-[#303030] rounded-[28px] shadow-[0_4px_24px_rgba(0,0,0,0.10)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.5)]">
             <div className="flex items-center justify-around h-16 px-2">
               {mainNavTabs.map((tab) => {
                 const isActive = tab.exact ? pathname === tab.href : pathname.startsWith(tab.href);
@@ -93,13 +93,13 @@ export default function DashboardLayout({
                     >
                       <div className={`relative -mt-8 h-[52px] w-[52px] rounded-full flex items-center justify-center transition-all duration-200 ${
                         isActive
-                          ? "bg-brand-600 shadow-[0_4px_20px_rgba(99,102,241,0.5)] scale-110"
-                          : "bg-gradient-to-br from-brand-500 to-brand-700 shadow-[0_4px_14px_rgba(99,102,241,0.35)] group-hover:scale-105 group-active:scale-95"
+                          ? "bg-[#3b82f6] shadow-[0_4px_20px_rgba(59,130,246,0.5)] scale-110"
+                          : "bg-gradient-to-br from-[#3b82f6] to-[#2563eb] shadow-[0_4px_14px_rgba(59,130,246,0.35)] group-hover:scale-105 group-active:scale-95"
                       }`}>
                         <IconComp className="h-[22px] w-[22px] text-white" />
                       </div>
                       <span className={`text-[9px] font-extrabold uppercase tracking-wide transition-all duration-200 mt-1.5 ${
-                        isActive ? "text-brand-600 dark:text-brand-400" : "text-slate-400 dark:text-slate-500"
+                        isActive ? "text-[#3b82f6] dark:text-[#60a5fa]" : "text-slate-400 dark:text-[#5a5a68]"
                       }`}>
                         {tab.name}
                       </span>
@@ -121,18 +121,18 @@ export default function DashboardLayout({
                           animate={{ opacity: 1, scale: 1 }}
                           exit={{ opacity: 0, scale: 0.7 }}
                           transition={{ duration: 0.18, ease: "easeOut" }}
-                          className="absolute inset-x-1 top-1.5 bottom-1.5 bg-brand-500/10 dark:bg-brand-400/10 rounded-[18px] pointer-events-none"
+                          className="absolute inset-x-1 top-1.5 bottom-1.5 bg-[#3b82f6]/10 dark:bg-[#3b82f6]/10 rounded-[18px] pointer-events-none"
                         />
                       )}
                     </AnimatePresence>
                     <IconComp
                       className={`h-5 w-5 relative z-10 transition-all duration-200 ${
-                        isActive ? "text-brand-600 dark:text-brand-400 scale-110" : "text-slate-400 dark:text-slate-500"
+                        isActive ? "text-[#3b82f6] dark:text-[#60a5fa] scale-110" : "text-slate-400 dark:text-[#5a5a68]"
                       }`}
                     />
                     <span
                       className={`text-[9px] font-extrabold uppercase tracking-wide relative z-10 transition-all duration-200 ${
-                        isActive ? "text-brand-600 dark:text-brand-400" : "text-slate-400 dark:text-slate-500"
+                        isActive ? "text-[#3b82f6] dark:text-[#60a5fa]" : "text-slate-400 dark:text-[#5a5a68]"
                       }`}
                     >
                       {tab.name}
@@ -153,18 +153,18 @@ export default function DashboardLayout({
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.7 }}
                       transition={{ duration: 0.18, ease: "easeOut" }}
-                      className="absolute inset-x-1 top-1.5 bottom-1.5 bg-brand-500/10 dark:bg-brand-400/10 rounded-[18px] pointer-events-none"
+                      className="absolute inset-x-1 top-1.5 bottom-1.5 bg-[#3b82f6]/10 dark:bg-[#3b82f6]/10 rounded-[18px] pointer-events-none"
                     />
                   )}
                 </AnimatePresence>
                 <MoreHorizontal
                   className={`h-5 w-5 relative z-10 transition-all duration-200 ${
-                    isOthersActive || showOthersDrawer ? "text-brand-600 dark:text-brand-400 scale-110" : "text-slate-400 dark:text-slate-500"
+                    isOthersActive || showOthersDrawer ? "text-[#3b82f6] dark:text-[#60a5fa] scale-110" : "text-slate-400 dark:text-[#5a5a68]"
                   }`}
                 />
                 <span
                   className={`text-[9px] font-extrabold uppercase tracking-wide relative z-10 transition-all duration-200 ${
-                    isOthersActive || showOthersDrawer ? "text-brand-600 dark:text-brand-400" : "text-slate-400 dark:text-slate-500"
+                    isOthersActive || showOthersDrawer ? "text-[#3b82f6] dark:text-[#60a5fa]" : "text-slate-400 dark:text-[#5a5a68]"
                   }`}
                 >
                   More
@@ -191,18 +191,18 @@ export default function DashboardLayout({
                 animate={{ y: 0 }}
                 exit={{ y: "100%" }}
                 transition={{ type: "spring", damping: 30, stiffness: 280 }}
-                className="relative bg-white dark:bg-slate-950 border-t border-slate-200/80 dark:border-slate-800/80 rounded-t-[32px] shadow-[0_-20px_60px_rgba(0,0,0,0.12)] dark:shadow-[0_-20px_60px_rgba(0,0,0,0.4)] pb-10 z-10 select-none"
+                className="relative bg-white dark:bg-[#1f1f1f] border-t border-slate-200/80 dark:border-[#303030] rounded-t-[32px] shadow-[0_-20px_60px_rgba(0,0,0,0.12)] dark:shadow-[0_-20px_60px_rgba(0,0,0,0.4)] pb-10 z-10 select-none"
               >
                 <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-brand-500/40 to-transparent" />
-                <div className="w-10 h-1 bg-slate-200 dark:bg-slate-800 rounded-full mx-auto mt-3 mb-5" />
-                <div className="flex justify-between items-center px-5 pb-4 border-b border-slate-100 dark:border-slate-900/80">
+                <div className="w-10 h-1 bg-slate-200 dark:bg-[#2a2a30] rounded-full mx-auto mt-3 mb-5" />
+                <div className="flex justify-between items-center px-5 pb-4 border-b border-slate-100 dark:border-[#303030]">
                   <div>
                     <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 mb-0.5">Navigation</p>
                     <h3 className="text-sm font-black text-slate-800 dark:text-white">More Pages</h3>
                   </div>
                   <button
                     onClick={() => setShowOthersDrawer(false)}
-                    className="h-9 w-9 rounded-2xl flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-900 cursor-pointer transition-all"
+                    className="h-9 w-9 rounded-2xl flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-[#28282d] cursor-pointer transition-all"
                   >
                     <X className="h-4 w-4" />
                   </button>
@@ -217,25 +217,25 @@ export default function DashboardLayout({
                         onClick={() => setShowOthersDrawer(false)}
                         className={`flex items-center gap-3 p-4 rounded-2xl border transition-all duration-200 cursor-pointer ${
                           isActive
-                            ? "bg-brand-50 dark:bg-brand-950/30 border-brand-500/40"
-                            : "bg-slate-50/80 dark:bg-slate-900/50 border-slate-200/60 dark:border-slate-800/60 hover:border-brand-500/25 active:scale-[0.98]"
+                            ? "bg-blue-50 dark:bg-blue-500/10 border-blue-500/40"
+                            : "bg-slate-50/80 dark:bg-[#303030] border-slate-200/60 dark:border-[#303030] hover:border-[#3b82f6]/25 active:scale-[0.98]"
                         }`}
                       >
                         <div
                           className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${
-                            isActive ? "bg-brand-500/10" : "bg-white dark:bg-slate-800 shadow-sm"
+                            isActive ? "bg-[#3b82f6]/10" : "bg-white dark:bg-[#303030] shadow-sm"
                           }`}
                         >
                           <opt.icon
                             className={`h-4.5 w-4.5 ${
-                              isActive ? "text-brand-600 dark:text-brand-400" : "text-slate-500 dark:text-slate-400"
+                              isActive ? "text-[#3b82f6] dark:text-[#60a5fa]" : "text-slate-500 dark:text-[#9999a8]"
                             }`}
                           />
                         </div>
                         <div className="min-w-0 flex-1">
                           <p
                             className={`text-xs font-bold truncate ${
-                              isActive ? "text-brand-700 dark:text-brand-300" : "text-slate-800 dark:text-slate-200"
+                              isActive ? "text-blue-700 dark:text-blue-300" : "text-slate-800 dark:text-slate-200"
                             }`}
                           >
                             {opt.name}
@@ -244,7 +244,7 @@ export default function DashboardLayout({
                         </div>
                         <ChevronRight
                           className={`h-3.5 w-3.5 shrink-0 ${
-                            isActive ? "text-brand-500" : "text-slate-300 dark:text-slate-700"
+                            isActive ? "text-blue-500" : "text-slate-300 dark:text-[#38383f]"
                           }`}
                         />
                       </Link>

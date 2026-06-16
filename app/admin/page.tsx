@@ -5,10 +5,8 @@ import { getCurrentUser } from "@/app/actions/auth";
 import {
   Activity,
   ArrowRight,
-  ArrowUpRight,
-  BarChart3,
-  CheckCircle2,
   CircleDollarSign,
+  Globe,
   MoreHorizontal,
   Users,
 } from "lucide-react";
@@ -37,7 +35,7 @@ import { ActivityFeedSkeleton } from "@/components/ui/Skeleton";
 import { getActivityFeed, getAdminDashboardData } from "@/app/actions/crm";
 import { getProjectStatusVariant, getProjectStatusLabel } from "@/lib/statusHelpers";
 
-const channelColors = ["#6366F1", "#14B8A6", "#F59E0B", "#F43F5E"];
+const channelColors = ["#3b82f6", "#14B8A6", "#F59E0B", "#F43F5E"];
 
 export default function DashboardPage() {
   const [userName, setUserName] = useState("Admin");
@@ -47,6 +45,7 @@ export default function DashboardPage() {
     activeClientsCount: number;
     monthlyRevenue: number;
     totalAdSpend: number;
+    activeWebsites: number;
     recentProjects: any[];
     revenueData: any[];
     channelData: any[];
@@ -113,13 +112,11 @@ export default function DashboardPage() {
           spark={[80, 88, 90, 96, 100, 108, 112, 118, 121, 124]}
         />
         <KpiCard
-          title="Average ROAS"
-          value="3.2×"
-          change="-0.4×"
-          changeType="negative"
+          title="Active Websites"
+          value={`${dashboardData?.activeWebsites ?? 0}`}
           accent="rose"
-          icon={<BarChart3 className="h-5 w-5" />}
-          spark={[3.8, 3.7, 3.6, 3.5, 3.5, 3.4, 3.3, 3.3, 3.2, 3.2]}
+          icon={<Globe className="h-5 w-5" />}
+          spark={[1, 1, 2, 2, 2, 3, 3, 3, 4, dashboardData?.activeWebsites ?? 0]}
         />
       </div>
 
@@ -139,7 +136,7 @@ export default function DashboardPage() {
                   <span className="h-2 w-2 rounded-full bg-amber-500" /> Spend
                 </span>
               </div>
-              <select className="h-8 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 text-xs font-medium text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500/40">
+              <select className="h-8 rounded-xl border border-[#e8e8ed] dark:border-[#303030] bg-[#f7f7f9] dark:bg-[#303030] px-2.5 text-xs font-medium text-[#4b4b5a] dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-[#3b82f6]/40">
                 <option>Last 6 months</option>
                 <option>Last year</option>
                 <option>YTD</option>
@@ -152,8 +149,8 @@ export default function DashboardPage() {
                 <AreaChart data={dashboardData?.revenueData || []} margin={{ top: 12, right: 16, left: -4, bottom: 0 }}>
                   <defs>
                     <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#6366F1" stopOpacity={0.4} />
-                      <stop offset="100%" stopColor="#6366F1" stopOpacity={0} />
+                      <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.35} />
+                      <stop offset="100%" stopColor="#3b82f6" stopOpacity={0} />
                     </linearGradient>
                     <linearGradient id="spendGrad" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="#F59E0B" stopOpacity={0.3} />
@@ -189,7 +186,7 @@ export default function DashboardPage() {
                   <Area
                     type="monotone"
                     dataKey="revenue"
-                    stroke="#6366F1"
+                    stroke="#3b82f6"
                     strokeWidth={2.5}
                     fill="url(#revGrad)"
                     name="Revenue"
@@ -271,13 +268,13 @@ export default function DashboardPage() {
         <Card className="xl:col-span-2 overflow-hidden">
           <CardHeader>
             <CardTitle>Active Projects</CardTitle>
-            <Button variant="ghost" size="sm" className="text-brand-600 dark:text-brand-400">
+            <Button variant="ghost" size="sm" className="text-[#3b82f6] dark:text-[#9999a8]">
               View all <ArrowRight className="h-3.5 w-3.5" />
             </Button>
           </CardHeader>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 bg-slate-50/60 dark:bg-slate-900/40">
+              <thead className="text-xs uppercase tracking-wider text-[#8888a0] dark:text-[#9999a8] bg-[#f7f7f9] dark:bg-[#1f1f1f]">
                 <tr>
                   <th className="px-5 sm:px-6 py-3 text-left font-semibold">Project</th>
                   <th className="px-5 sm:px-6 py-3 text-left font-semibold">Team</th>
@@ -290,11 +287,11 @@ export default function DashboardPage() {
                   <th className="px-5 sm:px-6 py-3 text-left font-semibold">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+              <tbody className="divide-y divide-[#f0f0f2] dark:divide-[#303030]">
                 {(dashboardData?.recentProjects || []).map((p: any) => (
                   <tr
                     key={p.id}
-                    className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors duration-150"
+                    className="hover:bg-[#f7f7f9] dark:hover:bg-[#28282d]/60 transition-colors duration-150"
                   >
                     <td className="px-5 sm:px-6 py-3.5">
                       <div className="font-medium text-slate-900 dark:text-white">{p.name}</div>

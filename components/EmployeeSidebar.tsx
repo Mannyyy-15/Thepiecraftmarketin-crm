@@ -92,8 +92,8 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
   });
 
   return (
-    <div className="flex h-full w-full flex-col bg-white dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800/80 lg:rounded-2xl shadow-soft overflow-hidden">
-      <div className="flex h-16 shrink-0 items-center justify-between px-5 border-b border-slate-200 dark:border-slate-800">
+    <div className="flex h-full w-full flex-col bg-white dark:bg-[#1f1f1f] lg:rounded-[20px] dark:border dark:border-[#303030] shadow-[0_2px_16px_rgba(0,0,0,0.07)] dark:shadow-none overflow-hidden">
+      <div className="flex h-16 shrink-0 items-center justify-between px-5 border-b border-[#f0f0f2] dark:border-[#303030]">
         <Link href="/employee" className="flex items-center gap-2.5" onClick={onNavigate}>
           <div className="relative w-9 h-9 rounded-xl bg-brand-hero flex items-center justify-center shadow-glow">
             <span className="text-white font-bold text-lg">P</span>
@@ -127,19 +127,19 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
                   className={cn(
                     "group relative flex items-center gap-x-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all cursor-pointer",
                     isActive
-                      ? "bg-brand-50 dark:bg-brand-500/10 text-brand-700 dark:text-brand-300"
-                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-900"
+                      ? "bg-[#eff6ff] dark:bg-blue-500/15 text-blue-700 dark:text-white"
+                      : "text-[#4b4b5a] dark:text-[#9999a8] hover:text-[#111114] dark:hover:text-white hover:bg-[#f7f7f9] dark:hover:bg-[#303030]"
                   )}
                 >
                   {isActive && (
-                    <span className="absolute left-0 top-1.5 bottom-1.5 w-0.5 rounded-r bg-brand-600 dark:bg-brand-400" />
+                    <span className="absolute left-0 top-1.5 bottom-1.5 w-0.5 rounded-r bg-blue-600 dark:bg-blue-400" />
                   )}
                   <item.icon
                     className={cn(
                       "h-[18px] w-[18px] shrink-0 transition-colors",
                       isActive
-                        ? "text-brand-600 dark:text-brand-400"
-                        : "text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200"
+                        ? "text-blue-600 dark:text-blue-300"
+                        : "text-slate-400 group-hover:text-slate-700 dark:group-hover:text-white"
                     )}
                   />
                   {item.name}
@@ -150,8 +150,8 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
         </ul>
       </nav>
 
-      <div className="border-t border-slate-200 dark:border-slate-800 p-3 flex items-center justify-between gap-2">
-        <div className="flex flex-1 items-center gap-3 rounded-xl p-2 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors cursor-pointer min-w-0">
+      <div className="border-t border-[#f0f0f2] dark:border-[#303030] p-3 flex items-center justify-between gap-2">
+        <div className="flex flex-1 items-center gap-3 rounded-xl p-2 hover:bg-[#f7f7f9] dark:hover:bg-[#303030] transition-colors cursor-pointer min-w-0">
           <Avatar name={user?.name || "Employee"} status="online" size="sm" />
           <div className="flex flex-col min-w-0">
             <span className="text-sm font-medium text-slate-900 dark:text-white truncate">

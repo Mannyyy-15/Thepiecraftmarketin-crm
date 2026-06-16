@@ -38,7 +38,7 @@ const blankItem = (): Item => ({ service: "", details: "", units: "", amount: 0,
 const fmt = (n: number) => `₹${(n || 0).toLocaleString("en-IN")}`;
 const todayISO = () => new Date().toISOString().slice(0, 10);
 
-const INPUT = "h-10 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white placeholder:text-slate-400";
+const INPUT = "h-10 w-full rounded-xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] px-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white placeholder:text-slate-400";
 const LABEL = "block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5";
 
 export default function AdminInvoicesPage() {
@@ -59,6 +59,19 @@ export default function AdminInvoicesPage() {
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
   const [savedNumber, setSavedNumber] = useState<string | null>(null);
+  const [docType, setDocType] = useState<"invoice" | "proposal" | "contract">("invoice");
+  const [showDocTypeModal, setShowDocTypeModal] = useState(false);
+
+  // Proposal fields
+  const [proposalIntro, setProposalIntro] = useState("");
+  const [proposalGoals, setProposalGoals] = useState("");
+  const [proposalScope, setProposalScope] = useState("");
+  const [proposalNextSteps, setProposalNextSteps] = useState("");
+
+  // Contract fields
+  const [contractParties, setContractParties] = useState("");
+  const [contractScope, setContractScope] = useState("");
+  const [contractTerms, setContractTerms] = useState("");
 
   // Agency identity + invoice defaults pulled from Settings.
   const [company, setCompany] = useState(COMPANY_FALLBACK);
@@ -126,7 +139,9 @@ export default function AdminInvoicesPage() {
   const resetForm = () => {
     setClientId(""); setBillToName(""); setBillToEmail(""); setBillToAddress("");
     setItems([blankItem()]); setTaxPercent(0); setDiscount(0);
-    setServicePeriod(""); setPaymentTerms(""); setDueDate(""); setNotes(""); setSavedNumber(null);
+    setServicePeriod(""); setPaymentTerms(""); setDueDate(""); setNotes(""); setSavedNumber(null); setDocType("invoice");
+    setProposalIntro(""); setProposalGoals(""); setProposalScope(""); setProposalNextSteps("");
+    setContractParties(""); setContractScope(""); setContractTerms("");
   };
 
   const handleSave = async () => {
@@ -137,10 +152,13 @@ export default function AdminInvoicesPage() {
       const status = "sent";
       const res = await createInvoiceFull({
         clientId: clientId ? Number(clientId) : null,
+        type: docType,
         billToName, billToEmail, billToAddress,
         items: items.map((i) => ({ service: i.service, details: i.details, units: i.units ? Number(i.units) : undefined, amount: Number(i.amount), note: i.note })),
         taxPercent: Number(taxPercent), discount: Number(discount),
         servicePeriod, paymentTerms, dueDate, notes, status,
+        proposalIntro, proposalGoals, proposalScope, proposalNextSteps,
+        contractParties, contractScope, contractTerms,
       });
       if (res.success) {
         setSavedNumber(res.invoiceNumber || null);
@@ -175,6 +193,14 @@ export default function AdminInvoicesPage() {
           setServicePeriod(payload.servicePeriod || "");
           setPaymentTerms(payload.paymentTerms || "");
           setNotes(payload.note || "");
+          setDocType(payload.type || "invoice");
+          setProposalIntro(payload.proposalIntro || "");
+          setProposalGoals(payload.proposalGoals || "");
+          setProposalScope(payload.proposalScope || "");
+          setProposalNextSteps(payload.proposalNextSteps || "");
+          setContractParties(payload.contractParties || "");
+          setContractScope(payload.contractScope || "");
+          setContractTerms(payload.contractTerms || "");
         }
       } catch (e) {
         // Not JSON, ignore and fallback to old format
@@ -197,6 +223,9 @@ export default function AdminInvoicesPage() {
         setDiscount(0);
         setServicePeriod("");
         setPaymentTerms("");
+        setDocType("invoice");
+        setProposalIntro(""); setProposalGoals(""); setProposalScope(""); setProposalNextSteps("");
+        setContractParties(""); setContractScope(""); setContractTerms("");
         // If notes is valid text and doesn't look like JSON, use it
         setNotes(!inv.notes?.startsWith("{") ? (inv.notes || "") : "");
       }
@@ -254,10 +283,10 @@ export default function AdminInvoicesPage() {
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Finance</p>
-          <h1 className="text-xl font-extrabold text-slate-900 dark:text-white">Invoices</h1>
+          <h1 className="text-xl font-extrabold text-slate-900 dark:text-white">Documents</h1>
         </div>
-        <Button variant="outline" size="sm" onClick={resetForm} className="gap-1.5">
-          <Plus className="h-3.5 w-3.5" /> New invoice
+        <Button variant="outline" size="sm" onClick={() => { resetForm(); setShowDocTypeModal(true); }} className="gap-1.5 bg-brand-600 text-white hover:bg-brand-700 border-transparent hover:border-transparent hover:text-white">
+          <Plus className="h-3.5 w-3.5" /> New Document
         </Button>
       </div>
 
@@ -265,7 +294,7 @@ export default function AdminInvoicesPage() {
         {/* ── Form ─────────────────────────────────────────────── */}
         <div className="lg:col-span-2 space-y-4">
           {/* Bill to */}
-          <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-950 p-4 sm:p-5 space-y-4">
+          <div className="rounded-2xl border border-slate-200/80 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] p-4 sm:p-5 space-y-4">
             <h3 className="text-sm font-bold text-slate-900 dark:text-white">Bill To</h3>
             <div>
               <label className={LABEL}>Existing client (optional)</label>
@@ -294,9 +323,52 @@ export default function AdminInvoicesPage() {
             </div>
           </div>
 
-          {/* Services */}
-          <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-950 p-4 sm:p-5 space-y-3">
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white">Services</h3>
+          {/* Conditional Builder Sections */}
+          {docType === "proposal" && (
+            <div className="rounded-2xl border border-slate-200/80 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] p-4 sm:p-5 space-y-4">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">Proposal Details</h3>
+              <div>
+                <label className={LABEL}>Executive Summary / Introduction</label>
+                <textarea value={proposalIntro} onChange={(e) => setProposalIntro(e.target.value)} rows={3} placeholder="We are excited to work with you..." className={`${INPUT} h-auto py-2`} />
+              </div>
+              <div>
+                <label className={LABEL}>Goals & Objectives</label>
+                <textarea value={proposalGoals} onChange={(e) => setProposalGoals(e.target.value)} rows={3} placeholder="Outline the client's problem and goals..." className={`${INPUT} h-auto py-2`} />
+              </div>
+              <div>
+                <label className={LABEL}>Proposed Solution & Scope</label>
+                <textarea value={proposalScope} onChange={(e) => setProposalScope(e.target.value)} rows={4} placeholder="Describe what you will build or deliver..." className={`${INPUT} h-auto py-2`} />
+              </div>
+              <div>
+                <label className={LABEL}>Next Steps</label>
+                <textarea value={proposalNextSteps} onChange={(e) => setProposalNextSteps(e.target.value)} rows={2} placeholder="To move forward, please..." className={`${INPUT} h-auto py-2`} />
+              </div>
+            </div>
+          )}
+
+          {docType === "contract" && (
+            <div className="rounded-2xl border border-slate-200/80 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] p-4 sm:p-5 space-y-4">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">Contract Terms</h3>
+              <div>
+                <label className={LABEL}>Parties Involved</label>
+                <textarea value={contractParties} onChange={(e) => setContractParties(e.target.value)} rows={2} placeholder="This contract is between..." className={`${INPUT} h-auto py-2`} />
+              </div>
+              <div>
+                <label className={LABEL}>Scope of Work</label>
+                <textarea value={contractScope} onChange={(e) => setContractScope(e.target.value)} rows={4} placeholder="The Agency agrees to deliver..." className={`${INPUT} h-auto py-2`} />
+              </div>
+              <div>
+                <label className={LABEL}>Legal Terms & Conditions</label>
+                <textarea value={contractTerms} onChange={(e) => setContractTerms(e.target.value)} rows={6} placeholder="Confidentiality, IP Rights, Termination..." className={`${INPUT} h-auto py-2 text-xs`} />
+              </div>
+            </div>
+          )}
+
+          {/* Dynamic Items Table */}
+          <div className="rounded-2xl border border-slate-200/80 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] p-4 sm:p-5 space-y-3">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+              {docType === "proposal" ? "Pricing Estimate" : docType === "contract" ? "Payment Schedule" : "Services"}
+            </h3>
 
             {/* Quick-add presets */}
             <div className="flex flex-wrap gap-1.5">
@@ -304,7 +376,7 @@ export default function AdminInvoicesPage() {
                 const Icon = p.icon;
                 return (
                   <button key={p.label} onClick={() => addItem(p)}
-                    className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-2 py-1 hover:border-brand-300 hover:text-brand-600 transition-all cursor-pointer">
+                    className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-[#1f1f1f] border border-slate-200 dark:border-[#303030] rounded-lg px-2 py-1 hover:border-brand-300 hover:text-brand-600 transition-all cursor-pointer">
                     <Icon className="h-3 w-3" />{p.label}
                   </button>
                 );
@@ -314,15 +386,15 @@ export default function AdminInvoicesPage() {
             {/* Service line items */}
             <div className="space-y-3">
               {items.map((it, idx) => (
-                <div key={idx} className="rounded-xl border border-slate-200/70 dark:border-slate-800/70 p-3 space-y-2 bg-slate-50/40 dark:bg-slate-900/20">
+                <div key={idx} className="rounded-xl border border-slate-200/70 dark:border-[#303030]/70 p-3 space-y-2 bg-slate-50/40 dark:bg-[#1f1f1f]/20">
                   <div className="flex items-center gap-2">
-                    <input value={it.service} onChange={(e) => setItem(idx, { service: e.target.value })} placeholder="Service (e.g. Web Development)" className={`${INPUT} font-semibold`} />
+                    <input value={it.service} onChange={(e) => setItem(idx, { service: e.target.value })} placeholder={docType === "contract" ? "Milestone (e.g. 50% Advance)" : "Service (e.g. Web Development)"} className={`${INPUT} font-semibold`} />
                     <button onClick={() => removeItem(idx)}
                       className="h-10 w-9 flex items-center justify-center rounded-xl text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-all cursor-pointer shrink-0">
                       <Trash2 className="h-4 w-4" />
                     </button>
                   </div>
-                  <input value={it.details} onChange={(e) => setItem(idx, { details: e.target.value })} placeholder="Scope / description (e.g. 5-page responsive site)" className={`${INPUT} text-xs`} />
+                  <input value={it.details} onChange={(e) => setItem(idx, { details: e.target.value })} placeholder="Scope / description" className={`${INPUT} text-xs`} />
                   <div className="flex items-center gap-2">
                     <div className="w-24">
                       <input type="number" min={0} value={it.units} onChange={(e) => setItem(idx, { units: e.target.value })} placeholder="Units" className={`${INPUT} text-xs px-2`} title="Optional: months, posts, hours…" />
@@ -334,13 +406,13 @@ export default function AdminInvoicesPage() {
                   </div>
                   <div className="relative">
                     <StickyNote className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
-                    <input value={it.note} onChange={(e) => setItem(idx, { note: e.target.value })} placeholder="Note (e.g. Domain & hosting included for 1 year)" className={`${INPUT} pl-8 text-xs`} />
+                    <input value={it.note} onChange={(e) => setItem(idx, { note: e.target.value })} placeholder="Note" className={`${INPUT} pl-8 text-xs`} />
                   </div>
                 </div>
               ))}
             </div>
             <button onClick={() => addItem()} className="text-xs font-bold text-brand-600 hover:text-brand-700 flex items-center gap-1 cursor-pointer">
-              <Plus className="h-3.5 w-3.5" /> Add another service
+              <Plus className="h-3.5 w-3.5" /> Add another {docType === "contract" ? "milestone" : "service"}
             </button>
 
             {/* Tax / discount */}
@@ -356,29 +428,29 @@ export default function AdminInvoicesPage() {
             </div>
           </div>
 
-          {/* Terms */}
-          <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-950 p-4 sm:p-5 space-y-3">
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white">Terms & Notes</h3>
+          {/* General Terms (Shared) */}
+          <div className="rounded-2xl border border-slate-200/80 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] p-4 sm:p-5 space-y-3">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white">Dates & General Notes</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className={LABEL}>Due date</label>
+                <label className={LABEL}>Due / Validity Date</label>
                 <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} className={INPUT} />
               </div>
               <div>
-                <label className={LABEL}>Payment terms</label>
+                <label className={LABEL}>Payment Terms Note</label>
                 <input value={paymentTerms} onChange={(e) => setPaymentTerms(e.target.value)} placeholder="e.g. 50% advance" className={INPUT} />
               </div>
             </div>
             <div>
-              <label className={LABEL}>Invoice note</label>
-              <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="Bank details, thank-you, terms & conditions…" className={`${INPUT} h-auto py-2`} />
+              <label className={LABEL}>Additional Note</label>
+              <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="Bank details, thank-you..." className={`${INPUT} h-auto py-2`} />
             </div>
           </div>
 
           {/* Actions */}
           <div className="flex flex-wrap gap-2">
             <Button onClick={() => handleSave()} disabled={saving} className="w-full gap-2 bg-brand-600 hover:bg-brand-700 text-white">
-              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Save Invoice
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Save {docType === "proposal" ? "Proposal" : docType === "contract" ? "Contract" : "Invoice"}
             </Button>
           </div>
         </div>
@@ -391,7 +463,7 @@ export default function AdminInvoicesPage() {
 
           {/* Wrapper to allow horizontal scroll on mobile while strictly keeping A4 dimensions inside */}
           <div className="overflow-x-auto w-full pb-4">
-            <div ref={previewRef} className="min-w-[780px] max-md:[zoom:0.7] max-sm:[zoom:0.45] rounded-2xl border border-slate-200 dark:border-slate-800 bg-white text-slate-900 p-10 shadow-sm mx-auto">
+            <div ref={previewRef} className="min-w-[780px] max-md:[zoom:0.7] max-sm:[zoom:0.45] rounded-2xl border border-slate-200 dark:border-[#303030] bg-white text-slate-900 p-10 shadow-sm mx-auto">
               <div className="flex items-start justify-between gap-4">
               <div>
                 {company.logoUrl
@@ -406,7 +478,7 @@ export default function AdminInvoicesPage() {
                 {company.gst && <p className="text-xs text-slate-500">GSTIN: {company.gst}</p>}
               </div>
               <div className="text-right">
-                <p className="text-2xl font-black tracking-tight text-slate-900">INVOICE</p>
+                <p className="text-2xl font-black tracking-tight text-slate-900">{docType.toUpperCase()}</p>
                 <p className="text-xs font-bold text-slate-500 mt-1">{previewNumber}</p>
                 <p className="text-xs text-slate-500">Date: {todayISO()}</p>
                 {dueDate && <p className="text-xs text-slate-500">Due: {dueDate}</p>}
@@ -415,24 +487,73 @@ export default function AdminInvoicesPage() {
 
             <div className="mt-6 pt-4 border-t border-slate-100 flex justify-between gap-4">
               <div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Bill To</p>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                  {docType === "proposal" ? "Prepared For" : docType === "contract" ? "Client Details" : "Bill To"}
+                </p>
                 <p className="text-sm font-bold text-slate-800 mt-1">{billToName || "—"}</p>
                 {billToEmail && <p className="text-xs text-slate-500">{billToEmail}</p>}
                 {billToAddress && <p className="text-xs text-slate-500">{billToAddress}</p>}
               </div>
-              {servicePeriod && (
+              {servicePeriod && docType !== "proposal" && (
                 <div className="text-right">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Service Period</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                    {docType === "contract" ? "Contract Duration" : "Service Period"}
+                  </p>
                   <p className="text-sm font-semibold text-slate-700 mt-1">{servicePeriod}</p>
                 </div>
               )}
             </div>
 
+            {/* Conditional Pre-Table Sections */}
+            {docType === "proposal" && (
+              <div className="mt-6 space-y-6">
+                {proposalIntro && (
+                  <div>
+                    <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Executive Summary</h4>
+                    <p className="text-sm text-slate-700 whitespace-pre-line">{proposalIntro}</p>
+                  </div>
+                )}
+                {proposalGoals && (
+                  <div>
+                    <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Goals & Objectives</h4>
+                    <p className="text-sm text-slate-700 whitespace-pre-line">{proposalGoals}</p>
+                  </div>
+                )}
+                {proposalScope && (
+                  <div>
+                    <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Proposed Solution & Scope</h4>
+                    <p className="text-sm text-slate-700 whitespace-pre-line">{proposalScope}</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {docType === "contract" && (
+              <div className="mt-6 space-y-6">
+                {contractParties && (
+                  <div>
+                    <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Parties Involved</h4>
+                    <p className="text-sm text-slate-700 whitespace-pre-line">{contractParties}</p>
+                  </div>
+                )}
+                {contractScope && (
+                  <div>
+                    <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Scope of Work</h4>
+                    <p className="text-sm text-slate-700 whitespace-pre-line">{contractScope}</p>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Service rows */}
-            <table className="w-full mt-6 text-sm">
+            <div className="mt-6 pt-4 border-t border-slate-100">
+              <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">
+                {docType === "proposal" ? "Pricing Estimate" : docType === "contract" ? "Payment Schedule" : "Services"}
+              </h4>
+              <table className="w-full text-sm">
               <thead>
                 <tr className="text-[10px] uppercase tracking-wider text-slate-400 border-b border-slate-200">
-                  <th className="text-left font-bold py-2">Service</th>
+                  <th className="text-left font-bold py-2">{docType === "contract" ? "Milestone" : "Service"}</th>
                   <th className="text-right font-bold py-2 w-32">Amount</th>
                 </tr>
               </thead>
@@ -452,18 +573,57 @@ export default function AdminInvoicesPage() {
               </tbody>
             </table>
 
+            </div>
+            
             <div className="mt-4 flex justify-end">
               <div className="w-56 space-y-1.5 text-sm">
-                <div className="flex justify-between text-slate-600"><span>Subtotal</span><span className="tabular-nums">{fmt(subtotal)}</span></div>
+                <div className="flex justify-between text-slate-600">
+                  <span>{docType === "proposal" ? "Est. Subtotal" : docType === "contract" ? "Milestone Subtotal" : "Subtotal"}</span>
+                  <span className="tabular-nums">{fmt(subtotal)}</span>
+                </div>
                 {taxPercent > 0 && <div className="flex justify-between text-slate-600"><span>Tax / GST ({taxPercent}%)</span><span className="tabular-nums">{fmt(taxAmount)}</span></div>}
                 {discount > 0 && <div className="flex justify-between text-slate-600"><span>Discount</span><span className="tabular-nums">-{fmt(discount)}</span></div>}
                 <div className="flex justify-between pt-2 border-t border-slate-200 text-base font-extrabold text-slate-900">
-                  <span>Total</span><span className="tabular-nums">{fmt(total)}</span>
+                  <span>{docType === "proposal" ? "Total Estimated Investment" : docType === "contract" ? "Total Contract Value" : "Total"}</span>
+                  <span className="tabular-nums">{fmt(total)}</span>
                 </div>
               </div>
             </div>
 
-            {(paymentTerms || notes) && (
+            {/* Conditional Post-Table Sections */}
+            {docType === "proposal" && proposalNextSteps && (
+              <div className="mt-8 pt-6 border-t border-slate-100">
+                <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Next Steps & Acceptance</h4>
+                <p className="text-sm text-slate-700 whitespace-pre-line">{proposalNextSteps}</p>
+              </div>
+            )}
+
+            {docType === "contract" && (
+              <div className="mt-8 pt-6 border-t border-slate-100 space-y-6">
+                {contractTerms && (
+                  <div>
+                    <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Legal Terms & Conditions</h4>
+                    <p className="text-[11px] text-slate-600 whitespace-pre-line leading-relaxed">{contractTerms}</p>
+                  </div>
+                )}
+                
+                {/* Signatures */}
+                <div className="mt-12 pt-8 flex items-end justify-between gap-12">
+                  <div className="flex-1">
+                    <div className="border-b border-slate-300 w-full mb-2"></div>
+                    <p className="text-xs font-bold text-slate-800">{company.name}</p>
+                    <p className="text-[10px] text-slate-500">Authorized Signature</p>
+                  </div>
+                  <div className="flex-1">
+                    <div className="border-b border-slate-300 w-full mb-2"></div>
+                    <p className="text-xs font-bold text-slate-800">{billToName || "Client"}</p>
+                    <p className="text-[10px] text-slate-500">Authorized Signature</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {(paymentTerms || notes) && docType === "invoice" && (
               <div className="mt-6 pt-4 border-t border-slate-100 space-y-2">
                 {paymentTerms && (
                   <div>
@@ -479,7 +639,7 @@ export default function AdminInvoicesPage() {
                 )}
               </div>
             )}
-            {bankDetails && (
+            {bankDetails && docType === "invoice" && (
               <div className="mt-5 pt-4 border-t border-slate-100">
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Payment Details</p>
                 <p className="text-xs text-slate-600 mt-0.5 whitespace-pre-line">{bankDetails}</p>
@@ -492,15 +652,15 @@ export default function AdminInvoicesPage() {
     </div>
 
     {/* ── Existing invoices ────────────────────────────────── */}
-      <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-950 overflow-hidden">
-        <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800/80 flex items-center gap-2">
+      <div className="rounded-2xl border border-slate-200/80 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] overflow-hidden">
+        <div className="px-4 py-3 border-b border-slate-100 dark:border-[#303030] flex items-center gap-2">
           <FileText className="h-4 w-4 text-slate-400" />
-          <h3 className="text-sm font-bold text-slate-900 dark:text-white">All Invoices</h3>
-          <span className="text-[10px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-full">{invoices.length}</span>
+          <h3 className="text-sm font-bold text-slate-900 dark:text-white">All Documents</h3>
+          <span className="text-[10px] font-bold text-slate-400 bg-slate-100 dark:bg-[#303030] px-1.5 py-0.5 rounded-full">{invoices.length}</span>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="text-xs uppercase tracking-wider text-slate-500 bg-slate-50/60 dark:bg-slate-900/40">
+            <thead className="text-xs uppercase tracking-wider text-slate-500 bg-slate-50/60 dark:bg-[#1f1f1f]/40">
               <tr>
                 <th className="px-4 py-2.5 text-left font-semibold">Invoice #</th>
                 <th className="px-4 py-2.5 text-left font-semibold">Client</th>
@@ -509,12 +669,20 @@ export default function AdminInvoicesPage() {
                 <th className="px-4 py-2.5 text-right font-semibold">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {invoices.length === 0 ? (
-                <tr><td colSpan={5} className="px-4 py-10 text-center text-xs text-slate-400">No invoices yet — create one above.</td></tr>
-              ) : invoices.map((inv) => (
+                <tr><td colSpan={5} className="px-4 py-10 text-center text-xs text-slate-400">No documents yet — create one above.</td></tr>
+              ) : invoices.map((inv) => {
+                const typeLabel = inv.invoiceNumber.startsWith("PROP-") ? "Proposal" : inv.invoiceNumber.startsWith("CONT-") ? "Contract" : "Invoice";
+                const typeBadgeClass = typeLabel === "Proposal" ? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400" : typeLabel === "Contract" ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400";
+                return (
                 <tr key={inv.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                  <td className="px-4 py-3 font-semibold text-slate-800 dark:text-slate-200">{inv.invoiceNumber}</td>
+                  <td className="px-4 py-3 font-semibold text-slate-800 dark:text-slate-200">
+                    <div className="flex flex-col items-start gap-1">
+                      <span>{inv.invoiceNumber}</span>
+                      <span className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full ${typeBadgeClass}`}>{typeLabel}</span>
+                    </div>
+                  </td>
                   <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{inv.clientName}</td>
                   <td className="px-4 py-3 text-right font-semibold tabular-nums text-slate-900 dark:text-white">{fmt(inv.amount)}</td>
                   <td className="px-4 py-3 text-slate-500 hidden sm:table-cell">{inv.dueDate || "—"}</td>
@@ -537,11 +705,40 @@ export default function AdminInvoicesPage() {
                     </div>
                   </td>
                 </tr>
-              ))}
+              )})}
             </tbody>
           </table>
         </div>
       </div>
+
+      {/* Document Type Modal */}
+      {showDocTypeModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setShowDocTypeModal(false)} />
+          <div className="relative w-full max-w-sm bg-white dark:bg-slate-900 rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="p-6">
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">What would you like to create?</h2>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">Select a document type to start drafting.</p>
+              
+              <div className="space-y-3">
+                <button onClick={() => { setDocType("proposal"); setShowDocTypeModal(false); }} className="w-full text-left p-4 rounded-xl border-2 border-slate-100 dark:border-slate-800 hover:border-brand-500 dark:hover:border-brand-500 transition-colors bg-white dark:bg-slate-900 group">
+                  <div className="font-bold text-slate-900 dark:text-white group-hover:text-brand-600">Proposal</div>
+                  <div className="text-xs text-slate-500 mt-1">Pitch services and give an estimate</div>
+                </button>
+                <button onClick={() => { setDocType("contract"); setShowDocTypeModal(false); }} className="w-full text-left p-4 rounded-xl border-2 border-slate-100 dark:border-slate-800 hover:border-brand-500 dark:hover:border-brand-500 transition-colors bg-white dark:bg-slate-900 group">
+                  <div className="font-bold text-slate-900 dark:text-white group-hover:text-brand-600">Contract</div>
+                  <div className="text-xs text-slate-500 mt-1">Formal agreement and payment schedule</div>
+                </button>
+                <button onClick={() => { setDocType("invoice"); setShowDocTypeModal(false); }} className="w-full text-left p-4 rounded-xl border-2 border-slate-100 dark:border-slate-800 hover:border-brand-500 dark:hover:border-brand-500 transition-colors bg-white dark:bg-slate-900 group">
+                  <div className="font-bold text-slate-900 dark:text-white group-hover:text-brand-600">Invoice</div>
+                  <div className="text-xs text-slate-500 mt-1">Bill for completed or ongoing work</div>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

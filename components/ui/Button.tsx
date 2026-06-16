@@ -8,15 +8,15 @@ type Size = "sm" | "md" | "lg" | "icon";
 // hover is a precise background/border shift; press is a subtle darken.
 const variants: Record<Variant, string> = {
   primary:
-    "bg-brand-600 hover:bg-brand-700 active:bg-brand-800 text-white focus-visible:ring-brand-500",
+    "bg-[#3b82f6] hover:bg-[#2563eb] active:bg-[#1d4ed8] text-white focus-visible:ring-[#3b82f6]",
   portal:
     "bg-portal-600 hover:bg-portal-700 active:bg-portal-800 text-white focus-visible:ring-portal-500",
   secondary:
     "bg-slate-900 hover:bg-slate-800 active:bg-slate-700 text-white dark:bg-white dark:hover:bg-slate-200 dark:text-slate-900",
   outline:
-    "border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 hover:bg-slate-50 hover:border-slate-300 dark:hover:bg-slate-800 dark:hover:border-slate-600",
+    "border border-slate-200 dark:border-[#2a2a30] bg-white dark:bg-[#28282d] text-slate-700 dark:text-[#9999a8] hover:bg-slate-50 hover:border-slate-300 dark:hover:bg-[#38383f] dark:hover:border-[#38383f]",
   ghost:
-    "text-slate-600 dark:text-slate-300 hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-800 dark:hover:text-white active:bg-slate-200 dark:active:bg-slate-700",
+    "text-slate-600 dark:text-[#9999a8] hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-[#28282d] dark:hover:text-white active:bg-slate-200 dark:active:bg-[#38383f]",
   danger:
     "bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white focus-visible:ring-rose-500",
 };
@@ -41,7 +41,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         "inline-flex items-center justify-center rounded-md font-medium",
         "transition-colors duration-100",
         "disabled:opacity-50 disabled:pointer-events-none",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-950",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-[#161618]",
         "cursor-pointer select-none",
         variants[variant],
         sizes[size],

@@ -47,14 +47,14 @@ const navigation = [
 function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const router = useRouter();
-  const [user, setUser] = useState<{ name: string; email: string } | null>(null);
+  const [user, setUser] = useState<{ name: string; email: string; role: string; avatarUrl?: string } | null>(null);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   useEffect(() => {
     getCurrentUser().then((res) => {
       if (res) {
-        setUser({ name: res.name as string, email: res.email as string });
+        setUser({ name: res.name as string, email: res.email as string, role: res.role as string, avatarUrl: res.avatarUrl as string });
       }
     });
   }, []);
@@ -69,8 +69,8 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
   };
 
   return (
-    <div className="flex h-full w-full flex-col bg-white dark:bg-[#0a0f26] border border-slate-200/80 dark:border-brand-900/60 lg:rounded-2xl shadow-soft dark:shadow-none overflow-hidden">
-      <div className="flex h-16 shrink-0 items-center justify-between px-5 border-b border-slate-200 dark:border-brand-900/50">
+    <div className="flex h-full w-full flex-col bg-white dark:bg-[#1f1f1f] lg:rounded-[20px] dark:border dark:border-[#303030] shadow-[0_2px_16px_rgba(0,0,0,0.07)] dark:shadow-none overflow-hidden">
+      <div className="flex h-16 shrink-0 items-center justify-between px-5 border-b border-[#f0f0f2] dark:border-[#303030]">
         <Link href="/admin" className="flex items-center gap-2.5" onClick={onNavigate}>
           <div className="relative w-9 h-9 rounded-xl bg-brand-hero flex items-center justify-center shadow-glow">
             <span className="text-white font-bold text-lg">P</span>
@@ -104,19 +104,19 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
                   className={cn(
                     "group relative flex items-center gap-x-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all cursor-pointer",
                     isActive
-                      ? "bg-brand-50 dark:bg-brand-600/20 text-brand-700 dark:text-white"
-                      : "text-slate-600 dark:text-brand-200/70 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-brand-900/40"
+                      ? "bg-[#eff6ff] dark:bg-blue-500/15 text-blue-700 dark:text-white"
+                      : "text-[#4b4b5a] dark:text-[#9999a8] hover:text-[#111114] dark:hover:text-white hover:bg-[#f7f7f9] dark:hover:bg-[#303030]"
                   )}
                 >
                   {isActive && (
-                    <span className="absolute left-0 top-1.5 bottom-1.5 w-0.5 rounded-r bg-brand-600 dark:bg-brand-400" />
+                    <span className="absolute left-0 top-1.5 bottom-1.5 w-0.5 rounded-r bg-blue-600 dark:bg-blue-400" />
                   )}
                   <item.icon
                     className={cn(
                       "h-[18px] w-[18px] shrink-0 transition-colors",
                       isActive
-                        ? "text-brand-600 dark:text-brand-300"
-                        : "text-slate-400 dark:text-brand-300/50 group-hover:text-slate-700 dark:group-hover:text-white"
+                        ? "text-blue-600 dark:text-blue-300"
+                        : "text-slate-400 dark:text-[#5a5a68] group-hover:text-slate-700 dark:group-hover:text-white"
                     )}
                   />
                   {item.name}
@@ -127,13 +127,13 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
         </ul>
       </nav>
 
-      <div className="border-t border-slate-200 dark:border-brand-900/50 p-3 flex items-center justify-between gap-2">
+      <div className="border-t border-[#f0f0f2] dark:border-[#303030] p-3 flex items-center justify-between gap-2">
         <Link
           href="/admin/settings"
           onClick={onNavigate}
           className="flex flex-1 items-center gap-3 rounded-xl p-2 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors cursor-pointer min-w-0"
         >
-          <Avatar name={user?.name || "Admin"} status="online" size="sm" />
+          <Avatar name={user?.name || "Admin"} role={user?.role} src={user?.avatarUrl} status="online" size="sm" />
           <div className="flex flex-col min-w-0">
             <span className="text-sm font-medium text-slate-900 dark:text-white truncate">
               {user?.name || "Agency Admin"}

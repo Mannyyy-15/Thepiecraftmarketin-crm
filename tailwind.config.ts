@@ -29,19 +29,19 @@ const config: Config = {
         "accent-hover": "var(--accent-hover)",
         "accent-solid": "var(--accent-solid, var(--accent))",
         "accent-fg": "var(--accent-fg)",
-        // Royal blue — primary brand
+        // Electric blue brand — vivid on dark, clean on light
         brand: {
-          50: "#eef2ff",
-          100: "#dde6fd",
-          200: "#bccdfb",
-          300: "#8fa8f7",
-          400: "#5f7ef1",
-          500: "#3a58e8",
-          600: "#263aa7",
-          700: "#1e2f87",
-          800: "#172265",
-          900: "#0f1544",
-          950: "#080b25",
+          50:  "#eff6ff",
+          100: "#dbeafe",
+          200: "#bfdbfe",
+          300: "#93c5fd",
+          400: "#60a5fa",
+          500: "#3b82f6",
+          600: "#2563eb",
+          700: "#1d4ed8",
+          800: "#1e40af",
+          900: "#1e3a8a",
+          950: "#172554",
         },
         // Teal — client portal
         portal: {
@@ -57,17 +57,17 @@ const config: Config = {
           900: "#134E4A",
         },
         primary: {
-          50: "#eef2ff",
-          100: "#dde6fd",
-          200: "#bccdfb",
-          300: "#8fa8f7",
-          400: "#5f7ef1",
-          500: "#3a58e8",
-          600: "#263aa7",
-          700: "#1e2f87",
-          800: "#172265",
-          900: "#0f1544",
-          950: "#080b25",
+          50:  "#eff6ff",
+          100: "#dbeafe",
+          200: "#bfdbfe",
+          300: "#93c5fd",
+          400: "#60a5fa",
+          500: "#3b82f6",
+          600: "#2563eb",
+          700: "#1d4ed8",
+          800: "#1e40af",
+          900: "#1e3a8a",
+          950: "#172554",
         },
       },
       backgroundImage: {
@@ -75,9 +75,9 @@ const config: Config = {
         "gradient-conic":
           "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
         "brand-hero":
-          "linear-gradient(135deg, #263aa7 0%, #3a58e8 50%, #5f7ef1 100%)",
+          "linear-gradient(135deg, #1d4ed8 0%, #2563eb 50%, #3b82f6 100%)",
         "portal-hero":
-          "linear-gradient(135deg, #0D9488 0%, #14B8A6 50%, #263aa7 100%)",
+          "linear-gradient(135deg, #0D9488 0%, #14B8A6 50%, #2563eb 100%)",
       },
       fontFamily: {
         sans: ["var(--font-jakarta)", "ui-sans-serif", "system-ui", "sans-serif"],
@@ -91,10 +91,10 @@ const config: Config = {
         "2xl": "12px",
       },
       boxShadow: {
-        // Hairline + barely-there depth. Borders do the structural work, not shadows.
         soft: "0 1px 1px 0 rgb(15 23 42 / 0.03)",
         card: "0 1px 1px 0 rgb(15 23 42 / 0.03)",
-        glow: "0 1px 2px 0 rgb(15 23 42 / 0.05)",
+        glow: "0 0 0 1px rgba(59,130,246,0.2), 0 4px 20px rgba(59,130,246,0.12)",
+        "glow-sm": "0 0 0 1px rgba(59,130,246,0.15), 0 2px 10px rgba(59,130,246,0.10)",
       },
       keyframes: {
         "fade-in": {

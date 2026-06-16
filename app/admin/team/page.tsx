@@ -414,12 +414,12 @@ export default function TeamPage() {
           : { bg: "bg-rose-500/5 hover:bg-rose-500/10 text-rose-500 dark:text-rose-400", border: "border-rose-300/40 hover:border-rose-400/50 border-dashed", label: "Absent", symbol: "✗" };
       case "scheduled":
         return compact
-          ? { bg: "bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500", symbol: "·" }
-          : { bg: "bg-white dark:bg-slate-900/40 hover:bg-slate-50 dark:hover:bg-slate-900/60 text-slate-500 dark:text-slate-400", border: "border-slate-200 dark:border-slate-800 hover:border-indigo-400/40", label: "Scheduled", symbol: "·" };
+          ? { bg: "bg-slate-100 dark:bg-[#303030] text-slate-400 dark:text-slate-500", symbol: "·" }
+          : { bg: "bg-white dark:bg-[#1f1f1f]/40 hover:bg-slate-50 dark:hover:bg-slate-900/60 text-slate-500 dark:text-slate-400", border: "border-slate-200 dark:border-[#303030] hover:border-indigo-400/40", label: "Scheduled", symbol: "·" };
       default: // off
         return compact
-          ? { bg: "bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500", symbol: "-" }
-          : { bg: "bg-slate-50/50 dark:bg-slate-900/20 hover:bg-slate-100/40 dark:hover:bg-slate-800/40 text-slate-400 dark:text-slate-500", border: "border-slate-100 dark:border-slate-800/50 hover:border-slate-200 dark:hover:border-slate-700", label: "Week Off", symbol: "✖" };
+          ? { bg: "bg-slate-100 dark:bg-[#303030] text-slate-400 dark:text-slate-500", symbol: "-" }
+          : { bg: "bg-slate-50/50 dark:bg-[#1f1f1f]/20 hover:bg-slate-100/40 dark:hover:bg-slate-800/40 text-slate-400 dark:text-slate-500", border: "border-slate-100 dark:border-[#303030]/50 hover:border-slate-200 dark:hover:border-slate-700", label: "Week Off", symbol: "✖" };
     }
   };
 
@@ -768,10 +768,10 @@ export default function TeamPage() {
         <>
           {/* Tab bar + invite button */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-            <div className="flex gap-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-1 w-full sm:w-auto">
+            <div className="flex gap-1.5 bg-white dark:bg-[#1f1f1f] border border-slate-200 dark:border-[#303030] rounded-2xl p-1 w-full sm:w-auto">
               <button
                 onClick={() => setActiveTab("directory")}
-                className={`flex-1 sm:flex-none px-4 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                className={`flex-1 sm:flex-none px-4 py-1.5 text-xs font-bold rounded-xl transition-all ${
                   activeTab === "directory"
                     ? "bg-brand-600 text-white shadow-sm"
                     : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
@@ -781,7 +781,7 @@ export default function TeamPage() {
               </button>
               <button
                 onClick={() => setActiveTab("attendance")}
-                className={`flex-1 sm:flex-none px-4 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                className={`flex-1 sm:flex-none px-4 py-1.5 text-xs font-bold rounded-xl transition-all ${
                   activeTab === "attendance"
                     ? "bg-brand-600 text-white shadow-sm"
                     : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
@@ -831,7 +831,7 @@ export default function TeamPage() {
                             setNewEmail("");
                           }
                         }}
-                        className="h-10 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 pl-3 pr-32 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white"
+                        className="h-10 w-full rounded-2xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] pl-3 pr-32 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white"
                       />
                       <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-xs text-slate-400 font-semibold select-none">
                         @thepiecraft.com
@@ -849,7 +849,7 @@ export default function TeamPage() {
                         placeholder="Password for login"
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
-                        className="h-10 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 pl-3 pr-10 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white"
+                        className="h-10 w-full rounded-2xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] pl-3 pr-10 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white"
                       />
                       <button
                         type="button"
@@ -867,7 +867,7 @@ export default function TeamPage() {
                     <select
                       value={newSystemRole}
                       onChange={(e) => setNewSystemRole(e.target.value)}
-                      className="h-10 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white"
+                      className="h-10 w-full rounded-2xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] px-3 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white"
                     >
                       <option value="Web Developer">Web Developer</option>
                       <option value="Graphic Designer">Graphic Designer</option>
@@ -892,10 +892,10 @@ export default function TeamPage() {
                               prev.includes(idx) ? prev.filter(d => d !== idx) : [...prev, idx]
                             );
                           }}
-                          className={`h-8 px-3 rounded-lg text-xs font-bold transition-all border ${
+                          className={`h-8 px-3 rounded-xl text-xs font-bold transition-all border ${
                             inviteWorkingDays.includes(idx)
                               ? "bg-brand-600 text-white border-brand-600 shadow-sm"
-                              : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-500 hover:border-brand-300 hover:text-brand-600"
+                              : "bg-white dark:bg-[#1f1f1f] border-slate-200 dark:border-[#303030] text-slate-500 hover:border-brand-300 hover:text-brand-600"
                           }`}
                         >
                           {day}
@@ -914,7 +914,7 @@ export default function TeamPage() {
                       value={inviteShiftStartTime}
                       onChange={e => setInviteShiftStartTime(e.target.value)}
                       placeholder="e.g. 09:30 AM"
-                      className="h-10 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white"
+                      className="h-10 w-full rounded-2xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] px-3 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white"
                     />
                   </div>
                   <div>
@@ -926,7 +926,7 @@ export default function TeamPage() {
                       value={inviteShiftEndTime}
                       onChange={e => setInviteShiftEndTime(e.target.value)}
                       placeholder="e.g. 06:30 PM"
-                      className="h-10 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white"
+                      className="h-10 w-full rounded-2xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] px-3 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white"
                     />
                   </div>
                   <div>
@@ -955,7 +955,7 @@ export default function TeamPage() {
             const selectedEmpData = members.find((m) => m.id === selectedEmployeeDetailId);
             if (!selectedEmpData) {
               return (
-                <div className="p-8 text-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl">
+                <div className="p-8 text-center bg-white dark:bg-[#1f1f1f] border border-slate-200 dark:border-[#303030] rounded-[20px]">
                   <p className="text-slate-500 font-semibold">Employee profile not loaded.</p>
                   <Button onClick={() => setSelectedEmployeeDetailId(null)} className="mt-4 bg-indigo-600 text-white hover:bg-indigo-700">
                     Back to Directory
@@ -969,7 +969,7 @@ export default function TeamPage() {
                 <div>
                   <button
                     onClick={() => setSelectedEmployeeDetailId(null)}
-                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-slate-350 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all cursor-pointer bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-3.5 py-2 rounded-xl"
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-slate-350 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all cursor-pointer bg-slate-50 dark:bg-[#1f1f1f] border border-slate-200 dark:border-[#303030] px-3.5 py-2 rounded-2xl"
                   >
                     <ArrowLeft className="h-3.5 w-3.5" />
                     <span>Back to Directory</span>
@@ -998,7 +998,7 @@ export default function TeamPage() {
                       </div>
                       <div className="flex flex-wrap gap-2 text-right">
                       {showEditSchedule ? (
-                        <div className="border border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 rounded-xl text-left w-full max-w-sm mt-4 md:mt-0 shadow-lg">
+                        <div className="border border-slate-300 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] p-4 rounded-2xl text-left w-full max-w-sm mt-4 md:mt-0 shadow-lg">
                           <form onSubmit={async (e) => { await handleSaveShiftSchedule(e); setShowEditSchedule(false); }} className="space-y-4">
                             <div>
                               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Working Days</label>
@@ -1008,8 +1008,8 @@ export default function TeamPage() {
                                     key={day}
                                     type="button"
                                     onClick={() => setWorkingDays(prev => prev.includes(idx) ? prev.filter(d => d !== idx) : [...prev, idx])}
-                                    className={`h-7 px-2 rounded-lg text-[10px] font-bold transition-all border ${
-                                      workingDays.includes(idx) ? "bg-brand-600 text-white border-brand-600" : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-500"
+                                    className={`h-7 px-2 rounded-xl text-[10px] font-bold transition-all border ${
+                                      workingDays.includes(idx) ? "bg-brand-600 text-white border-brand-600" : "bg-white dark:bg-[#1f1f1f] border-slate-200 dark:border-[#303030] text-slate-500"
                                     }`}
                                   >{day}</button>
                                 ))}
@@ -1018,16 +1018,16 @@ export default function TeamPage() {
                             <div className="grid grid-cols-2 gap-3">
                               <div>
                                 <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Shift Start</label>
-                                <input type="text" value={shiftStartTime} onChange={e => setShiftStartTime(e.target.value)} className="h-9 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-2 text-xs" />
+                                <input type="text" value={shiftStartTime} onChange={e => setShiftStartTime(e.target.value)} className="h-9 w-full rounded-2xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] px-2 text-xs" />
                               </div>
                               <div>
                                 <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Shift End</label>
-                                <input type="text" value={shiftEndTime} onChange={e => setShiftEndTime(e.target.value)} className="h-9 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-2 text-xs" />
+                                <input type="text" value={shiftEndTime} onChange={e => setShiftEndTime(e.target.value)} className="h-9 w-full rounded-2xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] px-2 text-xs" />
                               </div>
                             </div>
                             <div>
                               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Shift Profile</label>
-                              <input type="text" value={activeShiftProfile} onChange={e => setActiveShiftProfile(e.target.value)} className="h-9 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-2 text-xs" />
+                              <input type="text" value={activeShiftProfile} onChange={e => setActiveShiftProfile(e.target.value)} className="h-9 w-full rounded-2xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] px-2 text-xs" />
                             </div>
                             <div className="flex gap-2 pt-1">
                               <Button type="submit" className="h-8 flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs">Save</Button>
@@ -1037,14 +1037,14 @@ export default function TeamPage() {
                         </div>
                       ) : (
                         <>
-                          <div onClick={() => setShowEditSchedule(true)} className="border border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2.5 rounded-xl text-left min-w-[140px] relative group cursor-pointer hover:border-indigo-400 transition-colors">
+                          <div onClick={() => setShowEditSchedule(true)} className="border border-slate-300 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] px-4 py-2.5 rounded-2xl text-left min-w-[140px] relative group cursor-pointer hover:border-indigo-400 transition-colors">
                             <button className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity text-indigo-600"><Edit2 className="h-3.5 w-3.5" /></button>
                             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">Shift Hours</p>
                             <p className="text-xs font-extrabold text-slate-800 dark:text-white mt-1.5 leading-none">
                               {selectedEmpData.shiftStartTime} - {selectedEmpData.shiftEndTime}
                             </p>
                           </div>
-                          <div onClick={() => setShowEditSchedule(true)} className="border border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2.5 rounded-xl text-left min-w-[140px] relative group cursor-pointer hover:border-indigo-400 transition-colors">
+                          <div onClick={() => setShowEditSchedule(true)} className="border border-slate-300 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] px-4 py-2.5 rounded-2xl text-left min-w-[140px] relative group cursor-pointer hover:border-indigo-400 transition-colors">
                             <button className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity text-indigo-600"><Edit2 className="h-3.5 w-3.5" /></button>
                             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">Active Profile</p>
                             <p className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 mt-1.5 leading-none truncate max-w-[150px]" title={selectedEmpData.activeShiftProfile}>
@@ -1085,7 +1085,7 @@ export default function TeamPage() {
                   return (
                     <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
                       {/* Dark timer card */}
-                      <Card className="lg:col-span-3 border-none bg-gradient-to-b from-[#0c1221] to-[#090d16] text-white shadow-xl rounded-[24px] overflow-hidden relative">
+                      <Card className="lg:col-span-3 border-none bg-gradient-to-b from-[#1c1c20] to-[#101012] text-white shadow-xl rounded-[24px] overflow-hidden relative">
                         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(38,58,167,0.12)_0%,_transparent_70%)] pointer-events-none" />
                         {isPunchedIn && (
                           <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-emerald-400/70 to-transparent" />
@@ -1109,7 +1109,7 @@ export default function TeamPage() {
                                   <span className={`text-xl sm:text-2xl font-black text-slate-600 select-none pb-4 ${isPunchedIn ? "animate-pulse" : ""}`}>:</span>
                                 )}
                                 <div className="flex flex-col items-center">
-                                  <div className="bg-[#141b2d] border border-slate-700/50 rounded-xl px-2.5 py-2 sm:px-4 sm:py-3 min-w-[50px] sm:min-w-[68px] text-center font-mono text-2xl sm:text-3xl font-black text-white shadow-inner tabular-nums">
+                                  <div className="bg-[#141b2d] border border-slate-700/50 rounded-2xl px-2.5 py-2 sm:px-4 sm:py-3 min-w-[50px] sm:min-w-[68px] text-center font-mono text-2xl sm:text-3xl font-black text-white shadow-inner tabular-nums">
                                     {pad(item.val)}
                                   </div>
                                   <span className="text-[9px] font-extrabold uppercase tracking-widest text-slate-500 mt-1.5">{item.label}</span>
@@ -1118,12 +1118,12 @@ export default function TeamPage() {
                             ))}
                           </div>
                           <div className="flex items-center gap-2 flex-wrap justify-center">
-                            <div className="bg-slate-800/60 text-[10px] text-slate-400 font-semibold px-3 py-1.5 rounded-xl flex items-center gap-1.5 border border-slate-700/40">
+                            <div className="bg-slate-800/60 text-[10px] text-slate-400 font-semibold px-3 py-1.5 rounded-2xl flex items-center gap-1.5 border border-slate-700/40">
                               <Clock className="h-3 w-3" />
                               {selectedEmpData.shiftStartTime} — {selectedEmpData.shiftEndTime}
                             </div>
                             {isPunchedOut && totalHours && (
-                              <div className="bg-emerald-900/30 text-[10px] text-emerald-400 font-bold px-3 py-1.5 rounded-xl flex items-center gap-1.5 border border-emerald-800/40">
+                              <div className="bg-emerald-900/30 text-[10px] text-emerald-400 font-bold px-3 py-1.5 rounded-2xl flex items-center gap-1.5 border border-emerald-800/40">
                                 <TrendingUp className="h-3 w-3" />
                                 {totalHours}h logged
                               </div>
@@ -1133,18 +1133,18 @@ export default function TeamPage() {
                       </Card>
 
                       {/* Activity Log */}
-                      <Card className="lg:col-span-2 border border-slate-200/80 dark:border-[#1e2b5e] bg-slate-50/50 dark:bg-[#0d1230] rounded-[24px] overflow-hidden">
+                      <Card className="lg:col-span-2 border border-slate-200/80 dark:border-[#2e2e33] bg-slate-50/50 dark:bg-[#18181b] rounded-[24px] overflow-hidden">
                         <CardContent className="p-5 sm:p-6 flex flex-col h-full">
                           <h3 className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-5">
                             Today's Activity Log
                           </h3>
                           <div className="relative pl-6 flex-1 flex flex-col justify-between py-1">
                             {/* Vertical Line */}
-                            <div className="absolute left-[5px] top-2 bottom-2 w-[2px] bg-slate-200 dark:bg-[#1e2b5e] rounded-full" />
+                            <div className="absolute left-[5px] top-2 bottom-2 w-[2px] bg-slate-200 dark:bg-[#2e2e33] rounded-full" />
                             
                             {/* Punch In */}
                             <div className="relative">
-                              <span className={`absolute -left-[23px] top-1.5 h-2.5 w-2.5 rounded-full border-2 border-slate-50 dark:border-[#0d1230] transition-colors ${
+                              <span className={`absolute -left-[23px] top-1.5 h-2.5 w-2.5 rounded-full border-2 border-slate-50 dark:border-[#222226] transition-colors ${
                                 todayRec?.punchInTime ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" : "bg-slate-300 dark:bg-slate-700"
                               }`} />
                               <div className="flex items-center justify-between">
@@ -1162,7 +1162,7 @@ export default function TeamPage() {
                             </div>
                             {/* Punch Out */}
                             <div className="relative">
-                              <span className={`absolute -left-[17px] top-0.5 h-3 w-3 rounded-full border-2 border-slate-50 dark:border-[#0d1230] transition-colors ${
+                              <span className={`absolute -left-[17px] top-0.5 h-3 w-3 rounded-full border-2 border-slate-50 dark:border-[#222226] transition-colors ${
                                 todayRec?.punchOutTime ? "bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.5)]" : "bg-slate-300 dark:bg-slate-700"
                               }`} />
                               <div className="flex items-center justify-between">
@@ -1194,22 +1194,22 @@ export default function TeamPage() {
                 {/* Sub layout grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start mt-6">
                   {/* Left Column: Monthly Calendar layout */}
-                  <Card ref={calendarRef} className="lg:col-span-2 overflow-hidden border border-slate-200 dark:border-slate-800/80">
-                    <CardHeader className="border-b border-slate-100 dark:border-slate-800/80">
+                  <Card ref={calendarRef} className="lg:col-span-2 overflow-hidden border border-slate-200 dark:border-[#303030]">
+                    <CardHeader className="border-b border-slate-100 dark:border-[#303030]">
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                         <div className="flex items-center gap-3">
                           <div className="flex items-center gap-1">
                             <button
                               type="button"
                               onClick={prevMonth}
-                              className="h-7 w-7 rounded-lg flex items-center justify-center text-slate-500 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
+                              className="h-7 w-7 rounded-xl flex items-center justify-center text-slate-500 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
                             >
                               <ChevronLeft className="h-4 w-4" />
                             </button>
                             <button
                               type="button"
                               onClick={nextMonth}
-                              className="h-7 w-7 rounded-lg flex items-center justify-center text-slate-500 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
+                              className="h-7 w-7 rounded-xl flex items-center justify-center text-slate-500 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
                             >
                               <ChevronRight className="h-4 w-4" />
                             </button>
@@ -1240,7 +1240,7 @@ export default function TeamPage() {
                       <div className="grid grid-cols-7 gap-0.5 sm:gap-2">
                         {/* Leading empty cells */}
                         {Array.from({ length: calFirstDayOfWeek }).map((_, idx) => (
-                          <div key={`empty-start-${idx}`} className="aspect-square bg-slate-50/10 dark:bg-slate-900/5 rounded-2xl border border-dashed border-slate-100 dark:border-slate-800/20 opacity-20" />
+                          <div key={`empty-start-${idx}`} className="aspect-square bg-slate-50/10 dark:bg-[#1f1f1f]/5 rounded-[20px] border border-dashed border-slate-100 dark:border-[#303030]/20 opacity-20" />
                         ))}
                         {/* Days of the month */}
                         {Array.from({ length: calDaysInMonth }, (_, i) => i + 1).map((day) => {
@@ -1262,7 +1262,7 @@ export default function TeamPage() {
                               onMouseEnter={() => handleMouseEnter(day)}
                               onMouseUp={() => handleMouseUp(day)}
                               className={cn(
-                                "aspect-square w-full rounded-2xl border p-1 sm:p-2 flex flex-col items-center sm:items-start transition-all duration-200 cursor-pointer hover:scale-[1.02] active:scale-98 relative group/cell overflow-hidden",
+                                "aspect-square w-full rounded-[20px] border p-1 sm:p-2 flex flex-col items-center sm:items-start transition-all duration-200 cursor-pointer hover:scale-[1.02] active:scale-98 relative group/cell overflow-hidden",
                                 style.bg,
                                 style.border,
                                 isSelectedForTask && "ring-2 ring-indigo-500 border-indigo-500 scale-[1.02] shadow-[0_0_12px_rgba(99,102,241,0.3)] z-10",
@@ -1313,7 +1313,7 @@ export default function TeamPage() {
                               )} />
 
                               {/* Desktop: symbol + label */}
-                              <div className="hidden sm:flex items-center gap-1 mt-auto pt-1 w-full border-t border-slate-200/10 dark:border-slate-800/10">
+                              <div className="hidden sm:flex items-center gap-1 mt-auto pt-1 w-full border-t border-slate-200/10 dark:border-[#303030]/10">
                                 <span className="text-xs font-bold">{style.symbol}</span>
                                 <span className="text-[9px] font-bold uppercase tracking-wider opacity-70">{style.label?.split(" ")[0]}</span>
                               </div>
@@ -1322,7 +1322,7 @@ export default function TeamPage() {
                         })}
                         {/* Trailing empty cells */}
                         {Array.from({ length: calTrailingDays }).map((_, idx) => (
-                          <div key={`empty-end-${idx}`} className="aspect-square bg-slate-50/10 dark:bg-slate-900/5 rounded-2xl border border-dashed border-slate-100 dark:border-slate-800/20 opacity-20" />
+                          <div key={`empty-end-${idx}`} className="aspect-square bg-slate-50/10 dark:bg-[#1f1f1f]/5 rounded-[20px] border border-dashed border-slate-100 dark:border-[#303030]/20 opacity-20" />
                         ))}
                       </div>
                     </CardContent>
@@ -1331,8 +1331,8 @@ export default function TeamPage() {
                   {/* Right Column: Scoped Sidebar Editors */}
                   <div className="lg:col-span-1 space-y-6">
                     {/* Scoped Leave Logger Card */}
-                    <Card ref={leaveLoggerRef} className="h-fit border border-slate-200 dark:border-slate-800/80">
-                      <CardHeader className="border-b border-slate-100 dark:border-slate-800/80 py-4">
+                    <Card ref={leaveLoggerRef} className="h-fit border border-slate-200 dark:border-[#303030]">
+                      <CardHeader className="border-b border-slate-100 dark:border-[#303030] py-4">
                         <div className="flex justify-between items-center gap-2">
                           <CardTitle className="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white">
                             <Umbrella className="h-4.5 w-4.5 text-amber-500" /> Log Employee Leave
@@ -1357,7 +1357,7 @@ export default function TeamPage() {
 
                             return (
                               <div className="space-y-4">
-                                <div className="p-2.5 bg-indigo-500/10 border border-indigo-500/20 rounded-xl text-center shadow-sm">
+                                <div className="p-2.5 bg-indigo-500/10 border border-indigo-500/20 rounded-2xl text-center shadow-sm">
                                   <p className="text-xs font-bold text-indigo-600 dark:text-indigo-400">
                                     📅 Selected Date: {calMonthName} {selectedSingleDay}, {calYear}
                                   </p>
@@ -1371,10 +1371,10 @@ export default function TeamPage() {
                                     <button
                                       type="button"
                                       onClick={() => setSelectedSingleDateStatus("vacation")}
-                                      className={`py-2 px-3 border rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer hover:scale-[1.01] active:scale-98 ${
+                                      className={`py-2 px-3 border rounded-2xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer hover:scale-[1.01] active:scale-98 ${
                                         selectedSingleDateStatus === "vacation"
                                           ? "border-amber-500 bg-amber-50 dark:bg-amber-500/15 text-amber-600 dark:text-amber-400 shadow-sm ring-1 ring-amber-500/30"
-                                          : "border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/60 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-slate-800 dark:hover:text-slate-250"
+                                          : "border-slate-200 dark:border-[#303030] bg-slate-50/60 dark:bg-[#1f1f1f]/60 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-slate-800 dark:hover:text-slate-250"
                                       }`}
                                     >
                                       <span>⛱ Holiday</span>
@@ -1382,10 +1382,10 @@ export default function TeamPage() {
                                     <button
                                       type="button"
                                       onClick={() => setSelectedSingleDateStatus("sick")}
-                                      className={`py-2 px-3 border rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer hover:scale-[1.01] active:scale-98 ${
+                                      className={`py-2 px-3 border rounded-2xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer hover:scale-[1.01] active:scale-98 ${
                                         selectedSingleDateStatus === "sick"
                                           ? "border-rose-500 bg-rose-50 dark:bg-rose-500/15 text-rose-600 dark:text-rose-450 shadow-sm ring-1 ring-rose-500/30"
-                                          : "border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/60 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-slate-800 dark:hover:text-slate-250"
+                                          : "border-slate-200 dark:border-[#303030] bg-slate-50/60 dark:bg-[#1f1f1f]/60 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-slate-800 dark:hover:text-slate-250"
                                       }`}
                                     >
                                       <span>✚ Leave</span>
@@ -1393,10 +1393,10 @@ export default function TeamPage() {
                                     <button
                                       type="button"
                                       onClick={() => setSelectedSingleDateStatus("present")}
-                                      className={`py-2 px-3 border rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer hover:scale-[1.01] active:scale-98 ${
+                                      className={`py-2 px-3 border rounded-2xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer hover:scale-[1.01] active:scale-98 ${
                                         selectedSingleDateStatus === "present"
                                           ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-450 shadow-sm ring-1 ring-emerald-500/30"
-                                          : "border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/60 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-slate-800 dark:hover:text-slate-250"
+                                          : "border-slate-200 dark:border-[#303030] bg-slate-50/60 dark:bg-[#1f1f1f]/60 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-slate-800 dark:hover:text-slate-250"
                                       }`}
                                     >
                                       <span>✓ Present</span>
@@ -1404,10 +1404,10 @@ export default function TeamPage() {
                                     <button
                                       type="button"
                                       onClick={() => setSelectedSingleDateStatus("off")}
-                                      className={`py-2 px-3 border rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer hover:scale-[1.01] active:scale-98 ${
+                                      className={`py-2 px-3 border rounded-2xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer hover:scale-[1.01] active:scale-98 ${
                                         selectedSingleDateStatus === "off"
-                                          ? "border-slate-500 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-350 shadow-sm ring-1 ring-slate-500/30"
-                                          : "border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/60 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-slate-800 dark:hover:text-slate-250"
+                                          ? "border-slate-500 bg-slate-100 dark:bg-[#303030] text-slate-700 dark:text-slate-350 shadow-sm ring-1 ring-slate-500/30"
+                                          : "border-slate-200 dark:border-[#303030] bg-slate-50/60 dark:bg-[#1f1f1f]/60 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-slate-800 dark:hover:text-slate-250"
                                       }`}
                                     >
                                       <span>✖ Week Off</span>
@@ -1415,11 +1415,11 @@ export default function TeamPage() {
                                   </div>
                                 </div>
 
-                                <div className="pt-4 border-t border-slate-200 dark:border-slate-800">
+                                <div className="pt-4 border-t border-slate-200 dark:border-[#303030]">
                                   <Button
                                     type="button"
                                     onClick={() => handleSingleDateStatusSave(selectedSingleDay, selectedSingleDateStatus)}
-                                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold flex items-center justify-center gap-1.5 py-2.5 shadow-md text-xs rounded-xl transition-all hover:shadow-lg"
+                                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold flex items-center justify-center gap-1.5 py-2.5 shadow-md text-xs rounded-2xl transition-all hover:shadow-lg"
                                   >
                                     Save Leave Status
                                   </Button>
@@ -1439,10 +1439,10 @@ export default function TeamPage() {
                                   <button
                                     type="button"
                                     onClick={() => setLeaveType("vacation")}
-                                    className={`py-2 px-3 border rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer hover:scale-[1.01] active:scale-98 ${
+                                    className={`py-2 px-3 border rounded-2xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer hover:scale-[1.01] active:scale-98 ${
                                       leaveType === "vacation"
                                         ? "border-amber-500 bg-amber-50 dark:bg-amber-500/15 text-amber-600 dark:text-amber-400 shadow-sm ring-1 ring-amber-500/30"
-                                        : "border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/60 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-slate-800 dark:hover:text-slate-250"
+                                        : "border-slate-200 dark:border-[#303030] bg-slate-50/60 dark:bg-[#1f1f1f]/60 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-slate-800 dark:hover:text-slate-250"
                                     }`}
                                   >
                                     <span>⛱ Holiday</span>
@@ -1450,10 +1450,10 @@ export default function TeamPage() {
                                   <button
                                     type="button"
                                     onClick={() => setLeaveType("sick")}
-                                    className={`py-2 px-3 border rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer hover:scale-[1.01] active:scale-98 ${
+                                    className={`py-2 px-3 border rounded-2xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer hover:scale-[1.01] active:scale-98 ${
                                       leaveType === "sick"
                                         ? "border-rose-500 bg-rose-50 dark:bg-rose-500/15 text-rose-600 dark:text-rose-450 shadow-sm ring-1 ring-rose-500/30"
-                                        : "border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/60 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-slate-800 dark:hover:text-slate-250"
+                                        : "border-slate-200 dark:border-[#303030] bg-slate-50/60 dark:bg-[#1f1f1f]/60 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-slate-800 dark:hover:text-slate-250"
                                     }`}
                                   >
                                     <span>✚ Leave</span>
@@ -1461,10 +1461,10 @@ export default function TeamPage() {
                                   <button
                                     type="button"
                                     onClick={() => setLeaveType("present")}
-                                    className={`py-2 px-3 border rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer hover:scale-[1.01] active:scale-98 ${
+                                    className={`py-2 px-3 border rounded-2xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer hover:scale-[1.01] active:scale-98 ${
                                       leaveType === "present"
                                         ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-450 shadow-sm ring-1 ring-emerald-500/30"
-                                        : "border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/60 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-slate-800 dark:hover:text-slate-250"
+                                        : "border-slate-200 dark:border-[#303030] bg-slate-50/60 dark:bg-[#1f1f1f]/60 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-slate-800 dark:hover:text-slate-250"
                                     }`}
                                   >
                                     <span>✓ Present</span>
@@ -1472,10 +1472,10 @@ export default function TeamPage() {
                                   <button
                                     type="button"
                                     onClick={() => setLeaveType("off")}
-                                    className={`py-2 px-3 border rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer hover:scale-[1.01] active:scale-98 ${
+                                    className={`py-2 px-3 border rounded-2xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer hover:scale-[1.01] active:scale-98 ${
                                       leaveType === "off"
-                                        ? "border-slate-500 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-350 shadow-sm ring-1 ring-slate-500/30"
-                                        : "border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/60 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-slate-800 dark:hover:text-slate-250"
+                                        ? "border-slate-500 bg-slate-100 dark:bg-[#303030] text-slate-700 dark:text-slate-350 shadow-sm ring-1 ring-slate-500/30"
+                                        : "border-slate-200 dark:border-[#303030] bg-slate-50/60 dark:bg-[#1f1f1f]/60 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-slate-800 dark:hover:text-slate-250"
                                     }`}
                                   >
                                     <span>✖ Week Off</span>
@@ -1511,7 +1511,7 @@ export default function TeamPage() {
                                         setStartDay(n);
                                       }
                                     }}
-                                    className="w-full h-10 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white"
+                                    className="w-full h-10 rounded-2xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] px-3 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white"
                                   />
                                 </div>
                                 <div>
@@ -1541,14 +1541,14 @@ export default function TeamPage() {
                                         setEndDay(n);
                                       }
                                     }}
-                                    className="w-full h-10 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white"
+                                    className="w-full h-10 rounded-2xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] px-3 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white"
                                   />
                                 </div>
                               </div>
 
                               <Button
                                 type="submit"
-                                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold flex items-center justify-center gap-1.5 py-2.5 shadow-md shadow-brand-500/10 text-xs rounded-xl"
+                                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold flex items-center justify-center gap-1.5 py-2.5 shadow-md shadow-brand-500/10 text-xs rounded-2xl"
                               >
                                 <Plus className="h-4 w-4" /> Apply Leave Log
                               </Button>
@@ -1565,8 +1565,8 @@ export default function TeamPage() {
                 {/* Assigned Workload Card */}
                 <div className="space-y-6">
                   {/* Tasks & To-Dos */}
-                  <Card className="border border-slate-200 dark:border-slate-800/80 shadow-md">
-                    <CardHeader className="border-b border-slate-100 dark:border-slate-800/80 py-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                  <Card className="border border-slate-200 dark:border-[#303030] shadow-md">
+                    <CardHeader className="border-b border-slate-100 dark:border-[#303030] py-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                       <div className="space-y-1">
                         <CardTitle className="text-base font-bold flex items-center gap-2">
                           <CheckCircle2 className="h-5 w-5 text-brand-500" /> Employee Tasks
@@ -1582,7 +1582,7 @@ export default function TeamPage() {
                           onChange={(e) => {
                             setSelectedFilterProjectId(e.target.value);
                           }}
-                          className="h-10 w-full sm:w-56 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 text-sm font-bold focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white"
+                          className="h-10 w-full sm:w-56 rounded-2xl border border-slate-300 dark:border-[#38383f] bg-slate-50 dark:bg-[#1f1f1f] px-3 text-sm font-bold focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white"
                         >
                           <option value="">All Projects</option>
                           {allProjects.map(p => (
@@ -1606,14 +1606,14 @@ export default function TeamPage() {
                     <CardContent className="p-0">
                       {isWorkloadLoading ? (
                         <div className="p-6 space-y-4">
-                          <Skeleton className="h-12 w-full rounded-xl" />
+                          <Skeleton className="h-12 w-full rounded-2xl" />
                           <TaskListSkeleton count={4} />
                         </div>
                       ) : (
                         <div className="flex flex-col">
                           
                           {/* Add Task Input Row (Inline Style) */}
-                          <div className="p-4 sm:p-6 bg-slate-50/50 dark:bg-slate-900/30 border-b border-slate-100 dark:border-slate-800/80">
+                          <div className="p-4 sm:p-6 bg-slate-50/50 dark:bg-[#1f1f1f]/30 border-b border-slate-100 dark:border-[#303030]">
                             <form onSubmit={handleCreateEmployeeTask} className="flex flex-col xl:flex-row items-start xl:items-center gap-3">
                               <div className="flex-1 w-full">
                                 <input
@@ -1622,7 +1622,7 @@ export default function TeamPage() {
                                   placeholder="Task title..."
                                   value={newTaskTitle}
                                   onChange={(e) => setNewTaskTitle(e.target.value)}
-                                  className="h-11 w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 px-4 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-brand-500/40 shadow-sm text-slate-800 dark:text-white"
+                                  className="h-11 w-full rounded-2xl border border-slate-300 dark:border-[#38383f] bg-white dark:bg-[#1f1f1f] px-4 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-brand-500/40 shadow-sm text-slate-800 dark:text-white"
                                 />
                               </div>
                               
@@ -1630,7 +1630,7 @@ export default function TeamPage() {
                                 <select
                                   value={newTaskProjectId}
                                   onChange={(e) => setNewTaskProjectId(e.target.value)}
-                                  className="h-11 w-full sm:w-48 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white"
+                                  className="h-11 w-full sm:w-48 rounded-2xl border border-slate-300 dark:border-[#38383f] bg-white dark:bg-[#1f1f1f] px-3 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white"
                                 >
                                   <option value="">No Project</option>
                                   {allProjects.map(p => (
@@ -1642,16 +1642,16 @@ export default function TeamPage() {
                                   type="date"
                                   value={newTaskDueDate}
                                   onChange={(e) => setNewTaskDueDate(e.target.value)}
-                                  className="h-11 w-full sm:w-40 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white dark:[color-scheme:dark]"
+                                  className="h-11 w-full sm:w-40 rounded-2xl border border-slate-300 dark:border-[#38383f] bg-white dark:bg-[#1f1f1f] px-3 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white dark:[color-scheme:dark]"
                                 />
                                 
                                 <select
                                   value={newTaskPriority}
                                   onChange={(e) => setNewTaskPriority(e.target.value)}
-                                  className={`h-11 w-full sm:w-36 rounded-xl border px-3 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-brand-500/40 ${
+                                  className={`h-11 w-full sm:w-36 rounded-2xl border px-3 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-brand-500/40 ${
                                     newTaskPriority === "high" ? "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-900/20 dark:text-rose-400 dark:border-rose-800" :
                                     newTaskPriority === "medium" ? "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800" :
-                                    "bg-slate-50 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700"
+                                    "bg-slate-50 text-slate-700 border-slate-300 dark:bg-[#303030] dark:text-slate-300 dark:border-[#38383f]"
                                   }`}
                                 >
                                   <option value="low">Low Priority</option>
@@ -1659,7 +1659,7 @@ export default function TeamPage() {
                                   <option value="high">High Priority</option>
                                 </select>
                                 
-                                <Button type="submit" disabled={isCreatingTask} className="h-11 w-full sm:w-32 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow-md">
+                                <Button type="submit" disabled={isCreatingTask} className="h-11 w-full sm:w-32 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-2xl shadow-md">
                                   {isCreatingTask ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save Task"}
                                 </Button>
                               </div>
@@ -1677,7 +1677,7 @@ export default function TeamPage() {
                               if (filteredTasks.length === 0) {
                                 return (
                                   <div className="py-12 flex flex-col items-center justify-center">
-                                    <div className="h-12 w-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-3">
+                                    <div className="h-12 w-12 rounded-full bg-slate-100 dark:bg-[#303030] flex items-center justify-center mb-3">
                                       <CheckCircle2 className="h-6 w-6 text-slate-300 dark:text-slate-600" />
                                     </div>
                                     <p className="text-sm font-bold text-slate-600 dark:text-slate-400">All caught up!</p>
@@ -1693,10 +1693,10 @@ export default function TeamPage() {
                                 return (
                                   <div
                                     key={t.id}
-                                    className={`group flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border transition-all duration-300 hover:shadow-md ${
+                                    className={`group flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl border transition-all duration-300 hover:shadow-md ${
                                       t.done === 1
-                                        ? "border-slate-200/60 dark:border-slate-800/40 bg-slate-50/40 dark:bg-slate-900/20 opacity-60 hover:opacity-100 grayscale hover:grayscale-0"
-                                        : "border-slate-200 dark:border-slate-800/80 bg-white dark:bg-slate-950 hover:border-slate-300 dark:hover:border-slate-700"
+                                        ? "border-slate-200/60 dark:border-[#303030]/40 bg-slate-50/40 dark:bg-[#1f1f1f]/20 opacity-60 hover:opacity-100 grayscale hover:grayscale-0"
+                                        : "border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] hover:border-slate-300 dark:hover:border-slate-700"
                                     }`}
                                   >
                                     <div className="flex items-start gap-4">
@@ -1723,7 +1723,7 @@ export default function TeamPage() {
                                             </span>
                                           )}
                                           {t.dueDate && (
-                                            <span className="flex items-center gap-1 text-[10px] font-bold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">
+                                            <span className="flex items-center gap-1 text-[10px] font-bold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-[#303030] px-2 py-0.5 rounded-md">
                                               <CalendarIcon className="h-3 w-3" /> {new Date(t.dueDate + "T00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                                             </span>
                                           )}
@@ -1736,7 +1736,7 @@ export default function TeamPage() {
                                         className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md ${
                                           t.priority === "high" ? "bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-400" :
                                           t.priority === "medium" ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400" :
-                                          "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                                          "bg-slate-100 text-slate-700 dark:bg-[#303030] dark:text-slate-300"
                                         }`}
                                       >
                                         {t.priority} Priority
@@ -1744,7 +1744,7 @@ export default function TeamPage() {
                                       
                                       <button
                                         onClick={() => handleDeleteEmployeeTask(t.id)}
-                                        className="text-slate-400 hover:text-rose-500 transition-colors p-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-900/20 lg:opacity-0 group-hover:opacity-100 focus:opacity-100 cursor-pointer"
+                                        className="text-slate-400 hover:text-rose-500 transition-colors p-1.5 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-900/20 lg:opacity-0 group-hover:opacity-100 focus:opacity-100 cursor-pointer"
                                         title="Delete Task"
                                       >
                                         <Trash2 className="h-4 w-4" />
@@ -1762,8 +1762,8 @@ export default function TeamPage() {
                 </div>
 
                 {/* Member-specific Leave Requests */}
-                <Card className="border border-slate-200 dark:border-slate-800/80">
-                  <CardHeader className="border-b border-slate-100 dark:border-slate-800/80 py-4">
+                <Card className="border border-slate-200 dark:border-[#303030]">
+                  <CardHeader className="border-b border-slate-100 dark:border-[#303030] py-4">
                     <CardTitle className="text-base font-bold flex items-center gap-2">
                       <Umbrella className="h-5 w-5 text-amber-500" /> Leave Requests
                     </CardTitle>
@@ -1783,7 +1783,7 @@ export default function TeamPage() {
                           {memberLeaves.map((leave: any) => (
                             <div
                               key={leave.id}
-                              className="p-4 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl space-y-2"
+                              className="p-4 bg-slate-50 dark:bg-[#1f1f1f]/60 border border-slate-200 dark:border-[#303030] rounded-2xl space-y-2"
                             >
                               <div className="flex justify-between items-start gap-2">
                                 <div>
@@ -1810,7 +1810,7 @@ export default function TeamPage() {
                                 </Badge>
                               </div>
                               {leave.reason && (
-                                <p className="text-[10px] text-slate-500 italic bg-white dark:bg-slate-950 p-2.5 rounded-lg border border-slate-100 dark:border-slate-900 leading-relaxed">
+                                <p className="text-[10px] text-slate-500 italic bg-white dark:bg-[#1f1f1f] p-2.5 rounded-xl border border-slate-100 dark:border-slate-900 leading-relaxed">
                                   {leave.reason}
                                 </p>
                               )}
@@ -1818,13 +1818,13 @@ export default function TeamPage() {
                                 <div className="flex gap-2 pt-1">
                                   <button
                                     onClick={() => handleRejectLeave(leave.id)}
-                                    className="flex-1 py-1.5 border border-rose-200 dark:border-rose-900/40 text-[9px] font-extrabold uppercase tracking-wider text-rose-600 dark:text-rose-450 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/20 cursor-pointer transition-all"
+                                    className="flex-1 py-1.5 border border-rose-200 dark:border-rose-900/40 text-[9px] font-extrabold uppercase tracking-wider text-rose-600 dark:text-rose-450 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-950/20 cursor-pointer transition-all"
                                   >
                                     Reject
                                   </button>
                                   <button
                                     onClick={() => handleApproveLeave(leave.id)}
-                                    className="flex-1 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-[9px] font-extrabold uppercase tracking-wider text-white rounded-lg cursor-pointer transition-all shadow-sm shadow-emerald-500/10"
+                                    className="flex-1 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-[9px] font-extrabold uppercase tracking-wider text-white rounded-xl cursor-pointer transition-all shadow-sm shadow-emerald-500/10"
                                   >
                                     Approve
                                   </button>
@@ -1852,7 +1852,7 @@ export default function TeamPage() {
                 placeholder="Search by name, role, email..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-10 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 pl-9 pr-3 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 text-slate-800 dark:text-white"
+                className="h-10 w-full rounded-2xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] pl-9 pr-3 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 text-slate-800 dark:text-white"
               />
             </div>
 
@@ -1880,7 +1880,7 @@ export default function TeamPage() {
                         e.stopPropagation();
                         handleRemoveMember(m.id, m.name);
                       }}
-                      className="absolute top-2.5 right-2.5 z-10 h-7 w-7 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 flex items-center justify-center cursor-pointer transition-all"
+                      className="absolute top-2.5 right-2.5 z-10 h-7 w-7 rounded-xl text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 flex items-center justify-center cursor-pointer transition-all"
                       title="Remove Employee"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
@@ -1903,7 +1903,7 @@ export default function TeamPage() {
                               <select
                                 value={editRoleValue}
                                 onChange={(e) => setEditRoleValue(e.target.value)}
-                                className="h-7 w-full rounded-lg border border-slate-200 bg-white dark:bg-slate-900 text-slate-800 dark:text-white px-2 text-[10px] focus:outline-none"
+                                className="h-7 w-full rounded-xl border border-slate-200 bg-white dark:bg-[#1f1f1f] text-slate-800 dark:text-white px-2 text-[10px] focus:outline-none"
                               >
                                 <option value="Web Developer">Web Developer</option>
                                 <option value="Graphic Designer">Graphic Designer</option>
@@ -1916,7 +1916,7 @@ export default function TeamPage() {
                                   e.stopPropagation();
                                   handleSaveRole(m.id);
                                 }}
-                                className="h-7 w-7 bg-emerald-500 text-white rounded-lg flex items-center justify-center shrink-0 cursor-pointer"
+                                className="h-7 w-7 bg-emerald-500 text-white rounded-xl flex items-center justify-center shrink-0 cursor-pointer"
                               >
                                 <Check className="h-3.5 w-3.5" />
                               </button>
@@ -1955,7 +1955,7 @@ export default function TeamPage() {
                         );
                       })()}
 
-                      <div className="mt-3 flex items-center gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+                      <div className="mt-3 flex items-center gap-2 pt-3 border-t border-slate-100 dark:border-[#303030]">
                         <a
                           href={`mailto:${m.email}`}
                           onClick={(e) => e.stopPropagation()}
@@ -1975,248 +1975,329 @@ export default function TeamPage() {
       ) : isTeamLoading ? (
         <CalendarSkeleton />
       ) : (
-        <div className="w-full space-y-6">
-          {/* Top Panel: Pending Leaves & Today's Punch List */}
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-            
-            {/* Pending Leave Requests Queue */}
-            <Card className="xl:col-span-1 overflow-hidden flex flex-col h-[280px]">
-              <CardHeader className="py-3.5 border-b border-slate-100 dark:border-slate-800/80 shrink-0">
-                <CardTitle className="text-xs font-extrabold flex items-center gap-2 uppercase tracking-wider text-slate-800 dark:text-white">
-                  <Umbrella className="h-4.5 w-4.5 text-amber-500" /> Pending Leave Requests
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-4 overflow-y-auto flex-1">
-                {pendingLeaves.length === 0 ? (
-                  <div className="h-full flex items-center justify-center">
-                    <EmptyState icon={<Umbrella className="h-5 w-5" />} title="No pending requests" />
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {pendingLeaves.map((leave) => (
-                      <div key={leave.id} className="p-3 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl space-y-2 text-left">
-                        <div className="flex justify-between items-start gap-2">
-                          <div>
-                            <p className="text-xs font-extrabold text-slate-800 dark:text-white leading-tight">{leave.employeeName}</p>
-                            <span className="text-[9px] font-bold text-indigo-600 dark:text-indigo-400 capitalize block mt-0.5">{leave.leaveType} Leave</span>
-                          </div>
-                          <span className="text-[9px] font-bold text-slate-500 bg-slate-200/50 dark:bg-slate-805 px-2 py-0.5 rounded-full shrink-0">
-                            {leave.startDate} to {leave.endDate}
-                          </span>
-                        </div>
-                        <p className="text-[10px] text-slate-500 italic bg-white dark:bg-slate-950 p-2 rounded-lg border border-slate-100 dark:border-slate-900 leading-normal">{leave.reason}</p>
-                        <div className="flex gap-2 pt-1">
-                          <button
-                            onClick={() => handleRejectLeave(leave.id)}
-                            className="flex-1 py-1.5 border border-rose-200 dark:border-rose-900/40 text-[9px] font-extrabold uppercase tracking-wider text-rose-600 dark:text-rose-450 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/20 cursor-pointer transition-all"
-                          >
-                            Reject
-                          </button>
-                          <button
-                            onClick={() => handleApproveLeave(leave.id)}
-                            className="flex-1 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-[9px] font-extrabold uppercase tracking-wider text-white rounded-lg cursor-pointer transition-all shadow-sm shadow-emerald-500/10"
-                          >
-                            Approve
-                          </button>
+        <div className="w-full space-y-4">
+
+          {/* Row 1: Today's live punch status (compact cards) */}
+          {(() => {
+            const todayStr = new Date().toLocaleDateString("en-CA");
+            const employees = members.filter(m => m.roleRaw !== "admin");
+            return (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                {employees.map((m) => {
+                  const rec = allAttendanceRecords.find(a => String(a.userId) === m.id && a.date === todayStr);
+                  const punchedIn = !!rec?.punchInTime;
+                  const punchedOut = !!rec?.punchOutTime;
+                  const overrideStatus = attendanceOverrides.get(`${m.id}-${todayStr}`);
+                  const onLeave = overrideStatus === "sick" || overrideStatus === "vacation";
+                  const pIn = rec?.punchInTime ? new Date(rec.punchInTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true }) : null;
+                  const pOut = rec?.punchOutTime ? new Date(rec.punchOutTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true }) : null;
+
+                  let statusLabel = "Not Clocked In";
+                  let dotCls = "bg-slate-300 dark:bg-slate-600";
+                  let labelCls = "text-slate-500 dark:text-slate-400";
+                  let pulse = false;
+                  if (onLeave) {
+                    statusLabel = overrideStatus === "sick" ? "Sick Leave" : "On Leave";
+                    dotCls = "bg-amber-400";
+                    labelCls = "text-amber-600 dark:text-amber-400";
+                  } else if (punchedIn && !punchedOut) {
+                    statusLabel = "Active Now";
+                    dotCls = "bg-emerald-500";
+                    labelCls = "text-emerald-600 dark:text-emerald-400";
+                    pulse = true;
+                  } else if (punchedIn && punchedOut) {
+                    statusLabel = "Shift Done";
+                    dotCls = "bg-brand-500";
+                    labelCls = "text-brand-600 dark:text-brand-400";
+                  }
+
+                  return (
+                    <div key={m.id} className="bg-white dark:bg-[#1f1f1f] border border-slate-200 dark:border-[#303030] rounded-[20px] p-4 flex items-center gap-3">
+                      <Avatar name={m.name} size="md" status={punchedIn && !punchedOut ? "online" : "offline"} />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{m.name}</p>
+                        <p className="text-[10px] text-slate-400 font-medium truncate">{m.role}</p>
+                        <div className="flex items-center gap-1.5 mt-1.5">
+                          <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${dotCls} ${pulse ? "animate-pulse" : ""}`} />
+                          <span className={`text-[10px] font-bold ${labelCls}`}>{statusLabel}</span>
                         </div>
                       </div>
-                    ))}
+                      {pIn && (
+                        <div className="text-right shrink-0">
+                          <div className="flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
+                            <LogIn className="h-3 w-3" />{pIn}
+                          </div>
+                          {pOut && (
+                            <div className="flex items-center gap-1 text-[10px] text-rose-500 font-semibold mt-0.5">
+                              <LogOut className="h-3 w-3" />{pOut}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+                {employees.length === 0 && (
+                  <div className="col-span-full">
+                    <EmptyState icon={<Users className="h-5 w-5" />} title="No employees yet" description="Add team members from the Directory tab." />
                   </div>
                 )}
-              </CardContent>
-            </Card>
-
-            {/* Today's Attendance Overview */}
-            <Card className="xl:col-span-2 overflow-hidden flex flex-col h-[280px]">
-              <CardHeader className="py-3.5 border-b border-slate-100 dark:border-slate-800/80 shrink-0">
-                <CardTitle className="text-xs font-extrabold flex items-center gap-2 uppercase tracking-wider text-slate-800 dark:text-white">
-                  <Activity className="h-4.5 w-4.5 text-indigo-500 animate-pulse" /> Today's Attendance Overview
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-0 overflow-y-auto flex-1">
-                <div className="overflow-x-auto w-full h-full">
-                  <table className="w-full text-left border-collapse">
-                    <thead>
-                      <tr className="bg-slate-50/50 dark:bg-slate-900/20 border-b border-slate-100 dark:border-slate-800/80">
-                        <th className="py-2.5 px-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest">Team Member</th>
-                        <th className="py-2.5 px-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest">Roster Status</th>
-                        <th className="py-2.5 px-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest">Punch In</th>
-                        <th className="py-2.5 px-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest">Punch Out</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
-                      {members.filter(m => m.roleRaw !== "admin").map((m) => {
-                        const todayStr = new Date().toLocaleDateString("en-CA");
-                        const todayRecord = allAttendanceRecords.find(
-                          (a) => String(a.userId) === m.id && a.date === todayStr
-                        );
-                        const punchedIn = !!todayRecord?.punchInTime;
-                        const punchedOut = !!todayRecord?.punchOutTime;
-                        const overrideStatus = attendanceOverrides.get(`${m.id}-${todayStr}`);
-                        const onLeave = overrideStatus === "sick" || overrideStatus === "vacation";
-
-                        const punchInDisplay = todayRecord?.punchInTime
-                          ? new Date(todayRecord.punchInTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true })
-                          : null;
-                        const punchOutDisplay = todayRecord?.punchOutTime
-                          ? new Date(todayRecord.punchOutTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true })
-                          : null;
-
-                        let statusLabel = "Not In";
-                        let statusCls = "bg-slate-100 text-slate-500 border border-slate-200 dark:bg-slate-900 dark:border-slate-800";
-                        if (onLeave) {
-                          statusLabel = overrideStatus === "sick" ? "Sick Leave" : "On Leave";
-                          statusCls = "bg-rose-500/10 text-rose-500 border border-rose-500/20";
-                        } else if (punchedIn && !punchedOut) {
-                          statusLabel = "Active";
-                          statusCls = "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20";
-                        } else if (punchedIn && punchedOut) {
-                          statusLabel = "Done";
-                          statusCls = "bg-brand-50 text-brand-600 border border-brand-200 dark:bg-brand-900/20 dark:text-brand-300 dark:border-brand-800/40";
-                        }
-
-                        return (
-                          <tr key={m.id} className="hover:bg-slate-50/30 dark:hover:bg-slate-900/10">
-                            <td className="py-3.5 px-4">
-                              <div className="flex items-center gap-2.5">
-                                <Avatar name={m.name} size="sm" status={punchedIn && !punchedOut ? "online" : "offline"} />
-                                <div className="min-w-0 text-left">
-                                  <p className="text-xs font-bold text-slate-800 dark:text-white truncate">{m.name}</p>
-                                  <p className="text-[9px] text-slate-400 font-semibold truncate">{m.role}</p>
-                                </div>
-                              </div>
-                            </td>
-                            <td className="py-3.5 px-4">
-                              <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-extrabold uppercase ${statusCls}`}>
-                                {punchedIn && !punchedOut && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />}
-                                {statusLabel}
-                              </span>
-                            </td>
-                            <td className="py-3.5 px-4 text-xs font-semibold tabular-nums text-slate-700 dark:text-slate-300">
-                              {punchInDisplay ?? <span className="text-slate-400">—</span>}
-                            </td>
-                            <td className="py-3.5 px-4 text-xs font-semibold tabular-nums text-slate-700 dark:text-slate-300">
-                              {punchOutDisplay ?? <span className="text-slate-400">—</span>}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Main Attendance Calendar Card (Full Width) */}
-          <Card className="w-full overflow-hidden">
-            <CardHeader className="border-b border-slate-100 dark:border-slate-800/80">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-1">
-                    <button
-                      type="button"
-                      onClick={prevMonth}
-                      className="h-7 w-7 rounded-lg flex items-center justify-center text-slate-500 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
-                    >
-                      <ChevronLeft className="h-4 w-4" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={nextMonth}
-                      className="h-7 w-7 rounded-lg flex items-center justify-center text-slate-500 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
-                    >
-                      <ChevronRight className="h-4 w-4" />
-                    </button>
-                  </div>
-                  <div>
-                    <CardTitle className="flex items-center gap-2">
-                      <CalendarIcon className="h-5 w-5 text-indigo-500" /> {calMonthName} {calYear} Shift Schedule Grid
-                    </CardTitle>
-                  </div>
-                </div>
-                {/* Color Legend */}
-                <div className="flex flex-wrap gap-2 text-[10px] font-bold uppercase tracking-wider">
-                  <span className="flex items-center gap-1 text-slate-600 dark:text-slate-400"><span className="h-2.5 w-2.5 rounded-full bg-emerald-500 block shrink-0" /> Present</span>
-                  <span className="flex items-center gap-1 text-slate-600 dark:text-slate-400"><span className="h-2.5 w-2.5 rounded-full bg-orange-400 block shrink-0" /> Half Day</span>
-                  <span className="flex items-center gap-1 text-slate-600 dark:text-slate-400"><span className="h-2.5 w-2.5 rounded-full bg-rose-300 block shrink-0" /> Absent</span>
-                  <span className="flex items-center gap-1 text-slate-600 dark:text-slate-400"><span className="h-2.5 w-2.5 rounded-full bg-amber-500 block shrink-0" /> Holiday</span>
-                  <span className="flex items-center gap-1 text-slate-600 dark:text-slate-400"><span className="h-2.5 w-2.5 rounded-full bg-rose-500 block shrink-0" /> Leave</span>
-                  <span className="flex items-center gap-1 text-slate-600 dark:text-slate-400"><span className="h-2.5 w-2.5 rounded-full bg-slate-300 dark:bg-slate-700 block shrink-0" /> Off</span>
-                </div>
               </div>
-            </CardHeader>
-            <CardContent className="p-0">
-              <div className="overflow-x-auto w-full">
-                <div className="min-w-[900px] divide-y divide-slate-100 dark:divide-slate-800/80">
-                  
-                  {/* Days Header */}
-                  <div className="flex bg-slate-50/50 dark:bg-slate-900/20 py-2.5">
-                    <div className="w-44 pl-6 shrink-0 flex items-center">
-                      <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Team Member</span>
-                    </div>
-                    <div className="flex-1 grid gap-1 pr-4" style={{ gridTemplateColumns: `repeat(${calDaysInMonth}, minmax(0, 1fr))` }}>
-                      {Array.from({ length: calDaysInMonth }, (_, i) => i + 1).map((day) => {
-                        const dowName = getDayOfWeekName(day);
-                        const isWeekendDay = dowName === "Sun" || dowName === "Sat";
-                        return (
-                          <div
-                            key={day}
-                            className={`flex flex-col items-center justify-center ${
-                              isWeekendDay ? "opacity-40" : ""
-                            }`}
-                          >
-                            <span className="text-[10px] font-semibold text-slate-400">{dowName[0]}</span>
-                            <span className="text-xs font-bold text-slate-700 dark:text-slate-300 mt-0.5">{day}</span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
+            );
+          })()}
 
-                  {/* Employee Rows */}
-                  {members.filter((m) => m.roleRaw !== "admin").map((m) => (
-                    <div key={m.id} className="flex py-3 items-center hover:bg-slate-50/40 dark:hover:bg-slate-900/10">
-                      
-                      {/* Employee metadata column */}
-                      <div className="w-44 pl-6 shrink-0 flex items-center gap-2.5">
-                        <Avatar name={m.name} size="sm" status={getMemberLiveStatus(m.id)} />
-                        <div className="min-w-0">
-                          <p className="text-xs font-bold text-slate-800 dark:text-white truncate">{m.name}</p>
-                          <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium truncate">{m.role}</p>
+          {/* Row 2: Shift Schedule Calendar + Pending Leaves side by side */}
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+
+            {/* Shift Schedule Calendar — takes 2/3 width on xl */}
+            <Card className="xl:col-span-2 overflow-hidden">
+              <CardHeader className="border-b border-slate-100 dark:border-[#303030]">
+                <div className="flex items-center gap-2">
+                  <button type="button" onClick={prevMonth} className="h-7 w-7 rounded-xl flex items-center justify-center text-slate-500 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer">
+                    <ChevronLeft className="h-4 w-4" />
+                  </button>
+                  <button type="button" onClick={nextMonth} className="h-7 w-7 rounded-xl flex items-center justify-center text-slate-500 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer">
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                  <CardTitle className="flex items-center gap-2">
+                    <CalendarIcon className="h-4 w-4 text-brand-500" />
+                    {calMonthName} {calYear}
+                  </CardTitle>
+                </div>
+                {/* Legend */}
+                <div className="flex flex-wrap gap-x-3 gap-y-1">
+                  {[
+                    { label: "Present", color: "bg-emerald-500" },
+                    { label: "Half Day", color: "bg-orange-400" },
+                    { label: "Absent", color: "bg-rose-300" },
+                    { label: "Holiday", color: "bg-amber-500" },
+                    { label: "Leave", color: "bg-rose-500" },
+                    { label: "Off", color: "bg-slate-300 dark:bg-slate-600" },
+                  ].map(l => (
+                    <span key={l.label} className="flex items-center gap-1 text-[10px] font-semibold text-slate-500 dark:text-slate-400">
+                      <span className={`h-2 w-2 rounded-full shrink-0 ${l.color}`} />{l.label}
+                    </span>
+                  ))}
+                </div>
+              </CardHeader>
+              <CardContent className="p-0">
+                {/* One employee per card row — week columns inside */}
+                <div className="divide-y divide-slate-100 dark:divide-slate-800/60">
+                  {members.filter(m => m.roleRaw !== "admin").map((m) => {
+                    // Split month days into weeks (Sun–Sat rows)
+                    const weeks: number[][] = [];
+                    let currentWeek: number[] = Array(calFirstDayOfWeek).fill(0);
+                    for (let d = 1; d <= calDaysInMonth; d++) {
+                      currentWeek.push(d);
+                      if (currentWeek.length === 7) { weeks.push(currentWeek); currentWeek = []; }
+                    }
+                    if (currentWeek.length > 0) {
+                      while (currentWeek.length < 7) currentWeek.push(0);
+                      weeks.push(currentWeek);
+                    }
+
+                    // Summary counts
+                    let presentCount = 0, absentCount = 0, leaveCount = 0;
+                    for (let d = 1; d <= calDaysInMonth; d++) {
+                      const dStr = getDateStr(d);
+                      const isOff = !m.workingDays.includes(getDayOfWeekIndex(d));
+                      if (isOff || dStr > todayDateStr) continue;
+                      const s = getEffectiveStatus(m.id, dStr, isOff);
+                      if (s === "present" || s === "half-day") presentCount++;
+                      else if (s === "sick" || s === "vacation") leaveCount++;
+                      else if (s === "absent") absentCount++;
+                    }
+
+                    return (
+                      <div key={m.id} className="p-4">
+                        {/* Employee header row */}
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-2.5">
+                            <Avatar name={m.name} size="sm" status={getMemberLiveStatus(m.id)} />
+                            <div>
+                              <p className="text-xs font-bold text-slate-900 dark:text-white">{m.name}</p>
+                              <p className="text-[10px] text-slate-400 font-medium">{m.role} · {m.shiftStartTime}–{m.shiftEndTime}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3 text-[10px] font-bold">
+                            <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
+                              <span className="h-2 w-2 rounded-full bg-emerald-500" />{presentCount}d
+                            </span>
+                            {leaveCount > 0 && <span className="flex items-center gap-1 text-amber-600 dark:text-amber-400"><span className="h-2 w-2 rounded-full bg-amber-500" />{leaveCount}d leave</span>}
+                            {absentCount > 0 && <span className="flex items-center gap-1 text-rose-500"><span className="h-2 w-2 rounded-full bg-rose-400" />{absentCount}d absent</span>}
+                          </div>
+                        </div>
+
+                        {/* Week day headers (once) */}
+                        <div className="grid grid-cols-7 gap-1 mb-1">
+                          {["S","M","T","W","T","F","S"].map((d, i) => (
+                            <div key={i} className="text-center text-[9px] font-bold text-slate-400 uppercase">{d}</div>
+                          ))}
+                        </div>
+
+                        {/* Week rows */}
+                        <div className="space-y-1">
+                          {weeks.map((week, wi) => (
+                            <div key={wi} className="grid grid-cols-7 gap-1">
+                              {week.map((day, di) => {
+                                if (day === 0) return <div key={di} />;
+                                const dStr = getDateStr(day);
+                                const isOff = !m.workingDays.includes(getDayOfWeekIndex(day));
+                                const status = getEffectiveStatus(m.id, dStr, isOff);
+                                const isToday = dStr === todayDateStr;
+                                const isFuture = dStr > todayDateStr;
+
+                                const cellColor =
+                                  isOff ? "bg-slate-100 dark:bg-[#303030]/50 text-slate-300 dark:text-slate-600" :
+                                  isFuture ? "bg-slate-50 dark:bg-[#303030]/30 text-slate-300 dark:text-slate-700" :
+                                  status === "present" ? "bg-emerald-500 text-white" :
+                                  status === "half-day" ? "bg-orange-400 text-white" :
+                                  status === "vacation" ? "bg-amber-500 text-white" :
+                                  status === "sick" ? "bg-rose-500 text-white" :
+                                  status === "absent" ? "bg-rose-100 dark:bg-rose-900/30 text-rose-400 dark:text-rose-500" :
+                                  "bg-slate-200 dark:bg-slate-700 text-slate-400";
+
+                                return (
+                                  <button
+                                    key={day}
+                                    type="button"
+                                    onClick={() => handleCellClick(m.id, day)}
+                                    title={`${m.name} · ${calMonthName} ${day} · ${status}`}
+                                    className={cn(
+                                      "h-8 w-full rounded-xl text-[10px] font-bold transition-all flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-brand-400/50",
+                                      cellColor,
+                                      isToday && "ring-2 ring-brand-500 ring-offset-1 ring-offset-white dark:ring-offset-slate-900"
+                                    )}
+                                  >
+                                    {day}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          ))}
                         </div>
                       </div>
+                    );
+                  })}
+                  {members.filter(m => m.roleRaw !== "admin").length === 0 && (
+                    <div className="p-8">
+                      <EmptyState icon={<Users className="h-5 w-5" />} title="No employees" description="Add team members to see the shift schedule." />
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
 
-                      {/* Day cells columns */}
-                      <div className="flex-1 grid gap-1 pr-4" style={{ gridTemplateColumns: `repeat(${calDaysInMonth}, minmax(0, 1fr))` }}>
-                        {Array.from({ length: calDaysInMonth }, (_, i) => i + 1).map((day) => {
-                          const dayOfWeekIdx = getDayOfWeekIndex(day);
-                          const isWeekendDay = !m.workingDays.includes(dayOfWeekIdx);
-                          const cellDate = getDateStr(day);
-                          const key = `${m.id}-${cellDate}`;
-                          const status = getEffectiveStatus(m.id, cellDate, isWeekendDay);
-                          const compactStyle = getStatusStyle(status, true) as any;
-
-                          return (
-                            <div key={day} className="flex justify-center items-center">
-                              <div
-                                className={`w-6 h-6 rounded-lg text-[9px] font-extrabold flex items-center justify-center shrink-0 transition-all ${compactStyle.bg}`}
-                                title={`${m.name} — ${calMonthName} ${day}: ${status}`}
-                              >
-                                {compactStyle.symbol}
-                              </div>
+            {/* Right column: Pending Leaves */}
+            <div className="space-y-4">
+              <Card className="overflow-hidden">
+                <CardHeader className="py-3.5 border-b border-slate-100 dark:border-[#303030]">
+                  <CardTitle className="text-sm font-bold flex items-center gap-2">
+                    <Umbrella className="h-4 w-4 text-amber-500" /> Pending Leaves
+                    {pendingLeaves.length > 0 && (
+                      <span className="ml-auto h-5 min-w-[20px] px-1.5 rounded-full bg-amber-500 text-white text-[10px] font-bold flex items-center justify-center">
+                        {pendingLeaves.length}
+                      </span>
+                    )}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-3">
+                  {pendingLeaves.length === 0 ? (
+                    <EmptyState icon={<Umbrella className="h-5 w-5" />} title="No pending requests" description="All leave requests are resolved." />
+                  ) : (
+                    <div className="space-y-2.5">
+                      {pendingLeaves.map((leave) => (
+                        <div key={leave.id} className="p-3 bg-slate-50 dark:bg-[#1f1f1f]/60 border border-slate-200 dark:border-[#303030] rounded-2xl space-y-2">
+                          <div className="flex justify-between items-start gap-2">
+                            <div>
+                              <p className="text-xs font-bold text-slate-800 dark:text-white leading-tight">{leave.employeeName}</p>
+                              <span className={`text-[9px] font-bold capitalize block mt-0.5 ${leave.leaveType === "sick" ? "text-rose-500" : "text-amber-500"}`}>
+                                {leave.leaveType} leave · {leave.startDate}{leave.startDate !== leave.endDate ? ` to ${leave.endDate}` : ""}
+                              </span>
                             </div>
+                          </div>
+                          {leave.reason && (
+                            <p className="text-[10px] text-slate-500 italic leading-relaxed line-clamp-2">{leave.reason}</p>
+                          )}
+                          <div className="flex gap-2">
+                            <button onClick={() => handleRejectLeave(leave.id)} className="flex-1 py-1.5 border border-rose-200 dark:border-rose-900/40 text-[9px] font-extrabold uppercase tracking-wider text-rose-600 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-950/20 cursor-pointer transition-all">Reject</button>
+                            <button onClick={() => handleApproveLeave(leave.id)} className="flex-1 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-[9px] font-extrabold uppercase tracking-wider text-white rounded-xl cursor-pointer transition-all">Approve</button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Leave Planner */}
+              <Card className="overflow-hidden">
+                <CardHeader className="py-3.5 border-b border-slate-100 dark:border-[#303030]">
+                  <CardTitle className="text-sm font-bold flex items-center gap-2">
+                    <CalendarIcon className="h-4 w-4 text-brand-500" /> Log Attendance
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-4">
+                  <form onSubmit={handleApplyLeave} className="space-y-3" ref={leaveLoggerRef}>
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Employee</label>
+                      <select
+                        value={selectedEmp}
+                        onChange={(e) => setSelectedEmp(e.target.value)}
+                        className="h-9 w-full rounded-2xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] px-3 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white"
+                      >
+                        {members.filter(m => m.roleRaw !== "admin").map(m => (
+                          <option key={m.id} value={m.id}>{m.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">From Day</label>
+                        <input
+                          type="text" inputMode="numeric" value={startDayInput}
+                          onChange={(e) => { const v = e.target.value.replace(/\D/g,""); setStartDayInput(v); if(v) setStartDay(Math.max(1,Math.min(calDaysInMonth,parseInt(v,10)))); }}
+                          onBlur={(e) => { const v = e.target.value.replace(/\D/g,""); if(!v){setStartDayInput(String(todayNumber));setStartDay(todayNumber);}else{const n=Math.max(1,Math.min(calDaysInMonth,parseInt(v,10)));setStartDayInput(String(n));setStartDay(n);}}}
+                          className="h-9 w-full rounded-2xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] px-3 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">To Day</label>
+                        <input
+                          type="text" inputMode="numeric" value={endDayInput}
+                          onChange={(e) => { const v = e.target.value.replace(/\D/g,""); setEndDayInput(v); if(v) setEndDay(Math.max(1,Math.min(calDaysInMonth,parseInt(v,10)))); }}
+                          onBlur={(e) => { const v = e.target.value.replace(/\D/g,""); if(!v){setEndDayInput(String(todayNumber));setEndDay(todayNumber);}else{const n=Math.max(1,Math.min(calDaysInMonth,parseInt(v,10)));setEndDayInput(String(n));setEndDay(n);}}}
+                          className="h-9 w-full rounded-2xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] px-3 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Status</label>
+                      <div className="grid grid-cols-2 gap-2">
+                        {(["vacation","sick","present","off"] as const).map((t) => {
+                          const labels: Record<string, string> = { vacation: "⛱ Holiday", sick: "✚ Leave", present: "✓ Present", off: "✖ Week Off" };
+                          const active = leaveType === t;
+                          const activeCls = t === "vacation" ? "border-amber-500 bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400" :
+                            t === "sick" ? "border-rose-500 bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400" :
+                            t === "present" ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" :
+                            "border-slate-500 bg-slate-100 dark:bg-[#303030] text-slate-700 dark:text-slate-300";
+                          return (
+                            <button key={t} type="button" onClick={() => setLeaveType(t)}
+                              className={`py-2 px-2 border rounded-2xl text-[10px] font-bold transition-all cursor-pointer ${active ? activeCls : "border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] text-slate-500 hover:border-slate-300"}`}>
+                              {labels[t]}
+                            </button>
                           );
                         })}
                       </div>
-
                     </div>
-                  ))}
-
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+                    <Button type="submit" className="w-full h-9 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs">
+                      Save
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
         </div>
       )}
     </div>

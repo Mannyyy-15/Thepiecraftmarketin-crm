@@ -12,6 +12,7 @@ export const users = mysqlTable("users", {
   shiftStartTime: varchar("shift_start_time", { length: 255 }).notNull().default("09:00 AM"),
   shiftEndTime: varchar("shift_end_time", { length: 255 }).notNull().default("05:00 PM"),
   activeShiftProfile: varchar("active_shift_profile", { length: 255 }).notNull().default("Standard Core Hours"),
+  avatarUrl: varchar("avatar_url", { length: 500 }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

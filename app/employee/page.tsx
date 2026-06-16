@@ -219,7 +219,7 @@ export default function EmployeeDashboardPage() {
           <Card className={`flex-1 overflow-hidden relative rounded-[28px] border-0 shadow-2xl ${statusRing}
             bg-gradient-to-b
             from-slate-800 to-slate-950
-            dark:from-[#0c1235] dark:to-[#06090f]
+            dark:from-[#1c1c20] dark:to-[#101012]
             shadow-slate-400/20 dark:shadow-black/60`}
           >
             {/* Live status glow bar at top */}
@@ -273,7 +273,7 @@ export default function EmployeeDashboardPage() {
                         min-w-[52px] sm:min-w-[80px] lg:min-w-[104px]
                         text-3xl sm:text-5xl lg:text-6xl
                         border shadow-inner transition-all duration-300
-                        bg-slate-900/80 dark:bg-[#0b1020]
+                        bg-slate-900/80 dark:bg-[#222226]
                         border-slate-700/50 dark:border-slate-800/60
                         ${isLoading ? "text-slate-700 animate-pulse" : "text-white"}
                         ${!isLoading && isPunchedIn && item.label === "SEC" ? "text-emerald-300" : ""}

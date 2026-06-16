@@ -7,6 +7,7 @@ interface AvatarProps {
   className?: string;
   status?: "online" | "away" | "offline";
   interactive?: boolean;
+  role?: string;
 }
 
 const sizes = {
@@ -31,42 +32,58 @@ const statusRing: Record<NonNullable<AvatarProps["status"]>, string> = {
   offline: "bg-slate-400",
 };
 
-function initials(name: string) {
-  return name.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase();
+function guessGenderFromName(name: string): "male" | "female" | "neutral" {
+  if (!name) return "neutral";
+  const first = name.trim().split(" ")[0].toLowerCase();
+  if (!first) return "neutral";
+  
+  // Simple heuristic based on common name endings
+  const femaleEndings = ["a", "ah", "ee", "ia", "lyn", "elle", "anne", "ie"];
+  for (const ending of femaleEndings) {
+    if (first.endsWith(ending)) return "female";
+  }
+  return "male";
 }
 
-function bgFromName(name: string) {
-  const palette = [
-    "bg-brand-500", "bg-portal-500", "bg-amber-500", "bg-rose-500",
-    "bg-sky-500", "bg-emerald-500", "bg-violet-500", "bg-fuchsia-500",
-  ];
-  const hash = name.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
-  return palette[hash % palette.length];
+function generateDiceBearUrl(name: string, role?: string) {
+  const seed = encodeURIComponent(name || "User");
+  const bgColors = "b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf";
+  const gender = guessGenderFromName(name);
+  
+  if (role) {
+    const r = role.toLowerCase();
+    if (r.includes("dev") || r.includes("tech") || r.includes("engineer")) {
+      return `https://api.dicebear.com/7.x/notionists/svg?seed=${seed}&backgroundColor=${bgColors}`;
+    }
+    if (r.includes("admin") || r.includes("manager") || r.includes("lead")) {
+      // Use 'avataaars' with blazer clothing, and appropriate hair styles based on name
+      const top = gender === "female" ? "longHairBigHair,longHairBob,longHairCurly,longHairStraight" : "shortHairShortWaved,shortHairShortCurly,shortHairShortFlat";
+      return `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}&backgroundColor=${bgColors}&clothing=blazerAndShirt,blazerAndSweater&top=${top}`;
+    }
+    if (r.includes("client")) {
+      return `https://api.dicebear.com/7.x/lorelei/svg?seed=${seed}&backgroundColor=${bgColors}`;
+    }
+  }
+  
+  // Default fallback (micah style)
+  return `https://api.dicebear.com/7.x/micah/svg?seed=${seed}&backgroundColor=${bgColors}`;
 }
 
-export function Avatar({ name = "", src, size = "md", className, status, interactive }: AvatarProps) {
+export function Avatar({ name = "", src, size = "md", className, status, interactive, role }: AvatarProps) {
+  const finalSrc = src || generateDiceBearUrl(name, role);
+
   return (
     <span className={cn(
       "relative inline-flex shrink-0",
       interactive && "transition-transform duration-150 hover:scale-110 cursor-pointer",
       className
     )}>
-      {src ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={src}
-          alt={name}
-          className={cn("rounded-full object-cover ring-2 ring-white dark:ring-slate-900", sizes[size])}
-        />
-      ) : (
-        <span className={cn(
-          "inline-flex items-center justify-center rounded-full font-semibold text-white ring-2 ring-white dark:ring-slate-900",
-          sizes[size],
-          bgFromName(name || "U")
-        )}>
-          {initials(name || "U")}
-        </span>
-      )}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={finalSrc}
+        alt={name}
+        className={cn("rounded-full object-cover ring-2 ring-white dark:ring-slate-900 bg-slate-50 dark:bg-slate-800", sizes[size])}
+      />
 
       {status && (
         <span className={cn("absolute -bottom-0 -right-0 flex rounded-full ring-2 ring-white dark:ring-slate-900", dotSizes[size])}>
@@ -85,7 +102,7 @@ export function AvatarGroup({
   max = 4,
   size = "sm",
 }: {
-  people: { name: string; src?: string }[];
+  people: { name: string; src?: string; role?: string }[];
   max?: number;
   size?: AvatarProps["size"];
 }) {
@@ -94,7 +111,7 @@ export function AvatarGroup({
   return (
     <div className="flex -space-x-2">
       {shown.map((p, i) => (
-        <Avatar key={i} name={p.name} src={p.src} size={size} />
+        <Avatar key={i} name={p.name} src={p.src} role={p.role} size={size} />
       ))}
       {remaining > 0 && (
         <span className={cn(
