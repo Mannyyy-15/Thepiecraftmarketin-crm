@@ -2238,7 +2238,7 @@ export default function TeamPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-4">
-                  <form onSubmit={handleApplyLeave} className="space-y-3" ref={leaveLoggerRef}>
+                  <form onSubmit={handleApplyLeave} className="space-y-3">
                     <div>
                       <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Employee</label>
                       <select

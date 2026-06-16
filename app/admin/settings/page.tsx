@@ -97,9 +97,9 @@ export default function SettingsPage() {
     setDetectingIp(false);
     if (res?.success) {
       setOff({ wifiPublicIp: res.ip });
-      toast("IP Detected", "Updated Wi-Fi IP address.", "success");
+      toast("Updated Wi-Fi IP address.", "success");
     } else {
-      toast("Detection Failed", "Could not detect IP.", "error");
+      toast("Could not detect IP.", "error");
     }
   };
 
@@ -114,10 +114,10 @@ export default function SettingsPage() {
     const res = await updateUserAvatar(formData);
     setUploadingAvatar(false);
     if (res.success) {
-      toast("Avatar updated", "Your profile picture has been updated. Please refresh to see changes everywhere.", "success");
+      toast("Avatar updated. Please refresh to see changes everywhere.", "success");
       window.location.reload();
     } else {
-      toast("Upload failed", res.error || "Something went wrong", "error");
+      toast(res.error || "Something went wrong uploading avatar", "error");
     }
   };
 
@@ -240,7 +240,7 @@ export default function SettingsPage() {
                   <label className={LABEL}><span className="inline-flex items-center gap-1"><Wifi className="h-3 w-3" /> Office public IP</span></label>
                   <div className="flex gap-2">
                     <input className={INPUT} value={office.wifiPublicIp} onChange={(e) => setOff({ wifiPublicIp: e.target.value })} placeholder="203.194.x.x" />
-                    <button onClick={useCurrentIp} disabled={detectingIp} className="shrink-0 h-11 px-3 rounded-2xl border border-slate-200 dark:border-[#303030] text-xs font-bold text-[#3b82f6] hover:bg-blue-50 dark:hover:bg-blue-500/10 cursor-pointer disabled:opacity-50">
+                    <button onClick={handleIpDetect} disabled={detectingIp} className="shrink-0 h-11 px-3 rounded-2xl border border-slate-200 dark:border-[#303030] text-xs font-bold text-[#3b82f6] hover:bg-blue-50 dark:hover:bg-blue-500/10 cursor-pointer disabled:opacity-50">
                       {detectingIp ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Use current"}
                     </button>
                   </div>
