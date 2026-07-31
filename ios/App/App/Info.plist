@@ -28,10 +28,6 @@
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
-	<key>UIRequiredDeviceCapabilities</key>
-	<array>
-		<string>armv7</string>
-	</array>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
@@ -51,6 +47,10 @@
 	<string>Location access is required to securely verify your connection to the office Wi-Fi network for punching in.</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>Securely verify your identity to punch in</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
 </dict>
 </plist>
 

@@ -17,8 +17,6 @@ import {
   DollarSign,
   Globe,
   Zap,
-  Sun,
-  Moon,
   LogOut,
   Fingerprint,
   DoorOpen,
@@ -32,8 +30,8 @@ import {
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Avatar } from "@/components/ui/Avatar";
-import { ThemeToggle } from "@/components/ui/ThemeToggle";
-import { getCurrentUser, logout } from "@/app/actions/auth";
+import { logout } from "@/app/actions/auth";
+import { clearCurrentUserCache, getCurrentUserCached } from "@/lib/currentUserClient";
 import { LogoutConfirmModal } from "@/components/ui/LogoutConfirmModal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { getMyNotifications, markAllNotificationsRead, dismissNotification, getGlobalSearchData, quickAddClient, quickAddEmployee, quickAddProject, quickAddTimesheet, quickAddExpense } from "@/app/actions/crm";
@@ -69,7 +67,7 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
   const [user, setUser] = useState<{ name: string; email: string; role: string; avatarUrl?: string } | null>(null);
 
   useEffect(() => {
-    getCurrentUser().then((res) => {
+    getCurrentUserCached().then((res) => {
       if (res) {
         setUser({ name: res.name as string, email: res.email as string, role: res.role as string, avatarUrl: res.avatarUrl as string });
       }
@@ -84,18 +82,34 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchData, setSearchData] = useState<{ clients: any[], projects: any[], users: any[] }>({ clients: [], projects: [], users: [] });
-
-  useEffect(() => {
-    getGlobalSearchData().then(res => {
-      if (res && res.success && res.data) {
-        setSearchData(res.data);
-      }
-    });
-  }, []);
+  const [isSearchLoading, setIsSearchLoading] = useState(false);
 
   // Floating Quick Action dropdowns & modals
   const [showQuickActions, setShowQuickActions] = useState(false);
   const [activeModal, setActiveModal] = useState<"client" | "employee" | "project" | "hours" | "expense" | null>(null);
+
+  useEffect(() => {
+    const needsDirectoryData = showSearchModal || activeModal === "project" || activeModal === "hours";
+    if (!needsDirectoryData) return;
+
+    let cancelled = false;
+    const delay = showSearchModal ? 250 : 0;
+    const timeout = setTimeout(async () => {
+      setIsSearchLoading(true);
+      try {
+        const query = showSearchModal ? searchQuery.trim() : "";
+        const res = await getGlobalSearchData(query, 10);
+        if (!cancelled && res?.success && res.data) setSearchData(res.data);
+      } finally {
+        if (!cancelled) setIsSearchLoading(false);
+      }
+    }, delay);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timeout);
+    };
+  }, [activeModal, searchQuery, showSearchModal]);
 
   // Quick Forms Local states
   const [qClientName, setQClientName] = useState("");
@@ -109,9 +123,8 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
   const [qExpenseAmount, setQExpenseAmount] = useState("");
   const [qExpenseDesc, setQExpenseDesc] = useState("");
 
-  // Profile dropdown + theme state
+  // Profile dropdown state
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const [isDark, setIsDark] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
@@ -119,20 +132,10 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
     setIsLoggingOut(true);
     const res = await logout();
     if (res.success) {
+      clearCurrentUserCache();
       router.push("/login");
     }
     setIsLoggingOut(false);
-  };
-
-  useEffect(() => {
-    setIsDark(document.documentElement.classList.contains("dark"));
-  }, []);
-
-  const toggleTheme = () => {
-    const next = !isDark;
-    setIsDark(next);
-    document.documentElement.classList.toggle("dark", next);
-    try { localStorage.setItem("theme", next ? "dark" : "light"); } catch {}
   };
 
   // Toast Messaging System State
@@ -160,6 +163,9 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
 
   // Notification polling
   useEffect(() => {
+    let timeout: ReturnType<typeof setTimeout> | undefined;
+    let stopped = false;
+    let running = false;
     const fetchNotifs = async () => {
       try {
         const res = await getMyNotifications();
@@ -171,9 +177,24 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
         }
       } catch { /* silent — server not ready yet */ }
     };
-    fetchNotifs();
-    const interval = setInterval(fetchNotifs, 10000);
-    return () => clearInterval(interval);
+    const poll = async () => {
+      if (stopped || running || document.visibilityState !== "visible") return;
+      running = true;
+      try { await fetchNotifs(); } finally { running = false; }
+      if (!stopped && document.visibilityState === "visible") timeout = setTimeout(poll, 30_000);
+    };
+    const handleVisibilityChange = () => {
+      if (timeout) clearTimeout(timeout);
+      timeout = undefined;
+      if (document.visibilityState === "visible") void poll();
+    };
+    void poll();
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      stopped = true;
+      if (timeout) clearTimeout(timeout);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
   }, []);
 
   const hasUnread = notifications.some((n) => !n.read);
@@ -349,12 +370,13 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
               setShowNotifications(false);
               setShowProfileMenu(false);
             }}
-            className={`inline-flex h-9 w-9 items-center justify-center rounded-xl border transition-all cursor-pointer ${
+            className={`inline-flex h-11 w-11 items-center justify-center rounded-xl border transition-all cursor-pointer ${
               showQuickActions
                 ? "bg-[#3b82f6] text-white border-[#3b82f6] shadow-[0_2px_8px_rgba(59,130,246,0.4)]"
                 : "border-[#e8e8ed] dark:border-[#303030] bg-white dark:bg-[#303030] text-slate-600 dark:text-slate-300 hover:bg-[#f7f7f9] dark:hover:bg-[#38383f]"
             }`}
             title="Quick Action Toolbar"
+            aria-label="Quick Action Toolbar"
           >
             <Plus className={`h-4 w-4 transition-transform duration-250 ${showQuickActions ? "rotate-45" : ""}`} />
           </button>
@@ -366,21 +388,21 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
               
               <button
                 onClick={() => { setActiveModal("client"); setShowQuickActions(false); }}
-                className="w-full text-left px-2.5 py-2 text-xs font-semibold rounded-xl text-slate-700 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors flex items-center gap-2 cursor-pointer"
+                className="w-full text-left px-2.5 py-2 text-xs font-semibold rounded-xl text-slate-300 hover:bg-indigo-500/10 hover:text-indigo-300 transition-colors flex items-center gap-2 cursor-pointer"
               >
                 <Globe className="h-3.5 w-3.5" /> Onboard New Client
               </button>
               
               <button
                 onClick={() => { setActiveModal("employee"); setShowQuickActions(false); }}
-                className="w-full text-left px-2.5 py-2 text-xs font-semibold rounded-xl text-slate-700 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors flex items-center gap-2 cursor-pointer"
+                className="w-full text-left px-2.5 py-2 text-xs font-semibold rounded-xl text-slate-300 hover:bg-indigo-500/10 hover:text-indigo-300 transition-colors flex items-center gap-2 cursor-pointer"
               >
                 <Users className="h-3.5 w-3.5" /> Invite Team Member
               </button>
 
               <button
                 onClick={() => { setActiveModal("project"); setShowQuickActions(false); }}
-                className="w-full text-left px-2.5 py-2 text-xs font-semibold rounded-xl text-slate-700 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors flex items-center gap-2 cursor-pointer"
+                className="w-full text-left px-2.5 py-2 text-xs font-semibold rounded-xl text-slate-300 hover:bg-indigo-500/10 hover:text-indigo-300 transition-colors flex items-center gap-2 cursor-pointer"
               >
                 <Briefcase className="h-3.5 w-3.5" /> Create Project
               </button>
@@ -389,14 +411,14 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
 
               <button
                 onClick={() => { setActiveModal("hours"); setShowQuickActions(false); }}
-                className="w-full text-left px-2.5 py-2 text-xs font-semibold rounded-xl text-slate-700 dark:text-slate-300 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors flex items-center gap-2 cursor-pointer"
+                className="w-full text-left px-2.5 py-2 text-xs font-semibold rounded-xl text-slate-300 hover:bg-emerald-500/10 hover:text-emerald-300 transition-colors flex items-center gap-2 cursor-pointer"
               >
                 <Clock className="h-3.5 w-3.5" /> Log Billable Hours
               </button>
 
               <button
                 onClick={() => { setActiveModal("expense"); setShowQuickActions(false); }}
-                className="w-full text-left px-2.5 py-2 text-xs font-semibold rounded-xl text-slate-700 dark:text-slate-300 hover:bg-rose-50 dark:hover:bg-rose-500/10 hover:text-rose-600 dark:hover:text-rose-400 transition-colors flex items-center gap-2 cursor-pointer"
+                className="w-full text-left px-2.5 py-2 text-xs font-semibold rounded-xl text-slate-300 hover:bg-rose-500/10 hover:text-rose-300 transition-colors flex items-center gap-2 cursor-pointer"
               >
                 <DollarSign className="h-3.5 w-3.5" /> Submit Expense Claim
               </button>
@@ -408,7 +430,7 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
         <button
           type="button"
           onClick={() => router.push('/admin/messages')}
-          className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-[#e8e8ed] dark:border-[#303030] bg-white dark:bg-[#303030] text-slate-600 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
+          className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-[#303030] bg-[#303030] text-slate-300 hover:bg-blue-500/10 hover:text-blue-300 transition-colors cursor-pointer"
           aria-label="Messages"
           title="Messages"
         >
@@ -477,28 +499,6 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
                 </div>
 
                 <div className="p-2 space-y-0.5">
-                  {/* Theme toggle row */}
-                  <button
-                    onClick={toggleTheme}
-                    className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-[#28282d] transition-colors cursor-pointer group"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      {isDark
-                        ? <Sun className="h-4 w-4 text-amber-500" />
-                        : <Moon className="h-4 w-4 text-brand-600 dark:text-brand-300" />
-                      }
-                      <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                        {isDark ? "Light Mode" : "Dark Mode"}
-                      </span>
-                    </div>
-                    {/* Toggle switch */}
-                    <div className={`relative h-5 w-9 rounded-full border transition-colors ${isDark ? "bg-[#3b82f6] border-[#3b82f6]" : "bg-slate-200 border-slate-300"}`}>
-                      <div className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-all duration-200 ${isDark ? "left-4" : "left-0.5"}`} />
-                    </div>
-                  </button>
-
-                  <div className="border-t border-slate-100 dark:border-[#303030] my-1" />
-
                   <button
                     onClick={() => { setShowProfileMenu(false); setShowLogoutModal(true); }}
                     disabled={isLoggingOut}
@@ -547,7 +547,7 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
             </div>
 
             {/* Search Results List */}
-            <div className="max-h-[420px] overflow-y-auto p-3 space-y-1.5">
+            <div className="max-h-[420px] overflow-y-auto p-3 space-y-1.5" aria-busy={isSearchLoading}>
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-2.5 py-1 mb-1">
                 {searchQuery ? `Search Results (${filteredSearch.length})` : "Workspace Index Shortcuts"}
               </p>
@@ -579,9 +579,9 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
                 </div>
               ))}
 
-              {filteredSearch.length === 0 && (
+              {!isSearchLoading && filteredSearch.length === 0 && (
                 <div className="p-8 text-center text-xs text-slate-400">
-                  No matching files, clients, or team pages found for "{searchQuery}".
+                  No matching files, clients, or team pages found for &quot;{searchQuery}&quot;.
                 </div>
               )}
             </div>

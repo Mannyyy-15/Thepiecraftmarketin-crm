@@ -126,12 +126,12 @@ export default function WebsiteDevPage() {
             name: p.name,
             url: sd.websiteUrl || p.name,
             client: p.clientName || "Unknown Client",
-            status: "operational",
-            uptime: sd.uptime || 99.9,
-            response: sd.response || 250,
-            lastChecked: "Just now",
+            status: Number.isFinite(Number(sd.uptime)) ? "operational" : "unconfigured",
+            uptime: Number.isFinite(Number(sd.uptime)) ? Number(sd.uptime) : null,
+            response: Number.isFinite(Number(sd.response)) ? Number(sd.response) : null,
+            lastChecked: null,
             githubRepo: sd.githubRepo || "",
-            isLive: sd.isLive ?? true, // Assume live by default for active sites
+            isLive: sd.isLive === true,
             domainExpiry: sd.domainExpiry || "Not Set",
           };
         });
@@ -161,13 +161,15 @@ export default function WebsiteDevPage() {
 
   // Live calculated metrics
   const totalSites = sitesList.length;
-  const avgUptime = sitesList.length > 0
-    ? (sitesList.reduce((acc, s) => acc + s.uptime, 0) / sitesList.length).toFixed(2)
-    : "0.00";
+  const knownUptime = sitesList.filter((s) => typeof s.uptime === "number");
+  const avgUptime = knownUptime.length > 0
+    ? (knownUptime.reduce((acc, s) => acc + s.uptime, 0) / knownUptime.length).toFixed(2)
+    : null;
   const openTicketsCount = tasks.filter((t) => t.status !== "done").length;
-  const avgResponse = sitesList.length > 0
-    ? Math.round(sitesList.reduce((acc, s) => acc + s.response, 0) / sitesList.length)
-    : 0;
+  const knownResponse = sitesList.filter((s) => typeof s.response === "number");
+  const avgResponse = knownResponse.length > 0
+    ? Math.round(knownResponse.reduce((acc, s) => acc + s.response, 0) / knownResponse.length)
+    : null;
 
   // Handlers
   const handleAddTicket = (e: React.FormEvent) => {
@@ -417,7 +419,7 @@ export default function WebsiteDevPage() {
         />
         <StatsCard 
           title="Avg Uptime" 
-          value={`${avgUptime}%`} 
+          value={avgUptime === null ? "Not monitored" : `${avgUptime}%`}
           icon={<Server className="h-5 w-5" />} 
           gradient="from-emerald-500/20 to-teal-500/20"
           iconColor="text-emerald-500"
@@ -431,7 +433,7 @@ export default function WebsiteDevPage() {
         />
         <StatsCard 
           title="Avg. Response" 
-          value={`${avgResponse} ms`} 
+          value={avgResponse === null ? "Not monitored" : `${avgResponse} ms`}
           icon={<Zap className="h-5 w-5" />} 
           gradient="from-blue-500/20 to-cyan-500/20"
           iconColor="text-blue-500"
@@ -568,7 +570,7 @@ export default function WebsiteDevPage() {
                         )}
                       </p>
                       <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 tabular-nums mt-1">
-                        {s.response} ms <span className="mx-1 text-slate-300 dark:text-slate-700">•</span> {s.uptime}% SLA
+                        {s.response === null ? "Response not monitored" : `${s.response} ms`} <span className="mx-1 text-slate-300 dark:text-slate-700">•</span> {s.uptime === null ? "Uptime not monitored" : `${s.uptime}% SLA`}
                         <span className="mx-1 text-slate-300 dark:text-slate-700">•</span> Expiry: <span className="font-bold text-slate-700 dark:text-slate-300">{s.domainExpiry}</span>
                       </p>
                     </div>
@@ -611,7 +613,7 @@ export default function WebsiteDevPage() {
               <Search className="h-6 w-6 text-brand-500" />
               Site Inspector
             </h2>
-            <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 mt-1">Deep-dive into a specific project's performance and infrastructure.</p>
+            <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 mt-1">Deep-dive into a specific project&apos;s performance and infrastructure.</p>
           </div>
           <select
             value={selectedSiteId}
@@ -650,32 +652,16 @@ export default function WebsiteDevPage() {
 
 function SiteInspectorView({ site, commits, commitsLoading, commitsError, fetchCommits }: any) {
   if (!site) return null;
-  const numId = parseInt(site.id) || 1;
-  const mockData = {
-    perf: 85 + (numId % 15),
-    acc: 90 + (numId % 10),
-    bp: 88 + (numId % 12),
-    seo: 92 + (numId % 8),
-    provider: numId % 2 === 0 ? "Vercel" : "AWS",
-    stack: numId % 3 === 0 ? "Next.js + Tailwind" : "React + Node.js",
-    sslExpiry: new Date(Date.now() + (numId * 86400000 * 30)).toLocaleDateString("en-GB", {day: "numeric", month: "short", year: "numeric"}),
-    traffic: [20, 30, 45, 25, 60, 80, 50, 40, 70, 90].map(v => v + (numId * 5)),
-    errors: numId % 5
-  };
-
   return (
     <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
       {/* Lighthouse Scores */}
       <Card className="shadow-sm border-slate-200/60 dark:border-[#303030]/60 bg-white/95 dark:bg-[#1f1f1f]/95 backdrop-blur-xl">
         <CardHeader className="pb-4 border-b border-slate-100 dark:border-[#303030]/60">
           <CardTitle className="text-lg flex items-center gap-2"><GaugeCircle className="h-4.5 w-4.5 text-emerald-500" /> PageSpeed Scores</CardTitle>
-          <CardDescription className="text-xs">Live Lighthouse API metrics</CardDescription>
+          <CardDescription className="text-xs">Connect PageSpeed Insights to collect verified metrics</CardDescription>
         </CardHeader>
-        <CardContent className="p-4 grid grid-cols-2 gap-4">
-          <ScoreRing label="Performance" score={mockData.perf} />
-          <ScoreRing label="Accessibility" score={mockData.acc} />
-          <ScoreRing label="Best Practices" score={mockData.bp} />
-          <ScoreRing label="SEO" score={mockData.seo} />
+        <CardContent className="p-4">
+          <EmptyState icon={<GaugeCircle className="h-8 w-8" />} title="PageSpeed not connected" description="No score is shown until a real PageSpeed Insights integration returns data." />
         </CardContent>
       </Card>
       
@@ -688,15 +674,15 @@ function SiteInspectorView({ site, commits, commitsLoading, commitsError, fetchC
         <CardContent className="p-4 space-y-4">
           <div className="flex justify-between items-center p-3 rounded-2xl bg-slate-50 dark:bg-[#1f1f1f] border border-slate-100 dark:border-[#303030]">
             <span className="text-xs font-bold text-slate-500">Tech Stack</span>
-            <span className="text-sm font-black">{mockData.stack}</span>
+            <span className="text-sm font-black text-slate-500">Not recorded</span>
           </div>
           <div className="flex justify-between items-center p-3 rounded-2xl bg-slate-50 dark:bg-[#1f1f1f] border border-slate-100 dark:border-[#303030]">
             <span className="text-xs font-bold text-slate-500">Hosting</span>
-            <span className="text-sm font-black">{mockData.provider}</span>
+            <span className="text-sm font-black text-slate-500">Not recorded</span>
           </div>
           <div className="flex justify-between items-center p-3 rounded-2xl bg-slate-50 dark:bg-[#1f1f1f] border border-slate-100 dark:border-[#303030]">
             <span className="text-xs font-bold text-slate-500">SSL Expiry</span>
-            <span className="text-sm font-black text-emerald-600 dark:text-emerald-400">{mockData.sslExpiry}</span>
+            <span className="text-sm font-black text-slate-500">Not monitored</span>
           </div>
           <div className="flex justify-between items-center p-3 rounded-2xl bg-slate-50 dark:bg-[#1f1f1f] border border-slate-100 dark:border-[#303030]">
             <span className="text-xs font-bold text-slate-500">Domain Expiry</span>
@@ -712,24 +698,7 @@ function SiteInspectorView({ site, commits, commitsLoading, commitsError, fetchC
           <CardDescription className="text-xs">Traffic & Application Health</CardDescription>
         </CardHeader>
         <CardContent className="p-4 space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs font-bold text-slate-500">Active Exceptions (Sentry)</p>
-              <p className="text-2xl font-black mt-1 text-slate-900 dark:text-white">{mockData.errors}</p>
-            </div>
-            {mockData.errors > 0 ? <AlertTriangle className="h-6 w-6 text-rose-500" /> : <CheckCircle className="h-6 w-6 text-emerald-500" />}
-          </div>
-          
-          <div className="pt-2">
-            <p className="text-xs font-bold text-slate-500 mb-2">7-Day Traffic Snapshot (Mock)</p>
-            <div className="h-16 flex items-end gap-1">
-              {mockData.traffic.map((v, i) => (
-                <div key={i} className="flex-1 bg-brand-500/20 rounded-t-sm relative group">
-                  <div className="absolute bottom-0 w-full bg-brand-500 rounded-t-sm transition-all" style={{ height: `${(v / 150) * 100}%` }}></div>
-                </div>
-              ))}
-            </div>
-          </div>
+          <EmptyState icon={<Activity className="h-8 w-8" />} title="Monitoring not connected" description="Connect uptime, analytics, and error monitoring before health data is displayed." />
         </CardContent>
       </Card>
 

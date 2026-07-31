@@ -30,9 +30,29 @@ export default function ClientMessagesPage() {
       }
       setLoading(false);
     })();
-    loadConversations();
-    const iv = setInterval(loadConversations, 6000);
-    return () => clearInterval(iv);
+    let timeout: ReturnType<typeof setTimeout> | undefined;
+    let stopped = false;
+    let running = false;
+    const poll = async () => {
+      if (stopped || running || document.visibilityState !== "visible") return;
+      running = true;
+      try { await loadConversations(); } catch { /* retry on the next poll */ } finally {
+        running = false;
+        if (!stopped && document.visibilityState === "visible") timeout = setTimeout(poll, 15_000);
+      }
+    };
+    const handleVisibilityChange = () => {
+      if (timeout) clearTimeout(timeout);
+      timeout = undefined;
+      if (document.visibilityState === "visible") void poll();
+    };
+    void poll();
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      stopped = true;
+      if (timeout) clearTimeout(timeout);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
   }, []);
 
   const loadConversations = async () => {
@@ -43,13 +63,33 @@ export default function ClientMessagesPage() {
   useEffect(() => {
     if (!active) return;
     markConversationRead(active.id).catch(() => {});
+    let timeout: ReturnType<typeof setTimeout> | undefined;
+    let stopped = false;
+    let running = false;
     const load = async () => {
       const r = await getConversationMessages(active.id);
       if (r.success && r.data) setMessages(r.data);
     };
-    load();
-    const iv = setInterval(load, 3500);
-    return () => clearInterval(iv);
+    const poll = async () => {
+      if (stopped || running || document.visibilityState !== "visible") return;
+      running = true;
+      try { await load(); } catch { /* retry on the next poll */ } finally {
+        running = false;
+        if (!stopped && document.visibilityState === "visible") timeout = setTimeout(poll, 5_000);
+      }
+    };
+    const handleVisibilityChange = () => {
+      if (timeout) clearTimeout(timeout);
+      timeout = undefined;
+      if (document.visibilityState === "visible") void poll();
+    };
+    void poll();
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      stopped = true;
+      if (timeout) clearTimeout(timeout);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
   }, [active]);
 
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);

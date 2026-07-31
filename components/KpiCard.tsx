@@ -35,20 +35,19 @@ function parseNumericValue(val: string) {
 
 function useCountUp(target: number, decimals: number, duration: number, trigger: boolean) {
   const [count, setCount] = useState(0);
-  const started = useRef(false);
-
   useEffect(() => {
-    if (!trigger || started.current) return;
-    started.current = true;
+    if (!trigger) return;
+    let frame = 0;
     const start = performance.now();
     const step = (ts: number) => {
       const p = Math.min((ts - start) / duration, 1);
       const eased = 1 - Math.pow(1 - p, 3);
       setCount(parseFloat((eased * target).toFixed(decimals)));
-      if (p < 1) requestAnimationFrame(step);
+      if (p < 1) frame = requestAnimationFrame(step);
       else setCount(target);
     };
-    requestAnimationFrame(step);
+    frame = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(frame);
   }, [target, decimals, duration, trigger]);
 
   return count;
@@ -64,7 +63,7 @@ export default function KpiCard({
   accent = "brand",
 }: KpiCardProps) {
   const fill = accentFill[accent];
-  const sparkData = (spark ?? [3, 5, 4, 6, 8, 7, 9, 11, 10, 13, 12, 15]).map((v, i) => ({ i, v }));
+  const sparkData = spark?.map((v, i) => ({ i, v }));
   const gradId = `kpi-grad-${accent}-${title.replace(/\s+/g, "")}`;
 
   const ref = useRef<HTMLDivElement>(null);
@@ -84,17 +83,17 @@ export default function KpiCard({
       animate={isInView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
       className={cn(
-        "group relative rounded-[20px] bg-white dark:bg-[#1f1f1f] p-6 overflow-hidden transition-all duration-200",
+        "group relative rounded-2xl bg-white dark:bg-[#1f1f1f] p-5 sm:p-6 overflow-hidden transition-all duration-200",
         "shadow-[0_1px_4px_rgba(0,0,0,0.03),_0_6px_20px_rgba(0,0,0,0.05)] hover:shadow-[0_2px_8px_rgba(0,0,0,0.06),_0_10px_28px_rgba(0,0,0,0.09)]",
         "dark:shadow-none dark:border dark:border-[#303030] dark:hover:border-[#38383f]"
       )}
     >
       <div className="flex items-start justify-between gap-2 mb-3">
-        <p className="text-[11px] font-semibold text-[#8888a0] dark:text-[#5a5a68] uppercase tracking-widest leading-none">
+        <p className="text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider leading-none">
           {title}
         </p>
         {icon && (
-          <span className="text-[#8888a0] dark:text-[#5a5a68] shrink-0 [&>svg]:h-4 [&>svg]:w-4">
+          <span className="text-slate-500 dark:text-slate-300 shrink-0 [&>svg]:h-4 [&>svg]:w-4" aria-hidden="true">
             {icon}
           </span>
         )}
@@ -111,7 +110,7 @@ export default function KpiCard({
               "inline-flex items-center gap-0.5 text-xs font-semibold",
               changeType === "positive" && "text-emerald-600 dark:text-emerald-400",
               changeType === "negative" && "text-rose-500 dark:text-rose-400",
-              changeType === "neutral"  && "text-[#8888a0] dark:text-[#5a5a68]"
+              changeType === "neutral"  && "text-slate-600 dark:text-slate-300"
             )}
           >
             {changeType === "positive" && <ArrowUpRight className="w-3.5 h-3.5" />}
@@ -120,9 +119,11 @@ export default function KpiCard({
           </span>
         ) : <span />}
 
-        <div className="hidden sm:block -mr-2 -mb-2 shrink-0 opacity-70">
-          <SparklineChart data={sparkData} fill={fill} gradId={gradId} />
-        </div>
+        {sparkData && sparkData.length > 1 && (
+          <div className="hidden sm:block -mr-2 -mb-2 shrink-0 opacity-70">
+            <SparklineChart data={sparkData} fill={fill} gradId={gradId} />
+          </div>
+        )}
       </div>
     </motion.div>
   );

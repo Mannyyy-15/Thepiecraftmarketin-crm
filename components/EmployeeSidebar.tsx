@@ -18,11 +18,13 @@ import {
   MessageSquareText,
   LogOut,
   Home,
+  ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/components/ui/cn";
 import { Avatar } from "@/components/ui/Avatar";
 import { LogoutConfirmModal } from "@/components/ui/LogoutConfirmModal";
-import { getCurrentUser, logout } from "@/app/actions/auth";
+import { logout } from "@/app/actions/auth";
+import { clearCurrentUserCache, getCurrentUserCached } from "@/lib/currentUserClient";
 
 const navigation = [
   { name: "Home", href: "/employee", icon: Home },
@@ -38,6 +40,7 @@ const navigation = [
   { name: "Documents", href: "/employee/documents", icon: Files },
   { name: "Studio AI", href: "/employee/studio-ai", icon: Sparkles },
   { name: "Finance", href: "/employee/finance", icon: CircleDollarSign },
+  { name: "Security", href: "/employee/security", icon: ShieldCheck },
 ];
 
 function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
@@ -48,12 +51,12 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   useEffect(() => {
-    getCurrentUser().then((res) => {
+    getCurrentUserCached().then((res) => {
       if (res) {
         setUser({
           name: res.name as string,
           email: res.email as string,
-          systemRole: (res.systemRole || "Web Developer") as string
+          systemRole: (res as typeof res & { systemRole?: string }).systemRole || "Web Developer"
         });
       }
     });
@@ -63,6 +66,7 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
     setIsLoggingOut(true);
     const res = await logout();
     if (res.success) {
+      clearCurrentUserCache();
       router.push("/login");
     }
     setIsLoggingOut(false);
@@ -124,8 +128,9 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
                 <Link
                   href={item.href}
                   onClick={onNavigate}
+                  aria-current={isActive ? "page" : undefined}
                   className={cn(
-                    "group relative flex items-center gap-x-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all cursor-pointer",
+                    "group relative flex min-h-11 items-center gap-x-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all cursor-pointer",
                     isActive
                       ? "bg-[#eff6ff] dark:bg-blue-500/15 text-blue-700 dark:text-white"
                       : "text-[#4b4b5a] dark:text-[#9999a8] hover:text-[#111114] dark:hover:text-white hover:bg-[#f7f7f9] dark:hover:bg-[#303030]"
@@ -164,7 +169,8 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
         </div>
         <button
           onClick={() => setShowLogoutModal(true)}
-          className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-all cursor-pointer shrink-0"
+          className="icon-button text-slate-500 hover:text-rose-600 hover:bg-rose-50 dark:text-slate-300 dark:hover:bg-rose-950/20 transition-all cursor-pointer"
+          aria-label="Log out"
           title="Log Out"
         >
           <LogOut className="h-4.5 w-4.5" />

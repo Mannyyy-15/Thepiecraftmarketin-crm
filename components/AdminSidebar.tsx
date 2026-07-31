@@ -20,21 +20,30 @@ import {
   MessageSquareText,
   X,
   LogOut,
+  Workflow,
+  PlugZap,
+  ShieldCheck,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/components/ui/cn";
 import { Avatar } from "@/components/ui/Avatar";
 import { LogoutConfirmModal } from "@/components/ui/LogoutConfirmModal";
-import { getCurrentUser, logout } from "@/app/actions/auth";
+import { logout } from "@/app/actions/auth";
+import { clearCurrentUserCache, getCurrentUserCached } from "@/lib/currentUserClient";
 
 const navigation = [
   { name: "Overview",     href: "/admin",              icon: LayoutDashboard },
   { name: "Clients",      href: "/admin/clients",      icon: Building2 },
+  { name: "Accounts",     href: "/admin/accounts",     icon: Building2 },
+  { name: "Contacts",     href: "/admin/contacts",     icon: UsersRound },
+  { name: "Deals",        href: "/admin/deals",        icon: CircleDollarSign },
   { name: "Team",         href: "/admin/team",         icon: UsersRound },
   { name: "Projects",     href: "/admin/projects",     icon: FolderKanban },
   { name: "Leads",        href: "/admin/leads",        icon: Target },
   { name: "Meta Ads",     href: "/admin/ads",          icon: BarChart3 },
   { name: "Website Dev",  href: "/admin/website-dev",  icon: Code2 },
+  { name: "Agency Ops",   href: "/admin/agency-operations", icon: Workflow },
+  { name: "Integrations", href: "/admin/integrations", icon: PlugZap },
   { name: "Messages",     href: "/admin/messages",     icon: MessageSquareText },
   { name: "Finance",      href: "/admin/finance",      icon: CircleDollarSign },
   { name: "Invoices",     href: "/admin/invoices",     icon: Receipt },
@@ -42,6 +51,7 @@ const navigation = [
   { name: "Reports",      href: "/admin/reports",      icon: FilePieChart },
   { name: "Studio AI",    href: "/admin/studio-ai",    icon: Sparkles },
   { name: "Settings",     href: "/admin/settings",     icon: Settings },
+  { name: "Security",     href: "/admin/security",     icon: ShieldCheck },
 ];
 
 function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
@@ -52,7 +62,7 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   useEffect(() => {
-    getCurrentUser().then((res) => {
+    getCurrentUserCached().then((res) => {
       if (res) {
         setUser({ name: res.name as string, email: res.email as string, role: res.role as string, avatarUrl: res.avatarUrl as string });
       }
@@ -63,6 +73,7 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
     setIsLoggingOut(true);
     const res = await logout();
     if (res.success) {
+      clearCurrentUserCache();
       router.push("/login");
     }
     setIsLoggingOut(false);
@@ -101,8 +112,9 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
                 <Link
                   href={item.href}
                   onClick={onNavigate}
+                  aria-current={isActive ? "page" : undefined}
                   className={cn(
-                    "group relative flex items-center gap-x-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all cursor-pointer",
+                    "group relative flex min-h-11 items-center gap-x-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all cursor-pointer",
                     isActive
                       ? "bg-[#eff6ff] dark:bg-blue-500/15 text-blue-700 dark:text-white"
                       : "text-[#4b4b5a] dark:text-[#9999a8] hover:text-[#111114] dark:hover:text-white hover:bg-[#f7f7f9] dark:hover:bg-[#303030]"
@@ -145,7 +157,8 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
         </Link>
         <button
           onClick={() => setShowLogoutModal(true)}
-          className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-all cursor-pointer shrink-0"
+          className="icon-button text-slate-500 hover:text-rose-600 hover:bg-rose-50 dark:text-slate-300 dark:hover:bg-rose-950/20 transition-all cursor-pointer"
+          aria-label="Log out"
           title="Log Out"
         >
           <LogOut className="h-4.5 w-4.5" />
@@ -198,7 +211,7 @@ export default function AdminSidebar({
               <div className="relative h-full">
                 <button
                   onClick={onClose}
-                  className="absolute top-4 right-4 z-10 h-9 w-9 rounded-xl flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                  className="icon-button absolute top-4 right-4 z-10 text-slate-500 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
                   aria-label="Close menu"
                 >
                   <X className="h-5 w-5" />

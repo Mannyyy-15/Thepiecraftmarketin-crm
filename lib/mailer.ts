@@ -1,5 +1,4 @@
 import nodemailer, { type Transporter } from "nodemailer";
-import { db } from "@/lib/db";
 
 export interface SendEmailResult {
   success: boolean;
@@ -8,46 +7,69 @@ export interface SendEmailResult {
   messageId?: string;
 }
 
+let cachedTransport: Transporter | null = null;
+
+function getTransport(): Transporter | null {
+  if (cachedTransport) return cachedTransport;
+  const host = process.env.SMTP_HOST;
+  const port = Number(process.env.SMTP_PORT || 465);
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASS;
+  if (
+    !host ||
+    !user ||
+    !pass ||
+    !Number.isSafeInteger(port) ||
+    port < 1 ||
+    port > 65535
+  ) {
+    return null;
+  }
+
+  cachedTransport = nodemailer.createTransport({
+    host,
+    port,
+    secure: port === 465,
+    requireTLS: port !== 465,
+    auth: { user, pass },
+    tls: { servername: host, minVersion: "TLSv1.2" },
+  });
+  return cachedTransport;
+}
+
 export async function sendEmail(
   to: string,
   subject: string,
   html: string
 ): Promise<SendEmailResult> {
-  let settings: any = null;
-  if (db) {
-    try {
-      settings = await db.query.agencySettings.findFirst();
-    } catch (e) {
-      // ignore
-    }
+  const from = process.env.SMTP_FROM || process.env.SMTP_USER;
+  const transport = getTransport();
+  if (!transport || !from) {
+    console.error("[Mailer] SMTP is not configured.");
+    return { success: false, skipped: true, error: "Email service unavailable" };
   }
-
-  const host = settings?.smtpHost || process.env.SMTP_HOST;
-  const port = settings?.smtpPort || Number(process.env.SMTP_PORT) || 465;
-  const user = settings?.smtpUser || process.env.SMTP_USER;
-  const pass = settings?.smtpPass || process.env.SMTP_PASS;
-  const from = settings?.smtpFrom || process.env.SMTP_FROM || user;
-
-  if (!host || !user || !pass) {
-    console.warn(`[mailer] SMTP not configured - skipped email to ${to}: "${subject}"`);
-    return { success: true, skipped: true };
+  if (
+    to.length > 254 ||
+    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to) ||
+    subject.length > 200 ||
+    /[\r\n]/.test(subject) ||
+    Buffer.byteLength(html, "utf8") > 512 * 1024
+  ) {
+    return { success: false, error: "Invalid email message" };
   }
-
-  const transport = nodemailer.createTransport({
-    host,
-    port,
-    secure: port === 465,
-    auth: {
-      user,
-      pass,
-    },
-  });
 
   try {
-    const info = await transport.sendMail({ from, to, subject, html });
+    const info = await transport.sendMail({
+      from,
+      to,
+      subject,
+      html,
+      disableFileAccess: true,
+      disableUrlAccess: true,
+    });
     return { success: true, messageId: info.messageId };
-  } catch (error: any) {
-    console.error("[mailer] sendMail error:", error?.message || error);
-    return { success: false, error: error?.message || "Failed to send email" };
+  } catch (error) {
+    console.error("[Mailer] Message delivery failed:", error);
+    return { success: false, error: "Failed to send email" };
   }
 }

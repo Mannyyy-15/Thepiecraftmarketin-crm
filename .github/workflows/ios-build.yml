@@ -20,7 +20,10 @@ jobs:
           node-version: '22'
 
       - name: Install Dependencies
-        run: npm install
+        run: npm ci
+
+      - name: Type Check
+        run: npx tsc --noEmit --pretty false
 
       - name: Build Next.js & Sync Capacitor
         run: node --max-old-space-size=4096 build-capacitor.mjs

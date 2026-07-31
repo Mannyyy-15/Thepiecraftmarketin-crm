@@ -498,7 +498,7 @@ export default function DocumentsPage() {
               {filteredFiles.length === 0 && (
                 <tr>
                   <td colSpan={6} className="p-12 text-center text-xs text-slate-400">
-                    No matching files or folders found for "{searchQuery}".
+                    No matching files or folders found for &quot;{searchQuery}&quot;.
                   </td>
                 </tr>
               )}

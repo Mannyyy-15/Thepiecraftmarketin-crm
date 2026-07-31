@@ -3,7 +3,8 @@
 import { Fragment, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/providers/ToastProvider";
-import { createUser } from "@/app/actions/auth";
+import { createLoginLink, createUser } from "@/app/actions/auth";
+import { ShareLoginLinkDialog } from "@/components/ShareLoginLinkDialog";
 import {
   getClientsEnriched, onboardClient, updateClient, updateClientStage,
   updateClientChecklist, deleteClient, getTeamUsers, getProjects,
@@ -118,6 +119,7 @@ export default function ClientsPage() {
   const [drawerStep, setDrawerStep]   = useState(0);
   const [form, setForm]               = useState({ ...BLANK_CLIENT });
   const [submitting, setSubmitting]   = useState(false);
+  const [shareLogin, setShareLogin] = useState<{ link: string; name: string; email: string; phone: string } | null>(null);
 
   // invoice drawer
   const [invDrawer, setInvDrawer]     = useState(false);
@@ -194,9 +196,20 @@ export default function ClientsPage() {
       cfd.append("details", details);
       const cr = await onboardClient(cfd);
       if (cr.success) {
+        const linkResult = await createLoginLink(Number(clientUserId));
+        if (linkResult.success && linkResult.loginLink) {
+          setShareLogin({
+            link: linkResult.loginLink,
+            name: form.contactName.trim() || form.name.trim(),
+            email: form.loginEmail.trim(),
+            phone: form.contactPhone.trim(),
+          });
+        } else {
+          toast("Client created, but the secure login link could not be generated. You can create another link later.", "info");
+        }
         setDrawerOpen(false);
         await load();
-        toast(`${form.name} onboarded! Portal credentials ready.`, "success");
+        toast(`${form.name} onboarded. Share the secure sign-in link to finish.`, "success");
       } else toast(cr.error || "Failed to create client record.", "error");
     } catch (err: any) { toast(err.message, "error"); }
     finally { setSubmitting(false); }
@@ -372,6 +385,7 @@ export default function ClientsPage() {
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
+    <>
     <div className="space-y-6">
       <PageHeader
         eyebrow="CRM"
@@ -989,6 +1003,15 @@ export default function ClientsPage() {
         </>
       )}
     </div>
+      <ShareLoginLinkDialog
+        open={Boolean(shareLogin)}
+        onClose={() => setShareLogin(null)}
+        loginLink={shareLogin?.link || ""}
+        personName={shareLogin?.name || ""}
+        email={shareLogin?.email}
+        phone={shareLogin?.phone}
+      />
+    </>
   );
 }
 

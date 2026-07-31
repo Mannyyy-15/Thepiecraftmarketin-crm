@@ -4,6 +4,7 @@ import "./globals.css";
 import { ToastProvider } from "@/providers/ToastProvider";
 import MobileBackHandler from "@/components/MobileBackHandler";
 import { GlobalSyncProvider } from "@/components/providers/GlobalSyncProvider";
+import AppDeepLinkHandler from "@/components/AppDeepLinkHandler";
 const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
   variable: "--font-jakarta",
@@ -24,32 +25,20 @@ export const viewport: Viewport = {
   maximumScale: 1,
   viewportFit: "cover",
   userScalable: false,
+  themeColor: "#161618",
 };
 
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={jakarta.variable} suppressHydrationWarning>
-      <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              try {
-                const t = localStorage.getItem('theme');
-                if (t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                  document.documentElement.classList.add('dark');
-                }
-              } catch (_) {}
-            `,
-          }}
-        />
-      </head>
+    <html lang="en" className={`${jakarta.variable} dark`}>
       <body className="font-sans antialiased bg-background text-foreground">
         <GlobalSyncProvider>
           <ToastProvider>
             {children}
             <MobileBackHandler />
+            <AppDeepLinkHandler />
           </ToastProvider>
         </GlobalSyncProvider>
       </body>

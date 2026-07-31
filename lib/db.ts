@@ -5,6 +5,10 @@ import { eq } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 
 const connectionString = process.env.DATABASE_URL;
+const allowInsecureLocalDatabase =
+  process.env.NODE_ENV !== "production" &&
+  process.env.DATABASE_SSL_MODE === "disabled";
+const databaseCa = process.env.DATABASE_SSL_CA?.replace(/\\n/g, "\n");
 
 let connectionPool: mysql.Pool | null = null;
 
@@ -13,7 +17,12 @@ let connectionPool: mysql.Pool | null = null;
 // (Hostinger caps concurrent connections, and a new pool per request blows past it).
 const poolOptions: mysql.PoolOptions = {
   uri: connectionString,
-  ssl: { rejectUnauthorized: false }, // Hostinger requires SSL but uses a shared cert
+  ssl: allowInsecureLocalDatabase
+    ? undefined
+    : {
+        rejectUnauthorized: true,
+        ...(databaseCa ? { ca: databaseCa } : {}),
+      },
   waitForConnections: true,
   connectionLimit: 5,
   maxIdle: 5,
@@ -45,8 +54,19 @@ export function ensureAdminSeeded() {
 
   seedingPromise = (async () => {
     try {
-      const adminEmail = process.env.ADMIN_EMAIL || "admin@thepiecraft.com";
-      const adminPassword = process.env.ADMIN_PASSWORD || "admin123";
+      const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+      const adminPassword = process.env.ADMIN_PASSWORD;
+      if (
+        !adminEmail ||
+        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(adminEmail) ||
+        !adminPassword ||
+        adminPassword.length < 16 ||
+        adminPassword.length > 128
+      ) {
+        throw new Error(
+          "ADMIN_EMAIL and a strong ADMIN_PASSWORD (16-128 characters) are required to seed an administrator."
+        );
+      }
       
       const existingAdmins = await db.select()
         .from(schema.users)
@@ -57,7 +77,7 @@ export function ensureAdminSeeded() {
 
       if (existingAdmins.length === 0) {
         console.log(`[Database] No admin found. Seeding master admin: ${adminEmail}`);
-        const hashedPassword = await bcrypt.hash(adminPassword, 10);
+        const hashedPassword = await bcrypt.hash(adminPassword, 12);
         await db.insert(schema.users).values({
           name: adminName,
           email: adminEmail,
@@ -71,6 +91,8 @@ export function ensureAdminSeeded() {
       }
     } catch (error) {
       console.error("[Database] Error checking or seeding admin:", error);
+      seedingPromise = null;
+      throw error;
     }
   })();
 

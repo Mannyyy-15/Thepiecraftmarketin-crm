@@ -5,6 +5,7 @@ import { cn } from "./cn";
 export function Skeleton({ className }: { className?: string }) {
   return (
     <div
+      aria-hidden="true"
       className={cn(
         "animate-pulse rounded-xl bg-slate-200 dark:bg-[#303030]",
         className

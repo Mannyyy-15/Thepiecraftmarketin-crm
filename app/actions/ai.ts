@@ -1,8 +1,7 @@
 "use server";
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { cookies } from "next/headers";
-import { decrypt } from "./auth";
+import { getCurrentUser } from "./auth";
 
 // Studio AI — marketing strategy generator backed by Google Gemini (free tier).
 // Requires GEMINI_API_KEY (get one free at https://aistudio.google.com/app/apikey).
@@ -94,9 +93,21 @@ export async function generateStrategy(
   keywords: string
 ): Promise<GenerateStrategyResult> {
   // Auth — only logged-in staff may use the generator.
-  const token = cookies().get("token")?.value;
-  const session = token ? await decrypt(token) : null;
-  if (!session?.id) return { success: false, error: "Not authenticated." };
+  const session = await getCurrentUser();
+  if (!session || (session.role !== "admin" && session.role !== "employee")) {
+    return { success: false, error: "Not authorized." };
+  }
+
+  const cleanClient = client.trim();
+  const cleanKeywords = keywords.trim();
+  if (
+    !cleanClient ||
+    cleanClient.length > 200 ||
+    cleanKeywords.length > 2000 ||
+    !Object.hasOwn(CHANNEL_LABEL, channel)
+  ) {
+    return { success: false, error: "Invalid strategy request." };
+  }
 
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
@@ -109,7 +120,7 @@ export async function generateStrategy(
       model: process.env.GEMINI_MODEL || "gemini-2.5-flash",
       generationConfig: { temperature: 0.8, responseMimeType: "application/json" },
     });
-    const prompt = buildPrompt(client, channel, keywords);
+    const prompt = buildPrompt(cleanClient, channel, cleanKeywords);
 
     // Gemini occasionally returns 503 (model overloaded). Retry a few times
     // with backoff before giving up.

@@ -1,24 +1,101 @@
 "use server";
 
-import { cookies } from "next/headers";
 import { db } from "@/lib/db";
-import fs from "fs";
-import path from "path";
+import { randomUUID } from "crypto";
 import * as schema from "@/lib/schema";
-import { eq, and, or, inArray, desc, gte } from "drizzle-orm";
-import { decrypt, getCurrentUser } from "./auth";
+import { eq, and, or, inArray, desc, gte, asc, isNotNull, like, notInArray, sql } from "drizzle-orm";
+import { getCurrentUser } from "./auth";
 import { validateGeofence } from "@/lib/geofence";
 import { sendEmail } from "@/lib/mailer";
 import { revalidatePath } from "next/cache";
 import bcrypt from "bcryptjs";
 import Razorpay from "razorpay";
 import { fetchUptimeMonitors } from "@/lib/uptimerobot";
+import { z } from "zod";
+import {
+  deletePrivateFile,
+  uploadPrivateFile,
+} from "@/lib/storage/private-object-storage";
+import { sendFcmMessage } from "@/lib/google-service-account";
 
 // Helper to check user session and get authenticated profile
 async function getAuthSession() {
-  const token = cookies().get("token")?.value;
-  if (!token) return null;
-  return await decrypt(token);
+  return await getCurrentUser();
+}
+
+type AuthSession = NonNullable<Awaited<ReturnType<typeof getAuthSession>>>;
+
+const publicUserFields = {
+  id: schema.users.id,
+  name: schema.users.name,
+  email: schema.users.email,
+  role: schema.users.role,
+  systemRole: schema.users.systemRole,
+  workingDays: schema.users.workingDays,
+  shiftStartTime: schema.users.shiftStartTime,
+  shiftEndTime: schema.users.shiftEndTime,
+  activeShiftProfile: schema.users.activeShiftProfile,
+  avatarUrl: schema.users.avatarUrl,
+  createdAt: schema.users.createdAt,
+};
+
+const idSchema = z.number().int().positive();
+const dateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
+const projectStatuses = z.enum(["planning", "active", "in-progress", "review", "completed", "cancelled", "archived"]);
+const taskStatuses = z.enum(["todo", "in-progress", "in-review", "done"]);
+
+function invalidInput(error: z.ZodError) {
+  return { success: false as const, error: error.issues[0]?.message || "Invalid input." };
+}
+
+async function canAccessProject(session: AuthSession, projectId: number) {
+  if (!db || !idSchema.safeParse(projectId).success) return false;
+  if (session.role === "admin") return true;
+  const [project] = await db.select().from(schema.projects).where(eq(schema.projects.id, projectId)).limit(1);
+  if (!project) return false;
+  const userId = Number(session.id);
+  if (session.role === "client") {
+    const [client] = await db.select({ id: schema.clients.id }).from(schema.clients)
+      .where(and(eq(schema.clients.id, project.clientId || 0), eq(schema.clients.ownerId, userId))).limit(1);
+    return !!client;
+  }
+  if (project.leadId === userId) return true;
+  try {
+    const memberIds = z.array(z.number().int().positive()).parse(JSON.parse(project.teamMemberIds || "[]"));
+    if (memberIds.includes(userId)) return true;
+  } catch {}
+  const [task] = await db.select({ id: schema.tasks.id }).from(schema.tasks)
+    .where(and(eq(schema.tasks.projectId, projectId), eq(schema.tasks.userId, userId))).limit(1);
+  return !!task;
+}
+
+async function canMutateTask(session: AuthSession, taskId: number) {
+  if (!db || !idSchema.safeParse(taskId).success) return false;
+  if (session.role === "admin") return true;
+  const [task] = await db.select({ userId: schema.tasks.userId }).from(schema.tasks)
+    .where(eq(schema.tasks.id, taskId)).limit(1);
+  return session.role === "employee" && task?.userId === Number(session.id);
+}
+
+async function getOwnedClientId(session: AuthSession) {
+  if (!db || session.role !== "client") return null;
+  const [client] = await db.select({ id: schema.clients.id }).from(schema.clients)
+    .where(eq(schema.clients.ownerId, Number(session.id))).limit(1);
+  return client?.id ?? null;
+}
+
+function safeJsonArrayOfIds(value: FormDataEntryValue | null) {
+  try {
+    const parsed = z.array(z.number().int().positive()).max(100).parse(JSON.parse(String(value || "[]")));
+    return JSON.stringify(Array.from(new Set(parsed)));
+  } catch {
+    return "[]";
+  }
+}
+
+function createDocumentNumber(prefix: string, date = new Date()) {
+  const period = `${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, "0")}`;
+  return `${prefix}-${period}-${randomUUID().replace(/-/g, "").slice(0, 8).toUpperCase()}`;
 }
 
 /**
@@ -39,8 +116,11 @@ export async function getClients() {
     if (session.role === "admin") {
       results = await db.select().from(schema.clients);
     } else if (session.role === "employee") {
-      // Employees see clients where they are the owner or mapped lead
-      results = await db.select().from(schema.clients).where(eq(schema.clients.ownerId, session.id as number));
+      const scopedProjects = await getProjects();
+      const clientIds = Array.from(new Set((scopedProjects.data || []).map((project: any) => project.clientId).filter(Number.isInteger))) as number[];
+      results = clientIds.length
+        ? await db.select().from(schema.clients).where(inArray(schema.clients.id, clientIds))
+        : [];
     } else {
       // Clients see their own client record mapped by email
       results = await db.select().from(schema.clients).where(eq(schema.clients.ownerId, session.id as number));
@@ -103,9 +183,12 @@ export async function updateClientStage(clientId: number, stage: string) {
     }
 
     if (!db) return { success: false, error: "Database not connected." };
+    const stageResult = z.enum(["contract_signed", "discovery", "integrations", "campaign_live", "terminated", "churned"])
+      .safeParse(stage);
+    if (!stageResult.success) return invalidInput(stageResult.error);
 
     await db.update(schema.clients)
-      .set({ stage })
+      .set({ stage: stageResult.data })
       .where(eq(schema.clients.id, clientId));
 
     revalidatePath("/admin/clients");
@@ -120,7 +203,7 @@ export async function updateClientStage(clientId: number, stage: string) {
 export async function updateClientChecklist(clientId: number, checklistJson: string, progress: number) {
   try {
     const session = await getAuthSession();
-    if (!session) return { success: false, error: "Unauthorized." };
+    if (!session || session.role !== "admin") return { success: false, error: "Unauthorized." };
 
     if (!db) return { success: false, error: "Database not connected." };
 
@@ -242,7 +325,7 @@ export async function getClientById(clientId: number) {
       db.select().from(schema.clients).where(eq(schema.clients.id, clientId)).limit(1),
       db.select().from(schema.projects),
       db.select().from(schema.invoices).orderBy(desc(schema.invoices.createdAt)),
-      db.select().from(schema.users),
+      db.select(publicUserFields).from(schema.users),
     ]);
 
     if (!clientRows.length) return { success: false, data: null };
@@ -311,7 +394,9 @@ export async function resetClientPassword(userId: number, newPassword: string, f
     const session = await getAuthSession();
     if (!session || session.role !== "admin") return { success: false, error: "Unauthorized." };
     if (!db) return { success: false, error: "Database not connected." };
-    if (!newPassword || newPassword.length < 4) return { success: false, error: "Password must be at least 4 characters." };
+    if (!newPassword || newPassword.length < 12 || newPassword.length > 128) {
+      return { success: false, error: "Password must be between 12 and 128 characters." };
+    }
 
     // Only allow resetting client-role accounts.
     const u = await db.select({ id: schema.users.id, role: schema.users.role }).from(schema.users).where(eq(schema.users.id, userId)).limit(1);
@@ -417,8 +502,7 @@ export async function createProject(formData: FormData) {
     const clientContactPhone = formData.get("clientContactPhone") as string;
     const accessGranted = (formData.get("accessGranted") as string) === "true" ? 1 : 0;
     const contractLink = formData.get("contractLink") as string;
-    const teamMemberIdsRaw = formData.get("teamMemberIds") as string;
-    const teamMemberIds = teamMemberIdsRaw ? teamMemberIdsRaw : "[]";
+    const teamMemberIds = safeJsonArrayOfIds(formData.get("teamMemberIds"));
 
     if (!name) return { success: false, error: "Project name is required." };
 
@@ -462,9 +546,14 @@ export async function updateProjectStatus(projectId: number, status: string) {
     if (!session) return { success: false, error: "Unauthorized." };
 
     if (!db) return { success: false, error: "Database not connected." };
+    const statusResult = projectStatuses.safeParse(status);
+    if (!statusResult.success) return invalidInput(statusResult.error);
+    if (!(await canAccessProject(session, projectId)) || session.role === "client") {
+      return { success: false, error: "Forbidden." };
+    }
 
     await db.update(schema.projects)
-      .set({ status })
+      .set({ status: statusResult.data })
       .where(eq(schema.projects.id, projectId));
 
     revalidatePath("/admin/projects");
@@ -701,7 +790,9 @@ export async function getAttendance() {
 
     if (!db) return { success: false, data: [] };
 
-    const results = await db.select().from(schema.attendance);
+    const results = session.role === "admin"
+      ? await db.select().from(schema.attendance)
+      : await db.select().from(schema.attendance).where(eq(schema.attendance.userId, Number(session.id)));
     return { success: true, data: results };
   } catch (error: any) {
     console.error("getAttendance Error:", error);
@@ -832,36 +923,24 @@ async function createNotification(userId: number, type: string, title: string, m
     });
 
     // Send FCM Push Notification asynchronously in the background so it doesn't block the server action
-    const { messaging } = require("@/lib/firebase-admin");
-    if (messaging) {
-      db.select({ token: schema.fcmTokens.token })
-        .from(schema.fcmTokens)
-        .where(eq(schema.fcmTokens.userId, userId))
-        .then((tokens) => {
-          for (const t of tokens) {
-            messaging.send({
-              token: t.token,
-              notification: {
-                title,
-                body: message,
-              },
-              data: {
-                link: link || "/",
-              },
-              android: {
-                notification: {
-                  channelId: "thepiecraft-crm",
-                },
-              },
-            }).catch((fcmErr: any) => {
-              console.error("FCM Send Error:", fcmErr);
-            });
-          }
-        })
-        .catch((dbErr) => {
-          console.error("FCM Token fetch DB error:", dbErr);
-        });
-    }
+    db.select({ token: schema.fcmTokens.token })
+      .from(schema.fcmTokens)
+      .where(eq(schema.fcmTokens.userId, userId))
+      .then((tokens) =>
+        Promise.allSettled(
+          tokens.map((token) =>
+            sendFcmMessage({
+              token: token.token,
+              title,
+              body: message,
+              link: link || "/",
+            })
+          )
+        )
+      )
+      .catch((pushError) => {
+        console.error("FCM notification error:", pushError);
+      });
   } catch (e) {
     console.error("createNotification error:", e);
   }
@@ -1179,7 +1258,7 @@ export async function getPendingLeaves() {
       .where(eq(schema.leaves.status, "pending"));
 
     // Fetch user details for each leave
-    const usersList = await db.select().from(schema.users);
+    const usersList = await db.select(publicUserFields).from(schema.users);
     const enriched = results.map(leave => {
       const u = usersList.find(usr => usr.id === leave.userId);
       return {
@@ -1309,7 +1388,7 @@ export async function getTeamUsers() {
 
     if (!db) return { success: false, data: [] };
 
-    const usersList = await db.select().from(schema.users).where(inArray(schema.users.role, ["admin", "employee"]));
+    const usersList = await db.select(publicUserFields).from(schema.users).where(inArray(schema.users.role, ["admin", "employee"]));
     return { success: true, data: usersList };
   } catch (error: any) {
     console.error("getTeamUsers Error:", error);
@@ -1326,6 +1405,13 @@ export async function deleteUser(userId: number) {
     }
 
     if (!db) return { success: false, error: "Database not connected." };
+    if (Number(session.id) === userId) return { success: false, error: "You cannot delete your own account." };
+    const [target] = await db.select({ role: schema.users.role }).from(schema.users).where(eq(schema.users.id, userId)).limit(1);
+    if (!target) return { success: false, error: "User not found." };
+    if (target.role === "admin") {
+      const admins = await db.select({ id: schema.users.id }).from(schema.users).where(eq(schema.users.role, "admin"));
+      if (admins.length <= 1) return { success: false, error: "The last administrator cannot be deleted." };
+    }
 
     await db.delete(schema.users).where(eq(schema.users.id, userId));
 
@@ -1346,6 +1432,9 @@ export async function updateUserRole(userId: number, role: "admin" | "employee" 
     }
 
     if (!db) return { success: false, error: "Database not connected." };
+    if (Number(session.id) === userId && role !== "admin") {
+      return { success: false, error: "You cannot remove your own administrator access." };
+    }
 
     const updateData: any = { role };
     if (systemRole) {
@@ -1405,7 +1494,7 @@ export async function getFreshUserProfile() {
 
     if (!db) return { success: false, error: "Database not connected." };
 
-    const userList = await db.select().from(schema.users).where(eq(schema.users.id, session.id as number)).limit(1);
+    const userList = await db.select(publicUserFields).from(schema.users).where(eq(schema.users.id, session.id as number)).limit(1);
     if (userList.length === 0) {
       return { success: false, error: "User profile not found in database." };
     }
@@ -1423,6 +1512,7 @@ export async function getUserTasks(userId: number) {
     const session = await getAuthSession();
     if (!session) return { success: false, data: [] };
     if (!db) return { success: false, data: [] };
+    if (session.role !== "admin" && Number(session.id) !== userId) return { success: false, data: [] };
 
     const results = await db.select().from(schema.tasks).where(eq(schema.tasks.userId, userId));
     return { success: true, data: results };
@@ -1443,68 +1533,86 @@ export async function getAdminDashboardData() {
     if (!session || session.role !== "admin") return { success: false, data: null };
     if (!db) return { success: false, data: null };
 
-    const [clientList, projectList, usersList, invoiceList] = await Promise.all([
-      db.select().from(schema.clients),
-      db.select().from(schema.projects).orderBy(desc(schema.projects.createdAt)),
-      db.select().from(schema.users),
-      db.select().from(schema.invoices).orderBy(desc(schema.invoices.createdAt)),
+    const activeStatusesExcluded = ["completed", "cancelled", "archived"];
+    const invoiceCutoff = new Date();
+    invoiceCutoff.setDate(1);
+    invoiceCutoff.setHours(0, 0, 0, 0);
+    invoiceCutoff.setMonth(invoiceCutoff.getMonth() - 5);
+    const invoiceMonth = sql<string>`DATE_FORMAT(${schema.invoices.createdAt}, '%Y-%m')`;
+
+    const [clientCountRows, projectTotalsRows, recentProjects, invoiceTotals, projectTypeTotals] = await Promise.all([
+      db.select({ count: sql<number>`count(*)` })
+        .from(schema.clients)
+        .where(sql`${schema.clients.stage} <> 'terminated'`),
+      db.select({
+        monthlyRevenue: sql<number>`coalesce(sum(${schema.projects.monthlyFee}), 0)`,
+        totalAdSpend: sql<number>`coalesce(sum(${schema.projects.adSpendBudget}), 0)`,
+        activeWebsites: sql<number>`coalesce(sum(case when ${schema.projects.projectType} = 'web_dev' then 1 else 0 end), 0)`,
+      })
+        .from(schema.projects)
+        .where(notInArray(schema.projects.status, activeStatusesExcluded)),
+      db.select({
+        id: schema.projects.id,
+        name: schema.projects.name,
+        clientName: schema.clients.name,
+        fallbackClientName: schema.projects.clientName,
+        projectType: schema.projects.projectType,
+        leadName: schema.users.name,
+        deadline: schema.projects.deadline,
+        status: schema.projects.status,
+      })
+        .from(schema.projects)
+        .leftJoin(schema.clients, eq(schema.clients.id, schema.projects.clientId))
+        .leftJoin(schema.users, eq(schema.users.id, schema.projects.leadId))
+        .where(notInArray(schema.projects.status, activeStatusesExcluded))
+        .orderBy(desc(schema.projects.createdAt))
+        .limit(5),
+      db.select({
+        month: invoiceMonth,
+        revenue: sql<number>`coalesce(sum(${schema.invoices.amount}), 0)`,
+      })
+        .from(schema.invoices)
+        .where(and(
+          gte(schema.invoices.createdAt, invoiceCutoff),
+          inArray(schema.invoices.status, ["paid", "sent"]),
+        ))
+        .groupBy(invoiceMonth),
+      db.select({
+        projectType: schema.projects.projectType,
+        count: sql<number>`count(*)`,
+      })
+        .from(schema.projects)
+        .where(notInArray(schema.projects.status, ["cancelled", "archived"]))
+        .groupBy(schema.projects.projectType),
     ]);
 
-    // Calculate Active Clients (exclude terminated)
-    const activeClientsCount = clientList.filter(c => c.stage !== "terminated").length;
+    const activeClientsCount = Number(clientCountRows[0]?.count || 0);
+    const monthlyRevenue = Number(projectTotalsRows[0]?.monthlyRevenue || 0);
+    const totalAdSpend = Number(projectTotalsRows[0]?.totalAdSpend || 0);
+    const activeWebsites = Number(projectTotalsRows[0]?.activeWebsites || 0);
+    const formattedProjects = recentProjects.map(p => ({
+      id: p.id,
+      name: p.name,
+      client: p.clientName || p.fallbackClientName || "Unknown Client",
+      type: p.projectType.replace("_", " "),
+      team: p.leadName ? [{ name: p.leadName }] : [],
+      progress: 0,
+      deadline: p.deadline || "N/A",
+      status: p.status,
+    }));
 
-    // Calculate Monthly Revenue and Total Ad Spend from active/in_progress projects
-    let monthlyRevenue = 0;
-    let totalAdSpend = 0;
-    projectList.forEach(p => {
-      if (p.status !== "completed" && p.status !== "cancelled" && p.status !== "archived") {
-        monthlyRevenue += p.monthlyFee || 0;
-        totalAdSpend += p.adSpendBudget || 0;
-      }
-    });
-
-    // Recent Active Projects
-    const activeProjectsRaw = projectList.filter(p => p.status !== "completed" && p.status !== "cancelled" && p.status !== "archived").slice(0, 5);
-    
-    // Format projects for the UI table
-    const formattedProjects = activeProjectsRaw.map(p => {
-      const clientName = clientList.find(c => c.id === p.clientId)?.name || p.clientName || "Unknown Client";
-      const lead = usersList.find(u => u.id === p.leadId);
-      const team = lead ? [{ name: lead.name }] : []; // just showing the lead as team for now
-      
-      return {
-        id: p.id,
-        name: p.name,
-        client: clientName,
-        type: p.projectType.replace("_", " "),
-        team: team,
-        progress: 0, // Not explicitly tracked on project schema; placeholder
-        deadline: p.deadline || "N/A",
-        status: p.status
-      };
-    });
-
-    // Aggregate Revenue & Spend Data for last 6 months
     const last6Months = Array.from({ length: 6 }).map((_, i) => {
       const d = new Date();
       d.setMonth(d.getMonth() - (5 - i));
       return {
+        key: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`,
         month: d.toLocaleString('en-US', { month: 'short' }),
-        year: d.getFullYear(),
         revenue: 0,
         spend: 0
       };
     });
-
-    // We approximate historical revenue from invoices (paid/sent) and spend from project budgets
-    // For a real app, ad spend would be pulled from Meta API historically.
-    invoiceList.forEach(inv => {
-      const invDate = new Date(inv.createdAt);
-      const mIdx = last6Months.findIndex(m => m.month === invDate.toLocaleString('en-US', { month: 'short' }) && m.year === invDate.getFullYear());
-      if (mIdx !== -1 && (inv.status === 'paid' || inv.status === 'sent')) {
-        last6Months[mIdx].revenue += inv.amount;
-      }
-    });
+    const revenueByMonth = new Map(invoiceTotals.map(row => [row.month, Number(row.revenue || 0)]));
+    last6Months.forEach(month => { month.revenue = revenueByMonth.get(month.key) || 0; });
 
     // Add a baseline of current monthly fee to current month if invoice generation hasn't run yet
     last6Months[5].revenue += monthlyRevenue; 
@@ -1512,23 +1620,16 @@ export async function getAdminDashboardData() {
 
     // Project Distribution (Pie Chart) replacing "Traffic Channels"
     const typeCount: Record<string, number> = {};
-    let totalProjects = 0;
-    projectList.forEach(p => {
-      if (p.status !== "cancelled" && p.status !== "archived") {
-        const typeName = p.projectType === 'web_dev' ? 'Web Dev' : p.projectType === 'meta_ads' ? 'Meta Ads' : 'Other';
-        typeCount[typeName] = (typeCount[typeName] || 0) + 1;
-        totalProjects++;
-      }
+    projectTypeTotals.forEach(row => {
+      const typeName = row.projectType === 'web_dev' ? 'Web Dev' : row.projectType === 'meta_ads' ? 'Meta Ads' : 'Other';
+      typeCount[typeName] = (typeCount[typeName] || 0) + Number(row.count || 0);
     });
+    const totalProjects = Object.values(typeCount).reduce((sum, count) => sum + count, 0);
 
     const channelData = Object.entries(typeCount).map(([name, count]) => ({
       name,
       value: totalProjects > 0 ? Math.round((count / totalProjects) * 100) : 0
     })).sort((a, b) => b.value - a.value);
-
-    const activeWebsites = projectList.filter(p =>
-      p.projectType === "web_dev" && p.status !== "completed" && p.status !== "cancelled" && p.status !== "archived"
-    ).length;
 
     return {
       success: true,
@@ -1558,7 +1659,7 @@ export async function getOverviewPageData() {
     const userId = session.id as number;
 
     const [userRows, allProjects, taskRows, timesheetsRaw, attendance, tasks] = await Promise.all([
-      db.select().from(schema.users).where(eq(schema.users.id, userId)).limit(1),
+      db.select(publicUserFields).from(schema.users).where(eq(schema.users.id, userId)).limit(1),
       db.select().from(schema.projects),
       db.select({ projectId: schema.tasks.projectId }).from(schema.tasks).where(eq(schema.tasks.userId, userId)).catch(() => [] as { projectId: number | null }[]),
       db.select().from(schema.timesheets).where(eq(schema.timesheets.userId, userId)).catch(() => []),
@@ -1599,7 +1700,7 @@ export async function getAttendancePageData() {
     const userId = session.id as number;
 
     const [userRows, leaves, attendance] = await Promise.all([
-      db.select().from(schema.users).where(eq(schema.users.id, userId)).limit(1),
+      db.select(publicUserFields).from(schema.users).where(eq(schema.users.id, userId)).limit(1),
       db.select().from(schema.leaves).where(eq(schema.leaves.userId, userId)),
       db.select().from(schema.attendance).where(eq(schema.attendance.userId, userId)),
     ]);
@@ -1622,16 +1723,25 @@ export async function getAttendancePageData() {
 export async function createTask(userId: number, title: string, priority: string, projectId: number | null, dueDate?: string | null) {
   try {
     const session = await getAuthSession();
-    if (!session) return { success: false, error: "Unauthorized." };
+    if (!session || session.role !== "admin") return { success: false, error: "Unauthorized." };
     if (!db) return { success: false, error: "Database not connected." };
+    const input = z.object({
+      userId: idSchema,
+      title: z.string().trim().min(1).max(255),
+      priority: z.enum(["low", "medium", "high"]),
+      projectId: idSchema.nullable(),
+      dueDate: dateSchema.nullable().optional(),
+    }).safeParse({ userId, title, priority, projectId, dueDate });
+    if (!input.success) return invalidInput(input.error);
 
     await db.insert(schema.tasks).values({
-      title: title.trim(),
-      userId,
-      projectId,
-      priority,
+      title: input.data.title,
+      userId: input.data.userId,
+      assignedById: Number(session.id),
+      projectId: input.data.projectId,
+      priority: input.data.priority,
       done: 0,
-      dueDate: dueDate || null,
+      dueDate: input.data.dueDate || null,
     });
 
     revalidatePath("/admin/team");
@@ -1654,6 +1764,7 @@ export async function toggleTaskStatus(id: number, doneStatus: boolean) {
     const session = await getCurrentUser();
     if (!session) return { success: false, error: "Unauthorized" };
     if (!db) return { success: false, error: "DB not initialized" };
+    if (!(await canMutateTask(session, id))) return { success: false, error: "Forbidden." };
 
     const newDone = doneStatus ? 1 : 0;
     const newStatus = doneStatus ? 'done' : 'in-progress'; // auto-sync status
@@ -1679,11 +1790,14 @@ export async function updateTaskStage(id: number, newStage: string) {
     const session = await getCurrentUser();
     if (!session) return { success: false, error: "Unauthorized" };
     if (!db) return { success: false, error: "DB not initialized" };
+    if (!(await canMutateTask(session, id))) return { success: false, error: "Forbidden." };
+    const stageResult = taskStatuses.safeParse(newStage);
+    if (!stageResult.success) return invalidInput(stageResult.error);
 
-    const isDone = newStage === 'done' ? 1 : 0;
+    const isDone = stageResult.data === 'done' ? 1 : 0;
 
     await db.update(schema.tasks)
-      .set({ status: newStage, done: isDone })
+      .set({ status: stageResult.data, done: isDone })
       .where(eq(schema.tasks.id, id));
     return { success: true };
   } catch (error: any) {
@@ -1697,6 +1811,7 @@ export async function deleteTask(taskId: number) {
     const session = await getCurrentUser();
     if (!session) return { success: false, error: "Unauthorized." };
     if (!db) return { success: false, error: "Database not connected." };
+    if (session.role !== "admin") return { success: false, error: "Forbidden." };
 
     await db.delete(schema.tasks).where(eq(schema.tasks.id, taskId));
 
@@ -1716,20 +1831,55 @@ export async function getClientDashboardData() {
     if (!db) return { success: false, data: null };
 
     // 1. Get Client matching this user
-    const clientList = await db.select().from(schema.clients).where(eq(schema.clients.ownerId, session.id as number));
-    if (clientList.length === 0) return { success: true, data: { projects: [], actionItems: [], upcomingMilestones: [] } };
+    const clientList = await db.select({ id: schema.clients.id })
+      .from(schema.clients)
+      .where(eq(schema.clients.ownerId, session.id as number))
+      .limit(1);
+    if (clientList.length === 0) return {
+      success: true,
+      data: { projects: [], actionItems: [], upcomingMilestones: [], pendingInvoices: [] },
+    };
     const clientRecord = clientList[0];
 
     // 2. Fetch Projects
-    const projectList = await db.select().from(schema.projects)
-      .where(eq(schema.projects.clientId, clientRecord.id))
-      .orderBy(desc(schema.projects.createdAt));
-
-    const projectIds = projectList.map(p => p.id);
-
-    // 3. Fetch Invoices for action items
-    const invoiceList = await db.select().from(schema.invoices)
-      .where(eq(schema.invoices.clientId, clientRecord.id));
+    const [projectList, invoiceList, milestoneRows] = await Promise.all([
+      db.select({
+        id: schema.projects.id,
+        name: schema.projects.name,
+        status: schema.projects.status,
+        deadline: schema.projects.deadline,
+      })
+        .from(schema.projects)
+        .where(eq(schema.projects.clientId, clientRecord.id))
+        .orderBy(desc(schema.projects.createdAt)),
+      db.select({
+        id: schema.invoices.id,
+        invoiceNumber: schema.invoices.invoiceNumber,
+        amount: schema.invoices.amount,
+        status: schema.invoices.status,
+        dueDate: schema.invoices.dueDate,
+      })
+        .from(schema.invoices)
+        .where(and(
+          eq(schema.invoices.clientId, clientRecord.id),
+          inArray(schema.invoices.status, ["pending", "overdue"]),
+        )),
+      db.select({
+        id: schema.tasks.id,
+        title: schema.tasks.title,
+        dueDate: schema.tasks.dueDate,
+        projectName: schema.projects.name,
+      })
+        .from(schema.tasks)
+        .innerJoin(schema.projects, eq(schema.projects.id, schema.tasks.projectId))
+        .where(and(
+          eq(schema.projects.clientId, clientRecord.id),
+          eq(schema.tasks.done, 0),
+          isNotNull(schema.tasks.dueDate),
+        ))
+        .orderBy(asc(schema.tasks.dueDate))
+        .limit(5),
+    ]);
 
     const actionItems = invoiceList
       .filter(inv => inv.status === 'pending' || inv.status === 'overdue')
@@ -1742,27 +1892,20 @@ export async function getClientDashboardData() {
       }));
 
     // 4. Fetch Tasks for upcoming milestones
-    let upcomingMilestones: any[] = [];
-    if (projectIds.length > 0) {
-      const allTasks = await db.select().from(schema.tasks).where(inArray(schema.tasks.projectId, projectIds));
-      upcomingMilestones = allTasks
-        .filter(t => t.done === 0 && t.dueDate)
-        .sort((a, b) => new Date(a.dueDate!).getTime() - new Date(b.dueDate!).getTime())
-        .slice(0, 5)
-        .map(t => ({
-          id: t.id,
-          title: t.title,
-          date: new Date(t.dueDate!).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-          project: projectList.find(p => p.id === t.projectId)?.name || "Project"
-        }));
-    }
+    const upcomingMilestones = milestoneRows.map(t => ({
+      id: t.id,
+      title: t.title,
+      date: new Date(t.dueDate!).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      project: t.projectName || "Project",
+    }));
 
     return {
       success: true,
       data: {
         projects: projectList,
         actionItems,
-        upcomingMilestones
+        upcomingMilestones,
+        pendingInvoices: invoiceList,
       }
     };
   } catch (error: any) {
@@ -2064,9 +2207,12 @@ export async function updateTaskStatus(taskId: number, status: string) {
     const session = await getAuthSession();
     if (!session) return { success: false, error: "Unauthorized" };
     if (!db) return { success: false, error: "Database not connected" };
+    if (!(await canMutateTask(session, taskId))) return { success: false, error: "Forbidden." };
+    const statusResult = taskStatuses.safeParse(status);
+    if (!statusResult.success) return invalidInput(statusResult.error);
 
     await db.update(schema.tasks)
-      .set({ status, done: status === "done" ? 1 : 0 })
+      .set({ status: statusResult.data, done: statusResult.data === "done" ? 1 : 0 })
       .where(eq(schema.tasks.id, taskId));
 
     revalidatePath("/admin/team");
@@ -2135,8 +2281,9 @@ async function logActivity(userId: number, type: string, description: string, ta
 export async function getActivityFeed(limit = 30) {
   try {
     const session = await getAuthSession();
-    if (!session) return { success: false, data: [] };
+    if (!session || session.role !== "admin") return { success: false, data: [] };
     if (!db) return { success: false, data: [] };
+    limit = Math.min(100, Math.max(1, Number.isInteger(limit) ? limit : 30));
 
     const results = await db.select()
       .from(schema.activityLog)
@@ -2242,9 +2389,7 @@ export async function createInvoice(formData: FormData) {
 
     // Auto-generate invoice number: INV-YYYYMM-XXXX
     const now = new Date();
-    const prefix = `INV-${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}`;
-    const countRows = await db.select({ id: schema.invoices.id }).from(schema.invoices);
-    const invoiceNumber = `${prefix}-${String(countRows.length + 1).padStart(4, "0")}`;
+    const invoiceNumber = createDocumentNumber("INV", now);
 
     await db.insert(schema.invoices).values({
       clientId,
@@ -2327,9 +2472,7 @@ export async function createInvoiceFull(input: CreateInvoiceFullInput) {
     if (docType === "proposal") typePrefix = "PROP";
     else if (docType === "contract") typePrefix = "CONT";
 
-    const prefix = `${typePrefix}-${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}`;
-    const countRows = await db.select({ id: schema.invoices.id }).from(schema.invoices);
-    const invoiceNumber = `${prefix}-${String(countRows.length + 1).padStart(4, "0")}`;
+    const invoiceNumber = createDocumentNumber(typePrefix, now);
 
     const payload = {
       v: 2,
@@ -2442,9 +2585,6 @@ export async function autoGenerateInvoices() {
 
     let generated = 0;
     const now = new Date();
-    const prefix = `INV-${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}`;
-    const countRows = await db.select({ id: schema.invoices.id }).from(schema.invoices);
-    let counter = countRows.length + 1;
 
     for (const project of retainerProjects) {
       if (!project.billingCycleStart || !project.monthlyFee) continue;
@@ -2469,8 +2609,7 @@ export async function autoGenerateInvoices() {
       dueDate.setDate(dueDate.getDate() + 7);
       const dueDateStr = dueDate.toISOString().split("T")[0];
 
-      const invoiceNumber = `${prefix}-${String(counter).padStart(4, "0")}`;
-      counter++;
+      const invoiceNumber = createDocumentNumber("INV", now);
 
       await db.insert(schema.invoices).values({
         clientId: project.clientId,
@@ -2531,10 +2670,16 @@ export async function getMyClients() {
     if (!session) return { success: false, data: [] };
     if (!db) return { success: false, data: [] };
 
-    const uid = session.id as number;
-    const [clientList, projectList, userList] = await Promise.all([
-      db.select().from(schema.clients),
-      db.select().from(schema.projects),
+    const uid = Number(session.id);
+    const scopedProjectsResult = await getProjects();
+    const projectList = scopedProjectsResult.data || [];
+    const scopedClientIds = Array.from(new Set(projectList.map((project: any) => project.clientId).filter(Number.isInteger))) as number[];
+    const [clientList, userList] = await Promise.all([
+      session.role === "admin"
+        ? db.select().from(schema.clients)
+        : scopedClientIds.length
+          ? db.select().from(schema.clients).where(inArray(schema.clients.id, scopedClientIds))
+          : [],
       db.select({ id: schema.users.id, name: schema.users.name }).from(schema.users),
     ]);
 
@@ -2593,7 +2738,7 @@ export async function getProjectById(projectId: number) {
     const [projectRows, taskList, userList, clientList, invoiceList] = await Promise.all([
       db.select().from(schema.projects).where(eq(schema.projects.id, projectId)).limit(1),
       db.select().from(schema.tasks).where(eq(schema.tasks.projectId, projectId)).orderBy(schema.tasks.createdAt),
-      db.select().from(schema.users),
+      db.select(publicUserFields).from(schema.users),
       db.select().from(schema.clients),
       db.select().from(schema.invoices).orderBy(desc(schema.invoices.createdAt)),
     ]);
@@ -2765,7 +2910,8 @@ export async function getMetaAdsDashboardData() {
     if (!session) return { success: false, data: [] };
     if (!db) return { success: false, data: [] };
 
-    const projectsList = await db.select().from(schema.projects).where(eq(schema.projects.projectType, "meta_ads"));
+    const scopedProjects = await getProjects();
+    const projectsList = (scopedProjects.data || []).filter((project: any) => project.projectType === "meta_ads");
     return { success: true, data: projectsList };
   } catch (error: any) {
     return { success: false, error: error.message };
@@ -2839,15 +2985,55 @@ export async function syncWebHealthMetrics() {
   }
 }
 
-export async function getGlobalSearchData() {
+export async function getGlobalSearchData(query = "", limit = 10) {
   try {
     const session = await getAuthSession();
     if (!session) return { success: false, data: null };
     if (!db) return { success: false, data: null };
 
-    const clientsList = await db.select().from(schema.clients);
-    const projectsList = await db.select().from(schema.projects);
-    const usersList = await db.select().from(schema.users);
+    if (session.role !== "admin") return { success: false, data: null };
+    const input = z.object({
+      query: z.string().trim().max(100),
+      limit: z.number().int().min(1).max(25),
+    }).safeParse({ query, limit });
+    if (!input.success) return { ...invalidInput(input.error), data: null };
+
+    const pattern = `%${input.data.query}%`;
+    const clientFilter = input.data.query ? like(schema.clients.name, pattern) : undefined;
+    const projectFilter = input.data.query
+      ? or(like(schema.projects.name, pattern), like(schema.projects.clientName, pattern))
+      : undefined;
+    const userFilter = input.data.query
+      ? or(like(schema.users.name, pattern), like(schema.users.email, pattern), like(schema.users.systemRole, pattern))
+      : undefined;
+    const [clientsList, projectsList, usersList] = await Promise.all([
+      db.select({ id: schema.clients.id, name: schema.clients.name })
+        .from(schema.clients)
+        .where(clientFilter)
+        .orderBy(desc(schema.clients.createdAt))
+        .limit(input.data.limit),
+      db.select({
+        id: schema.projects.id,
+        name: schema.projects.name,
+        projectType: schema.projects.projectType,
+        budget: schema.projects.budget,
+      })
+        .from(schema.projects)
+        .where(projectFilter)
+        .orderBy(desc(schema.projects.createdAt))
+        .limit(input.data.limit),
+      db.select({
+        id: schema.users.id,
+        name: schema.users.name,
+        email: schema.users.email,
+        role: schema.users.role,
+        systemRole: schema.users.systemRole,
+      })
+        .from(schema.users)
+        .where(userFilter)
+        .orderBy(desc(schema.users.createdAt))
+        .limit(input.data.limit),
+    ]);
 
     return { success: true, data: { clients: clientsList, projects: projectsList, users: usersList } };
   } catch (error: any) {
@@ -2862,11 +3048,14 @@ export async function getGlobalSearchData() {
 export async function quickAddClient(name: string, industry: string) {
   try {
     const session = await getAuthSession();
-    if (!session || !db) return { success: false };
+    if (!session || session.role !== "admin" || !db) return { success: false, error: "Unauthorized." };
+    const input = z.object({ name: z.string().trim().min(1).max(255), industry: z.string().trim().max(255) })
+      .safeParse({ name, industry });
+    if (!input.success) return invalidInput(input.error);
     await db.insert(schema.clients).values({
-      name,
-      ownerId: session.id as number,
-      details: JSON.stringify({ industry })
+      name: input.data.name,
+      ownerId: null,
+      details: JSON.stringify({ industry: input.data.industry })
     });
     return { success: true };
   } catch (e: any) { return { success: false, error: e.message }; }
@@ -2875,23 +3064,29 @@ export async function quickAddClient(name: string, industry: string) {
 export async function quickAddEmployee(name: string, role: string) {
   try {
     const session = await getAuthSession();
-    if (!session || !db) return { success: false };
-    const email = `${name.toLowerCase().replace(/\s+/g, '.')}@agency.com`;
+    if (!session || session.role !== "admin" || !db) return { success: false, error: "Unauthorized." };
+    const input = z.object({
+      name: z.string().trim().min(2).max(255),
+      role: z.string().trim().min(2).max(255),
+    }).safeParse({ name, role });
+    if (!input.success) return invalidInput(input.error);
+    const email = `${input.data.name.toLowerCase().replace(/[^a-z0-9]+/g, ".").replace(/^\.+|\.+$/g, "")}.${Date.now()}@pending.invalid`;
+    const unusablePassword = await bcrypt.hash(randomUUID(), 12);
     await db.insert(schema.users).values({
-      name,
+      name: input.data.name,
       email,
-      password: "password123", // Default placeholder password
-      systemRole: role,
+      password: unusablePassword,
+      systemRole: input.data.role,
       role: "employee"
     });
-    return { success: true };
+    return { success: true, invitationRequired: true };
   } catch (e: any) { return { success: false, error: e.message }; }
 }
 
 export async function quickAddProject(title: string, clientName: string, type: string) {
   try {
     const session = await getAuthSession();
-    if (!session || !db) return { success: false };
+    if (!session || session.role !== "admin" || !db) return { success: false, error: "Unauthorized." };
     // Find client ID
     const clients = await db.select().from(schema.clients).where(eq(schema.clients.name, clientName));
     const clientId = clients.length > 0 ? clients[0].id : null;
@@ -2948,7 +3143,7 @@ export async function quickAddExpense(amount: number, description: string) {
 export async function getFinanceDashboardData() {
   try {
     const session = await getAuthSession();
-    if (!session || !db) return { success: false, data: null };
+    if (!session || session.role !== "admin" || !db) return { success: false, data: null };
 
     // Get Invoices
     const allInvoices = await db.select().from(schema.invoices).orderBy(desc(schema.invoices.createdAt));
@@ -2993,7 +3188,7 @@ export async function getFinanceDashboardData() {
     });
 
     // We fetch user names to map them onto the expenses/timesheets
-    const users = await db.select().from(schema.users);
+    const users = await db.select(publicUserFields).from(schema.users);
     const userMap = users.reduce((acc, u) => {
       acc[u.id] = u.name;
       return acc;
@@ -3062,8 +3257,17 @@ export async function getDocuments() {
     const session = await getAuthSession();
     if (!session || !db) return { success: false, data: [] };
 
-    // Get documents from database
-    let dbDocs = await db.select().from(schema.documents).orderBy(desc(schema.documents.createdAt));
+    if (session.role === "client") return getClientDocuments();
+    let dbDocs;
+    if (session.role === "admin") {
+      dbDocs = await db.select().from(schema.documents).orderBy(desc(schema.documents.createdAt));
+    } else {
+      const projectResult = await getProjects();
+      const clientIds = Array.from(new Set((projectResult.data || []).map((p: any) => p.clientId).filter(Number.isInteger))) as number[];
+      dbDocs = clientIds.length
+        ? await db.select().from(schema.documents).where(inArray(schema.documents.clientId, clientIds)).orderBy(desc(schema.documents.createdAt))
+        : [];
+    }
 
     return { success: true, data: dbDocs };
   } catch (error: any) {
@@ -3075,7 +3279,7 @@ export async function getDocuments() {
 export async function createDocument(formData: FormData) {
   try {
     const session = await getAuthSession();
-    if (!session || !db) return { success: false, error: "Unauthorized." };
+    if (!session || session.role !== "admin" || !db) return { success: false, error: "Unauthorized." };
 
     const name = formData.get("name") as string;
     const clientName = formData.get("clientName") as string;
@@ -3083,6 +3287,19 @@ export async function createDocument(formData: FormData) {
     const size = formData.get("size") as string;
     const folder = formData.get("folder") as string;
     const file = formData.get("file") as File | null;
+    const [membership] = await db
+      .select({ organizationId: schema.organizationMemberships.organizationId })
+      .from(schema.organizationMemberships)
+      .where(
+        and(
+          eq(schema.organizationMemberships.userId, Number(session.id)),
+          eq(schema.organizationMemberships.status, "active")
+        )
+      )
+      .limit(1);
+    if (!membership) {
+      return { success: false, error: "No active organization membership." };
+    }
 
     let fileUrl: string | null = null;
     let finalSize = size || "1.0 MB";
@@ -3091,17 +3308,33 @@ export async function createDocument(formData: FormData) {
     if (file && typeof file === "object" && typeof file.arrayBuffer === "function") {
       const bytes = await file.arrayBuffer();
       const buffer = Buffer.from(bytes);
-
-      const uploadDir = path.join(process.cwd(), "public", "uploads");
-      if (!fs.existsSync(uploadDir)) {
-        fs.mkdirSync(uploadDir, { recursive: true });
-      }
-
-      const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
-      const filePath = path.join(uploadDir, safeName);
-      fs.writeFileSync(filePath, buffer);
-      
-      fileUrl = `/uploads/${safeName}`;
+      const stored = await uploadPrivateFile({
+        organizationId: membership.organizationId,
+        ownerUserId: Number(session.id),
+        data: buffer,
+        fileName: file.name,
+        mimeType: file.type,
+      });
+      await db.insert(schema.storageObjects).values({
+        organizationId: membership.organizationId,
+        objectKey: stored.key,
+        bucket: process.env.OBJECT_STORAGE_BUCKET!,
+        originalName: file.name.slice(0, 255),
+        contentType: file.type,
+        sizeBytes: stored.size,
+        checksumSha256: stored.sha256,
+        scanStatus: "clean",
+        visibility: clientName ? "client" : "organization",
+        entityType: "document",
+        uploadedById: Number(session.id),
+      });
+      const [object] = await db
+        .select({ id: schema.storageObjects.id })
+        .from(schema.storageObjects)
+        .where(eq(schema.storageObjects.objectKey, stored.key))
+        .limit(1);
+      if (!object) throw new Error("The uploaded object could not be registered.");
+      fileUrl = `/api/files/${object.id}`;
       finalName = file.name;
       
       const szBytes = buffer.length;
@@ -3119,7 +3352,15 @@ export async function createDocument(formData: FormData) {
     // Find client ID
     let clientId: number | null = null;
     if (clientName) {
-      const clients = await db.select().from(schema.clients).where(eq(schema.clients.name, clientName));
+      const clients = await db
+        .select()
+        .from(schema.clients)
+        .where(
+          and(
+            eq(schema.clients.name, clientName),
+            eq(schema.clients.organizationId, membership.organizationId)
+          )
+        );
       if (clients.length > 0) clientId = clients[0].id;
     }
 
@@ -3149,6 +3390,41 @@ export async function deleteDocument(id: number) {
     if (!session || session.role !== "admin") return { success: false, error: "Unauthorized." };
     if (!db) return { success: false, error: "Database not connected." };
 
+    const [document] = await db
+      .select({ url: schema.documents.url })
+      .from(schema.documents)
+      .where(eq(schema.documents.id, id))
+      .limit(1);
+    const objectIdMatch = document?.url?.match(/^\/api\/files\/([1-9]\d*)$/);
+    if (objectIdMatch) {
+      const [object] = await db
+        .select()
+        .from(schema.storageObjects)
+        .where(eq(schema.storageObjects.id, Number(objectIdMatch[1])))
+        .limit(1);
+      if (object) {
+        const [membership] = await db
+          .select({ id: schema.organizationMemberships.id })
+          .from(schema.organizationMemberships)
+          .where(
+            and(
+              eq(
+                schema.organizationMemberships.organizationId,
+                object.organizationId
+              ),
+              eq(schema.organizationMemberships.userId, Number(session.id)),
+              eq(schema.organizationMemberships.status, "active")
+            )
+          )
+          .limit(1);
+        if (!membership) return { success: false, error: "Forbidden." };
+        await deletePrivateFile(object.objectKey);
+        await db
+          .update(schema.storageObjects)
+          .set({ deletedAt: new Date() })
+          .where(eq(schema.storageObjects.id, object.id));
+      }
+    }
     await db.delete(schema.documents).where(eq(schema.documents.id, id));
 
     revalidatePath("/admin/documents");
@@ -3182,11 +3458,9 @@ export async function getReports() {
     const session = await getAuthSession();
     if (!session || !db) return { success: false, data: [] };
 
-    // Get documents that are in the "Reports" folder
-    let dbReports = await db.select()
-      .from(schema.documents)
-      .where(eq(schema.documents.folder, "Reports"))
-      .orderBy(desc(schema.documents.createdAt));
+    if (session.role === "client") return getClientReports();
+    const docs = await getDocuments();
+    const dbReports = (docs.data || []).filter((document: any) => document.folder === "Reports");
 
     return { success: true, data: dbReports };
   } catch (error: any) {
@@ -3198,7 +3472,7 @@ export async function getReports() {
 export async function createReport(title: string, type: string, clientName: string) {
   try {
     const session = await getAuthSession();
-    if (!session || !db) return { success: false, error: "Unauthorized." };
+    if (!session || session.role !== "admin" || !db) return { success: false, error: "Unauthorized." };
 
     const clients = await db.select().from(schema.clients).where(eq(schema.clients.name, clientName));
     const clientId = clients.length > 0 ? clients[0].id : null;
@@ -3225,14 +3499,14 @@ export async function createReport(title: string, type: string, clientName: stri
 export async function getReportsTrendAndAI() {
   try {
     const session = await getAuthSession();
-    if (!session || !db) return { success: false, data: null };
+    if (!session || session.role !== "admin" || !db) return { success: false, data: null };
 
     // Query databases
     const clientsList = await db.select().from(schema.clients);
     const projectsList = await db.select().from(schema.projects);
     const invoicesList = await db.select().from(schema.invoices);
     const timesheetsList = await db.select().from(schema.timesheets);
-    const usersList = await db.select().from(schema.users);
+    const usersList = await db.select(publicUserFields).from(schema.users);
 
     // Compute real last-6-months trend from DB records
     const now = new Date();
@@ -3410,11 +3684,18 @@ export async function getMetaCampaigns(projectId?: number) {
     if (!session) return { success: false, data: [] };
     if (!db) return { success: false, data: [] };
 
+    if (projectId && !(await canAccessProject(session, projectId))) return { success: false, data: [], error: "Forbidden." };
     let campaignsList;
     if (projectId) {
       campaignsList = await db.select().from(schema.metaCampaigns).where(eq(schema.metaCampaigns.projectId, projectId));
-    } else {
+    } else if (session.role === "admin") {
       campaignsList = await db.select().from(schema.metaCampaigns);
+    } else {
+      const scoped = await getProjects();
+      const projectIds = (scoped.data || []).map((project: any) => project.id);
+      campaignsList = projectIds.length
+        ? await db.select().from(schema.metaCampaigns).where(inArray(schema.metaCampaigns.projectId, projectIds))
+        : [];
     }
     return { success: true, data: campaignsList };
   } catch (error: any) {
@@ -3435,7 +3716,7 @@ export async function createMetaCampaign(data: {
 }) {
   try {
     const session = await getAuthSession();
-    if (!session) return { success: false, error: "Unauthorized." };
+    if (!session || session.role !== "admin") return { success: false, error: "Unauthorized." };
     if (!db) return { success: false, error: "Database not connected." };
 
     // Look up client by name
@@ -3483,7 +3764,7 @@ export async function createMetaCampaign(data: {
 export async function deleteMetaCampaign(campaignId: number) {
   try {
     const session = await getAuthSession();
-    if (!session) return { success: false, error: "Unauthorized." };
+    if (!session || session.role !== "admin") return { success: false, error: "Unauthorized." };
     if (!db) return { success: false, error: "Database not connected." };
 
     await db.delete(schema.metaCampaigns).where(eq(schema.metaCampaigns.id, campaignId));
@@ -3499,7 +3780,7 @@ export async function deleteMetaCampaign(campaignId: number) {
 export async function toggleMetaCampaignStatus(campaignId: number, status: "active" | "paused" | "draft") {
   try {
     const session = await getAuthSession();
-    if (!session) return { success: false, error: "Unauthorized." };
+    if (!session || session.role !== "admin") return { success: false, error: "Unauthorized." };
     if (!db) return { success: false, error: "Database not connected." };
 
     await db.update(schema.metaCampaigns).set({ status }).where(eq(schema.metaCampaigns.id, campaignId));
@@ -3515,38 +3796,9 @@ export async function toggleMetaCampaignStatus(campaignId: number, status: "acti
 export async function triggerMetaAPISync(projectId?: number) {
   try {
     const session = await getAuthSession();
-    if (!session) return { success: false, error: "Unauthorized." };
+    if (!session || session.role !== "admin") return { success: false, error: "Unauthorized." };
     if (!db) return { success: false, error: "Database not connected." };
-
-    let campaignsList;
-    if (projectId) {
-      campaignsList = await db.select().from(schema.metaCampaigns).where(eq(schema.metaCampaigns.projectId, projectId));
-    } else {
-      campaignsList = await db.select().from(schema.metaCampaigns);
-    }
-
-    for (const c of campaignsList) {
-      if (c.status !== "active") continue;
-      const spendDelta = Math.floor(Math.random() * 500) + 100;
-      const newSpend = c.spend + spendDelta;
-      const impDelta = Math.floor(Math.random() * 15000) + 5000;
-      const newImpressions = c.impressions + impDelta;
-      const clickDelta = Math.floor(Math.random() * 400) + 100;
-      const newClicks = c.clicks + clickDelta;
-      const newCtr = newImpressions > 0 ? (newClicks / newImpressions) * 100 : c.ctr;
-      const newRoas = Math.max(1.1, +(c.roas + (Math.random() * 0.4 - 0.2)).toFixed(2));
-
-      await db.update(schema.metaCampaigns).set({
-        spend: newSpend,
-        impressions: newImpressions,
-        clicks: newClicks,
-        ctr: newCtr,
-        roas: newRoas,
-      }).where(eq(schema.metaCampaigns.id, c.id));
-    }
-
-    revalidatePath("/admin/ads");
-    return { success: true };
+    return { success: false, error: "No verified Meta Ads integration is configured. Synthetic metrics are disabled." };
   } catch (error: any) {
     console.error("triggerMetaAPISync error:", error);
     return { success: false, error: error.message };
@@ -3555,8 +3807,15 @@ export async function triggerMetaAPISync(projectId?: number) {
 
 export async function triggerEmailNotification(recipient: string, subject: string, htmlContent: string) {
   try {
-    if (!recipient) return { success: false, error: "No recipient." };
-    const res = await sendEmail(recipient, subject, htmlContent);
+    const session = await getAuthSession();
+    if (!session || session.role !== "admin") return { success: false, error: "Unauthorized." };
+    const input = z.object({
+      recipient: z.email(),
+      subject: z.string().trim().min(1).max(200),
+      htmlContent: z.string().min(1).max(100_000),
+    }).safeParse({ recipient, subject, htmlContent });
+    if (!input.success) return invalidInput(input.error);
+    const res = await sendEmail(input.data.recipient, input.data.subject, input.data.htmlContent);
     if (res.skipped) {
       console.warn(`[Email] SMTP not configured — email to ${recipient} skipped.`);
     }
@@ -3568,6 +3827,9 @@ export async function triggerEmailNotification(recipient: string, subject: strin
 }
 
 export async function simulateStripePayment(invoiceId: number) {
+  if (!idSchema.safeParse(invoiceId).success) return { success: false, error: "Invalid invoice." };
+  return { success: false, error: "Simulated payments are disabled. Payment state must come from a verified gateway webhook or an administrator." };
+  /* Legacy implementation retained temporarily for UI compatibility; unreachable by design.
   try {
     const session = await getAuthSession();
     if (!session || !db) return { success: false, error: "Unauthorized." };
@@ -3591,7 +3853,7 @@ export async function simulateStripePayment(invoiceId: number) {
       targetId: invoiceId,
     });
 
-    const adminUsers = await db.select().from(schema.users).where(eq(schema.users.role, "admin"));
+    const adminUsers = await db.select({ id: schema.users.id, email: schema.users.email }).from(schema.users).where(eq(schema.users.role, "admin"));
     for (const admin of adminUsers) {
       await db.insert(schema.notifications).values({
         userId: admin.id,
@@ -3627,29 +3889,55 @@ export async function simulateStripePayment(invoiceId: number) {
     console.error("simulateStripePayment error:", error);
     return { success: false, error: error.message };
   }
+  */
 }
 
 export async function signContractSOW(projectId: number, signatureDataUrl: string) {
   try {
     const session = await getAuthSession();
-    if (!session || !db) return { success: false, error: "Unauthorized." };
+    if (!session || session.role !== "client" || !db) return { success: false, error: "Unauthorized." };
+    if (!(await canAccessProject(session, projectId))) return { success: false, error: "Forbidden." };
+    if (!/^data:image\/png;base64,[A-Za-z0-9+/=]+$/.test(signatureDataUrl) || signatureDataUrl.length > 1_500_000) {
+      return { success: false, error: "Signature must be a PNG smaller than 1 MB." };
+    }
 
     const base64Data = signatureDataUrl.replace(/^data:image\/\w+;base64,/, "");
     const buffer = Buffer.from(base64Data, "base64");
 
-    const uploadDir = path.join(process.cwd(), "public", "uploads", "signatures");
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-
-    const filename = `signature_proj_${projectId}_${Date.now()}.png`;
-    const filePath = path.join(uploadDir, filename);
-    fs.writeFileSync(filePath, buffer);
-    const sigUrl = `/uploads/signatures/${filename}`;
-
     const projectList = await db.select().from(schema.projects).where(eq(schema.projects.id, projectId));
     if (projectList.length === 0) return { success: false, error: "Project not found." };
     const project = projectList[0];
+    if (!project.organizationId) {
+      return { success: false, error: "Project organization is not configured." };
+    }
+    const stored = await uploadPrivateFile({
+      organizationId: project.organizationId,
+      ownerUserId: Number(session.id),
+      data: buffer,
+      fileName: `signature-project-${projectId}.png`,
+      mimeType: "image/png",
+    });
+    await db.insert(schema.storageObjects).values({
+      organizationId: project.organizationId,
+      objectKey: stored.key,
+      bucket: process.env.OBJECT_STORAGE_BUCKET!,
+      originalName: `signature-project-${projectId}.png`,
+      contentType: "image/png",
+      sizeBytes: stored.size,
+      checksumSha256: stored.sha256,
+      scanStatus: "clean",
+      visibility: "client",
+      entityType: "project_signature",
+      entityId: projectId,
+      uploadedById: Number(session.id),
+    });
+    const [object] = await db
+      .select({ id: schema.storageObjects.id })
+      .from(schema.storageObjects)
+      .where(eq(schema.storageObjects.objectKey, stored.key))
+      .limit(1);
+    if (!object) throw new Error("The signed document could not be registered.");
+    const sigUrl = `/api/files/${object.id}`;
 
     await db.update(schema.projects)
       .set({ contractLink: sigUrl })
@@ -3666,7 +3954,7 @@ export async function signContractSOW(projectId: number, signatureDataUrl: strin
       url: sigUrl,
     });
 
-    const adminUsers = await db.select().from(schema.users).where(eq(schema.users.role, "admin"));
+    const adminUsers = await db.select({ id: schema.users.id }).from(schema.users).where(eq(schema.users.role, "admin"));
     for (const admin of adminUsers) {
       await db.insert(schema.notifications).values({
         userId: admin.id,
@@ -3834,6 +4122,19 @@ export async function convertLeadToClient(id: number) {
 
 
 export async function generatePaymentLink(invoiceId: number, amount: number, clientEmail: string, description: string) {
+  const session = await getAuthSession();
+  if (!session || !db) return { success: false, error: "Unauthorized." };
+  const [invoice] = await db.select().from(schema.invoices).where(eq(schema.invoices.id, invoiceId)).limit(1);
+  if (!invoice || invoice.status === "paid" || invoice.amount <= 0) return { success: false, error: "Invoice is not payable." };
+  if (session.role === "client") {
+    const clientId = await getOwnedClientId(session);
+    if (!clientId || invoice.clientId !== clientId) return { success: false, error: "Invoice not found." };
+  } else if (session.role !== "admin") {
+    return { success: false, error: "Forbidden." };
+  }
+  amount = invoice.amount;
+  clientEmail = String(clientEmail || session.email || "").trim();
+  description = `Invoice ${invoice.invoiceNumber}`;
   let settings: any = null;
   if (db) {
     try {
@@ -3847,7 +4148,7 @@ export async function generatePaymentLink(invoiceId: number, amount: number, cli
   const keySecret = settings?.razorpayKeySecret || process.env.RAZORPAY_KEY_SECRET;
 
   if (!keyId || !keySecret) {
-    return { success: true, url: "https://checkout.razorpay.com/pay?mock=" + invoiceId };
+    return { success: false, error: "Razorpay is not configured." };
   }
 
   try {
@@ -3918,7 +4219,18 @@ export async function getAgencySettings() {
     if (!db) return { success: false, error: "Database not connected." };
 
     const settings = await db.query.agencySettings.findFirst();
-    return { success: true, data: settings };
+    if (!settings) return { success: true, data: null };
+    const { razorpayKeySecret, smtpPass, ...safeSettings } = settings;
+    return {
+      success: true,
+      data: {
+        ...safeSettings,
+        razorpayKeySecret: razorpayKeySecret ? "••••••••" : "",
+        smtpPass: smtpPass ? "••••••••" : "",
+        hasRazorpaySecret: !!razorpayKeySecret,
+        hasSmtpPassword: !!smtpPass,
+      },
+    };
   } catch (err: any) {
     return { success: false, error: err.message };
   }
@@ -3930,11 +4242,26 @@ export async function updateAgencySettings(data: Partial<typeof schema.agencySet
     if (!session || session.role !== "admin") return { success: false, error: "Unauthorized." };
     if (!db) return { success: false, error: "Database not connected." };
 
+    const allowedKeys = [
+      "agencyName", "agencyLogoUrl", "baseCurrency", "agencyEmail", "agencyPhone",
+      "agencyWebsite", "agencyAddress", "gstNumber", "invoiceTaxPercent",
+      "invoicePaymentTerms", "invoiceNotes", "bankDetails", "razorpayKeyId",
+      "razorpayKeySecret", "smtpHost", "smtpPort", "smtpUser", "smtpPass", "smtpFrom",
+    ] as const;
+    const sanitized: Record<string, unknown> = {};
+    for (const key of allowedKeys) {
+      const value = data[key];
+      if (value === undefined) continue;
+      if ((key === "razorpayKeySecret" || key === "smtpPass") && (value === "••••••••" || value === "")) continue;
+      sanitized[key] = typeof value === "string" ? value.trim() : value;
+    }
+    if (Object.keys(sanitized).length === 0) return { success: false, error: "No valid settings supplied." };
+
     const settings = await db.query.agencySettings.findFirst();
     if (settings) {
-      await db.update(schema.agencySettings).set(data).where(eq(schema.agencySettings.id, settings.id));
+      await db.update(schema.agencySettings).set(sanitized as any).where(eq(schema.agencySettings.id, settings.id));
     } else {
-      await db.insert(schema.agencySettings).values(data as any);
+      await db.insert(schema.agencySettings).values(sanitized as any);
     }
 
     revalidatePath("/admin/settings");

@@ -1,8 +1,7 @@
 "use server";
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { cookies } from "next/headers";
-import { decrypt } from "./auth";
+import { getCurrentUser } from "./auth";
 import { db } from "@/lib/db";
 import * as schema from "@/lib/schema";
 import { eq, desc, asc } from "drizzle-orm";
@@ -39,9 +38,8 @@ const AGENCY_SYSTEM_PROMPT = [
 ].join("\n");
 
 async function requireUser() {
-  const token = cookies().get("token")?.value;
-  const session = token ? await decrypt(token) : null;
-  if (!session?.id) return null;
+  const session = await getCurrentUser();
+  if (!session || (session.role !== "admin" && session.role !== "employee")) return null;
   return session;
 }
 
@@ -112,6 +110,9 @@ export async function sendChatMessage(message: string, chatId?: number): Promise
 
   const text = (message || "").trim();
   if (!text) return { success: false, error: "Empty message." };
+  if (text.length > 10_000 || (chatId !== undefined && (!Number.isSafeInteger(chatId) || chatId <= 0))) {
+    return { success: false, error: "Invalid message." };
+  }
 
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) return { success: false, error: "AI is not configured. Add GEMINI_API_KEY." };

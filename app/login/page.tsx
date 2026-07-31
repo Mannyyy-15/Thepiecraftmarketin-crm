@@ -10,6 +10,8 @@ export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [mfaCode, setMfaCode] = useState("");
+  const [mfaRequired, setMfaRequired] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
@@ -37,6 +39,7 @@ export default function LoginPage() {
     const formData = new FormData();
     formData.append("email", email);
     formData.append("password", password);
+    if (mfaCode) formData.append("mfaCode", mfaCode);
 
     try {
       const result = await login(null, formData);
@@ -58,6 +61,9 @@ export default function LoginPage() {
           }
         }, 1200);
       } else {
+        if ("mfaRequired" in result && result.mfaRequired) {
+          setMfaRequired(true);
+        }
         setToast({ 
           type: "error", 
           message: result.error || "Login failed. Please check credentials." 
@@ -105,6 +111,26 @@ export default function LoginPage() {
             <div className={`p-2 rounded-xl shrink-0 ${toast.type === "success" ? "bg-emerald-500/20 text-emerald-400" : "bg-rose-500/20 text-rose-400"}`}>
               {toast.type === "success" ? <ShieldCheck className="w-5 h-5" /> : <ShieldAlert className="w-5 h-5" />}
             </div>
+
+            {mfaRequired && (
+              <div className="space-y-2.5">
+                <label htmlFor="mfaCode" className="text-xs font-bold text-slate-300 ml-1">
+                  Verification code
+                </label>
+                <input
+                  id="mfaCode"
+                  name="mfaCode"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  required
+                  disabled={loading}
+                  value={mfaCode}
+                  onChange={(event) => setMfaCode(event.target.value)}
+                  placeholder="6-digit code or recovery code"
+                  className="w-full px-4 py-3.5 bg-slate-900/50 border border-slate-700/50 rounded-2xl text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 disabled:opacity-50 transition-all font-medium text-sm"
+                />
+              </div>
+            )}
             <div className="flex flex-col">
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">System Alert</span>
               <span className="text-sm font-semibold pr-2 mt-0.5">{toast.message}</span>
@@ -236,10 +262,10 @@ export default function LoginPage() {
           <motion.div variants={itemVariants} className="mt-10 flex flex-col items-center lg:items-start space-y-4">
             <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 bg-slate-900/50 border border-slate-800 rounded-full px-3 py-1.5">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-              <span>AES-256 Encrypted Connection</span>
+              <span>Secure signed session</span>
             </div>
             <p className="text-xs text-slate-600 text-center lg:text-left">
-              By signing in, you agree to ThePieCraft CRM's <br className="hidden lg:block"/>
+              By signing in, you agree to ThePieCraft CRM&apos;s <br className="hidden lg:block"/>
               <a href="https://thepiecraftmarketing.com/terms" target="_blank" rel="noreferrer" className="text-slate-400 hover:text-slate-300 underline underline-offset-2 transition-colors">Terms of Service</a> and <a href="https://thepiecraftmarketing.com/privacy" target="_blank" rel="noreferrer" className="text-slate-400 hover:text-slate-300 underline underline-offset-2 transition-colors">Privacy Policy</a>.
             </p>
           </motion.div>
@@ -281,7 +307,7 @@ export default function LoginPage() {
             </h2>
             
             <p className="text-slate-400 leading-relaxed mb-8">
-              ThePieCraft CRM unifies your team's workflow, client communications, and performance analytics into one seamless, secure platform.
+              ThePieCraft CRM unifies your team&apos;s workflow, client communications, and performance analytics into one seamless, secure platform.
             </p>
 
             <div className="space-y-4">

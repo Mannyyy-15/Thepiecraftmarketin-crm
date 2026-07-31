@@ -33,7 +33,6 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { getReports, createDocument, deleteDocument, getReportsTrendAndAI, getClients, getProjects } from "@/app/actions/crm";
-import { generateReportPDF } from "@/lib/reportGenerator";
 import { DocumentPreviewModal } from "@/components/ui/DocumentPreviewModal";
 
 interface ToastMessage {
@@ -81,10 +80,12 @@ export default function ReportsPage() {
 
   const fetchReportsData = async () => {
     setIsLoading(true);
-    const repRes = await getReports();
-    const trendRes = await getReportsTrendAndAI();
-    const clientRes = await getClients();
-    const projRes = await getProjects();
+    const [repRes, trendRes, clientRes, projRes] = await Promise.all([
+      getReports(),
+      getReportsTrendAndAI(),
+      getClients(),
+      getProjects(),
+    ]);
     
     if (repRes && repRes.success && repRes.data) {
       setReports(repRes.data);
@@ -119,6 +120,7 @@ export default function ReportsPage() {
     const formattedTitle = newTitle.includes(".") ? newTitle.trim() : `${newTitle.trim()}.pdf`;
 
     try {
+      const { generateReportPDF } = await import("@/lib/reportGenerator");
       const isAgency = newScope === "Agency";
       const metrics = [
         { label: "Active Projects", value: isAgency ? projectsList.length : 1 },

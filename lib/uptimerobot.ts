@@ -2,33 +2,7 @@ export async function fetchUptimeMonitors() {
   const apiKey = process.env.UPTIMEROBOT_API_KEY;
   
   if (!apiKey) {
-    // Return a mock result to demonstrate the functionality if key is missing
-    // We add a simulated delay to make it feel like a real API call
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    return {
-      success: true,
-      monitors: [
-        {
-          url: "https://thepiecraft.com",
-          uptimeRatio: 99.99,
-          averageResponseTime: 142,
-          status: 2 // 2 = up
-        },
-        {
-          url: "https://mannyyy.com",
-          uptimeRatio: 99.95,
-          averageResponseTime: 210,
-          status: 2 
-        },
-        {
-          url: "https://client-demo.com",
-          uptimeRatio: 98.40,
-          averageResponseTime: 450,
-          status: 2 
-        }
-      ]
-    };
+    return { success: false, error: "Uptime monitoring is not configured." };
   }
 
   try {
@@ -56,7 +30,8 @@ export async function fetchUptimeMonitors() {
     }));
 
     return { success: true, monitors };
-  } catch (error: any) {
-    return { success: false, error: error.message };
+  } catch (error) {
+    console.error("[UptimeRobot] Monitor fetch failed:", error);
+    return { success: false, error: "Could not load uptime monitoring data." };
   }
 }

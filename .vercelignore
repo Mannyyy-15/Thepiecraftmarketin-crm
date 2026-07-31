@@ -1,0 +1,11 @@
+.git
+.next
+.openai
+.vercel
+android
+ios
+node_modules
+scratch
+tsconfig.tsbuildinfo
+*.apk
+*.aab

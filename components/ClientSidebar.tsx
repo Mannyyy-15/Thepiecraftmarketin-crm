@@ -13,12 +13,14 @@ import {
   LifeBuoy,
   X,
   LogOut,
+  ShieldCheck,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/components/ui/cn";
 import { Avatar } from "@/components/ui/Avatar";
 import { LogoutConfirmModal } from "@/components/ui/LogoutConfirmModal";
-import { getCurrentUser, logout } from "@/app/actions/auth";
+import { logout } from "@/app/actions/auth";
+import { clearCurrentUserCache, getCurrentUserCached } from "@/lib/currentUserClient";
 
 const navigation = [
   { name: "Overview", href: "/client", icon: LayoutDashboard },
@@ -27,6 +29,7 @@ const navigation = [
   { name: "Invoices", href: "/client/invoices", icon: CircleDollarSign },
   { name: "Messages", href: "/client/messages", icon: MessageSquareText },
   { name: "Files", href: "/client/documents", icon: Files },
+  { name: "Security", href: "/client/security", icon: ShieldCheck },
 ];
 
 function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
@@ -37,7 +40,7 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   useEffect(() => {
-    getCurrentUser().then((res) => {
+    getCurrentUserCached().then((res) => {
       if (res) {
         setUser({ name: res.name as string, email: res.email as string });
       }
@@ -48,6 +51,7 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
     setIsLoggingOut(true);
     const res = await logout();
     if (res.success) {
+      clearCurrentUserCache();
       router.push("/login");
     }
     setIsLoggingOut(false);
@@ -86,8 +90,9 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
                 <Link
                   href={item.href}
                   onClick={onNavigate}
+                  aria-current={isActive ? "page" : undefined}
                   className={cn(
-                    "group relative flex items-center gap-x-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all cursor-pointer",
+                    "group relative flex min-h-11 items-center gap-x-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all cursor-pointer",
                     isActive
                       ? "bg-portal-50 dark:bg-portal-500/10 text-portal-700 dark:text-portal-300"
                       : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-900"
@@ -120,7 +125,7 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
               Your account team is one click away.
             </p>
-            <button className="mt-3 w-full rounded-lg bg-portal-600 hover:bg-portal-700 text-white px-3 py-1.5 text-xs font-semibold transition-colors cursor-pointer">
+            <button className="mt-3 min-h-11 w-full rounded-lg bg-portal-600 hover:bg-portal-700 text-white px-3 py-2 text-xs font-semibold transition-colors cursor-pointer">
               Message us
             </button>
           </div>
@@ -141,7 +146,8 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
         </div>
         <button
           onClick={() => setShowLogoutModal(true)}
-          className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-all cursor-pointer shrink-0"
+          className="icon-button text-slate-500 hover:text-rose-600 hover:bg-rose-50 dark:text-slate-300 dark:hover:bg-rose-950/20 transition-all cursor-pointer"
+          aria-label="Log out"
           title="Log Out"
         >
           <LogOut className="h-4.5 w-4.5" />
@@ -190,7 +196,7 @@ export default function ClientSidebar({
             >
               <button
                 onClick={onClose}
-                className="absolute top-4 right-4 z-10 h-9 w-9 rounded-xl flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                className="icon-button absolute top-4 right-4 z-10 text-slate-500 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
                 aria-label="Close menu"
               >
                 <X className="h-5 w-5" />

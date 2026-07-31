@@ -15,7 +15,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { getCurrentUser } from "@/app/actions/auth";
+import { getCurrentUserCached } from "@/lib/currentUserClient";
 import {
   getFreshUserProfile,
   getTodayAttendance,
@@ -23,9 +23,71 @@ import {
   punchOut,
 } from "@/app/actions/crm";
 import { getValidatedLocation } from "@/lib/getLocation";
-import { Capacitor } from "@capacitor/core";
-import { NativeBiometric } from "@capgo/capacitor-native-biometric";
 import SlideToPunch from "@/components/SlideToPunch";
+
+function ShiftTimerDigits({ attendance, isLoading }: { attendance: any; isLoading: boolean }) {
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+
+  useEffect(() => {
+    const punchInTime = attendance?.punchInTime;
+    const punchOutTime = attendance?.punchOutTime;
+    if (!punchInTime) {
+      setElapsedSeconds(0);
+      return;
+    }
+
+    const startedAt = new Date(punchInTime).getTime();
+    if (punchOutTime) {
+      setElapsedSeconds(Math.max(0, Math.floor((new Date(punchOutTime).getTime() - startedAt) / 1000)));
+      return;
+    }
+
+    const update = () => setElapsedSeconds(Math.max(0, Math.floor((Date.now() - startedAt) / 1000)));
+    update();
+    const interval = window.setInterval(update, 1000);
+    return () => window.clearInterval(interval);
+  }, [attendance?.punchInTime, attendance?.punchOutTime]);
+
+  const isLive = Boolean(attendance?.punchInTime && !attendance?.punchOutTime);
+  const values = [
+    { val: Math.floor(elapsedSeconds / 3600), label: "HRS" },
+    { val: Math.floor((elapsedSeconds % 3600) / 60), label: "MIN" },
+    { val: elapsedSeconds % 60, label: "SEC" },
+  ];
+
+  return (
+    <div className="flex items-center gap-2 sm:gap-3 lg:gap-4">
+      {values.map((item, i) => (
+        <div key={item.label} className="flex items-center gap-2 sm:gap-3 lg:gap-4">
+          {i > 0 && (
+            <span className={`text-2xl sm:text-3xl lg:text-4xl font-black select-none mb-4 transition-opacity ${
+              isLoading ? "text-slate-700" : isLive ? "text-emerald-500/60 animate-pulse" : "text-slate-600/50"
+            }`}>:</span>
+          )}
+          <div className="flex flex-col items-center gap-1.5">
+            <div className={`
+              relative rounded-2xl text-center font-mono font-black tabular-nums select-none
+              px-3 py-3 sm:px-5 sm:py-4 lg:px-6 lg:py-5
+              min-w-[52px] sm:min-w-[80px] lg:min-w-[104px]
+              text-3xl sm:text-5xl lg:text-6xl
+              border shadow-inner transition-all duration-300
+              bg-slate-900/80 dark:bg-[#222226]
+              border-slate-700/50 dark:border-slate-800/60
+              ${isLoading ? "text-slate-700 animate-pulse" : "text-white"}
+              ${!isLoading && isLive && item.label === "SEC" ? "text-emerald-300" : ""}
+            `}>
+              {item.val.toString().padStart(2, "0")}
+              <span className="absolute inset-x-0 top-0 h-px bg-white/[0.04] rounded-t-2xl" />
+            </div>
+            <span className="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-widest text-slate-500">
+              {item.label}
+            </span>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default function EmployeeDashboardPage() {
   const { toast } = useToast();
@@ -33,15 +95,17 @@ export default function EmployeeDashboardPage() {
   const [user, setUser] = useState<any>(null);
   const [todayAttendance, setTodayAttendance] = useState<any>(null);
   const [attMessage, setAttMessage] = useState<string | null>(null);
-  const [timerSeconds, setTimerSeconds] = useState(0);
   const [isPunching, setIsPunching] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  const [isNativeApp, setIsNativeApp] = useState(true);
+  const [isNativeApp, setIsNativeApp] = useState(false);
 
   useEffect(() => {
-    // Reliably check if running inside a native Capacitor app
-    setIsNativeApp(Capacitor.isNativePlatform());
+    let active = true;
+    import("@capacitor/core").then(({ Capacitor }) => {
+      if (active) setIsNativeApp(Capacitor.isNativePlatform());
+    });
+    return () => { active = false; };
   }, []);
 
   const loadDashboardData = async () => {
@@ -54,7 +118,7 @@ export default function EmployeeDashboardPage() {
       if (profileRes.success && profileRes.data) {
         setUser(profileRes.data);
       } else {
-        const currentUser = await getCurrentUser() as any;
+        const currentUser = await getCurrentUserCached() as any;
         if (currentUser) setUser(currentUser);
       }
       if (attRes.success && attRes.data) {
@@ -70,23 +134,6 @@ export default function EmployeeDashboardPage() {
   };
 
   useEffect(() => { loadDashboardData(); }, []);
-
-  useEffect(() => {
-    let intervalId: any;
-    if (todayAttendance?.punchInTime && !todayAttendance?.punchOutTime) {
-      const punchInDate = new Date(todayAttendance.punchInTime);
-      const update = () => setTimerSeconds(Math.max(0, Math.floor((Date.now() - punchInDate.getTime()) / 1000)));
-      update();
-      intervalId = setInterval(update, 1000);
-    } else if (todayAttendance?.punchInTime && todayAttendance?.punchOutTime) {
-      setTimerSeconds(Math.max(0, Math.floor(
-        (new Date(todayAttendance.punchOutTime).getTime() - new Date(todayAttendance.punchInTime).getTime()) / 1000
-      )));
-    } else {
-      setTimerSeconds(0);
-    }
-    return () => { if (intervalId) clearInterval(intervalId); };
-  }, [todayAttendance]);
 
   const handlePunchInAction = async () => {
     setIsPunching(true);
@@ -141,6 +188,7 @@ export default function EmployeeDashboardPage() {
 
     if (isNativeApp) {
       try {
+        const { NativeBiometric } = await import("@capgo/capacitor-native-biometric");
         const result = await NativeBiometric.isAvailable();
         if (result.isAvailable) {
           await NativeBiometric.verifyIdentity({
@@ -160,11 +208,6 @@ export default function EmployeeDashboardPage() {
     if (!todayAttendance) await handlePunchInAction();
     else if (!todayAttendance.punchOutTime) await handlePunchOutAction();
   };
-
-  const hours = Math.floor(timerSeconds / 3600);
-  const minutes = Math.floor((timerSeconds % 3600) / 60);
-  const seconds = timerSeconds % 60;
-  const pad = (n: number) => n.toString().padStart(2, "0");
 
   const todayStr = new Date().toLocaleDateString("en-US", {
     weekday: "long", day: "numeric", month: "long", year: "numeric",
@@ -253,42 +296,7 @@ export default function EmployeeDashboardPage() {
               </div>
 
               {/* ── Digit display ─────────────────────────── */}
-              <div className="flex items-center gap-2 sm:gap-3 lg:gap-4">
-                {([
-                  { val: hours, label: "HRS" },
-                  { val: minutes, label: "MIN" },
-                  { val: seconds, label: "SEC" },
-                ] as const).map((item, i) => (
-                  <div key={item.label} className="flex items-center gap-2 sm:gap-3 lg:gap-4">
-                    {i > 0 && (
-                      <span className={`text-2xl sm:text-3xl lg:text-4xl font-black select-none mb-4 transition-opacity ${
-                        isLoading ? "text-slate-700" : isPunchedIn ? "text-emerald-500/60 animate-pulse" : "text-slate-600/50"
-                      }`}>:</span>
-                    )}
-                    <div className="flex flex-col items-center gap-1.5">
-                      {/* Digit box */}
-                      <div className={`
-                        relative rounded-2xl text-center font-mono font-black tabular-nums select-none
-                        px-3 py-3 sm:px-5 sm:py-4 lg:px-6 lg:py-5
-                        min-w-[52px] sm:min-w-[80px] lg:min-w-[104px]
-                        text-3xl sm:text-5xl lg:text-6xl
-                        border shadow-inner transition-all duration-300
-                        bg-slate-900/80 dark:bg-[#222226]
-                        border-slate-700/50 dark:border-slate-800/60
-                        ${isLoading ? "text-slate-700 animate-pulse" : "text-white"}
-                        ${!isLoading && isPunchedIn && item.label === "SEC" ? "text-emerald-300" : ""}
-                      `}>
-                        {pad(item.val)}
-                        {/* Inner top highlight */}
-                        <span className="absolute inset-x-0 top-0 h-px bg-white/[0.04] rounded-t-2xl" />
-                      </div>
-                      <span className="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-widest text-slate-500">
-                        {item.label}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <ShiftTimerDigits attendance={todayAttendance} isLoading={isLoading} />
 
               {/* Shift schedule pill — inside clock card */}
               <div className="flex items-center gap-2 flex-wrap justify-center">
@@ -374,7 +382,7 @@ export default function EmployeeDashboardPage() {
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 dark:text-slate-500">
-                        Today's Activity
+                        Today&apos;s Activity
                       </p>
                       <p className="text-sm font-bold text-slate-800 dark:text-slate-100 mt-0.5 leading-snug">
                         {todayStr}

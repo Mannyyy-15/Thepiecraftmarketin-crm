@@ -4,7 +4,6 @@ import { useEffect } from "react";
 import { isCapacitor } from "./capacitor";
 import { registerFcmToken } from "@/app/actions/crm";
 import { useRouter } from "next/navigation";
-import { Capacitor } from "@capacitor/core";
 
 export function useLocalNotifications() {
   const router = useRouter();
@@ -30,7 +29,10 @@ export function useLocalNotifications() {
 
     const initPush = async () => {
       try {
-        const { PushNotifications } = await import("@capacitor/push-notifications");
+        const [{ PushNotifications }, { Capacitor }] = await Promise.all([
+          import("@capacitor/push-notifications"),
+          import("@capacitor/core"),
+        ]);
 
         // Create notification channel for Android before requesting permissions
         if (Capacitor.getPlatform() === "android") {

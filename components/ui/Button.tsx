@@ -22,10 +22,10 @@ const variants: Record<Variant, string> = {
 };
 
 const sizes: Record<Size, string> = {
-  sm:   "h-8 px-3 text-xs gap-1.5",
-  md:   "h-9 px-3.5 text-[13px] gap-1.5",
-  lg:   "h-10 px-4 text-sm gap-2",
-  icon: "h-9 w-9 p-0",
+  sm:   "min-h-11 px-3 text-xs gap-1.5 sm:min-h-9",
+  md:   "min-h-11 px-3.5 text-[13px] gap-1.5",
+  lg:   "min-h-12 px-4 text-sm gap-2",
+  icon: "h-11 w-11 p-0",
 };
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -39,7 +39,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       ref={ref}
       className={cn(
         "inline-flex items-center justify-center rounded-md font-medium",
-        "transition-colors duration-100",
+        "transition-colors duration-150 touch-manipulation",
         "disabled:opacity-50 disabled:pointer-events-none",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-[#161618]",
         "cursor-pointer select-none",

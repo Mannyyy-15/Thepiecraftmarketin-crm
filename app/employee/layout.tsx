@@ -18,11 +18,12 @@ import {
   X,
   ChevronRight,
   User,
+  ShieldCheck,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import EmployeeSidebar from "@/components/EmployeeSidebar";
 import EmployeeTopNav from "@/components/EmployeeTopNav";
-import { getCurrentUser } from "@/app/actions/auth";
+import { getCurrentUserCached } from "@/lib/currentUserClient";
 import { useLocalNotifications } from "@/lib/useLocalNotifications";
 
 export default function DashboardLayout({
@@ -38,12 +39,12 @@ export default function DashboardLayout({
 
   // Load employee profile to fetch role-specific tabs dynamically
   useEffect(() => {
-    getCurrentUser().then((res) => {
+    getCurrentUserCached().then((res) => {
       if (res) {
         setUser({
           name: res.name as string,
           email: res.email as string,
-          systemRole: (res.systemRole || "Web Developer") as string
+          systemRole: (res as typeof res & { systemRole?: string }).systemRole || "Web Developer"
         });
       }
     });
@@ -69,6 +70,7 @@ export default function DashboardLayout({
     { name: "Documents", href: "/employee/documents", icon: Files, desc: "Files & Contracts" },
     { name: "Clients", href: "/employee/clients", icon: Users, desc: "Client Directory" },
     { name: "Projects", href: "/employee/projects", icon: FolderKanban, desc: "Project Board" },
+    { name: "Security", href: "/employee/security", icon: ShieldCheck, desc: "MFA & Devices" },
   ];
 
   // Check if "Others" section is active
@@ -91,13 +93,13 @@ export default function DashboardLayout({
         <EmployeeTopNav />
 
         {/* Main Content — pb-28 on mobile to clear the floating nav */}
-        <main className="flex-1 overflow-y-auto pb-28 lg:pb-0">
+        <main id="main-content" className="mobile-content-safe flex-1 overflow-y-auto lg:pb-0">
           <div className="p-4 sm:p-6 lg:p-6">{children}</div>
         </main>
 
         {/* ── FLOATING Mobile Bottom Navigation Bar ── */}
-        <div className="lg:hidden fixed bottom-4 left-4 right-4 z-40 select-none">
-          <nav className="bg-white/95 dark:bg-slate-950/95 backdrop-blur-2xl border border-slate-200/70 dark:border-slate-800/70 rounded-[26px] shadow-[0_8px_40px_rgba(0,0,0,0.14)] dark:shadow-[0_8px_40px_rgba(0,0,0,0.45)]">
+        <div className="mobile-nav-safe lg:hidden fixed left-4 right-4 z-40 select-none">
+          <nav aria-label="Primary navigation" className="bg-white/95 dark:bg-slate-950/95 backdrop-blur-2xl border border-slate-200/70 dark:border-slate-800/70 rounded-[26px] shadow-[0_8px_40px_rgba(0,0,0,0.14)] dark:shadow-[0_8px_40px_rgba(0,0,0,0.45)]">
             <div className="flex items-center justify-around h-16 px-2">
               
               {/* Main 4 Tabs */}
@@ -113,6 +115,7 @@ export default function DashboardLayout({
                     <Link
                       key={tab.href}
                       href={tab.href}
+                      aria-current={isActive ? "page" : undefined}
                       className="flex flex-col items-center justify-center flex-1 h-full gap-0.5 relative group transition-all duration-200"
                     >
                       {/* Elevated center home button */}
@@ -136,6 +139,7 @@ export default function DashboardLayout({
                   <Link
                     key={tab.href}
                     href={tab.href}
+                    aria-current={isActive ? "page" : undefined}
                     className="flex flex-col items-center justify-center flex-1 h-full gap-0.5 relative group transition-all duration-200"
                   >
                     {/* Self-contained pill — always centered on this tab's content */}
@@ -174,6 +178,9 @@ export default function DashboardLayout({
               {/* Tab 5: Others */}
               <button
                 onClick={() => setShowOthersDrawer(true)}
+                aria-label="Open more navigation options"
+                aria-expanded={showOthersDrawer}
+                aria-controls="employee-more-navigation"
                 className="flex flex-col items-center justify-center flex-1 h-full gap-0.5 relative bg-transparent border-none outline-none cursor-pointer group transition-all duration-200"
               >
                 <AnimatePresence>
@@ -213,7 +220,7 @@ export default function DashboardLayout({
         {/* ── Slide-Up Bottom Drawer ── */}
         <AnimatePresence>
           {showOthersDrawer && (
-            <div className="lg:hidden fixed inset-0 z-50 flex flex-col justify-end">
+            <div id="employee-more-navigation" className="lg:hidden fixed inset-0 z-50 flex flex-col justify-end" role="dialog" aria-modal="true" aria-label="More navigation">
               {/* Backdrop */}
               <motion.div
                 initial={{ opacity: 0 }}

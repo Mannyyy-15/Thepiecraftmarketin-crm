@@ -26,26 +26,27 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Progress } from "@/components/ui/Progress";
-import { getCurrentUser } from "@/app/actions/auth";
-import { getClientDashboardData, getClientInvoices } from "@/app/actions/crm";
+import { getCurrentUserCached } from "@/lib/currentUserClient";
+import { getClientDashboardData } from "@/app/actions/crm";
 import { getClientProjectStatusVariant, getProjectStatusLabel } from "@/lib/statusHelpers";
 
 export default function ClientOverviewPage() {
   const [user, setUser] = useState<{ name?: string; email?: string } | null>(null);
-  const [dashboardData, setDashboardData] = useState<{ projects: any[]; actionItems: any[]; upcomingMilestones: any[] } | null>(null);
+  const [dashboardData, setDashboardData] = useState<{ projects: any[]; actionItems: any[]; upcomingMilestones: any[]; pendingInvoices: any[] } | null>(null);
   const [invoices, setInvoices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
-      const [u, dashRes, invRes] = await Promise.all([
-        getCurrentUser(),
+      const [u, dashRes] = await Promise.all([
+        getCurrentUserCached(),
         getClientDashboardData(),
-        getClientInvoices(),
       ]);
       if (u) setUser({ name: u.name as string, email: u.email as string });
-      if (dashRes.success && dashRes.data) setDashboardData(dashRes.data);
-      if (invRes.success) setInvoices(invRes.data ?? []);
+      if (dashRes.success && dashRes.data) {
+        setDashboardData(dashRes.data);
+        setInvoices(dashRes.data.pendingInvoices ?? []);
+      }
       setLoading(false);
     })();
   }, []);

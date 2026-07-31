@@ -19,8 +19,7 @@ import {
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Avatar } from "@/components/ui/Avatar";
-import { ThemeToggle } from "@/components/ui/ThemeToggle";
-import { getCurrentUser } from "@/app/actions/auth";
+import { getCurrentUserCached } from "@/lib/currentUserClient";
 import { getMyNotifications, markAllNotificationsRead, dismissNotification } from "@/app/actions/crm";
 import NotificationPanel from "@/components/NotificationPanel";
 
@@ -51,7 +50,7 @@ export default function PortalTopNav({ onMenuClick }: { onMenuClick?: () => void
   const [user, setUser] = useState<{ name: string; email: string } | null>(null);
 
   useEffect(() => {
-    getCurrentUser().then((res) => {
+    getCurrentUserCached().then((res) => {
       if (res) {
         setUser({ name: res.name as string, email: res.email as string });
       }
@@ -64,13 +63,31 @@ export default function PortalTopNav({ onMenuClick }: { onMenuClick?: () => void
   const hasUnread = notifications.some((n) => !n.read);
 
   useEffect(() => {
+    let timeout: ReturnType<typeof setTimeout> | undefined;
+    let stopped = false;
+    let running = false;
     const fetchNotifs = async () => {
       const res = await getMyNotifications();
       if (res.success && res.data) setNotifications(res.data);
     };
-    fetchNotifs();
-    const interval = setInterval(fetchNotifs, 30000);
-    return () => clearInterval(interval);
+    const poll = async () => {
+      if (stopped || running || document.visibilityState !== "visible") return;
+      running = true;
+      try { await fetchNotifs(); } catch { /* keep polling resilient */ } finally { running = false; }
+      if (!stopped && document.visibilityState === "visible") timeout = setTimeout(poll, 30_000);
+    };
+    const handleVisibilityChange = () => {
+      if (timeout) clearTimeout(timeout);
+      timeout = undefined;
+      if (document.visibilityState === "visible") void poll();
+    };
+    void poll();
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      stopped = true;
+      if (timeout) clearTimeout(timeout);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
   }, []);
 
   const handleMarkAllRead = async () => {
@@ -244,29 +261,27 @@ export default function PortalTopNav({ onMenuClick }: { onMenuClick?: () => void
               
               <button
                 onClick={() => { setActiveModal("project"); setShowQuickActions(false); }}
-                className="w-full text-left px-2.5 py-2 text-xs font-semibold rounded-xl text-slate-700 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors flex items-center gap-2 cursor-pointer"
+                className="w-full text-left px-2.5 py-2 text-xs font-semibold rounded-xl text-slate-300 hover:bg-indigo-500/10 hover:text-indigo-300 transition-colors flex items-center gap-2 cursor-pointer"
               >
                 <Briefcase className="h-3.5 w-3.5" /> Request Project
               </button>
 
               <button
                 onClick={() => { setActiveModal("upload"); setShowQuickActions(false); }}
-                className="w-full text-left px-2.5 py-2 text-xs font-semibold rounded-xl text-slate-700 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors flex items-center gap-2 cursor-pointer"
+                className="w-full text-left px-2.5 py-2 text-xs font-semibold rounded-xl text-slate-300 hover:bg-indigo-500/10 hover:text-indigo-300 transition-colors flex items-center gap-2 cursor-pointer"
               >
                 <Upload className="h-3.5 w-3.5" /> Submit Document / Asset
               </button>
 
               <button
                 onClick={() => { setActiveModal("message"); setShowQuickActions(false); }}
-                className="w-full text-left px-2.5 py-2 text-xs font-semibold rounded-xl text-slate-700 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors flex items-center gap-2 cursor-pointer"
+                className="w-full text-left px-2.5 py-2 text-xs font-semibold rounded-xl text-slate-300 hover:bg-indigo-500/10 hover:text-indigo-300 transition-colors flex items-center gap-2 cursor-pointer"
               >
                 <MessageSquare className="h-3.5 w-3.5" /> Send Account Message
               </button>
             </div>
           )}
         </div>
-
-        <ThemeToggle />
 
         {/* Bell Notifications */}
         <div className="relative">
@@ -372,7 +387,7 @@ export default function PortalTopNav({ onMenuClick }: { onMenuClick?: () => void
 
               {filteredSearch.length === 0 && (
                 <div className="p-8 text-center text-xs text-slate-400">
-                  No matching deliverables found for "{searchQuery}".
+                  No matching deliverables found for &quot;{searchQuery}&quot;.
                 </div>
               )}
             </div>

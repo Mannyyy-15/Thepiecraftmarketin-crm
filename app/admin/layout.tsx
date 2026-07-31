@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -21,6 +20,9 @@ import {
   Settings,
   X,
   ChevronRight,
+  Workflow,
+  PlugZap,
+  ShieldCheck,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import AdminSidebar from "@/components/AdminSidebar";
@@ -32,11 +34,14 @@ const drawerOptions = [
   { name: "Leads", href: "/admin/leads", icon: Target, desc: "Sales Pipeline" },
   { name: "Meta Ads", href: "/admin/ads", icon: BarChart3, desc: "Ad Campaigns" },
   { name: "Website Dev", href: "/admin/website-dev", icon: Code2, desc: "Dev Projects" },
+  { name: "Agency Ops", href: "/admin/agency-operations", icon: Workflow, desc: "Delivery Workflows" },
+  { name: "Integrations", href: "/admin/integrations", icon: PlugZap, desc: "Marketing Data" },
   { name: "Reports", href: "/admin/reports", icon: FilePieChart, desc: "Analytics" },
   { name: "Finance", href: "/admin/finance", icon: CircleDollarSign, desc: "Billing & Finance" },
   { name: "Invoices", href: "/admin/invoices", icon: Receipt, desc: "Create & Send Invoices" },
   { name: "Documents", href: "/admin/documents", icon: Files, desc: "Files & Contracts" },
   { name: "Settings", href: "/admin/settings", icon: Settings, desc: "System Settings" },
+  { name: "Security", href: "/admin/security", icon: ShieldCheck, desc: "MFA & Devices" },
 ];
 
 const mainNavTabs = [
@@ -58,26 +63,19 @@ export default function DashboardLayout({
 
   useLocalNotifications();
 
-  // Auto-refresh server components every 30 s so data stays live
-  const router = useRouter();
-  useEffect(() => {
-    const interval = setInterval(() => router.refresh(), 30_000);
-    return () => clearInterval(interval);
-  }, [router]);
-
   return (
     <div className="flex h-screen overflow-hidden bg-background">
       <AdminSidebar />
       <div className="flex flex-1 flex-col overflow-hidden relative">
         <TopNav />
 
-        <main className="flex-1 overflow-y-auto pb-28 lg:pb-0">
+        <main id="main-content" className="mobile-content-safe flex-1 overflow-y-auto lg:pb-0">
           <div className="p-4 sm:p-6 lg:p-6">{children}</div>
         </main>
 
         {/* Floating Mobile Bottom Navigation */}
-        <div className="lg:hidden fixed bottom-4 left-4 right-4 z-40 select-none">
-          <nav className="bg-white/95 dark:bg-[#1f1f1f]/95 backdrop-blur-2xl border border-[#f0f0f2] dark:border-[#303030] rounded-[28px] shadow-[0_4px_24px_rgba(0,0,0,0.10)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.5)]">
+        <div className="mobile-nav-safe lg:hidden fixed left-4 right-4 z-40 select-none">
+          <nav aria-label="Primary navigation" className="bg-white/95 dark:bg-[#1f1f1f]/95 backdrop-blur-2xl border border-[#f0f0f2] dark:border-[#303030] rounded-[28px] shadow-[0_4px_24px_rgba(0,0,0,0.10)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.5)]">
             <div className="flex items-center justify-around h-16 px-2">
               {mainNavTabs.map((tab) => {
                 const isActive = tab.exact ? pathname === tab.href : pathname.startsWith(tab.href);
@@ -89,6 +87,7 @@ export default function DashboardLayout({
                     <Link
                       key={tab.href}
                       href={tab.href}
+                      aria-current={isActive ? "page" : undefined}
                       className="flex flex-col items-center justify-center flex-1 h-full gap-0.5 relative group transition-all duration-200"
                     >
                       <div className={`relative -mt-8 h-[52px] w-[52px] rounded-full flex items-center justify-center transition-all duration-200 ${
@@ -111,6 +110,7 @@ export default function DashboardLayout({
                   <Link
                     key={tab.href}
                     href={tab.href}
+                    aria-current={isActive ? "page" : undefined}
                     className="flex flex-col items-center justify-center flex-1 h-full gap-0.5 relative group transition-all duration-200"
                   >
                     <AnimatePresence>
@@ -143,6 +143,9 @@ export default function DashboardLayout({
 
               <button
                 onClick={() => setShowOthersDrawer(true)}
+                aria-label="Open more navigation options"
+                aria-expanded={showOthersDrawer}
+                aria-controls="admin-more-navigation"
                 className="flex flex-col items-center justify-center flex-1 h-full gap-0.5 relative bg-transparent border-none outline-none cursor-pointer group transition-all duration-200"
               >
                 <AnimatePresence>
@@ -177,7 +180,7 @@ export default function DashboardLayout({
         {/* Slide-Up Bottom Drawer */}
         <AnimatePresence>
           {showOthersDrawer && (
-            <div className="lg:hidden fixed inset-0 z-50 flex flex-col justify-end">
+            <div id="admin-more-navigation" className="lg:hidden fixed inset-0 z-50 flex flex-col justify-end" role="dialog" aria-modal="true" aria-label="More navigation">
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}

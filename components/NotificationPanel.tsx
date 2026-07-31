@@ -250,7 +250,7 @@ export default function NotificationPanel({
               <div className="h-14 w-14 rounded-[20px] bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center mb-3">
                 <Check className="h-7 w-7 text-emerald-500" />
               </div>
-              <p className="text-sm font-bold text-slate-700 dark:text-slate-200">You're all caught up</p>
+              <p className="text-sm font-bold text-slate-700 dark:text-slate-200">You&apos;re all caught up</p>
               <p className="text-xs text-slate-400 mt-1">New notifications will appear here.</p>
             </div>
           ) : (

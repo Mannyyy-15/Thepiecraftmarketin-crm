@@ -36,13 +36,13 @@ export default function PortalLayout({
       <div className="flex flex-1 flex-col overflow-hidden relative">
         <PortalTopNav />
 
-        <main className="flex-1 overflow-y-auto pb-28 lg:pb-0">
+        <main id="main-content" className="mobile-content-safe flex-1 overflow-y-auto lg:pb-0">
           <div className="p-4 sm:p-6">{children}</div>
         </main>
 
         {/* Floating Mobile Bottom Navigation */}
-        <div className="lg:hidden fixed bottom-4 left-4 right-4 z-40 select-none">
-          <nav className="bg-white/95 dark:bg-slate-950/95 backdrop-blur-2xl border border-slate-200/70 dark:border-slate-800/70 rounded-[26px] shadow-[0_8px_40px_rgba(0,0,0,0.14)] dark:shadow-[0_8px_40px_rgba(0,0,0,0.45)]">
+        <div className="mobile-nav-safe lg:hidden fixed left-4 right-4 z-40 select-none">
+          <nav aria-label="Primary navigation" className="bg-white/95 dark:bg-slate-950/95 backdrop-blur-2xl border border-slate-200/70 dark:border-slate-800/70 rounded-[26px] shadow-[0_8px_40px_rgba(0,0,0,0.14)] dark:shadow-[0_8px_40px_rgba(0,0,0,0.45)]">
             <div className="flex items-center justify-around h-16 px-2">
               {mainNavTabs.map((tab) => {
                 const isActive = tab.exact ? pathname === tab.href : pathname.startsWith(tab.href);
@@ -51,6 +51,7 @@ export default function PortalLayout({
                   <Link
                     key={tab.href}
                     href={tab.href}
+                    aria-current={isActive ? "page" : undefined}
                     className="flex flex-col items-center justify-center flex-1 h-full gap-0.5 relative group transition-all duration-200"
                   >
                     <AnimatePresence>

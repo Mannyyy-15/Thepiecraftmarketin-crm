@@ -70,9 +70,29 @@ export default function EmployeeAttendancePage() {
   };
 
   useEffect(() => {
-    loadDashboardData(true);
-    const interval = setInterval(() => loadDashboardData(false), 10000);
-    return () => clearInterval(interval);
+    let timeout: ReturnType<typeof setTimeout> | undefined;
+    let stopped = false;
+    let running = false;
+
+    const poll = async (showLoader = false) => {
+      if (stopped || running || document.visibilityState !== "visible") return;
+      running = true;
+      try { await loadDashboardData(showLoader); } finally { running = false; }
+      if (!stopped && document.visibilityState === "visible") timeout = setTimeout(poll, 30_000);
+    };
+    const handleVisibilityChange = () => {
+      if (timeout) clearTimeout(timeout);
+      timeout = undefined;
+      if (document.visibilityState === "visible") void poll(false);
+    };
+
+    void poll(true);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      stopped = true;
+      if (timeout) clearTimeout(timeout);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
   }, []);
 
   const handleRequestLeave = async (e: React.FormEvent) => {

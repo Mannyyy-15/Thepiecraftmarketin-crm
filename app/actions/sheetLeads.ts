@@ -1,15 +1,14 @@
 "use server";
 
-import { google } from "googleapis";
-import { cookies } from "next/headers";
-import { decrypt } from "./auth";
+import { getCurrentUser } from "./auth";
+import { getGoogleServiceAccountToken } from "@/lib/google-service-account";
 
 // Reads inbound leads from the "ThePieCraft Inquiry" Google Sheet (multiple tabs)
 // using the existing Firebase service account for auth (read-only Sheets scope).
 //
 // Required: the sheet must be shared (Viewer) with the service-account email,
-// and credentials available via FIREBASE_SERVICE_ACCOUNT (Vercel) or the local
-// firebase-adminsdk.json file. Sheet ID is overridable via LEADS_SHEET_ID.
+// and credentials available via FIREBASE_SERVICE_ACCOUNT. Sheet ID is
+// overridable via LEADS_SHEET_ID.
 
 const DEFAULT_SHEET_ID = "10fJb0cQFcKyxtPBhMFu-mL-Iz7_vmpxrREwt0J4IJt0";
 
@@ -48,22 +47,6 @@ export interface GetSheetLeadsResult {
   error?: string;
 }
 
-function resolveCredentials(): { client_email: string; private_key: string } | null {
-  const env = process.env.FIREBASE_SERVICE_ACCOUNT;
-  if (env) {
-    try {
-      const j = JSON.parse(env);
-      if (j.client_email && j.private_key) return { client_email: j.client_email, private_key: j.private_key };
-    } catch { /* fall through */ }
-  }
-  try {
-    const j = require("../../firebase-adminsdk.json");
-    return { client_email: j.client_email, private_key: j.private_key };
-  } catch {
-    return null;
-  }
-}
-
 // Google Sheets serial date (days since 1899-12-30) -> ISO string. Leaves
 // already-human strings (e.g. "6/6/2026, 12:00:00 PM") untouched.
 function normalizeTimestamp(raw: string): string {
@@ -77,7 +60,7 @@ function normalizeTimestamp(raw: string): string {
   return raw;
 }
 
-function cleanCell(v: any): string {
+function cleanCell(v: unknown): string {
   const s = v == null ? "" : String(v).trim();
   // Google's #ERROR! / #N/A formula artefacts -> blank
   if (s.startsWith("#ERROR") || s === "#N/A" || s === "#REF!") return "";
@@ -86,40 +69,46 @@ function cleanCell(v: any): string {
 
 export async function getSheetLeads(): Promise<GetSheetLeadsResult> {
   // Auth — admins only.
-  const token = cookies().get("token")?.value;
-  const session = token ? await decrypt(token) : null;
-  if (!session?.id) return { success: false, error: "Not authenticated." };
-  if (session.role !== "admin") return { success: false, error: "Admins only." };
-
-  const creds = resolveCredentials();
-  if (!creds) return { success: false, error: "Google credentials not configured." };
+  const session = await getCurrentUser();
+  if (!session || session.role !== "admin") {
+    return { success: false, error: "Admins only." };
+  }
 
   const sheetId = process.env.LEADS_SHEET_ID || DEFAULT_SHEET_ID;
 
   try {
-    const auth = new google.auth.GoogleAuth({
-      credentials: { client_email: creds.client_email, private_key: creds.private_key },
-      scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"],
-    });
-    const sheets = google.sheets({ version: "v4", auth });
-
-    // Batch-read all tabs in one request (A1:Z to cover up to 26 columns).
+    const accessToken = await getGoogleServiceAccountToken([
+      "https://www.googleapis.com/auth/spreadsheets.readonly",
+    ]);
     const ranges = TAB_CONFIG.map((t) => `${t.tab}!A1:Z`);
-    const res = await sheets.spreadsheets.values.batchGet({ spreadsheetId: sheetId, ranges });
-    const valueRanges = res.data.valueRanges || [];
+    const query = new URLSearchParams();
+    for (const range of ranges) query.append("ranges", range);
+    const response = await fetch(
+      `https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(sheetId)}/values:batchGet?${query}`,
+      {
+        headers: { Authorization: `Bearer ${accessToken}` },
+        cache: "no-store",
+        signal: AbortSignal.timeout(15_000),
+      }
+    );
+    if (!response.ok) throw new Error(`Sheets API failed (${response.status}).`);
+    const payload = (await response.json()) as {
+      valueRanges?: Array<{ values?: unknown[][] }>;
+    };
+    const valueRanges = payload.valueRanges || [];
 
     const segments: SheetLeadsSegment[] = [];
     let total = 0;
 
     TAB_CONFIG.forEach((cfg, i) => {
       const rows = valueRanges[i]?.values || [];
-      const headers = (rows[0] || []).map((h: any) => String(h || "").trim());
+      const headers = (rows[0] || []).map((h: unknown) => String(h || "").trim());
       const leads: SheetLead[] = [];
 
       for (let r = 1; r < rows.length; r++) {
         const row = rows[r] || [];
         // Skip fully empty rows.
-        if (!row.some((c: any) => cleanCell(c) !== "")) continue;
+        if (!row.some((c: unknown) => cleanCell(c) !== "")) continue;
 
         const rec: Record<string, string> = {};
         headers.forEach((h, c) => { if (h) rec[h] = cleanCell(row[c]); });

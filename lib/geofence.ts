@@ -43,7 +43,7 @@ export async function validateGeofence(userLat: number, userLng: number, userBss
     return { ok: false, message: "Invalid location. Enable GPS and retry." };
   }
 
-  let clientIp = extractClientIp(headers());
+  let clientIp = extractClientIp(await headers());
   // Normalize IPv6-mapped IPv4 addresses (e.g. ::ffff:203.194.96.181 -> 203.194.96.181)
   if (clientIp.startsWith("::ffff:")) {
     clientIp = clientIp.substring(7);

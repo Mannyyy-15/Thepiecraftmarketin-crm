@@ -22,9 +22,9 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Avatar } from "@/components/ui/Avatar";
-import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { LogoutConfirmModal } from "@/components/ui/LogoutConfirmModal";
-import { getCurrentUser, logout } from "@/app/actions/auth";
+import { logout } from "@/app/actions/auth";
+import { clearCurrentUserCache, getCurrentUserCached } from "@/lib/currentUserClient";
 import { getMyNotifications, markAllNotificationsRead, dismissNotification } from "@/app/actions/crm";
 import type { Notification } from "@/lib/schema";
 import NotificationPanel from "@/components/NotificationPanel";
@@ -70,7 +70,7 @@ export default function EmployeeTopNav() {
   };
 
   useEffect(() => {
-    getCurrentUser().then((res) => {
+    getCurrentUserCached().then((res) => {
       if (res) setUser({ name: res.name as string, email: res.email as string });
     });
   }, []);
@@ -100,6 +100,9 @@ export default function EmployeeTopNav() {
 
   // Notification polling
   useEffect(() => {
+    let timeout: ReturnType<typeof setTimeout> | undefined;
+    let stopped = false;
+    let running = false;
     const fetchNotifs = async () => {
       const res = await getMyNotifications();
       if (res.success && res.data) {
@@ -109,9 +112,24 @@ export default function EmployeeTopNav() {
         })));
       }
     };
-    fetchNotifs();
-    const interval = setInterval(fetchNotifs, 10000);
-    return () => clearInterval(interval);
+    const poll = async () => {
+      if (stopped || running || document.visibilityState !== "visible") return;
+      running = true;
+      try { await fetchNotifs(); } catch { /* keep polling resilient */ } finally { running = false; }
+      if (!stopped && document.visibilityState === "visible") timeout = setTimeout(poll, 30_000);
+    };
+    const handleVisibilityChange = () => {
+      if (timeout) clearTimeout(timeout);
+      timeout = undefined;
+      if (document.visibilityState === "visible") void poll();
+    };
+    void poll();
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      stopped = true;
+      if (timeout) clearTimeout(timeout);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
   }, []);
 
   const hasUnread = notifications.some((n) => !n.read);
@@ -151,6 +169,7 @@ export default function EmployeeTopNav() {
     try {
       const res = await logout();
       if (res.success) {
+        clearCurrentUserCache();
         router.push("/login");
       }
     } catch {
@@ -255,10 +274,6 @@ export default function EmployeeTopNav() {
           </Link>
 
           {/* Dark mode toggle — desktop only */}
-          <div className="hidden lg:flex">
-            <ThemeToggle />
-          </div>
-
           {/* Notifications bell */}
           <div className="relative">
             <button

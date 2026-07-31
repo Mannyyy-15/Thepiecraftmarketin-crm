@@ -276,7 +276,7 @@ export default function ClientDocumentsPage() {
               {filtered.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-5 py-10 text-center text-sm text-slate-500 dark:text-slate-400">
-                    No files found in this vault matching "{query}".
+                    No files found in this vault matching &quot;{query}&quot;.
                   </td>
                 </tr>
               ) : (

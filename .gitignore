@@ -9,6 +9,9 @@ out/
 
 # production
 build/
+*.apk
+*.aab
+*.ipa
 
 # env
 .env
@@ -63,6 +66,18 @@ update_ip.*
 /update_*.ts
 /update_*.js
 logs/
+debug_*.log
 
 # Local scratch/cleanup files
 scratch_*
+.playwright-cli/
+
+# Local Codex/design tooling and generated audit artifacts
+.agents/
+.impeccable/
+scratch/
+
+# Runtime user uploads must live in private object storage, not Git
+public/uploads/
+
+.env*

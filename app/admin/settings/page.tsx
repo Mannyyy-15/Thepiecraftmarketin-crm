@@ -44,6 +44,7 @@ export default function SettingsPage() {
   const [office, setOffice] = useState<any>({ name: "Office", address: "", latitude: "", longitude: "", radiusMeters: 150, wifiPublicIp: "", bssid: "" });
   const setOff = (patch: any) => setOffice((p: any) => ({ ...p, ...patch }));
   const [detectingIp, setDetectingIp] = useState(false);
+  const [detectingWifi, setDetectingWifi] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -100,6 +101,28 @@ export default function SettingsPage() {
       toast("Updated Wi-Fi IP address.", "success");
     } else {
       toast("Could not detect IP.", "error");
+    }
+  };
+
+  const handleWifiDetect = async () => {
+    setDetectingWifi(true);
+    try {
+      const [{ Capacitor }, { CapacitorWifi }] = await Promise.all([
+        import("@capacitor/core"),
+        import("@capgo/capacitor-wifi"),
+      ]);
+      if (!Capacitor.isNativePlatform()) {
+        toast("BSSID detection is available in the Android app. On desktop, copy it from your router settings.", "info");
+        return;
+      }
+      const info = await CapacitorWifi.getWifiInfo();
+      if (!info.bssid) throw new Error("BSSID unavailable");
+      setOff({ bssid: info.bssid });
+      toast("Office Wi-Fi access point updated. Save to apply it.", "success");
+    } catch {
+      toast("Could not read this Wi-Fi access point. Check Wi-Fi and location permission.", "error");
+    } finally {
+      setDetectingWifi(false);
     }
   };
 
@@ -246,7 +269,16 @@ export default function SettingsPage() {
                   </div>
                   <p className="text-[10px] text-slate-400 mt-1">Click “Use current” while on the office Wi-Fi.</p>
                 </div>
-                <div><label className={LABEL}>Wi-Fi BSSID (optional)</label><input className={INPUT} value={office.bssid} onChange={(e) => setOff({ bssid: e.target.value })} placeholder="00:11:22:33:44:55" /></div>
+                <div>
+                  <label className={LABEL}>Wi-Fi access point (BSSID, optional)</label>
+                  <div className="flex gap-2">
+                    <input className={INPUT} value={office.bssid} onChange={(e) => setOff({ bssid: e.target.value })} placeholder="00:11:22:33:44:55" />
+                    <button type="button" onClick={handleWifiDetect} disabled={detectingWifi} className="shrink-0 h-11 px-3 rounded-2xl border border-slate-200 dark:border-[#303030] text-xs font-bold text-[#3b82f6] hover:bg-blue-50 dark:hover:bg-blue-500/10 cursor-pointer disabled:opacity-50">
+                      {detectingWifi ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Use this Wi-Fi"}
+                    </button>
+                  </div>
+                  <p className="text-[10px] text-slate-400 mt-1">Changing only the Wi-Fi name or password needs no CRM change. Use this button if the router or access point was replaced.</p>
+                </div>
                 <div><label className={LABEL}>Latitude</label><input className={INPUT} value={office.latitude} onChange={(e) => setOff({ latitude: e.target.value })} placeholder="19.42093505" /></div>
                 <div><label className={LABEL}>Longitude</label><input className={INPUT} value={office.longitude} onChange={(e) => setOff({ longitude: e.target.value })} placeholder="72.81346274" /></div>
                 <div>

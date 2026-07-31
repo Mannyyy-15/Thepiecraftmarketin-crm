@@ -24,18 +24,19 @@ export function DocumentPreviewModal({ isOpen, onClose, url, name }: DocumentPre
   const isPdf = ext === "pdf";
 
   return createPortal(
-    <div className="fixed inset-0 z-[99999] flex flex-col bg-black/90 backdrop-blur-sm animate-fadeIn">
+    <div className="fixed inset-0 z-[99999] flex flex-col bg-black/90 backdrop-blur-sm animate-fadeIn" role="dialog" aria-modal="true" aria-labelledby="document-preview-title">
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-black/50">
         <div className="flex flex-col">
-          <h3 className="text-white font-semibold truncate max-w-lg">{name}</h3>
+          <h3 id="document-preview-title" className="text-white font-semibold truncate max-w-lg">{name}</h3>
           <p className="text-slate-400 text-xs">Preview</p>
         </div>
         <div className="flex items-center gap-3">
           <a
             href={url}
             download={name}
-            className="p-2 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+            className="icon-button text-slate-300 hover:text-white hover:bg-white/10"
+            aria-label={`Download ${name}`}
             title="Download"
           >
             <Download className="h-5 w-5" />
@@ -44,14 +45,16 @@ export function DocumentPreviewModal({ isOpen, onClose, url, name }: DocumentPre
             href={url}
             target="_blank"
             rel="noreferrer"
-            className="p-2 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+            className="icon-button text-slate-300 hover:text-white hover:bg-white/10"
+            aria-label={`Open ${name} in a new tab`}
             title="Open in new tab"
           >
             <ExternalLink className="h-5 w-5" />
           </a>
           <button
             onClick={onClose}
-            className="p-2 text-slate-300 hover:text-white hover:bg-rose-500 rounded-lg transition-colors ml-2"
+            className="icon-button text-slate-300 hover:text-white hover:bg-rose-500 ml-2"
+            aria-label="Close document preview"
           >
             <X className="h-6 w-6" />
           </button>

@@ -1,0 +1,8 @@
+.next
+node_modules
+android
+ios
+capacitor-app
+public/uploads
+scratch
+scripts

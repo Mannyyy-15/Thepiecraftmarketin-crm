@@ -1,10 +1,10 @@
 "use server";
 
-import { headers, cookies } from "next/headers";
+import { headers } from "next/headers";
 import { sql, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import * as schema from "@/lib/schema";
-import { decrypt } from "./auth";
+import { getCurrentUser } from "./auth";
 import { extractClientIp } from "@/lib/geofence";
 
 // ---------------------------------------------------------------------------
@@ -39,11 +39,10 @@ export async function processPunchAction(
 ): Promise<PunchResult> {
 
   // -- 1. Auth --------------------------------------------------------------
-  const token = cookies().get("token")?.value;
-  if (!token) return { success: false, message: "Not authenticated. Please log in." };
-
-  const session = await decrypt(token);
-  if (!session?.id) return { success: false, message: "Invalid session. Please log in again." };
+  const session = await getCurrentUser();
+  if (!session || session.role !== "employee") {
+    return { success: false, message: "Employee access required." };
+  }
 
   const userId = session.id as number;
 
@@ -61,7 +60,7 @@ export async function processPunchAction(
   }
 
   // -- 3. Extract client IP -------------------------------------------------
-  const headerMap = headers();
+  const headerMap = await headers();
   const clientIp = extractClientIp(headerMap);
 
   // -- 4. Query location + Haversine distance in a single DB round-trip -----
@@ -166,6 +165,10 @@ export async function processPunchAction(
 // ---------------------------------------------------------------------------
 
 export async function getLocations() {
+  const session = await getCurrentUser();
+  if (!session || (session.role !== "admin" && session.role !== "employee")) {
+    return { success: false, data: [] };
+  }
   if (!db) return { success: false, data: [] };
   try {
     const rows = await db.select({
@@ -176,7 +179,8 @@ export async function getLocations() {
     }).from(schema.locations);
     return { success: true, data: rows };
   } catch (err: any) {
-    return { success: false, data: [], error: err.message };
+    console.error("[punch] getLocations error:", err);
+    return { success: false, data: [], error: "Could not load office locations." };
   }
 }
 
@@ -185,15 +189,15 @@ export async function getLocations() {
 // ---------------------------------------------------------------------------
 
 export async function getOfficeLocation() {
-  const token = cookies().get("token")?.value;
-  const session = token ? await decrypt(token) : null;
+  const session = await getCurrentUser();
   if (!session?.id || session.role !== "admin") return { success: false, data: null };
   if (!db) return { success: false, data: null };
   try {
     const rows = await db.select().from(schema.locations).orderBy(schema.locations.id).limit(1);
     return { success: true, data: rows[0] || null };
   } catch (err: any) {
-    return { success: false, data: null, error: err.message };
+    console.error("[punch] getOfficeLocation error:", err);
+    return { success: false, data: null, error: "Could not load office location." };
   }
 }
 
@@ -208,18 +212,37 @@ export interface OfficeLocationInput {
 }
 
 export async function updateOfficeLocation(input: OfficeLocationInput) {
-  const token = cookies().get("token")?.value;
-  const session = token ? await decrypt(token) : null;
+  const session = await getCurrentUser();
   if (!session?.id || session.role !== "admin") return { success: false, error: "Unauthorized." };
   if (!db) return { success: false, error: "Database not connected." };
   try {
+    const latitude = Number(input.latitude);
+    const longitude = Number(input.longitude);
+    const radiusMeters = Number(input.radiusMeters);
+    const name = input.name?.trim();
+    const wifiPublicIp = input.wifiPublicIp?.trim();
+    if (
+      !name ||
+      name.length > 200 ||
+      !Number.isFinite(latitude) ||
+      Math.abs(latitude) > 90 ||
+      !Number.isFinite(longitude) ||
+      Math.abs(longitude) > 180 ||
+      !Number.isInteger(radiusMeters) ||
+      radiusMeters < 10 ||
+      radiusMeters > 10_000 ||
+      !wifiPublicIp ||
+      wifiPublicIp.length > 64
+    ) {
+      return { success: false, error: "Invalid office location settings." };
+    }
     const values = {
-      name: input.name?.trim() || "Office",
+      name,
       address: input.address?.trim() || null,
-      latitude: String(input.latitude),
-      longitude: String(input.longitude),
-      radiusMeters: Number(input.radiusMeters) || 150,
-      wifiPublicIp: input.wifiPublicIp?.trim() || "0.0.0.0",
+      latitude: String(latitude),
+      longitude: String(longitude),
+      radiusMeters,
+      wifiPublicIp,
       bssid: input.bssid?.trim() || null,
     };
     const existing = await db.select({ id: schema.locations.id }).from(schema.locations).orderBy(schema.locations.id).limit(1);
@@ -231,17 +254,16 @@ export async function updateOfficeLocation(input: OfficeLocationInput) {
     return { success: true };
   } catch (err: any) {
     console.error("updateOfficeLocation error:", err);
-    return { success: false, error: err.message };
+    return { success: false, error: "Could not update office location." };
   }
 }
 
 // Detect the server's view of the requesting client's public IP — used by the
 // settings page "use my current network" helper.
 export async function detectCurrentIp() {
-  const token = cookies().get("token")?.value;
-  const session = token ? await decrypt(token) : null;
+  const session = await getCurrentUser();
   if (!session?.id || session.role !== "admin") return { success: false, ip: "" };
-  let ip = extractClientIp(headers());
+  let ip = extractClientIp(await headers());
   if (ip.startsWith("::ffff:")) ip = ip.substring(7);
   return { success: true, ip };
 }

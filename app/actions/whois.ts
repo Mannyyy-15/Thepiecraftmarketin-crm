@@ -1,14 +1,33 @@
- "use server";
+"use server";
+
+import { getCurrentUser } from "./auth";
 
 export async function getDomainExpiry(domain: string) {
   try {
-    const cleanDomain = domain.replace(/^(?:https?:\/\/)?(?:www\.)?/i, "").split('/')[0];
+    const session = await getCurrentUser();
+    if (!session || (session.role !== "admin" && session.role !== "employee")) {
+      return { success: false, error: "Not authorized." };
+    }
+
+    const cleanDomain = domain
+      .trim()
+      .toLowerCase()
+      .replace(/^(?:https?:\/\/)?(?:www\.)?/i, "")
+      .split("/")[0]
+      .replace(/\.$/, "");
     
-    if (!cleanDomain || !cleanDomain.includes(".")) {
+    if (
+      cleanDomain.length > 253 ||
+      !/^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/.test(cleanDomain)
+    ) {
       return { success: false, error: "Invalid domain format" };
     }
 
-    const res = await fetch(`https://rdap.org/domain/${cleanDomain}`);
+    const res = await fetch(`https://rdap.org/domain/${encodeURIComponent(cleanDomain)}`, {
+      signal: AbortSignal.timeout(10_000),
+      redirect: "error",
+      cache: "no-store",
+    });
     if (!res.ok) {
       return { success: false, error: "Could not find domain data." };
     }
@@ -34,8 +53,8 @@ export async function getDomainExpiry(domain: string) {
 
     return { success: true, expiryDate: `${yyyy}-${mm}-${dd}` };
 
-  } catch (error: any) {
+  } catch (error) {
     console.error("RDAP fetch error:", error);
-    return { success: false, error: error.message || "Failed to fetch RDAP data." };
+    return { success: false, error: "Failed to fetch RDAP data." };
   }
 }

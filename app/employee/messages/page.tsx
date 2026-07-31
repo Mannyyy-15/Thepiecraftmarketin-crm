@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { Send, Search, Plus, ArrowLeft, MessageSquare, X, Building2, Users, Shield, ChevronDown, ChevronRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Avatar } from "@/components/ui/Avatar";
-import { getCurrentUser } from "@/app/actions/auth";
+import { getCurrentUserCached } from "@/lib/currentUserClient";
 import { sendMessage, getConversations, getConversationMessages, markConversationRead, getMessagingContacts } from "@/app/actions/crm";
 
 // Real contact shape (replaces the old MockContact).
@@ -47,7 +47,7 @@ export default function EmployeeMessagesPage() {
 
   useEffect(() => {
     setChatIds(loadChatIds());
-    getCurrentUser().then((u) => {
+    getCurrentUserCached().then((u) => {
       if (u) setUserName(u.name as string);
     });
     getMessagingContacts().then((res) => {
@@ -116,23 +116,63 @@ export default function EmployeeMessagesPage() {
   };
 
   useEffect(() => {
-    loadConversations();
-    const interval = setInterval(loadConversations, 5000);
-    return () => clearInterval(interval);
+    let timeout: ReturnType<typeof setTimeout> | undefined;
+    let stopped = false;
+    let running = false;
+    const poll = async () => {
+      if (stopped || running || document.visibilityState !== "visible") return;
+      running = true;
+      try { await loadConversations(); } catch { /* retry on the next poll */ } finally {
+        running = false;
+        if (!stopped && document.visibilityState === "visible") timeout = setTimeout(poll, 15_000);
+      }
+    };
+    const handleVisibilityChange = () => {
+      if (timeout) clearTimeout(timeout);
+      timeout = undefined;
+      if (document.visibilityState === "visible") void poll();
+    };
+    void poll();
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      stopped = true;
+      if (timeout) clearTimeout(timeout);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
   }, []);
 
   useEffect(() => {
     if (activeContact) {
       markConversationRead(activeContact.id).catch(() => {});
+      let timeout: ReturnType<typeof setTimeout> | undefined;
+      let stopped = false;
+      let running = false;
       const load = async () => {
         try {
           const res = await getConversationMessages(activeContact.id);
           if (res.success && res.data.length > 0) setMessages(res.data);
         } catch {}
       };
-      load();
-      const interval = setInterval(load, 3000);
-      return () => clearInterval(interval);
+      const poll = async () => {
+        if (stopped || running || document.visibilityState !== "visible") return;
+        running = true;
+        try { await load(); } finally {
+          running = false;
+          if (!stopped && document.visibilityState === "visible") timeout = setTimeout(poll, 5_000);
+        }
+      };
+      const handleVisibilityChange = () => {
+        if (timeout) clearTimeout(timeout);
+        timeout = undefined;
+        if (document.visibilityState === "visible") void poll();
+      };
+      void poll();
+      document.addEventListener("visibilitychange", handleVisibilityChange);
+      return () => {
+        stopped = true;
+        if (timeout) clearTimeout(timeout);
+        document.removeEventListener("visibilitychange", handleVisibilityChange);
+      };
     }
   }, [activeContact]);
 

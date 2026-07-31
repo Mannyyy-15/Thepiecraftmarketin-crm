@@ -1,9 +1,10 @@
 "use client";
 import { useToast } from "@/providers/ToastProvider";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
-import { createUser } from "@/app/actions/auth";
+import { createLoginLink, createUser } from "@/app/actions/auth";
+import { ShareLoginLinkDialog } from "@/components/ShareLoginLinkDialog";
 import { getTeamUsers, getAttendance, bulkUpdateAttendance, deleteUser, updateUserRole, updateUserShiftSchedule, getUserTasks, createTask, toggleTaskStatus, deleteTask, getProjects, assignProjectLead, getPendingLeaves, approveLeave, rejectLeave } from "@/app/actions/crm";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { getMemberStatusVariant, getMemberStatusLabel } from "@/lib/statusHelpers";
@@ -65,6 +66,7 @@ export default function TeamPage() {
   const [newPassword, setNewPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [newSystemRole, setNewSystemRole] = useState("Web Developer"); // "Web Developer" | "Graphic Designer" | "Video Editor" | "Digital Marketing" | "Admin"
+  const [shareLogin, setShareLogin] = useState<{ link: string; name: string; email: string } | null>(null);
     
   // Invite member shift schedule states
   const [inviteWorkingDays, setInviteWorkingDays] = useState<number[]>([1, 2, 3, 4, 5]);
@@ -139,7 +141,7 @@ export default function TeamPage() {
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [selectedEmployeeDetailId]);
+  }, [selectedEmployeeDetailId, todayNumber]);
 
   const handleMouseDown = (day: number) => {
     setIsDragging(true);
@@ -432,7 +434,7 @@ export default function TeamPage() {
     return rec?.punchInTime && !rec?.punchOutTime ? "online" : "offline";
   };
 
-  const loadTeamData = async (showLoader = false) => {
+  const loadTeamData = useCallback(async (showLoader = false) => {
     if (showLoader) setIsTeamLoading(true);
     try {
       const [usersRes, attendanceRes, leavesRes] = await Promise.all([
@@ -493,7 +495,7 @@ export default function TeamPage() {
     } finally {
       setIsTeamLoading(false);
     }
-  };
+  }, [selectedEmp]);
 
   useEffect(() => {
     loadTeamData(true);
@@ -504,7 +506,7 @@ export default function TeamPage() {
     }, 10000);
     
     return () => clearInterval(intervalId);
-  }, []);
+  }, [loadTeamData]);
 
   // Load selected employee's custom shift schedule whenever selectedEmp or members changes
   useEffect(() => {
@@ -544,6 +546,15 @@ export default function TeamPage() {
       const result = await createUser(formData);
 
       if (result.success) {
+        const inviteEmail = newEmail.trim();
+        if (result.userId && authRole === "employee") {
+          const linkResult = await createLoginLink(result.userId);
+          if (linkResult.success && linkResult.loginLink) {
+            setShareLogin({ link: linkResult.loginLink, name: derivedName, email: inviteEmail });
+          } else {
+            toast("Account created, but the secure login link could not be generated. You can create another link later.", "info");
+          }
+        }
         setNewName("");
         setNewEmail("");
         setNewPassword("");
@@ -551,7 +562,7 @@ export default function TeamPage() {
         setInviteShiftStartTime("09:00 AM");
         setInviteShiftEndTime("05:00 PM");
         setShowInviteForm(false);
-        toast(`Successfully invited ${derivedName} to the team! Their account is now active in the database.`, "success");
+        toast(`Account created for ${derivedName}. Share their secure sign-in link to finish.`, "success");
         loadTeamData();
       } else {
         toast(`Failed to create account: ${result.error}`, "error");
@@ -1136,7 +1147,7 @@ export default function TeamPage() {
                       <Card className="lg:col-span-2 border border-slate-200/80 dark:border-[#2e2e33] bg-slate-50/50 dark:bg-[#18181b] rounded-[24px] overflow-hidden">
                         <CardContent className="p-5 sm:p-6 flex flex-col h-full">
                           <h3 className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-5">
-                            Today's Activity Log
+                            Today&apos;s Activity Log
                           </h3>
                           <div className="relative pl-6 flex-1 flex flex-col justify-between py-1">
                             {/* Vertical Line */}
@@ -2300,6 +2311,13 @@ export default function TeamPage() {
           </div>
         </div>
       )}
+      <ShareLoginLinkDialog
+        open={Boolean(shareLogin)}
+        onClose={() => setShareLogin(null)}
+        loginLink={shareLogin?.link || ""}
+        personName={shareLogin?.name || ""}
+        email={shareLogin?.email}
+      />
     </div>
   );
 }

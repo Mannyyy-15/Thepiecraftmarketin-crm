@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getCurrentUser } from "@/app/actions/auth";
+import { getCurrentUserCached } from "@/lib/currentUserClient";
 import {
   Activity,
   ArrowRight,
@@ -64,7 +64,7 @@ export default function DashboardPage() {
   }, []);
 
   useEffect(() => {
-    getCurrentUser().then((user) => {
+    getCurrentUserCached().then((user) => {
       if (user && user.name) {
         const name = user.name;
         if (typeof name === "string") {
@@ -87,36 +87,26 @@ export default function DashboardPage() {
         <KpiCard
           title="Monthly Revenue"
           value={`₹${(dashboardData?.monthlyRevenue || 0).toLocaleString()}`}
-          change="+20.1%"
-          changeType="positive"
           accent="brand"
           icon={<CircleDollarSign className="h-5 w-5" />}
-          spark={[28, 32, 30, 34, 38, 36, 42, 41, 44, 45]}
         />
         <KpiCard
           title="Active Clients"
           value={`${dashboardData?.activeClientsCount || 0}`}
-          change="+4"
-          changeType="positive"
           accent="emerald"
           icon={<Users className="h-5 w-5" />}
-          spark={[110, 112, 113, 116, 118, 120, 121, 122, 123, 124]}
         />
         <KpiCard
           title="Total Ad Spend"
           value={`₹${(dashboardData?.totalAdSpend || 0).toLocaleString()}`}
-          change="+12.5%"
-          changeType="positive"
           accent="amber"
           icon={<Activity className="h-5 w-5" />}
-          spark={[80, 88, 90, 96, 100, 108, 112, 118, 121, 124]}
         />
         <KpiCard
           title="Active Websites"
           value={`${dashboardData?.activeWebsites ?? 0}`}
           accent="rose"
           icon={<Globe className="h-5 w-5" />}
-          spark={[1, 1, 2, 2, 2, 3, 3, 3, 4, dashboardData?.activeWebsites ?? 0]}
         />
       </div>
 
@@ -208,7 +198,7 @@ export default function DashboardPage() {
         <Card>
           <CardHeader>
             <CardTitle>Project Distribution</CardTitle>
-            <button className="text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 cursor-pointer">
+            <button aria-label="Project distribution options" className="text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 cursor-pointer">
               <MoreHorizontal className="h-4 w-4" />
             </button>
           </CardHeader>
