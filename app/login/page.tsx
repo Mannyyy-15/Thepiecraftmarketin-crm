@@ -216,6 +216,7 @@ export default function LoginPage() {
                 <input
                   id="password"
                   type={showPassword ? "text" : "password"}
+                  autoComplete="current-password"
                   required
                   maxLength={PASSWORD_MAX_LENGTH}
                   disabled={loading}

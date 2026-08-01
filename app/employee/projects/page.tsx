@@ -15,18 +15,14 @@ import { getProjects, getProjectTasksGrouped, toggleTaskStatus } from "@/app/act
 import { getProjectStatusVariant, getProjectStatusLabel } from "@/lib/statusHelpers";
 import { useToast } from "@/providers/ToastProvider";
 import { ProjectBoardSkeleton } from "@/components/ui/Skeleton";
+import { useRefreshOnFocus } from "@/lib/use-refresh-on-focus";
 
 function parseDetails(raw: string | null | undefined) {
   try { return JSON.parse(raw || "{}"); } catch { return {}; }
 }
 
-function statusProgress(type: string, status: string, taskTotal: number, taskDone: number) {
-  if (taskTotal > 0) return Math.round((taskDone / taskTotal) * 100);
-  const maps: Record<string, Record<string, number>> = {
-    meta_ads: { planning: 15, active: 70, paused: 70, completed: 100 },
-    web_dev:  { planning: 5, discovery: 15, design: 30, development: 65, qa: 80, live: 95, completed: 100 },
-  };
-  return maps[type]?.[status] ?? (status === "completed" ? 100 : 35);
+function taskProgress(taskTotal: number, taskDone: number) {
+  return taskTotal > 0 ? Math.round((taskDone / taskTotal) * 100) : null;
 }
 
 export default function EmployeeProjectsPage() {
@@ -50,6 +46,7 @@ export default function EmployeeProjectsPage() {
   };
 
   useEffect(() => { load(); }, []);
+  useRefreshOnFocus(load);
 
   const handleToggleTask = async (taskId: number, currentDone: boolean) => {
     setToggling(taskId);
@@ -116,7 +113,7 @@ export default function EmployeeProjectsPage() {
             const tg = taskMap[p.id];
             const total = tg?.total || 0;
             const done = tg?.done || 0;
-            const pct = statusProgress(p.projectType, p.status, total, done);
+            const pct = taskProgress(total, done);
             const isMeta = p.projectType === "meta_ads";
             const isExpanded = expandedTasks.has(p.id);
             const tasks = tg?.tasks || [];
@@ -185,13 +182,19 @@ export default function EmployeeProjectsPage() {
                 )}
 
                 <div className="mt-4">
-                  <Progress value={pct} size="sm" barClassName={isMeta ? "bg-indigo-500" : "bg-emerald-500"} />
+                  {pct === null ? (
+                    <div className="h-1.5 rounded-full bg-slate-100 dark:bg-slate-800" aria-hidden="true" />
+                  ) : (
+                    <Progress value={pct} size="sm" barClassName={isMeta ? "bg-indigo-500" : "bg-emerald-500"} />
+                  )}
                   <div className="mt-1.5 flex items-center justify-between">
                     <div className="flex items-center gap-1 text-[9px] text-slate-400">
                       <Calendar className="h-2.5 w-2.5" />
                       {p.deadline || "No deadline"}
                     </div>
-                    <span className="text-[9px] font-bold text-slate-500 dark:text-slate-400">{pct}%</span>
+                    <span className="text-[9px] font-bold text-slate-500 dark:text-slate-400">
+                      {pct === null ? "No task data" : `${pct}%`}
+                    </span>
                   </div>
                 </div>
 
@@ -265,7 +268,7 @@ export default function EmployeeProjectsPage() {
                   const tg = taskMap[p.id];
                   const total = tg?.total || 0;
                   const done = tg?.done || 0;
-                  const pct = statusProgress(p.projectType, p.status, total, done);
+                  const pct = taskProgress(total, done);
                   const isMeta = p.projectType === "meta_ads";
                   return (
                     <tr key={p.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors duration-150">
@@ -286,10 +289,14 @@ export default function EmployeeProjectsPage() {
                         </span>
                       </td>
                       <td className="px-5 py-3.5">
-                        <div className="flex items-center gap-2 min-w-[130px]">
-                          <Progress value={pct} size="sm" className="w-20" barClassName={isMeta ? "bg-indigo-500" : "bg-emerald-500"} />
-                          <span className="text-xs font-semibold text-slate-600 dark:text-slate-300 tabular-nums">{pct}%</span>
-                        </div>
+                        {pct === null ? (
+                          <span className="text-xs text-slate-400 italic">No task data</span>
+                        ) : (
+                          <div className="flex items-center gap-2 min-w-[130px]">
+                            <Progress value={pct} size="sm" className="w-20" barClassName={isMeta ? "bg-indigo-500" : "bg-emerald-500"} />
+                            <span className="text-xs font-semibold text-slate-600 dark:text-slate-300 tabular-nums">{pct}%</span>
+                          </div>
+                        )}
                       </td>
                       <td className="px-5 py-3.5 hidden md:table-cell">
                         {total > 0

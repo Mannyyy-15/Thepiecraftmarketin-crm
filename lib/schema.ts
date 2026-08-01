@@ -209,6 +209,7 @@ export const notifications = mysqlTable("notifications", {
 // 12. Documents Table
 export const documents = mysqlTable("documents", {
   id: int("id").primaryKey().autoincrement(),
+  organizationId: int("organization_id").references(() => organizations.id, { onDelete: "restrict" }),
   name: varchar("name", { length: 255 }).notNull(),
   clientId: int("client_id").references(() => clients.id, { onDelete: "cascade" }),
   clientName: varchar("client_name", { length: 255 }),
@@ -218,7 +219,10 @@ export const documents = mysqlTable("documents", {
   ownerName: varchar("owner_name", { length: 255 }).notNull().default("Admin"),
   url: varchar("url", { length: 500 }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+}, (table) => ({
+  organizationCreatedIndex: index("documents_org_created_idx").on(table.organizationId, table.createdAt),
+  clientCreatedIndex: index("documents_client_created_idx").on(table.clientId, table.createdAt),
+}));
 
 // 13. Meta Campaigns Table
 export const metaCampaigns = mysqlTable("meta_campaigns", {
@@ -273,6 +277,7 @@ export const leads = mysqlTable("leads", {
 // 14. Locations Table (Geofencing)
 export const locations = mysqlTable("locations", {
   id: int("id").primaryKey().autoincrement(),
+  organizationId: int("organization_id").references(() => organizations.id, { onDelete: "cascade" }),
   name: varchar("name", { length: 255 }).notNull(),
   address: varchar("address", { length: 500 }),
   latitude: decimal("latitude", { precision: 10, scale: 8 }).notNull(),
@@ -281,7 +286,9 @@ export const locations = mysqlTable("locations", {
   wifiPublicIp: varchar("wifi_public_ip", { length: 45 }).notNull(), // IPv4 or IPv6
   bssid: varchar("bssid", { length: 255 }), // e.g. "00:11:22:33:44:55"
   createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+}, (table) => ({
+  organizationIndex: index("locations_organization_idx").on(table.organizationId),
+}));
 
 // 15. Attendance Logs Table (Punch In / Out audit trail)
 export const attendanceLogs = mysqlTable("attendance_logs", {

@@ -383,6 +383,9 @@ export default function ProjectsPage() {
   const [taskModalProject, setTaskModalProject] = useState<any>(null);
   const [newTaskTitle, setNewTaskTitle]         = useState("");
   const [newTaskPriority, setNewTaskPriority]   = useState("medium");
+  const [newTaskAssignee, setNewTaskAssignee]   = useState("");
+  const [newTaskDueDate, setNewTaskDueDate]     = useState("");
+  const [newTaskDescription, setNewTaskDescription] = useState("");
   const [addingTask, setAddingTask]             = useState(false);
   const [togglingTask, setTogglingTask]         = useState<number | null>(null);
   const [deletingTask, setDeletingTask]         = useState<number | null>(null);
@@ -400,6 +403,15 @@ export default function ProjectsPage() {
   };
 
   useEffect(() => { load(); }, []);
+
+  const openTaskManager = (project: any) => {
+    setTaskModalProject(project);
+    setNewTaskTitle("");
+    setNewTaskPriority("medium");
+    setNewTaskAssignee(project.leadId ? String(project.leadId) : "");
+    setNewTaskDueDate("");
+    setNewTaskDescription("");
+  };
 
   const handleFetchWhois = async () => {
     if (!form.domain) return;
@@ -529,7 +541,7 @@ export default function ProjectsPage() {
       if (res.success) {
         closeDrawer();
         await load();
-        toast(`"${form.name}" created — tasks auto-assigned!`, "success");
+        toast(`"${form.name}" created. Assign the first tasks when the scope is ready.`, "success");
       } else toast(res.error || "Failed to create project.", "error");
     } catch (err: any) {
       toast(err.message, "error");
@@ -604,11 +616,22 @@ export default function ProjectsPage() {
     if (!taskModalProject || !newTaskTitle.trim()) return;
     setAddingTask(true);
     try {
-      const res = await addProjectTask(taskModalProject.id, newTaskTitle.trim(), newTaskPriority);
+      const assigneeId = newTaskAssignee ? Number(newTaskAssignee) : undefined;
+      const res = await addProjectTask(
+        taskModalProject.id,
+        newTaskTitle.trim(),
+        newTaskPriority,
+        assigneeId,
+        newTaskDueDate || null,
+        newTaskDescription.trim()
+      );
       if (res.success) {
         setNewTaskTitle("");
         setNewTaskPriority("medium");
+        setNewTaskDueDate("");
+        setNewTaskDescription("");
         await load();
+        toast("Task assigned.", "success");
       } else toast(res.error || "Failed.", "error");
     } finally { setAddingTask(false); }
   };
@@ -733,7 +756,7 @@ export default function ProjectsPage() {
                           </div>
                         </div>
                         <div className="flex items-center gap-0.5 shrink-0 opacity-60 group-hover:opacity-100 transition-opacity">
-                          <button onClick={e => { e.stopPropagation(); setTaskModalProject(p); setNewTaskTitle(""); }} title="Tasks" aria-label="Manage tasks"
+                          <button onClick={e => { e.stopPropagation(); openTaskManager(p); }} title="Tasks" aria-label="Manage tasks"
                             className="h-7 w-7 rounded-xl text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-950/20 flex items-center justify-center cursor-pointer transition-all">
                             <ListTodo className="h-3.5 w-3.5" />
                           </button>
@@ -809,7 +832,7 @@ export default function ProjectsPage() {
                           </div>
                         </div>
                         <div className="flex items-center gap-0.5 shrink-0 opacity-60 group-hover:opacity-100 transition-opacity">
-                          <button onClick={e => { e.stopPropagation(); setTaskModalProject(p); setNewTaskTitle(""); }} title="Tasks" aria-label="Manage tasks"
+                          <button onClick={e => { e.stopPropagation(); openTaskManager(p); }} title="Tasks" aria-label="Manage tasks"
                             className="h-7 w-7 rounded-xl text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 flex items-center justify-center cursor-pointer transition-all">
                             <ListTodo className="h-3.5 w-3.5" />
                           </button>
@@ -915,7 +938,7 @@ export default function ProjectsPage() {
                           </div>
                         </div>
                         <div className="flex items-center gap-0.5 shrink-0 opacity-60 group-hover:opacity-100 transition-opacity">
-                          <button onClick={e => { e.stopPropagation(); setTaskModalProject(p); setNewTaskTitle(""); }} title="Tasks" aria-label="Manage tasks"
+                          <button onClick={e => { e.stopPropagation(); openTaskManager(p); }} title="Tasks" aria-label="Manage tasks"
                             className="h-7 w-7 rounded-xl text-slate-400 hover:text-brand-500 hover:bg-brand-50 dark:hover:bg-brand-950/20 flex items-center justify-center cursor-pointer transition-all">
                             <ListTodo className="h-3.5 w-3.5" />
                           </button>
@@ -1006,7 +1029,13 @@ export default function ProjectsPage() {
                             : <Square className="h-4 w-4 text-slate-300 dark:text-slate-600" />
                         }
                       </button>
-                      <span className={cn("flex-1 text-xs font-medium truncate", task.done === 1 ? "line-through text-slate-400 dark:text-slate-600" : "text-slate-700 dark:text-slate-300")}>{task.title}</span>
+                      <div className="min-w-0 flex-1">
+                        <p className={cn("truncate text-xs font-medium", task.done === 1 ? "line-through text-slate-400 dark:text-slate-600" : "text-slate-700 dark:text-slate-300")}>{task.title}</p>
+                        <p className="mt-1 truncate text-[10px] text-slate-500">
+                          {roster.find((member: any) => member.id === task.userId)?.name || "Unassigned"}
+                          {task.dueDate ? ` · Due ${new Date(`${task.dueDate}T00:00:00`).toLocaleDateString(undefined, { month: "short", day: "numeric" })}` : ""}
+                        </p>
+                      </div>
                       <span className={cn("text-[9px] font-bold px-1.5 py-0.5 rounded-full border shrink-0",
                         task.priority === "high" ? "bg-rose-50 text-rose-600 border-rose-200 dark:bg-rose-950/20 dark:text-rose-400 dark:border-rose-900/30"
                         : task.priority === "low" ? "bg-slate-50 text-slate-500 border-slate-200 dark:bg-slate-900 dark:text-slate-500 dark:border-slate-800"
@@ -1046,6 +1075,7 @@ export default function ProjectsPage() {
                 <div className="flex gap-2">
                   <input
                     type="text"
+                    maxLength={255}
                     placeholder="New task title…"
                     value={newTaskTitle}
                     onChange={e => setNewTaskTitle(e.target.value)}
@@ -1061,8 +1091,22 @@ export default function ProjectsPage() {
                     ))}
                   </div>
                 </div>
-                <Button onClick={handleAddTask} disabled={addingTask || !newTaskTitle.trim()} size="sm" className="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold justify-center">
-                  {addingTask ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <><PlusCircle className="h-3.5 w-3.5 mr-1.5" /> Add Task</>}
+                <textarea value={newTaskDescription} onChange={e => setNewTaskDescription(e.target.value)} maxLength={4000} rows={2} placeholder="Context or acceptance notes (optional)" className="w-full resize-none rounded-xl border border-slate-800 bg-slate-950 px-3 py-2.5 text-base text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500/40 sm:text-sm" />
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  <div>
+                    <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-wider text-slate-400">Assignee</label>
+                    <select value={newTaskAssignee} onChange={e => setNewTaskAssignee(e.target.value)} className="h-11 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 text-base text-white focus:outline-none focus:ring-2 focus:ring-brand-500/40 sm:text-xs">
+                      <option value="">Choose teammate</option>
+                      {roster.map((member: any) => <option key={member.id} value={member.id}>{member.name}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-wider text-slate-400">Due date</label>
+                    <input type="date" value={newTaskDueDate} onChange={e => setNewTaskDueDate(e.target.value)} className="h-11 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 text-base text-white [color-scheme:dark] focus:outline-none focus:ring-2 focus:ring-brand-500/40 sm:text-xs" />
+                  </div>
+                </div>
+                <Button onClick={handleAddTask} disabled={addingTask || !newTaskTitle.trim() || !newTaskAssignee} size="sm" className="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold justify-center">
+                  {addingTask ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <><PlusCircle className="h-3.5 w-3.5 mr-1.5" /> Assign Task</>}
                 </Button>
               </div>
             </div>

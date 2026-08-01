@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/Card";
 import { Avatar } from "@/components/ui/Avatar";
 import { getCurrentUserCached } from "@/lib/currentUserClient";
 import { sendMessage, getConversations, getConversationMessages, markConversationRead, getMessagingContacts } from "@/app/actions/crm";
+import { useToast } from "@/providers/ToastProvider";
 
 // Real contact shape (replaces the old MockContact).
 interface Contact {
@@ -32,6 +33,7 @@ const sectionIcons = { admins: Shield, employees: Users, clients: Building2 } as
 type SectionKey = keyof typeof sectionIcons;
 
 export default function EmployeeMessagesPage() {
+  const { toast } = useToast();
   const [conversations, setConversations] = useState<any[]>([]);
   const [activeContact, setActiveContact] = useState<Contact | null>(null);
   const [messages, setMessages] = useState<any[]>([]);
@@ -143,6 +145,7 @@ export default function EmployeeMessagesPage() {
 
   useEffect(() => {
     if (activeContact) {
+      setMessages([]);
       markConversationRead(activeContact.id).catch(() => {});
       let timeout: ReturnType<typeof setTimeout> | undefined;
       let stopped = false;
@@ -150,7 +153,7 @@ export default function EmployeeMessagesPage() {
       const load = async () => {
         try {
           const res = await getConversationMessages(activeContact.id);
-          if (res.success && res.data.length > 0) setMessages(res.data);
+          if (!stopped && res.success) setMessages(res.data || []);
         } catch {}
       };
       const poll = async () => {
@@ -192,7 +195,8 @@ export default function EmployeeMessagesPage() {
   const handleSend = async () => {
     if (!newMsg.trim() || !activeContact) return;
     const text = newMsg.trim();
-    const optimisticMsg = { id: Date.now(), senderId: -1, receiverId: activeContact.id, message: text, read: 0, createdAt: new Date().toISOString() };
+    const optimisticId = -Date.now();
+    const optimisticMsg = { id: optimisticId, senderId: -1, receiverId: activeContact.id, message: text, read: 0, createdAt: new Date().toISOString() };
     setMessages((prev) => [...prev, optimisticMsg]);
     setNewMsg("");
     if (!chatIds.includes(activeContact.id)) {
@@ -200,7 +204,18 @@ export default function EmployeeMessagesPage() {
       setChatIds(updated);
       saveChatIds(updated);
     }
-    try { await sendMessage(activeContact.id, text); } catch {}
+    try {
+      const result = await sendMessage(activeContact.id, text);
+      if (!result.success) {
+        setMessages((prev) => prev.filter((message) => message.id !== optimisticId));
+        setNewMsg(text);
+        toast(result.error || "Message could not be sent.", "error");
+      }
+    } catch {
+      setMessages((prev) => prev.filter((message) => message.id !== optimisticId));
+      setNewMsg(text);
+      toast("Message could not be sent.", "error");
+    }
   };
 
   // Real users carry no presence status; show a neutral "available" dot.

@@ -583,7 +583,7 @@ export default function DocumentsPage() {
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Acme Marketing Strategy Q4"
+                    placeholder="e.g. Marketing Strategy Q4"
                     value={uploadName}
                     onChange={(e) => setUploadName(e.target.value)}
                     className="w-full h-10 rounded-2xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] px-3 text-xs focus:ring-2 focus:ring-indigo-500/40 text-slate-800 dark:text-white"

@@ -1,13 +1,13 @@
 "use client";
 
 import { Fragment, useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useToast } from "@/providers/ToastProvider";
-import { createLoginLink, createUser } from "@/app/actions/auth";
+import { createLoginLink } from "@/app/actions/auth";
 import { PASSWORD_MAX_LENGTH } from "@/lib/security/password";
 import { ShareLoginLinkDialog } from "@/components/ShareLoginLinkDialog";
 import {
-  getClientsEnriched, onboardClient, updateClient, updateClientStage,
+  getClientsEnriched, createClientAccount, updateClient, updateClientStage,
   updateClientChecklist, deleteClient, getTeamUsers, getProjects,
   getInvoices, createInvoice, updateInvoiceStatus, deleteInvoice,
   autoGenerateInvoices, repairClientOwnerIds,
@@ -100,6 +100,7 @@ export default function ClientsPage() {
   const { toast, confirmDialog } = useToast();
 
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [activeTab, setActiveTab] = useState<"directory" | "invoices">("directory");
   const [search, setSearch] = useState("");
@@ -139,6 +140,14 @@ export default function ClientsPage() {
   // three-dots menu
   const [menuOpenId, setMenuOpenId]           = useState<number | null>(null);
 
+  useEffect(() => {
+    if (searchParams.get("add") === "1") {
+      setDrawerOpen(true);
+      setDrawerStep(0);
+      setForm({ ...BLANK_CLIENT });
+    }
+  }, [searchParams]);
+
   const load = async () => {
     setLoading(true);
     try {
@@ -171,33 +180,21 @@ export default function ClientsPage() {
     }
     setSubmitting(true);
     try {
-      const ufd = new FormData();
-      ufd.append("name", form.contactName.trim() || form.name.trim());
-      ufd.append("email", form.loginEmail.trim().toLowerCase());
-      ufd.append("password", form.loginPassword);
-      ufd.append("role", "client");
-      const ur = await createUser(ufd);
-      if (!ur.success) { toast(ur.error || "Failed to create portal account.", "error"); return; }
-
-      // ownerId must point to the client's own user account (not an employee)
-      // so the portal login resolves to their data correctly
-      const clientUserId = ur.userId ? String(ur.userId) : "";
-      if (!clientUserId) { toast("Created user but could not retrieve ID. Please re-link manually.", "error"); return; }
-
-      const details = JSON.stringify({
-        contactName: form.contactName, contactEmail: form.contactEmail,
-        contactPhone: form.contactPhone, websiteUrl: form.websiteUrl,
-        industry: form.industry, country: form.country,
-        services: form.services, loginEmail: form.loginEmail,
-        accountManager: form.ownerId, // store employee account manager in details
-      });
       const cfd = new FormData();
-      cfd.append("name", form.name.trim());
-      cfd.append("ownerId", clientUserId);
-      cfd.append("details", details);
-      const cr = await onboardClient(cfd);
+      cfd.append("brandName", form.name.trim());
+      cfd.append("contactName", form.contactName);
+      cfd.append("contactEmail", form.contactEmail);
+      cfd.append("contactPhone", form.contactPhone);
+      cfd.append("websiteUrl", form.websiteUrl);
+      cfd.append("industry", form.industry);
+      cfd.append("country", form.country);
+      cfd.append("services", form.services);
+      cfd.append("loginEmail", form.loginEmail.trim().toLowerCase());
+      cfd.append("loginPassword", form.loginPassword);
+      cfd.append("accountManager", form.ownerId);
+      const cr = await createClientAccount(cfd);
       if (cr.success) {
-        const linkResult = await createLoginLink(Number(clientUserId));
+        const linkResult = await createLoginLink(Number(cr.userId));
         if (linkResult.success && linkResult.loginLink) {
           setShareLogin({
             link: linkResult.loginLink,
@@ -712,7 +709,7 @@ export default function ClientsPage() {
                     <div className="space-y-4">
                       <div>
                         <label className={LABEL}>Brand / Company Name *</label>
-                        <input required value={form.name} onChange={e => f({ name: e.target.value })} placeholder="e.g. Stark Industries" className={INPUT} />
+                        <input required value={form.name} onChange={e => f({ name: e.target.value })} placeholder="e.g. Client company" className={INPUT} />
                       </div>
                       <div className="grid grid-cols-2 gap-3">
                         <div>
@@ -747,7 +744,7 @@ export default function ClientsPage() {
                       <div className="grid grid-cols-2 gap-3">
                         <div>
                           <label className={LABEL}>Contact Email</label>
-                          <input type="email" value={form.contactEmail} onChange={e => f({ contactEmail: e.target.value, loginEmail: form.loginEmail || e.target.value })} placeholder="pepper@stark.com" className={INPUT} />
+                          <input type="email" value={form.contactEmail} onChange={e => f({ contactEmail: e.target.value, loginEmail: form.loginEmail || e.target.value })} placeholder="contact@company.com" className={INPUT} />
                         </div>
                         <div>
                           <label className={LABEL}>Phone / WhatsApp</label>
@@ -845,7 +842,7 @@ export default function ClientsPage() {
                 <div className="space-y-4">
                   <div>
                     <label className={LABEL}>Brand / Company Name *</label>
-                    <input required value={editForm.name || ""} onChange={e => ef({ name: e.target.value })} placeholder="e.g. Stark Industries" className={INPUT} />
+                    <input required value={editForm.name || ""} onChange={e => ef({ name: e.target.value })} placeholder="e.g. Client company" className={INPUT} />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
@@ -876,7 +873,7 @@ export default function ClientsPage() {
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className={LABEL}>Contact Email</label>
-                      <input type="email" value={editForm.contactEmail || ""} onChange={e => ef({ contactEmail: e.target.value })} placeholder="pepper@stark.com" className={INPUT} />
+                      <input type="email" value={editForm.contactEmail || ""} onChange={e => ef({ contactEmail: e.target.value })} placeholder="contact@company.com" className={INPUT} />
                     </div>
                     <div>
                       <label className={LABEL}>Phone / WhatsApp</label>

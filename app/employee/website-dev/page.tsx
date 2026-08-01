@@ -34,7 +34,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Avatar } from "@/components/ui/Avatar";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { getWebDevDashboardData, syncWebHealthMetrics } from "@/app/actions/crm";
+import { getWebDevDashboardData } from "@/app/actions/crm";
 import { cn } from "@/components/ui/cn";
 
 const priorityVariant = {
@@ -63,7 +63,6 @@ export default function WebsiteDevPage() {
   const { toast, confirmDialog } = useToast();
 
   const [loading, setLoading] = useState(true);
-  const [syncingHealth, setSyncingHealth] = useState(false);
   const [tasks, setTasks] = useState<WebsiteTask[]>([]);
   const [sitesList, setSitesList] = useState<any[]>([]);
 
@@ -73,10 +72,10 @@ export default function WebsiteDevPage() {
 
   // New Ticket Form states
   const [tTitle, setTTitle] = useState("");
-  const [tRepo, setTRepo] = useState("github.com/client/repo");
+  const [tRepo, setTRepo] = useState("");
   const [tPriority, setTPriority] = useState<"low" | "medium" | "high" | "critical">("medium");
   const [tStatus, setTStatus] = useState<"todo" | "in-progress" | "in-review" | "blocked" | "done">("todo");
-  const [tAssignee, setTAssignee] = useState("Priya Shah");
+  const [tAssignee, setTAssignee] = useState("");
 
   // GitHub commits
   // GitHub commits & Site Inspector
@@ -124,13 +123,13 @@ export default function WebsiteDevPage() {
           return {
             id: p.id,
             name: p.name,
-            url: sd.websiteUrl || p.name,
+            url: sd.domain || "",
             client: p.clientName || "Unknown Client",
-            status: Number.isFinite(Number(sd.uptime)) ? "operational" : "unconfigured",
+            status: sd.status || (Number.isFinite(Number(sd.uptime)) ? "operational" : "unconfigured"),
             uptime: Number.isFinite(Number(sd.uptime)) ? Number(sd.uptime) : null,
             response: Number.isFinite(Number(sd.response)) ? Number(sd.response) : null,
             lastChecked: null,
-            githubRepo: sd.githubRepo || "",
+            githubRepo: String(sd.repoLink || "").replace(/^https?:\/\/github\.com\//, "").replace(/\.git\/?$/, ""),
             isLive: sd.isLive === true,
             domainExpiry: sd.domainExpiry || "Not Set",
           };
@@ -239,19 +238,6 @@ export default function WebsiteDevPage() {
     }
   };
 
-  const handleSyncHealth = async () => {
-    setSyncingHealth(true);
-    const res = await syncWebHealthMetrics();
-    setSyncingHealth(false);
-    if (res.success) {
-      toast(`Successfully synced live network health for ${res.updatedCount} domains from UptimeRobot!`, "success");
-      // Optionally reload the page to immediately refresh the dashboard data
-      window.location.reload();
-    } else {
-      toast(res.error || "Failed to sync health metrics", "error");
-    }
-  };
-
   if (loading) return <WebsiteDevPageSkeleton />;
 
   return (
@@ -267,14 +253,20 @@ export default function WebsiteDevPage() {
         actions={
           <Button 
             size="md" 
-            onClick={() => setShowTicketForm(!showTicketForm)} 
-            className="bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-700 hover:to-indigo-700 text-white font-bold shadow-md hover:shadow-lg transition-all border-none"
+            disabled
+            title="Tickets are managed by an administrator"
+            className="font-bold"
           >
             <Plus className="h-4 w-4 mr-1.5" />
             New Ticket
           </Button>
         }
       />
+
+      <div className="flex items-start gap-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 px-4 py-3 text-sm text-slate-600 dark:text-slate-300">
+        <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-brand-500" />
+        <p><span className="font-semibold">Read-only view.</span> Tickets, domains, and monitoring settings are managed by an administrator.</p>
+      </div>
 
       <AnimatePresence>
         {/* Slideout New Ticket Form */}
@@ -328,9 +320,7 @@ export default function WebsiteDevPage() {
                     <label className="block text-[10px] font-extrabold text-brand-900/60 dark:text-brand-100/50 uppercase tracking-widest mb-1.5">Assign Lead Dev</label>
                     <select value={tAssignee} onChange={(e) => setTAssignee(e.target.value)}
                       className="h-11 w-full rounded-xl border border-white/40 dark:border-slate-800/60 bg-white/60 dark:bg-slate-900/40 px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white backdrop-blur-md shadow-sm transition-all">
-                      <option>Priya Shah</option>
-                      <option>Sam Okafor</option>
-                      <option>Mateo Alvarez</option>
+                      <option value="">Assigned by administrator</option>
                     </select>
                   </div>
                   <div className="flex md:col-span-5 justify-end mt-2">
@@ -455,7 +445,7 @@ export default function WebsiteDevPage() {
                 <p className="text-xs font-bold text-slate-500">{tasks.length} active tickets</p>
               </div>
             </div>
-            <Button variant="outline" size="sm" onClick={() => setShowTicketForm(true)} className="text-xs font-bold rounded-xl bg-white dark:bg-slate-950 shadow-sm border-slate-200 dark:border-slate-800">
+            <Button variant="outline" size="sm" disabled title="Tickets are managed by an administrator" className="text-xs font-bold rounded-xl bg-white dark:bg-slate-950 shadow-sm border-slate-200 dark:border-slate-800">
               <Plus className="h-3.5 w-3.5 mr-1.5" /> Add Ticket
             </Button>
           </CardHeader>
@@ -476,8 +466,9 @@ export default function WebsiteDevPage() {
                     <input
                       type="checkbox"
                       checked={isCompleted}
-                      onChange={() => handleToggleTaskDone(t.id)}
-                      className="h-5 w-5 rounded-md border-2 border-slate-300 dark:border-slate-600 text-brand-500 focus:ring-brand-500 focus:ring-offset-0 cursor-pointer transition-all"
+                      disabled
+                      title="Task status is managed by an administrator"
+                      className="h-5 w-5 rounded-md border-2 border-slate-300 dark:border-slate-600 text-brand-500 focus:ring-brand-500 focus:ring-offset-0 cursor-not-allowed transition-all"
                     />
                   </div>
                   <div className="min-w-0 flex-1">
@@ -495,7 +486,8 @@ export default function WebsiteDevPage() {
                       {/* Premium Status Select */}
                       <select
                         value={t.status}
-                        onChange={(e) => handleInlineStatusChange(t.id, e.target.value as any)}
+                        disabled
+                        title="Task status is managed by an administrator"
                         className={cn(
                           "rounded-md border bg-transparent px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide focus:outline-none transition-colors cursor-pointer",
                           isCompleted ? "border-emerald-200 text-emerald-600 dark:border-emerald-900 dark:text-emerald-400" : "border-slate-200 text-slate-600 dark:border-slate-700 dark:text-slate-300 hover:border-brand-300 dark:hover:border-brand-700"
@@ -516,9 +508,9 @@ export default function WebsiteDevPage() {
                   </div>
 
                   <button
-                    onClick={() => handleDeleteTask(t.id, t.title)}
-                    className="h-8 w-8 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-rose-500 hover:border-rose-300 dark:hover:border-rose-700 flex items-center justify-center cursor-pointer transition-all shadow-sm opacity-0 group-hover:opacity-100 shrink-0"
-                    title="Delete Ticket"
+                    disabled
+                    className="h-8 w-8 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-400 flex items-center justify-center cursor-not-allowed transition-all shadow-sm opacity-40 shrink-0"
+                    title="Tickets are managed by an administrator"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
@@ -543,14 +535,14 @@ export default function WebsiteDevPage() {
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  onClick={handleSyncHealth} 
-                  disabled={syncingHealth}
+                  disabled
+                  title="Monitoring sync is managed by an administrator"
                   className="h-8 px-3 rounded-full flex items-center justify-center bg-white dark:bg-slate-950 shadow-sm border-slate-200 dark:border-slate-800 text-xs font-bold"
                 >
-                  <RefreshCw className={cn("h-3.5 w-3.5 mr-1.5", syncingHealth && "animate-spin")} />
-                  {syncingHealth ? "Syncing..." : "Sync Live Data"}
+                  <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
+                  Admin sync only
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => setShowSiteForm(true)} className="h-8 w-8 p-0 rounded-full flex items-center justify-center bg-white dark:bg-slate-950 shadow-sm border-slate-200 dark:border-slate-800">
+                <Button variant="outline" size="sm" disabled title="Domains are managed by an administrator" className="h-8 w-8 p-0 rounded-full flex items-center justify-center bg-white dark:bg-slate-950 shadow-sm border-slate-200 dark:border-slate-800">
                   <Plus className="h-4 w-4" />
                 </Button>
               </div>
@@ -587,8 +579,9 @@ export default function WebsiteDevPage() {
                       </Badge>
                       
                       <button
-                        onClick={() => handleDeleteSite(s.name)}
-                        className="h-8 w-8 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-rose-500 hover:border-rose-300 dark:hover:border-rose-700 flex items-center justify-center cursor-pointer transition-all shadow-sm opacity-0 group-hover:opacity-100 shrink-0"
+                        disabled
+                        title="Domains are managed by an administrator"
+                        className="h-8 w-8 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-400 flex items-center justify-center cursor-not-allowed transition-all shadow-sm opacity-40 shrink-0"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>
@@ -620,10 +613,7 @@ export default function WebsiteDevPage() {
             onChange={(e) => {
               setSelectedSiteId(e.target.value);
               const selected = sitesList.find(s => String(s.id) === e.target.value);
-              if (selected) {
-                const repo = selected.githubRepo || `thepiecraftmarketing/${selected.name.replace(/\s+/g, '-').toLowerCase()}`;
-                fetchCommits(repo);
-              }
+              if (selected?.githubRepo) fetchCommits(selected.githubRepo);
             }}
             className="h-11 rounded-xl border-2 border-brand-500/20 bg-brand-50/50 dark:bg-brand-900/10 px-4 text-sm font-bold shadow-sm focus:ring-2 focus:ring-brand-500 w-full sm:w-72"
           >
@@ -710,12 +700,13 @@ function SiteInspectorView({ site, commits, commitsLoading, commitsError, fetchC
               <GitCommit className="h-4.5 w-4.5 text-brand-500" />
               GitHub Commits Feed
             </CardTitle>
-            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-1">Live from repository: {site.githubRepo || "Auto-detected"}</p>
+            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-1">{site.githubRepo ? `Live from repository: ${site.githubRepo}` : "No repository connected"}</p>
           </div>
           <Button
             size="sm"
             variant="outline"
-            onClick={() => fetchCommits(site.githubRepo || `thepiecraftmarketing/${site.name.replace(/\s+/g, '-').toLowerCase()}`)}
+            onClick={() => site.githubRepo && fetchCommits(site.githubRepo)}
+            disabled={!site.githubRepo}
             className="h-9 w-9 p-0 rounded-xl flex items-center justify-center"
           >
             <RefreshCw className={`h-3.5 w-3.5 ${commitsLoading ? "animate-spin" : ""}`} />

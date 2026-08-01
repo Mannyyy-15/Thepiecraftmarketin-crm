@@ -33,13 +33,13 @@ export function extractClientIp(headerMap: Headers): string {
 
 /**
  * Runs the office Wi-Fi (IP) + geofence (Haversine) checks against the first
- * configured location. Server-side only. Messages are kept short so the UI
+ * configured location for the active organization. Server-side only. Messages are kept short so the UI
  * can show them in a small toast.
  */
-export async function validateGeofence(userLat: number, userLng: number, userBssid?: string): Promise<GeoValidation> {
+export async function validateGeofence(organizationId: number, userLat: number, userLng: number, userBssid?: string): Promise<GeoValidation> {
   if (!db) return { ok: false, message: "Server not connected." };
 
-  if (!Number.isFinite(userLat) || !Number.isFinite(userLng) || Math.abs(userLat) > 90 || Math.abs(userLng) > 180) {
+  if (!Number.isInteger(organizationId) || organizationId <= 0 || !Number.isFinite(userLat) || !Number.isFinite(userLng) || Math.abs(userLat) > 90 || Math.abs(userLng) > 180) {
     return { ok: false, message: "Invalid location. Enable GPS and retry." };
   }
 
@@ -68,6 +68,7 @@ export async function validateGeofence(userLat: number, userLng: number, userBss
           + sin(radians(${userLat})) * sin(radians(latitude))
         )), 2) AS distance_meters
       FROM locations
+      WHERE organization_id = ${organizationId}
       ORDER BY id
       LIMIT 1
     `);

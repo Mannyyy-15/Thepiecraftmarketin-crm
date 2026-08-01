@@ -29,6 +29,7 @@ import { Progress } from "@/components/ui/Progress";
 import { getCurrentUserCached } from "@/lib/currentUserClient";
 import { getClientDashboardData } from "@/app/actions/crm";
 import { getClientProjectStatusVariant, getProjectStatusLabel } from "@/lib/statusHelpers";
+import { useRefreshOnFocus } from "@/lib/use-refresh-on-focus";
 
 export default function ClientOverviewPage() {
   const [user, setUser] = useState<{ name?: string; email?: string } | null>(null);
@@ -36,8 +37,7 @@ export default function ClientOverviewPage() {
   const [invoices, setInvoices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    (async () => {
+  const load = async () => {
       const [u, dashRes] = await Promise.all([
         getCurrentUserCached(),
         getClientDashboardData(),
@@ -48,8 +48,10 @@ export default function ClientOverviewPage() {
         setInvoices(dashRes.data.pendingInvoices ?? []);
       }
       setLoading(false);
-    })();
-  }, []);
+  };
+
+  useEffect(() => { void load(); }, []);
+  useRefreshOnFocus(load);
 
   const projects = dashboardData?.projects || [];
   const actionItems = dashboardData?.actionItems || [];
@@ -58,20 +60,12 @@ export default function ClientOverviewPage() {
   const activeProjects = projects.filter((p: any) => p.status !== "completed").length;
   const completedProjects = projects.filter((p: any) => p.status === "completed").length;
   const nextMilestone = upcomingMilestones[0];
-  const pendingInvoices = invoices.filter((i: any) => i.status === "pending" || i.status === "overdue");
+  const openInvoices = invoices.filter((i: any) => i.status === "sent" || i.status === "pending" || i.status === "overdue");
   const firstName = (user?.name || "there").split(" ")[0];
 
-  const getProgressByStatus = (status: string) => {
-    if (status === "planning") return 15;
-    if (status === "in_progress" || status === "in-progress") return 55;
-    if (status === "in_review" || status === "review") return 85;
-    if (status === "completed") return 100;
-    return 30;
-  };
-
-  const progressData = projects.map((p: any) => ({
+  const progressData = projects.filter((p: any) => typeof p.progress === "number").map((p: any) => ({
     name: (p.name || "Project").length > 12 ? p.name.slice(0, 12) + "…" : (p.name || "Project"),
-    progress: typeof p.progress === "number" && p.progress > 0 ? p.progress : getProgressByStatus(p.status),
+    progress: Math.max(0, Math.min(100, p.progress)),
   }));
 
   return (
@@ -142,10 +136,10 @@ export default function ClientOverviewPage() {
           icon={<Target className="h-5 w-5" />}
         />
         <KpiCard
-          title="Pending Invoices"
-          value={loading ? "—" : `${pendingInvoices.length}`}
-          change={pendingInvoices.length > 0 ? "Awaiting payment" : "All settled"}
-          changeType={pendingInvoices.length > 0 ? "negative" : "positive"}
+          title="Open Invoices"
+          value={loading ? "—" : `${openInvoices.length}`}
+          change={openInvoices.length > 0 ? "Sent or overdue" : "All settled"}
+          changeType={openInvoices.length > 0 ? "negative" : "positive"}
           accent="brand"
           icon={<FileText className="h-5 w-5" />}
         />
@@ -167,7 +161,9 @@ export default function ClientOverviewPage() {
               {progressData.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center text-center gap-2">
                   <Target className="h-7 w-7 text-slate-300 dark:text-slate-700" />
-                  <p className="text-xs text-slate-400">No active projects yet.</p>
+                  <p className="text-xs text-slate-400">
+                    {projects.length === 0 ? "No active projects yet." : "No progress percentages have been published yet."}
+                  </p>
                 </div>
               ) : (
                 <ResponsiveContainer width="100%" height="100%">
@@ -256,7 +252,7 @@ export default function ClientOverviewPage() {
               </div>
             ) : (
               projects.slice(0, 4).map((p: any) => {
-                const progress = getProgressByStatus(p.status);
+                const progress = typeof p.progress === "number" ? Math.max(0, Math.min(100, p.progress)) : null;
                 return (
                   <div key={p.id} className="rounded-lg border border-slate-200 dark:border-slate-800 p-4 hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
                     <div className="flex items-start justify-between gap-3">
@@ -270,17 +266,14 @@ export default function ClientOverviewPage() {
                         {getProjectStatusLabel(p.status)}
                       </Badge>
                     </div>
-                    <div className="mt-3 flex items-center gap-3">
-                      <Progress
-                        value={progress}
-                        size="sm"
-                        className="flex-1"
-                        barClassName="bg-gradient-to-r from-portal-500 to-portal-600"
-                      />
-                      <span className="text-xs font-medium text-slate-600 dark:text-slate-300 tabular-nums shrink-0">
-                        {progress}%
-                      </span>
-                    </div>
+                    {progress !== null ? (
+                      <div className="mt-3 flex items-center gap-3">
+                        <Progress value={progress} size="sm" className="flex-1" barClassName="bg-gradient-to-r from-portal-500 to-portal-600" />
+                        <span className="text-xs font-medium text-slate-600 dark:text-slate-300 tabular-nums shrink-0">{progress}%</span>
+                      </div>
+                    ) : (
+                      <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">Progress has not been reported.</p>
+                    )}
                   </div>
                 );
               })

@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useToast } from "@/providers/ToastProvider";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -10,13 +9,9 @@ import {
   GitBranch,
   GitCommit,
   Globe,
-  Plus,
   RefreshCw,
   Server,
   Zap,
-  Trash2,
-  X,
-  Loader2,
   Activity,
   ShieldCheck,
   Cpu,
@@ -34,7 +29,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Avatar } from "@/components/ui/Avatar";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { getWebDevDashboardData, syncWebHealthMetrics } from "@/app/actions/crm";
+import { getWebDevDashboardData } from "@/app/actions/crm";
 import { cn } from "@/components/ui/cn";
 
 const priorityVariant = {
@@ -60,23 +55,9 @@ interface WebsiteTask {
 }
 
 export default function WebsiteDevPage() {
-  const { toast, confirmDialog } = useToast();
-
   const [loading, setLoading] = useState(true);
-  const [syncingHealth, setSyncingHealth] = useState(false);
   const [tasks, setTasks] = useState<WebsiteTask[]>([]);
   const [sitesList, setSitesList] = useState<any[]>([]);
-
-  // Drawer toggles
-  const [showTicketForm, setShowTicketForm] = useState(false);
-  const [showSiteForm, setShowSiteForm] = useState(false);
-
-  // New Ticket Form states
-  const [tTitle, setTTitle] = useState("");
-  const [tRepo, setTRepo] = useState("github.com/client/repo");
-  const [tPriority, setTPriority] = useState<"low" | "medium" | "high" | "critical">("medium");
-  const [tStatus, setTStatus] = useState<"todo" | "in-progress" | "in-review" | "blocked" | "done">("todo");
-  const [tAssignee, setTAssignee] = useState("Priya Shah");
 
   // GitHub commits
   // GitHub commits & Site Inspector
@@ -107,12 +88,6 @@ export default function WebsiteDevPage() {
     // Initial fetch not needed unless site is selected
   }, []);
 
-  // New Site Form states
-  const [sName, setSName] = useState("");
-  const [sUptime, setSUptime] = useState(99.9);
-  const [sResponse, setSResponse] = useState(150);
-  const [sStatus, setSStatus] = useState<"operational" | "degraded" | "outage">("operational");
-
   useEffect(() => {
     (async () => {
       const res = await getWebDevDashboardData();
@@ -124,13 +99,13 @@ export default function WebsiteDevPage() {
           return {
             id: p.id,
             name: p.name,
-            url: sd.websiteUrl || p.name,
+            url: sd.domain || "",
             client: p.clientName || "Unknown Client",
-            status: Number.isFinite(Number(sd.uptime)) ? "operational" : "unconfigured",
+            status: sd.status || (Number.isFinite(Number(sd.uptime)) ? "operational" : "unconfigured"),
             uptime: Number.isFinite(Number(sd.uptime)) ? Number(sd.uptime) : null,
             response: Number.isFinite(Number(sd.response)) ? Number(sd.response) : null,
             lastChecked: null,
-            githubRepo: sd.githubRepo || "",
+            githubRepo: String(sd.repoLink || "").replace(/^https?:\/\/github\.com\//, "").replace(/\.git\/?$/, ""),
             isLive: sd.isLive === true,
             domainExpiry: sd.domainExpiry || "Not Set",
           };
@@ -171,87 +146,6 @@ export default function WebsiteDevPage() {
     ? Math.round(knownResponse.reduce((acc, s) => acc + s.response, 0) / knownResponse.length)
     : null;
 
-  // Handlers
-  const handleAddTicket = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!tTitle) return;
-
-    const newTicket = {
-      id: `task-${Date.now()}`,
-      title: tTitle,
-      repo: tRepo,
-      priority: tPriority,
-      status: tStatus,
-      assignee: tAssignee,
-    };
-
-    setTasks([newTicket, ...tasks]);
-    setTTitle("");
-    setShowTicketForm(false);
-    toast(`Successfully created engineering backlog ticket: "${tTitle}"!`, "success");
-  };
-
-  const handleRegisterSite = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!sName) return;
-
-    const newSite = {
-      name: sName,
-      uptime: Number(sUptime),
-      response: Number(sResponse),
-      status: sStatus as any,
-    };
-
-    setSitesList([...sitesList, newSite]);
-    setSName("");
-    setShowSiteForm(false);
-    toast(`Successfully registered domain under management: "${sName}"!`, "success");
-  };
-
-  const handleToggleTaskDone = (id: string) => {
-    setTasks(
-      tasks.map((t) => {
-        if (t.id === id) {
-          const nextStatus = t.status === "done" ? "todo" : "done";
-          return { ...t, status: nextStatus };
-        }
-        return t;
-      })
-    );
-  };
-
-  const handleInlineStatusChange = (id: string, newStatus: any) => {
-    setTasks(
-      tasks.map((t) => (t.id === id ? { ...t, status: newStatus } : t))
-    );
-  };
-
-  const handleDeleteTask = async (id: string, title: string) => {
-    if (await confirmDialog(`Are you sure you want to delete ticket "${title}"?`)) {
-      setTasks(tasks.filter((t) => t.id !== id));
-      toast(`Deleted ticket "${title}"`, "info");
-    }
-  };
-
-  const handleDeleteSite = async (name: string) => {
-    if (await confirmDialog(`Are you sure you want to stop monitoring domain "${name}"?`)) {
-      setSitesList(sitesList.filter((s) => s.name !== name));
-    }
-  };
-
-  const handleSyncHealth = async () => {
-    setSyncingHealth(true);
-    const res = await syncWebHealthMetrics();
-    setSyncingHealth(false);
-    if (res.success) {
-      toast(`Successfully synced live network health for ${res.updatedCount} domains from UptimeRobot!`, "success");
-      // Optionally reload the page to immediately refresh the dashboard data
-      window.location.reload();
-    } else {
-      toast(res.error || "Failed to sync health metrics", "error");
-    }
-  };
-
   if (loading) return <WebsiteDevPageSkeleton />;
 
   return (
@@ -264,149 +158,8 @@ export default function WebsiteDevPage() {
       <PageHeader
         eyebrow="Engineering"
         title="Web Operations"
-        actions={
-          <Button 
-            size="md" 
-            onClick={() => setShowTicketForm(!showTicketForm)} 
-            className="bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-700 hover:to-indigo-700 text-white font-bold shadow-md hover:shadow-lg transition-all border-none"
-          >
-            <Plus className="h-4 w-4 mr-1.5" />
-            New Ticket
-          </Button>
-        }
+        description="A read-only view of website delivery, monitoring, and engineering activity shared by your team."
       />
-
-      <AnimatePresence>
-        {/* Slideout New Ticket Form */}
-        {showTicketForm && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden mb-6"
-          >
-            <Card className="border border-brand-500/30 bg-gradient-to-br from-brand-50/50 to-indigo-50/50 dark:from-brand-500/10 dark:to-indigo-500/5 backdrop-blur-xl shadow-lg">
-              <CardHeader className="py-5 border-b border-white/20 dark:border-white/5">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <CardTitle className="text-sm font-bold flex items-center gap-2 text-brand-900 dark:text-brand-100">
-                      <div className="h-6 w-6 rounded-md bg-white dark:bg-slate-800 flex items-center justify-center shadow-sm">
-                        <Code2 className="h-3.5 w-3.5 text-brand-500" />
-                      </div>
-                      Create Engineering Ticket
-                    </CardTitle>
-                    <CardDescription className="text-xs mt-1 text-brand-700/70 dark:text-brand-300/60">Define the engineering task and commit to the backlog.</CardDescription>
-                  </div>
-                  <button onClick={() => setShowTicketForm(false)} className="h-8 w-8 rounded-full bg-white/50 dark:bg-slate-800/50 flex items-center justify-center text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white transition-all shadow-sm">
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-              </CardHeader>
-              <CardContent className="pt-5 pb-6">
-                <form onSubmit={handleAddTicket} className="grid grid-cols-1 md:grid-cols-5 gap-x-6 gap-y-4 items-end">
-                  <div className="md:col-span-2">
-                    <label className="block text-[10px] font-extrabold text-brand-900/60 dark:text-brand-100/50 uppercase tracking-widest mb-1.5">Ticket Title</label>
-                    <input type="text" required placeholder="e.g. Integrate Stripe Checkout" value={tTitle} onChange={(e) => setTTitle(e.target.value)}
-                      className="h-11 w-full rounded-xl border border-white/40 dark:border-slate-800/60 bg-white/60 dark:bg-slate-900/40 px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white backdrop-blur-md shadow-sm transition-all" />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-extrabold text-brand-900/60 dark:text-brand-100/50 uppercase tracking-widest mb-1.5">Code Repository</label>
-                    <input type="text" required value={tRepo} onChange={(e) => setTRepo(e.target.value)}
-                      className="h-11 w-full rounded-xl border border-white/40 dark:border-slate-800/60 bg-white/60 dark:bg-slate-900/40 px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white backdrop-blur-md shadow-sm transition-all" />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-extrabold text-brand-900/60 dark:text-brand-100/50 uppercase tracking-widest mb-1.5">Severity Priority</label>
-                    <select value={tPriority} onChange={(e) => setTPriority(e.target.value as any)}
-                      className="h-11 w-full rounded-xl border border-white/40 dark:border-slate-800/60 bg-white/60 dark:bg-slate-900/40 px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white backdrop-blur-md shadow-sm transition-all">
-                      <option value="low">Low</option>
-                      <option value="medium">Medium</option>
-                      <option value="high">High</option>
-                      <option value="critical">Critical</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-extrabold text-brand-900/60 dark:text-brand-100/50 uppercase tracking-widest mb-1.5">Assign Lead Dev</label>
-                    <select value={tAssignee} onChange={(e) => setTAssignee(e.target.value)}
-                      className="h-11 w-full rounded-xl border border-white/40 dark:border-slate-800/60 bg-white/60 dark:bg-slate-900/40 px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white backdrop-blur-md shadow-sm transition-all">
-                      <option>Priya Shah</option>
-                      <option>Sam Okafor</option>
-                      <option>Mateo Alvarez</option>
-                    </select>
-                  </div>
-                  <div className="flex md:col-span-5 justify-end mt-2">
-                    <Button type="submit" className="h-11 px-8 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-700 hover:to-indigo-700 text-white font-bold text-sm shadow-md border-none">
-                      Log Ticket to Backlog
-                    </Button>
-                  </div>
-                </form>
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
-
-        {/* Slideout Register Site Form */}
-        {showSiteForm && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden mb-6"
-          >
-            <Card className="border border-emerald-500/30 bg-gradient-to-br from-emerald-50/50 to-teal-50/50 dark:from-emerald-500/10 dark:to-teal-500/5 backdrop-blur-xl shadow-lg">
-              <CardHeader className="py-5 border-b border-white/20 dark:border-white/5">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <CardTitle className="text-sm font-bold flex items-center gap-2 text-emerald-900 dark:text-emerald-100">
-                      <div className="h-6 w-6 rounded-md bg-white dark:bg-slate-800 flex items-center justify-center shadow-sm">
-                        <Globe className="h-3.5 w-3.5 text-emerald-500" />
-                      </div>
-                      Register Domain Monitor
-                    </CardTitle>
-                    <CardDescription className="text-xs mt-1 text-emerald-700/70 dark:text-emerald-300/60">Initialize tracking for a new client site.</CardDescription>
-                  </div>
-                  <button onClick={() => setShowSiteForm(false)} className="h-8 w-8 rounded-full bg-white/50 dark:bg-slate-800/50 flex items-center justify-center text-slate-500 hover:text-slate-800 transition-all shadow-sm">
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-              </CardHeader>
-              <CardContent className="pt-5 pb-6">
-                <form onSubmit={handleRegisterSite} className="grid grid-cols-1 md:grid-cols-4 gap-x-6 gap-y-4 items-end">
-                  {/* Form fields styled similarly to above */}
-                  <div>
-                    <label className="block text-[10px] font-extrabold text-emerald-900/60 dark:text-emerald-100/50 uppercase tracking-widest mb-1.5">Domain URL</label>
-                    <input type="text" required value={sName} onChange={(e) => setSName(e.target.value)}
-                      className="h-11 w-full rounded-xl border border-white/40 dark:border-slate-800/60 bg-white/60 dark:bg-slate-900/40 px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-slate-800 dark:text-white backdrop-blur-md shadow-sm transition-all" />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-extrabold text-emerald-900/60 dark:text-emerald-100/50 uppercase tracking-widest mb-1.5">Target Response (ms)</label>
-                    <input type="number" required value={sResponse} onChange={(e) => setSResponse(Number(e.target.value))}
-                      className="h-11 w-full rounded-xl border border-white/40 dark:border-slate-800/60 bg-white/60 dark:bg-slate-900/40 px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-slate-800 dark:text-white backdrop-blur-md shadow-sm transition-all" />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-extrabold text-emerald-900/60 dark:text-emerald-100/50 uppercase tracking-widest mb-1.5">Expected Uptime (%)</label>
-                    <input type="number" step="0.01" required value={sUptime} onChange={(e) => setSUptime(Number(e.target.value))}
-                      className="h-11 w-full rounded-xl border border-white/40 dark:border-slate-800/60 bg-white/60 dark:bg-slate-900/40 px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-slate-800 dark:text-white backdrop-blur-md shadow-sm transition-all" />
-                  </div>
-                  <div className="flex gap-3">
-                    <div className="flex-1">
-                      <label className="block text-[10px] font-extrabold text-emerald-900/60 dark:text-emerald-100/50 uppercase tracking-widest mb-1.5">Ping Status</label>
-                      <select value={sStatus} onChange={(e) => setSStatus(e.target.value as any)}
-                        className="h-11 w-full rounded-xl border border-white/40 dark:border-slate-800/60 bg-white/60 dark:bg-slate-900/40 px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-slate-800 dark:text-white backdrop-blur-md shadow-sm transition-all">
-                        <option value="operational">Operational</option>
-                        <option value="degraded">Degraded</option>
-                        <option value="outage">Outage</option>
-                      </select>
-                    </div>
-                    <Button type="submit" className="h-11 px-6 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-md border-none">
-                      Deploy
-                    </Button>
-                  </div>
-                </form>
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* Premium Glassmorphic KPI Cards */}
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-5">
@@ -455,9 +208,7 @@ export default function WebsiteDevPage() {
                 <p className="text-xs font-bold text-slate-500">{tasks.length} active tickets</p>
               </div>
             </div>
-            <Button variant="outline" size="sm" onClick={() => setShowTicketForm(true)} className="text-xs font-bold rounded-xl bg-white dark:bg-slate-950 shadow-sm border-slate-200 dark:border-slate-800">
-              <Plus className="h-3.5 w-3.5 mr-1.5" /> Add Ticket
-            </Button>
+            <Badge variant="neutral">Read only</Badge>
           </CardHeader>
           <div className="divide-y divide-slate-100 dark:divide-slate-800/60 p-2 sm:p-4 bg-slate-50/50 dark:bg-slate-900/20">
             {tasks.map((t) => {
@@ -473,12 +224,7 @@ export default function WebsiteDevPage() {
                   )}
                 >
                   <div className="relative flex items-center justify-center shrink-0">
-                    <input
-                      type="checkbox"
-                      checked={isCompleted}
-                      onChange={() => handleToggleTaskDone(t.id)}
-                      className="h-5 w-5 rounded-md border-2 border-slate-300 dark:border-slate-600 text-brand-500 focus:ring-brand-500 focus:ring-offset-0 cursor-pointer transition-all"
-                    />
+                    {isCompleted ? <CheckCircle2 className="h-5 w-5 text-emerald-500" /> : <Code2 className="h-5 w-5 text-slate-400" />}
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-3 flex-wrap">
@@ -492,21 +238,9 @@ export default function WebsiteDevPage() {
                         <GitBranch className="h-3 w-3" /> {t.repo}
                       </span>
                       
-                      {/* Premium Status Select */}
-                      <select
-                        value={t.status}
-                        onChange={(e) => handleInlineStatusChange(t.id, e.target.value as any)}
-                        className={cn(
-                          "rounded-md border bg-transparent px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide focus:outline-none transition-colors cursor-pointer",
-                          isCompleted ? "border-emerald-200 text-emerald-600 dark:border-emerald-900 dark:text-emerald-400" : "border-slate-200 text-slate-600 dark:border-slate-700 dark:text-slate-300 hover:border-brand-300 dark:hover:border-brand-700"
-                        )}
-                      >
-                        <option value="todo">To Do</option>
-                        <option value="in-progress">In Progress</option>
-                        <option value="in-review">In Review</option>
-                        <option value="blocked">Blocked</option>
-                        <option value="done">Done</option>
-                      </select>
+                      <Badge variant={isCompleted ? "success" : t.status === "blocked" ? "danger" : "neutral"}>
+                        {t.status.replace(/-/g, " ")}
+                      </Badge>
                     </div>
                   </div>
                   
@@ -515,18 +249,11 @@ export default function WebsiteDevPage() {
                     <Avatar name={t.assignee} size="sm" />
                   </div>
 
-                  <button
-                    onClick={() => handleDeleteTask(t.id, t.title)}
-                    className="h-8 w-8 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-rose-500 hover:border-rose-300 dark:hover:border-rose-700 flex items-center justify-center cursor-pointer transition-all shadow-sm opacity-0 group-hover:opacity-100 shrink-0"
-                    title="Delete Ticket"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
                 </motion.div>
               );
             })}
             {tasks.length === 0 && (
-              <EmptyState icon={<Code2 className="h-5 w-5" />} title="Backlog is clear" description="Add a new ticket to start tracking engineering work." />
+              <EmptyState icon={<Code2 className="h-5 w-5" />} title="No shared tickets" description="Your account team has not shared any engineering tickets in the client portal." />
             )}
           </div>
         </Card>
@@ -539,21 +266,7 @@ export default function WebsiteDevPage() {
                 <CardTitle className="text-lg">Network Health</CardTitle>
                 <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-1">Live Managed Domains</p>
               </div>
-              <div className="flex items-center gap-2">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={handleSyncHealth} 
-                  disabled={syncingHealth}
-                  className="h-8 px-3 rounded-full flex items-center justify-center bg-white dark:bg-slate-950 shadow-sm border-slate-200 dark:border-slate-800 text-xs font-bold"
-                >
-                  <RefreshCw className={cn("h-3.5 w-3.5 mr-1.5", syncingHealth && "animate-spin")} />
-                  {syncingHealth ? "Syncing..." : "Sync Live Data"}
-                </Button>
-                <Button variant="outline" size="sm" onClick={() => setShowSiteForm(true)} className="h-8 w-8 p-0 rounded-full flex items-center justify-center bg-white dark:bg-slate-950 shadow-sm border-slate-200 dark:border-slate-800">
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
+              <Badge variant="neutral">Managed by your account team</Badge>
             </CardHeader>
             <CardContent className="p-4 space-y-3 bg-slate-50/30 dark:bg-slate-900/10">
               {sitesList.map((s) => (
@@ -586,18 +299,12 @@ export default function WebsiteDevPage() {
                         <span className="capitalize">{s.status}</span>
                       </Badge>
                       
-                      <button
-                        onClick={() => handleDeleteSite(s.name)}
-                        className="h-8 w-8 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-rose-500 hover:border-rose-300 dark:hover:border-rose-700 flex items-center justify-center cursor-pointer transition-all shadow-sm opacity-0 group-hover:opacity-100 shrink-0"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
                     </div>
                   </div>
                 </div>
               ))}
               {sitesList.length === 0 && (
-                <EmptyState icon={<Globe className="h-5 w-5" />} title="No domains registered" description="Register a client domain to start monitoring." />
+                <EmptyState icon={<Globe className="h-5 w-5" />} title="No monitored domains" description="Your account team has not shared a monitored domain yet." />
               )}
             </CardContent>
           </Card>
@@ -620,10 +327,7 @@ export default function WebsiteDevPage() {
             onChange={(e) => {
               setSelectedSiteId(e.target.value);
               const selected = sitesList.find(s => String(s.id) === e.target.value);
-              if (selected) {
-                const repo = selected.githubRepo || `thepiecraftmarketing/${selected.name.replace(/\s+/g, '-').toLowerCase()}`;
-                fetchCommits(repo);
-              }
+              if (selected?.githubRepo) fetchCommits(selected.githubRepo);
             }}
             className="h-11 rounded-xl border-2 border-brand-500/20 bg-brand-50/50 dark:bg-brand-900/10 px-4 text-sm font-bold shadow-sm focus:ring-2 focus:ring-brand-500 w-full sm:w-72"
           >
@@ -710,12 +414,13 @@ function SiteInspectorView({ site, commits, commitsLoading, commitsError, fetchC
               <GitCommit className="h-4.5 w-4.5 text-brand-500" />
               GitHub Commits Feed
             </CardTitle>
-            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-1">Live from repository: {site.githubRepo || "Auto-detected"}</p>
+            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-1">{site.githubRepo ? `Live from repository: ${site.githubRepo}` : "No repository connected"}</p>
           </div>
           <Button
             size="sm"
             variant="outline"
-            onClick={() => fetchCommits(site.githubRepo || `thepiecraftmarketing/${site.name.replace(/\s+/g, '-').toLowerCase()}`)}
+            onClick={() => site.githubRepo && fetchCommits(site.githubRepo)}
+            disabled={!site.githubRepo}
             className="h-9 w-9 p-0 rounded-xl flex items-center justify-center"
           >
             <RefreshCw className={`h-3.5 w-3.5 ${commitsLoading ? "animate-spin" : ""}`} />

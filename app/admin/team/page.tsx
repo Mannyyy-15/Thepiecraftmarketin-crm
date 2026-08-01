@@ -243,11 +243,14 @@ export default function TeamPage() {
   const [allProjects, setAllProjects] = useState<any[]>([]);
   const [isWorkloadLoading, setIsWorkloadLoading] = useState(false);
   const [newTaskTitle, setNewTaskTitle] = useState("");
+  const [newTaskDescription, setNewTaskDescription] = useState("");
   const [newTaskPriority, setNewTaskPriority] = useState("medium");
   const [newTaskProjectId, setNewTaskProjectId] = useState<string>("");
   const [selectedFilterProjectId, setSelectedFilterProjectId] = useState<string>("");
   const [newTaskDueDate, setNewTaskDueDate] = useState("");
   const [isCreatingTask, setIsCreatingTask] = useState(false);
+  const [projectToAssign, setProjectToAssign] = useState("");
+  const [isAssigningProject, setIsAssigningProject] = useState(false);
   const [selectedSingleDateStatus, setSelectedSingleDateStatus] = useState<"vacation" | "sick" | "present" | "off">("present");
 
   const loadEmployeeWorkload = async (userId: number) => {
@@ -306,15 +309,20 @@ export default function TeamPage() {
 
   const handleAssignProject = async (projectId: number) => {
     if (!selectedEmployeeDetailId) return;
+    setIsAssigningProject(true);
     try {
       const res = await assignProjectLead(projectId, parseInt(selectedEmployeeDetailId));
       if (res.success) {
+        setProjectToAssign("");
         await loadEmployeeWorkload(parseInt(selectedEmployeeDetailId));
+        toast("Project lead assigned.", "success");
       } else {
         toast(`Error assigning project: ${res.error}`, "error");
       }
     } catch (err: any) {
       toast(`Error: ${err.message}`, "error");
+    } finally {
+      setIsAssigningProject(false);
     }
   };
 
@@ -338,13 +346,15 @@ export default function TeamPage() {
     setIsCreatingTask(true);
     try {
       const pId = newTaskProjectId ? parseInt(newTaskProjectId) : null;
-      const res = await createTask(parseInt(selectedEmployeeDetailId), newTaskTitle, newTaskPriority, pId, newTaskDueDate || null);
+      const res = await createTask(parseInt(selectedEmployeeDetailId), newTaskTitle, newTaskPriority, pId, newTaskDueDate || null, newTaskDescription);
       if (res.success) {
         setNewTaskTitle("");
+        setNewTaskDescription("");
         setNewTaskProjectId("");
         setNewTaskPriority("medium");
         setNewTaskDueDate("");
         await loadEmployeeWorkload(parseInt(selectedEmployeeDetailId));
+        toast("Task assigned.", "success");
       } else {
         toast(`Error creating task: ${res.error}`, "error");
       }
@@ -1901,6 +1911,35 @@ export default function TeamPage() {
                         </div>
                       ) : (
                         <div className="flex flex-col">
+                          <div className="border-b border-slate-800 bg-slate-950/40 p-4 sm:p-6">
+                            <div className="mb-3 flex items-center justify-between gap-3">
+                              <div>
+                                <p className="text-sm font-semibold text-white">Project lead ownership</p>
+                                <p className="mt-0.5 text-xs text-slate-400">Assign this employee as the accountable lead. Existing task owners stay unchanged.</p>
+                              </div>
+                              <Badge variant="neutral">{allProjects.filter((project: any) => String(project.leadId) === selectedEmployeeDetailId).length} led</Badge>
+                            </div>
+                            <div className="flex flex-col gap-2 sm:flex-row">
+                              <select value={projectToAssign} onChange={e => setProjectToAssign(e.target.value)} className="h-11 min-w-0 flex-1 rounded-xl border border-slate-800 bg-slate-950 px-3 text-base text-white focus:outline-none focus:ring-2 focus:ring-brand-500/40 sm:text-sm">
+                                <option value="">Choose a project</option>
+                                {allProjects.filter((project: any) => String(project.leadId) !== selectedEmployeeDetailId).map((project: any) => (
+                                  <option key={project.id} value={project.id}>{project.name}{project.clientName ? ` — ${project.clientName}` : " — Internal"}</option>
+                                ))}
+                              </select>
+                              <Button type="button" onClick={() => projectToAssign && handleAssignProject(Number(projectToAssign))} disabled={!projectToAssign || isAssigningProject} className="h-11 justify-center bg-brand-600 font-semibold text-white hover:bg-brand-700 sm:w-36">
+                                {isAssigningProject ? <Loader2 className="h-4 w-4 animate-spin" /> : "Assign lead"}
+                              </Button>
+                            </div>
+                            {allProjects.some((project: any) => String(project.leadId) === selectedEmployeeDetailId) && (
+                              <div className="mt-3 flex flex-wrap gap-2">
+                                {allProjects.filter((project: any) => String(project.leadId) === selectedEmployeeDetailId).map((project: any) => (
+                                  <button key={project.id} type="button" onClick={() => handleUnassignProject(project.id)} className="inline-flex max-w-full items-center gap-1.5 rounded-lg border border-slate-800 bg-slate-900 px-2.5 py-1.5 text-xs text-slate-300 hover:border-rose-500/40 hover:text-rose-300" title="Remove lead assignment">
+                                    <Briefcase className="h-3 w-3 shrink-0" /><span className="truncate">{project.name}</span><X className="h-3 w-3 shrink-0" />
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
                           
                           {/* Add Task Input Row (Inline Style) */}
                           <div className="p-4 sm:p-6 bg-slate-50/50 dark:bg-[#1f1f1f]/30 border-b border-slate-100 dark:border-[#303030]">
@@ -1909,12 +1948,21 @@ export default function TeamPage() {
                                 <input
                                   type="text"
                                   required
+                                  maxLength={255}
                                   placeholder="Task title..."
                                   value={newTaskTitle}
                                   onChange={(e) => setNewTaskTitle(e.target.value)}
                                   className="h-11 w-full rounded-2xl border border-slate-300 dark:border-[#38383f] bg-white dark:bg-[#1f1f1f] px-4 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-brand-500/40 shadow-sm text-slate-800 dark:text-white"
                                 />
                               </div>
+                              <textarea
+                                value={newTaskDescription}
+                                onChange={(e) => setNewTaskDescription(e.target.value)}
+                                maxLength={4000}
+                                rows={2}
+                                placeholder="Context or acceptance notes (optional)"
+                                className="w-full resize-none rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2.5 text-base text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500/40 xl:max-w-sm sm:text-sm"
+                              />
                               
                               <div className="flex flex-wrap sm:flex-nowrap items-center gap-3 w-full xl:w-auto mt-3 xl:mt-0">
                                 <select
@@ -1922,9 +1970,9 @@ export default function TeamPage() {
                                   onChange={(e) => setNewTaskProjectId(e.target.value)}
                                   className="h-11 w-full sm:w-48 rounded-2xl border border-slate-300 dark:border-[#38383f] bg-white dark:bg-[#1f1f1f] px-3 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white"
                                 >
-                                  <option value="">No Project</option>
+                                  <option value="">Internal / no project</option>
                                   {allProjects.map(p => (
-                                    <option key={p.id} value={p.id}>{p.name}</option>
+                                    <option key={p.id} value={p.id}>{p.name}{p.clientName ? ` — ${p.clientName}` : " — Internal"}</option>
                                   ))}
                                 </select>
 

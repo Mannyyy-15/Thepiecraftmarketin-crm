@@ -107,22 +107,6 @@ export default function ClientDocumentsPage() {
     };
   });
 
-  const handleDownload = (name: string) => {
-    // No file URL attached — generate a small placeholder so the action is real.
-    const blob = new Blob(
-      [`Document: ${name}\n\nNo file is attached to this document yet. Please contact your account manager for the original file.`],
-      { type: "text/plain;charset=utf-8" }
-    );
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${name.replace(/\s+/g, "-")}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
-
   const filtered = files
     .filter((d) => (activeFolder ? d.folder === activeFolder : true))
     .filter((d) => (d.name || "").toLowerCase().includes(query.toLowerCase()));
@@ -314,9 +298,11 @@ export default function ClientDocumentsPage() {
                       <td className="px-5 py-3.5 text-right">
                         <div className="inline-flex items-center gap-1">
                           <button
-                            onClick={() => d.url ? window.open(d.url, "_blank") : handleDownload(d.name)}
-                            aria-label="Download"
-                            className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:text-portal-600 dark:hover:text-portal-300 hover:bg-portal-50 dark:hover:bg-portal-500/10 cursor-pointer"
+                            onClick={() => d.url && window.open(d.url, "_blank", "noopener,noreferrer")}
+                            aria-label={d.url ? `Open ${d.name}` : `${d.name} is not available for download`}
+                            title={d.url ? "Open file" : "File unavailable"}
+                            disabled={!d.url}
+                            className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:text-portal-600 dark:hover:text-portal-300 hover:bg-portal-50 dark:hover:bg-portal-500/10 cursor-pointer disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:bg-transparent disabled:hover:text-slate-400"
                           >
                             <Download className="h-4 w-4" />
                           </button>

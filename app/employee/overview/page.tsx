@@ -9,7 +9,6 @@ import {
   FolderKanban,
   Users,
   Check,
-  Trash2,
 } from "lucide-react";
 import {
   Bar,
@@ -28,9 +27,9 @@ import { Progress } from "@/components/ui/Progress";
 import {
   getOverviewPageData,
   toggleTaskStatus,
-  deleteTask,
 } from "@/app/actions/crm";
 import { getProjectStatusVariant, getProjectStatusLabel } from "@/lib/statusHelpers";
+import { useRefreshOnFocus } from "@/lib/use-refresh-on-focus";
 
 interface Task {
   id: number;
@@ -222,6 +221,7 @@ export default function EmployeeOverview() {
   useEffect(() => {
     loadDashboardData();
   }, []);
+  useRefreshOnFocus(loadDashboardData);
 
   useEffect(() => {
     if (allAttendance.length > 0) {
@@ -275,18 +275,6 @@ export default function EmployeeOverview() {
     setTasks(tasks.map((t) => (t.id === id ? { ...t, done: newDone } : t)));
     try {
       const res = await toggleTaskStatus(id, newDone);
-      if (!res.success) {
-        loadDashboardData();
-      }
-    } catch {
-      loadDashboardData();
-    }
-  };
-
-  const handleDeleteTask = async (id: number) => {
-    setTasks(tasks.filter((t) => t.id !== id));
-    try {
-      const res = await deleteTask(id);
       if (!res.success) {
         loadDashboardData();
       }
@@ -645,12 +633,6 @@ export default function EmployeeOverview() {
                         >
                           {task.priority}
                         </Badge>
-                        <button
-                          onClick={() => handleDeleteTask(task.id)}
-                          className="p-1 rounded text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-all opacity-0 group-hover:opacity-100 cursor-pointer"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
                       </div>
                     </div>
                   ))

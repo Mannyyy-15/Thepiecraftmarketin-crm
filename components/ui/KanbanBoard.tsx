@@ -23,13 +23,24 @@ const COLUMNS = [
   { id: "done", label: "Done", icon: CheckCircle2, color: "text-emerald-500" }
 ];
 
-export function KanbanBoard({ initialTasks }: { initialTasks: KanbanTask[] }) {
+export function KanbanBoard({
+  initialTasks,
+  movableTaskIds,
+}: {
+  initialTasks: KanbanTask[];
+  movableTaskIds?: number[];
+}) {
   const [tasks, setTasks] = useState<KanbanTask[]>(initialTasks);
   const [draggedTaskId, setDraggedTaskId] = useState<number | null>(null);
   const [dragOverColId, setDragOverColId] = useState<string | null>(null);
   const { toast } = useToast();
+  const canMoveTask = (taskId: number) => !movableTaskIds || movableTaskIds.includes(taskId);
 
   const handleDragStart = (e: React.DragEvent, taskId: number) => {
+    if (!canMoveTask(taskId)) {
+      e.preventDefault();
+      return;
+    }
     setDraggedTaskId(taskId);
     e.dataTransfer.effectAllowed = "move";
     // For Firefox support
@@ -115,9 +126,12 @@ export function KanbanBoard({ initialTasks }: { initialTasks: KanbanTask[] }) {
               {colTasks.map((task) => (
                 <div
                   key={task.id}
-                  draggable
+                  draggable={canMoveTask(task.id)}
                   onDragStart={(e) => handleDragStart(e, task.id)}
-                  className={`group relative bg-white dark:bg-[#1e1e21] p-4 rounded-xl border shadow-sm transition-all duration-200 cursor-grab active:cursor-grabbing hover:shadow-md hover:border-slate-300 dark:hover:border-[#38383f] ${
+                  title={canMoveTask(task.id) ? undefined : "Only the assignee can move this task."}
+                  className={`group relative bg-white dark:bg-[#1e1e21] p-4 rounded-xl border shadow-sm transition-all duration-200 hover:shadow-md hover:border-slate-300 dark:hover:border-[#38383f] ${
+                    canMoveTask(task.id) ? "cursor-grab active:cursor-grabbing" : "cursor-default"
+                  } ${
                     draggedTaskId === task.id ? "opacity-50 scale-95" : "opacity-100"
                   } ${
                     col.id === "done" ? "border-emerald-500/20 opacity-80" : "border-slate-200 dark:border-[#2a2a30]/60"
@@ -160,5 +174,3 @@ export function KanbanBoard({ initialTasks }: { initialTasks: KanbanTask[] }) {
     </div>
   );
 }
-
-

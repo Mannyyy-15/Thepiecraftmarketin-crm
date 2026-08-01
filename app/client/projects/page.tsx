@@ -19,14 +19,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { cn } from "@/components/ui/cn";
 import { getProjects } from "@/app/actions/crm";
 import { getClientProjectStatusVariant, getProjectStatusLabel } from "@/lib/statusHelpers";
-
-const getProgressByStatus = (status: string) => {
-  if (status === "planning") return 15;
-  if (status === "in_progress" || status === "in-progress") return 55;
-  if (status === "in_review" || status === "review") return 85;
-  if (status === "completed") return 100;
-  return 30;
-};
+import { useRefreshOnFocus } from "@/lib/use-refresh-on-focus";
 
 type Filter = "all" | "active" | "review" | "completed";
 
@@ -36,13 +29,14 @@ export default function ClientProjectsPage() {
   const [filter, setFilter] = useState<Filter>("all");
   const [query, setQuery] = useState("");
 
-  useEffect(() => {
-    (async () => {
+  const load = async () => {
       const res = await getProjects();
       if (res.success) setProjects(res.data ?? []);
       setLoading(false);
-    })();
-  }, []);
+  };
+
+  useEffect(() => { void load(); }, []);
+  useRefreshOnFocus(load);
 
   const counts = {
     all: projects.length,
@@ -135,9 +129,9 @@ export default function ClientProjectsPage() {
       ) : (
         <div className="space-y-4">
           {filtered.map((p) => {
-            const progress = typeof p.progress === "number" && p.progress > 0
-              ? p.progress
-              : getProgressByStatus(p.status);
+            const progress = typeof p.progress === "number"
+              ? Math.max(0, Math.min(100, p.progress))
+              : null;
 
             return (
               <Card key={p.id} className="overflow-hidden">
@@ -167,18 +161,18 @@ export default function ClientProjectsPage() {
                       </div>
                     </div>
                     <div className="shrink-0 text-right">
-                      <p className="text-2xl font-bold text-slate-900 dark:text-white tabular-nums">{progress}%</p>
+                      <p className="text-sm font-semibold text-slate-700 dark:text-slate-200 tabular-nums">{progress !== null ? `${progress}%` : "Not reported"}</p>
                       <p className="text-[10px] uppercase tracking-widest text-slate-400 dark:text-slate-500">Complete</p>
                     </div>
                   </div>
 
-                  <div className="mt-4">
+                  {progress !== null && <div className="mt-4">
                     <Progress
                       value={progress}
                       size="sm"
                       barClassName="bg-gradient-to-r from-portal-500 to-portal-600"
                     />
-                  </div>
+                  </div>}
 
                   {p.description && (
                     <p className="mt-3 text-xs text-slate-500 dark:text-slate-400 line-clamp-2">{p.description}</p>

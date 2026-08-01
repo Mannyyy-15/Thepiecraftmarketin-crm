@@ -293,12 +293,12 @@ export default function DashboardPage() {
                       <AvatarGroup people={p.team} size="xs" />
                     </td>
                     <td className="px-5 sm:px-6 py-3.5 hidden sm:table-cell">
-                      <div className="flex items-center gap-2 min-w-[120px]">
-                        <Progress value={p.progress} size="sm" className="w-24" />
-                        <span className="text-xs font-medium text-slate-600 dark:text-slate-300 tabular-nums">
-                          {p.progress}%
-                        </span>
-                      </div>
+                      {typeof p.progress === "number" ? (
+                        <div className="flex items-center gap-2 min-w-[120px]">
+                          <Progress value={p.progress} size="sm" className="w-24" />
+                          <span className="text-xs font-medium text-slate-600 dark:text-slate-300 tabular-nums">{p.progress}%</span>
+                        </div>
+                      ) : <span className="text-xs text-slate-500">No tasks</span>}
                     </td>
                     <td className="px-5 sm:px-6 py-3.5 hidden md:table-cell text-slate-600 dark:text-slate-300">
                       {p.deadline}

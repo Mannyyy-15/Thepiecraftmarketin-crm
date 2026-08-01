@@ -9,6 +9,7 @@ import {
 import KpiCard from "@/components/KpiCard";
 import { Badge } from "@/components/ui/Badge";
 import { getMyAssignedTasks, toggleTaskStatus } from "@/app/actions/crm";
+import { useRefreshOnFocus } from "@/lib/use-refresh-on-focus";
 
 type Task = {
   id: number;
@@ -84,6 +85,7 @@ export default function EmployeeTasksPage() {
   };
 
   useEffect(() => { load(); }, []);
+  useRefreshOnFocus(load);
 
   const projects = useMemo(() => {
     const m = new Map<string, string>();

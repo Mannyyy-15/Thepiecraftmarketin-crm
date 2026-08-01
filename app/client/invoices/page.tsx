@@ -32,6 +32,8 @@ interface Invoice {
 const statusIcon: Record<string, any> = {
   paid: CheckCircle2, sent: CalendarClock, overdue: AlertCircle, draft: FileText,
 };
+const invoiceFileUrl = (invoice: Invoice) => invoice.payload?.fileUrl || invoice.payload?.invoiceUrl || invoice.payload?.url || null;
+const clientInvoiceStatusLabel = (status: string) => status === "sent" ? "Sent" : getInvoiceStatusLabel(status);
 const fmt = (n: number) => `₹${(n || 0).toLocaleString("en-IN")}`;
 const fmtDate = (d: string | null) => d ? new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—";
 
@@ -89,33 +91,13 @@ export default function ClientInvoicesPage() {
     }
   };
 
-  const downloadInvoice = (inv: Invoice) => {
-    const typeLabel = inv.invoiceNumber.startsWith("PROP-") ? "Proposal" : inv.invoiceNumber.startsWith("CONT-") ? "Contract" : "Invoice";
-    const lines = [
-      `${typeLabel} ${inv.invoiceNumber}`,
-      `Status: ${getInvoiceStatusLabel(inv.status)}`,
-      `Issued: ${fmtDate(inv.createdAt)}`,
-      `Due: ${fmtDate(inv.dueDate)}`,
-      "",
-      ...inv.items.map((it) => `• ${it.service}${it.details ? ` — ${it.details}` : ""}: ${fmt(it.amount)}`),
-      "",
-      `Total: ${fmt(inv.amount)}`,
-    ];
-    const blob = new Blob([lines.join("\n")], { type: "text/plain;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url; a.download = `${inv.invoiceNumber}.txt`;
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
-
   if (loading) {
     return <div className="flex items-center justify-center py-24"><Loader2 className="h-7 w-7 animate-spin text-portal-500" /></div>;
   }
 
   return (
     <div className="space-y-6">
-      <PageHeader eyebrow="Billing" title="Invoices" description="View and pay your invoices. Download receipts anytime." />
+      <PageHeader eyebrow="Billing" title="Invoices" description="View invoice details, open attached files, and pay outstanding balances." />
 
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
         <KpiCard title="Total Paid" value={fmt(totalPaid)} change={`${invoices.filter(i => i.status === "paid").length} paid`} changeType="positive" accent="emerald" icon={<CheckCircle2 className="h-5 w-5" />} />
@@ -179,7 +161,7 @@ export default function ClientInvoicesPage() {
                   </div>
                   <div className="text-right shrink-0">
                     <p className="text-sm font-bold text-slate-900 dark:text-white tabular-nums">{fmt(inv.amount)}</p>
-                    <Badge dot variant={getInvoiceStatusVariant(inv.status)} className="mt-0.5 text-[9px]">{getInvoiceStatusLabel(inv.status)}</Badge>
+                    <Badge dot variant={getInvoiceStatusVariant(inv.status)} className="mt-0.5 text-[9px]">{clientInvoiceStatusLabel(inv.status)}</Badge>
                   </div>
                   {canPay && (
                     <Button size="sm" className="shrink-0 bg-portal-600 text-white" onClick={(e) => { e.stopPropagation(); handlePay(inv); }} disabled={paying}>
@@ -228,7 +210,7 @@ export default function ClientInvoicesPage() {
             </div>
             <div className="p-5 space-y-4">
               <div className="flex items-center justify-between">
-                <Badge dot variant={getInvoiceStatusVariant(drawerInvoice.status)}>{getInvoiceStatusLabel(drawerInvoice.status)}</Badge>
+                <Badge dot variant={getInvoiceStatusVariant(drawerInvoice.status)}>{clientInvoiceStatusLabel(drawerInvoice.status)}</Badge>
                 <span className="text-xs text-slate-400">Due {fmtDate(drawerInvoice.dueDate)}</span>
               </div>
 
@@ -314,8 +296,17 @@ export default function ClientInvoicesPage() {
               )}
 
               <div className="flex gap-2 pt-2">
-                <Button variant="outline" className="flex-1 gap-1.5" onClick={() => downloadInvoice(drawerInvoice)}>
-                  <Download className="h-4 w-4" /> Download
+                <Button
+                  variant="outline"
+                  className="flex-1 gap-1.5"
+                  disabled={!invoiceFileUrl(drawerInvoice)}
+                  title={invoiceFileUrl(drawerInvoice) ? "Open invoice file" : "Invoice file unavailable"}
+                  onClick={() => {
+                    const url = invoiceFileUrl(drawerInvoice);
+                    if (url) window.open(url, "_blank", "noopener,noreferrer");
+                  }}
+                >
+                  <Download className="h-4 w-4" /> {invoiceFileUrl(drawerInvoice) ? "Open file" : "File unavailable"}
                 </Button>
                 {(drawerInvoice.status === "sent" || drawerInvoice.status === "overdue") && (
                   <Button className="flex-1 gap-1.5 bg-portal-600 text-white" onClick={() => handlePay(drawerInvoice)} disabled={paying}>

@@ -122,18 +122,18 @@ export default function ReportsPage() {
     try {
       const { generateReportPDF } = await import("@/lib/reportGenerator");
       const isAgency = newScope === "Agency";
+      const selectedProject = projectsList.find(p => p.id.toString() === newProject);
       const metrics = [
-        { label: "Active Projects", value: isAgency ? projectsList.length : 1 },
+        { label: isAgency ? "Projects in CRM" : "Project selected", value: isAgency ? projectsList.length : (selectedProject ? "Yes" : "No") },
         { label: "Timeframe", value: newTimeframe },
-        { label: "Tasks Completed", value: "—" },
-        { label: "Total Billables", value: "—" },
-        { label: "Health Score", value: isAgency ? "94%" : "98%" }
+        { label: "Generated", value: new Date().toLocaleDateString() },
+        { label: "Source", value: "Current CRM records" },
       ];
       
-      const clientName = isAgency ? "Internal Agency" : (projectsList.find(p => p.id.toString() === newProject)?.name || "Project");
+      const clientName = isAgency ? "Internal Agency" : (selectedProject?.name || "Project");
       const summary = isAgency 
-        ? (liveAiSummary || "Overall agency operations are performing nominally with strong growth indicators.")
-        : `Project ${clientName} is on track for ${newTimeframe}. Key milestones have been successfully delivered and no major blockers are currently reported.`;
+        ? (liveAiSummary || "No agency summary is available for the selected period.")
+        : `This report covers ${clientName} for ${newTimeframe}. Open the live project workspace for current tasks, milestones, approvals, and blockers.`;
 
       const pdfFile = await generateReportPDF({
         title: newTitle.trim(),
@@ -383,7 +383,7 @@ export default function ReportsPage() {
                     <span>•</span>
                     <span>{r.createdAt ? new Date(r.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "Today"}</span>
                     <span className="hidden sm:inline">•</span>
-                    <span className="hidden sm:inline tabular-nums">{r.size || "1.2 MB"}</span>
+                    <span className="hidden sm:inline tabular-nums">{r.size || "Size unavailable"}</span>
                   </div>
                 </div>
                 
@@ -437,7 +437,7 @@ export default function ReportsPage() {
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Acme Corp — Conversion Audit"
+                    placeholder="e.g. Monthly Conversion Audit"
                     value={newTitle}
                     onChange={(e) => setNewTitle(e.target.value)}
                     className="w-full h-10 rounded-2xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] px-3 text-xs focus:ring-2 focus:ring-indigo-500/40 text-slate-800 dark:text-white"

@@ -139,15 +139,11 @@ export default function PortalTopNav({ onMenuClick }: { onMenuClick?: () => void
 
   // Search Items optimized for client view
   const searchItems: SearchItem[] = [
-    { title: "Website Redesign Progress", category: "Project", url: "/client/projects", details: "View staging columns, milestones & team" },
-    { title: "Brand Identity Refresh", category: "Project", url: "/client/projects", details: "Completed deliverables & design specs" },
-    { title: "Invoice INV-2026-0144", category: "Invoice", url: "/client/invoices", details: "$22,000 • Issued May 12, 2026 • Status: Pending" },
-    { title: "Invoice INV-2026-0142", category: "Invoice", url: "/client/invoices", details: "$8,400 • Issued May 01, 2026 • Status: Paid" },
-    { title: "Acme — Brand Guidelines v3.pdf", category: "Document", url: "/client/documents", details: "4.2 MB • Updated May 18, 2026 by Lena Park" },
-    { title: "Stark Q3 Campaign Brief.docx", category: "Document", url: "/client/documents", details: "1.1 MB • Updated May 17, 2026 by Priya Shah" },
-    { title: "Timesheet & Billing History", category: "Page", url: "/client/invoices", details: "Verify hours billed & payment schedules" },
-    { title: "Brand Resources & Contracts", category: "Page", url: "/client/documents", details: "Download legal agreements, logos & guides" },
-    { title: "Project Deliverables Board", category: "Page", url: "/client/projects", details: "Track agile sprints, approvals & stage status" },
+    { title: "Projects", category: "Page", url: "/client/projects", details: "Track milestones, deliverables, approvals and progress" },
+    { title: "Invoices", category: "Page", url: "/client/invoices", details: "Review issued invoices and payment status" },
+    { title: "Documents", category: "Page", url: "/client/documents", details: "Open your private files and deliverables" },
+    { title: "Messages", category: "Page", url: "/client/messages", details: "Contact your agency team" },
+    { title: "Reports", category: "Page", url: "/client/reports", details: "Review shared performance reports" },
   ];
 
   const filteredSearch = searchItems.filter(
@@ -161,26 +157,22 @@ export default function PortalTopNav({ onMenuClick }: { onMenuClick?: () => void
   const handleRequestProject = (e: React.FormEvent) => {
     e.preventDefault();
     if (!qProjName) return;
-    addToast(`Successfully submitted creative project request: "${qProjName}"!`);
-    setQProjName("");
-    setQProjDesc("");
     setActiveModal(null);
+    router.push("/client/projects");
   };
 
   const handleQuickMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if (!qMsgText) return;
-    addToast("Message successfully sent to Priya Shah (Account Lead)!");
-    setQMsgText("");
     setActiveModal(null);
+    router.push("/client/messages");
   };
 
   const handleQuickUpload = (e: React.FormEvent) => {
     e.preventDefault();
     if (!qDocName) return;
-    addToast(`Uploaded brand document "${qDocName}" to shared vault!`);
-    setQDocName("");
     setActiveModal(null);
+    router.push("/client/documents");
   };
 
   return (
@@ -197,7 +189,7 @@ export default function PortalTopNav({ onMenuClick }: { onMenuClick?: () => void
       )}
 
       <div className="hidden md:flex items-center gap-2 text-sm">
-        <span className="text-slate-500 dark:text-slate-400">Acme Corp</span>
+        <span className="max-w-44 truncate text-slate-500 dark:text-slate-400">{user?.name || "Client workspace"}</span>
         <span className="text-slate-300 dark:text-slate-600">/</span>
         <span className="font-semibold text-slate-900 dark:text-white">{title}</span>
       </div>
@@ -355,7 +347,7 @@ export default function PortalTopNav({ onMenuClick }: { onMenuClick?: () => void
 
             <div className="max-h-[420px] overflow-y-auto p-3 space-y-1.5">
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-2.5 py-1 mb-1">
-                {searchQuery ? `Search Results (${filteredSearch.length})` : "Acme Client Vault Index"}
+                {searchQuery ? `Search Results (${filteredSearch.length})` : "Client workspace index"}
               </p>
 
               {filteredSearch.map((item, idx) => (
@@ -457,7 +449,7 @@ export default function PortalTopNav({ onMenuClick }: { onMenuClick?: () => void
                 <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Direct Message</label>
                 <textarea
                   required
-                  placeholder="Type a message or brief updates to Priya Shah (Account Lead)..."
+                  placeholder="Type a message or brief update to your account team..."
                   value={qMsgText}
                   onChange={(e) => setQMsgText(e.target.value)}
                   className="w-full h-24 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-3 text-xs focus:ring-2 focus:ring-indigo-500/40 text-slate-800 dark:text-white resize-none"
@@ -489,7 +481,7 @@ export default function PortalTopNav({ onMenuClick }: { onMenuClick?: () => void
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Acme Logo Vectors highres.zip"
+                  placeholder="e.g. Brand assets.zip"
                   value={qDocName}
                   onChange={(e) => setQDocName(e.target.value)}
                   className="w-full h-10 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-xs focus:ring-2 focus:ring-indigo-500/40 text-slate-800 dark:text-white"

@@ -9,6 +9,8 @@ import {
   addProjectTask, toggleTaskDone, deleteTask,
   getClientLogin, resetClientPassword,
 } from "@/app/actions/crm";
+import { createLoginLink } from "@/app/actions/auth";
+import { ShareLoginLinkDialog } from "@/components/ShareLoginLinkDialog";
 import {
   ArrowLeft, Building2, CheckCircle2, Code2, DollarSign, Edit2,
   ExternalLink, Globe, Globe2, Layers, Mail, MapPin, Megaphone,
@@ -101,6 +103,8 @@ export default function ClientDetailPage() {
   const [savingPass, setSavingPass]       = useState(false);
   const [passResult, setPassResult]       = useState<string | null>(null);
   const [linkUserId, setLinkUserId]       = useState<string>("");
+  const [shareLogin, setShareLogin]       = useState<{ link: string; expiresAt?: string } | null>(null);
+  const [creatingLink, setCreatingLink]   = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -127,7 +131,7 @@ export default function ClientDetailPage() {
     if (!newPass) { toast("Enter a password.", "error"); return; }
     setSavingPass(true);
     // Passing client.name ensures the user account's name is updated to exactly match the client profile, linking them
-    const r = await resetClientPassword(targetId, newPass, client?.name);
+    const r = await resetClientPassword(Number(id), targetId, newPass, client?.name);
     setSavingPass(false);
     if (r.success) {
       setPassResult(newPass);
@@ -138,6 +142,19 @@ export default function ClientDetailPage() {
     } else {
       toast(r.error || "Failed to update password.", "error");
     }
+  };
+
+  const handleCreateAccessLink = async () => {
+    const targetId = linkUserId ? Number(linkUserId) : login?.userId;
+    if (!targetId) { toast("Link a client portal account first.", "error"); return; }
+    setCreatingLink(true);
+    try {
+      const result = await createLoginLink(targetId);
+      if (result.success && result.loginLink) {
+        setShareLogin({ link: result.loginLink, expiresAt: result.expiresAt });
+        toast("Fresh access link created. Any previous unused link is revoked.", "success");
+      } else toast(result.error || "Could not create a fresh access link.", "error");
+    } finally { setCreatingLink(false); }
   };
 
   // ── derived ──────────────────────────────────────────────────────────────
@@ -189,7 +206,7 @@ export default function ClientDetailPage() {
 
   const openEdit = () => {
     setEditForm({
-      name: client.name, ownerId: client.ownerId ? String(client.ownerId) : "",
+      name: client.name, accountManager: d.accountManager ? String(d.accountManager) : "",
       stage: client.stage,
       contactName: d.contactName || "", contactEmail: d.contactEmail || "",
       contactPhone: d.contactPhone || "", websiteUrl: d.websiteUrl || "",
@@ -470,6 +487,10 @@ export default function ClientDetailPage() {
             {savingPass ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <KeyRound className="h-3.5 w-3.5" />}
             Update password
           </Button>
+          <Button onClick={handleCreateAccessLink} disabled={creatingLink || !login?.hasLogin} size="sm" variant="outline" className="w-full mt-2 gap-1.5">
+            {creatingLink ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
+            Create fresh app access link
+          </Button>
 
           {passResult && (
             <div className="mt-3 rounded-xl border border-emerald-200 dark:border-emerald-900/40 bg-emerald-50 dark:bg-emerald-950/20 p-3">
@@ -629,7 +650,8 @@ export default function ClientDetailPage() {
                 ))}
                 <div>
                   <label className={LABEL}>Account Lead</label>
-                  <select value={editForm.ownerId || ""} onChange={e => setEditForm((p: any) => ({ ...p, ownerId: e.target.value }))} className={SELECT}>
+                  <select value={editForm.accountManager || ""} onChange={e => setEditForm((p: any) => ({ ...p, accountManager: e.target.value }))} className={SELECT}>
+                    <option value="">Unassigned</option>
                     {roster.map((u: any) => <option key={u.id} value={u.id}>{u.name} ({u.role})</option>)}
                   </select>
                 </div>
@@ -653,6 +675,16 @@ export default function ClientDetailPage() {
           </div>
         </>
       )}
+
+      <ShareLoginLinkDialog
+        open={Boolean(shareLogin)}
+        onClose={() => setShareLogin(null)}
+        loginLink={shareLogin?.link || ""}
+        personName={d.contactName || client.name}
+        email={login?.email || d.contactEmail || null}
+        phone={d.contactPhone || null}
+        expiresAt={shareLogin?.expiresAt}
+      />
 
     </div>
   );

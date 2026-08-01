@@ -36,6 +36,20 @@
       "when": 1785490000000,
       "tag": "0004_query_performance_indexes",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1785580200000,
+      "tag": "0005_documents_tenant",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1785580800000,
+      "tag": "0006_locations_tenant",
+      "breakpoints": true
     }
   ]
 }

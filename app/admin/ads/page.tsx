@@ -49,16 +49,6 @@ import {
 } from "@/app/actions/crm";
 import { cn } from "@/components/ui/cn";
 
-const campaignPerformance = [
-  { day: "Mon", impressions: 320, clicks: 8.2 },
-  { day: "Tue", impressions: 380, clicks: 9.6 },
-  { day: "Wed", impressions: 410, clicks: 11.1 },
-  { day: "Thu", impressions: 350, clicks: 9.8 },
-  { day: "Fri", impressions: 480, clicks: 13.4 },
-  { day: "Sat", impressions: 520, clicks: 14.2 },
-  { day: "Sun", impressions: 460, clicks: 12.8 },
-];
-
 export default function AdsPage() {
   const { toast, confirmDialog } = useToast();
 
@@ -71,13 +61,13 @@ export default function AdsPage() {
 
   // Form states
   const [name, setName] = useState("");
-  const [client, setClient] = useState("Acme Corp");
+  const [client, setClient] = useState("");
   const [platform, setPlatform] = useState("Meta Ads");
-  const [spend, setSpend] = useState(12500);
-  const [impressions, setImpressions] = useState(550000);
-  const [clicks, setClicks] = useState(12000);
-  const [roas, setRoas] = useState(3.4);
-  const [status, setStatus] = useState<"active" | "paused" | "draft">("active");
+  const [spend, setSpend] = useState(0);
+  const [impressions, setImpressions] = useState(0);
+  const [clicks, setClicks] = useState(0);
+  const [roas, setRoas] = useState(0);
+  const [status, setStatus] = useState<"active" | "paused" | "draft">("draft");
 
   const loadData = async () => {
     const clientsRes = await getClients();
@@ -116,6 +106,11 @@ export default function AdsPage() {
   const totalImpressions = campaigns.reduce((acc, c) => acc + Number(c.impressions || 0), 0);
   const totalClicks = campaigns.reduce((acc, c) => acc + Number(c.clicks || 0), 0);
   const avgRoas = campaigns.length > 0 ? (campaigns.reduce((acc, c) => acc + Number(c.roas || 0), 0) / campaigns.length) : 0;
+  const campaignPerformance = campaigns.map((campaign) => ({
+    day: String(campaign.name || "Campaign").slice(0, 18),
+    impressions: Number(campaign.impressions || 0),
+    clicks: Number(campaign.clicks || 0),
+  }));
 
   // Formatting helpers
   const formatCompact = (num: number) => {
@@ -126,7 +121,7 @@ export default function AdsPage() {
 
   const handleAddCampaign = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name) return;
+    if (!name || !client) return;
 
     setLoading(true);
     await ensureSeededCampaigns();
@@ -248,7 +243,7 @@ export default function AdsPage() {
               variant="outline"
               size="md"
               className="bg-white/50 dark:bg-[#1f1f1f]/50 backdrop-blur-md border-indigo-200/50 dark:border-indigo-500/20 text-indigo-700 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-all shadow-sm"
-              onClick={() => toast(`AI Insight: Campaigns overall ROAS is ${avgRoas.toFixed(2)}x. Total budget utilization is high. Keep scale on best performer.`, "info")}
+              onClick={() => toast(campaigns.length ? `Recorded campaigns currently average ${avgRoas.toFixed(2)}x ROAS.` : "Connect or add campaign data before requesting insights.", "info")}
             >
               <Sparkles className="h-4 w-4 mr-1.5" />
               AI insights
@@ -283,7 +278,7 @@ export default function AdsPage() {
                       </div>
                       Start Brand Marketing Campaign
                     </CardTitle>
-                    <CardDescription className="text-xs mt-1 text-brand-700/70 dark:text-brand-300/60">Define the metrics and push to the live network.</CardDescription>
+                    <CardDescription className="text-xs mt-1 text-brand-700/70 dark:text-brand-300/60">Record a campaign for internal tracking. This does not publish to an ad network.</CardDescription>
                   </div>
                   <button onClick={() => setShowAddForm(false)} className="h-8 w-8 rounded-full bg-white/50 dark:bg-[#303030]/50 flex items-center justify-center text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white transition-all shadow-sm">
                     <X className="h-4 w-4" />
@@ -305,13 +300,7 @@ export default function AdsPage() {
                         clientsList.map((c) => (
                           <option key={c.id} value={c.name}>{c.name}</option>
                         ))
-                      ) : (
-                        <>
-                          <option>Acme Corp</option>
-                          <option>Wayne Enterprises</option>
-                          <option>Stark Industries</option>
-                        </>
-                      )}
+                      ) : <option value="">Add a client before creating a campaign</option>}
                     </select>
                   </div>
                   <div>
@@ -342,7 +331,7 @@ export default function AdsPage() {
                         <option value="draft">Draft</option>
                       </select>
                     </div>
-                    <Button type="submit" className="h-11 px-6 bg-gradient-to-r from-brand-500 to-indigo-500 hover:from-brand-600 hover:to-indigo-600 text-white font-bold text-sm shadow-md border-none">
+                    <Button type="submit" disabled={!client || !name.trim()} className="h-11 px-6 bg-gradient-to-r from-brand-500 to-indigo-500 hover:from-brand-600 hover:to-indigo-600 disabled:cursor-not-allowed disabled:opacity-50 text-white font-bold text-sm shadow-md border-none">
                       Launch Ads
                     </Button>
                   </div>
@@ -390,10 +379,10 @@ export default function AdsPage() {
           <CardHeader className="border-b border-slate-100 dark:border-[#303030]/60 pb-4">
             <div className="flex justify-between items-center">
               <div>
-                <CardTitle className="text-lg">Network Performance</CardTitle>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Impressions vs Clicks over the last 7 days</p>
+                <CardTitle className="text-lg">Campaign comparison</CardTitle>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Recorded impressions and clicks by campaign</p>
               </div>
-              <Badge variant="success" dot className="px-3 py-1 shadow-sm">Live Network</Badge>
+              <Badge variant="neutral" className="px-3 py-1">Recorded data</Badge>
             </div>
           </CardHeader>
           <CardContent className="p-4 sm:p-6">

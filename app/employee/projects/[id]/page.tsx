@@ -6,14 +6,13 @@ import { useToast } from "@/providers/ToastProvider";
 import {
   getProjectById, getTeamUsers, updateProject,
   addProjectTask, toggleTaskDone, deleteTask,
-  updateInvoiceStatus, deleteProject, assignProjectLead,
+  updateInvoiceStatus, deleteProject, assignProjectLead, getFreshUserProfile,
 } from "@/app/actions/crm";
 import {
   ArrowLeft, Building2, CalendarDays, CheckCircle2, CheckSquare,
   Code2, Crown, DollarSign, Edit2, FileText, Globe2,
   Link as LinkIcon, Loader2, Megaphone, Phone, Plus, Receipt,
   Square, Trash2, Users, X, Zap, Target, ListTodo, SlidersHorizontal,
-  ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
@@ -91,6 +90,7 @@ export default function ProjectDetailPage() {
 
   const [project, setProject]           = useState<any>(null);
   const [roster, setRoster]             = useState<any[]>([]);
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
   const [loading, setLoading]           = useState(true);
   const [toggling, setToggling]         = useState<number | null>(null);
   const [assigningLead, setAssigningLead] = useState(false);
@@ -115,7 +115,7 @@ export default function ProjectDetailPage() {
     setLoading(true);
     try {
       console.log("ProjectDetailPage: loading project with ID:", numericId);
-      const [pr, tr] = await Promise.all([getProjectById(numericId), getTeamUsers()]);
+      const [pr, tr, me] = await Promise.all([getProjectById(numericId), getTeamUsers(), getFreshUserProfile()]);
       console.log("ProjectDetailPage: pr result:", pr);
       if (pr.success && pr.data) {
         setProject(pr.data);
@@ -125,6 +125,7 @@ export default function ProjectDetailPage() {
         console.error("ProjectDetailPage: failed to load project:", pr.error || "no data returned");
       }
       if (tr.success && tr.data) setRoster((tr.data as any[]).filter(u => u.role !== "client"));
+      if (me.success && me.data) setCurrentUserId(Number(me.data.id));
     } catch (err) {
       console.error("ProjectDetailPage: error inside load():", err);
     } finally { setLoading(false); }
@@ -350,10 +351,9 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
         {project.clientName && (
           <>
             <span className="text-slate-300 dark:text-slate-700">/</span>
-            <button onClick={() => project.client && router.push(`/employee/projects/${project.client.id}`)}
-              className="text-xs font-semibold text-slate-400 hover:text-brand-600 transition-colors cursor-pointer">
+            <span className="text-xs font-semibold text-slate-400">
               {project.clientName}
-            </button>
+            </span>
           </>
         )}
         <span className="text-slate-300 dark:text-slate-700">/</span>
@@ -439,16 +439,7 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
 
         {/* ── Team & Workload ──────────────────────────────────────────────── */}
         <BentoCard className="lg:col-span-4">
-          <SectionTitle
-            icon={Users}
-            label="Team & Workload"
-            action={
-              <button onClick={openEdit}
-                className="text-[9px] font-bold text-slate-400 hover:text-brand-600 transition-colors cursor-pointer px-2 py-1 rounded-lg hover:bg-brand-50 dark:hover:bg-brand-950/20">
-                Edit lead
-              </button>
-            }
-          />
+          <SectionTitle icon={Users} label="Team & Workload" />
 
           {/* Lead highlight */}
           {project.lead ? (
@@ -509,17 +500,6 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
                         <p className="text-[9px] text-slate-400">No tasks assigned</p>
                       )}
                     </div>
-                    {!member.isLead && (
-                      <button
-                        onClick={() => handleAssignLead(member.id)}
-                        disabled={assigningLead}
-                        title="Make project lead"
-                        className="opacity-0 group-hover:opacity-100 shrink-0 h-6 w-6 rounded-lg flex items-center justify-center text-slate-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-950/20 transition-all cursor-pointer disabled:pointer-events-none">
-                        {assigningLead
-                          ? <Loader2 className="h-3 w-3 animate-spin" />
-                          : <Crown className="h-3 w-3" />}
-                      </button>
-                    )}
                   </div>
                 );
               })}
@@ -545,7 +525,7 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
           )}
 
           {/* Add task */}
-          <div className="mb-4 space-y-2">
+          <div className="hidden" aria-hidden="true">
             <input
               value={newTask}
               onChange={e => setNewTask(e.target.value)}
@@ -593,7 +573,8 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
                   priority: t.priority,
                   dueDate: t.dueDate,
                   assignedTo: roster.find((u: any) => u.id === t.userId)?.name || "Unassigned"
-                }))} 
+                }))}
+                movableTaskIds={currentUserId == null ? [] : tasks.filter((t: any) => t.userId === currentUserId).map((t: any) => t.id)}
               />
             </div>
           )}
@@ -656,17 +637,15 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
           <SectionTitle icon={Users} label="Client Contact" />
           <div className="space-y-4">
             {project.client && (
-              <button onClick={() => router.push(`/employee/projects/${project.client.id}`)}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/30 border border-slate-200/80 dark:border-slate-800/80 hover:border-brand-300 dark:hover:border-brand-700 transition-all cursor-pointer text-left">
+              <div className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/30 border border-slate-200/80 dark:border-slate-800/80 text-left">
                 <div className="h-9 w-9 rounded-xl bg-brand-500 flex items-center justify-center text-xs font-extrabold text-white shrink-0">
                   {(project.clientName || "?").substring(0, 2).toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-bold text-slate-800 dark:text-white truncate">{project.clientName}</p>
-                  <p className="text-[10px] text-slate-400">View full client →</p>
+                  <p className="text-[10px] text-slate-400">Assigned client</p>
                 </div>
-                <ChevronRight className="h-3.5 w-3.5 text-slate-300 dark:text-slate-600 shrink-0" />
-              </button>
+              </div>
             )}
             {project.clientContactName ? (
               <div className="space-y-2">

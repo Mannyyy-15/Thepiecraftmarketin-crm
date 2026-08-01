@@ -115,11 +115,23 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
   const [qClientName, setQClientName] = useState("");
   const [qClientIndustry, setQClientIndustry] = useState("SaaS");
   const [qProjTitle, setQProjTitle] = useState("");
-  const [qProjClient, setQProjClient] = useState("Acme Corp");
+  const [qProjClient, setQProjClient] = useState("");
   const [qProjType, setQProjType] = useState<"Website" | "Meta Ads" | "Branding" | "SEO" | "Content">("Website");
   const [qHours, setQHours] = useState("8");
   const [qExpenseAmount, setQExpenseAmount] = useState("");
   const [qExpenseDesc, setQExpenseDesc] = useState("");
+
+  useEffect(() => {
+    if (activeModal !== "project") return;
+    const liveClients = searchData.clients;
+    if (liveClients.length === 0) {
+      setQProjClient("");
+      return;
+    }
+    if (!liveClients.some((client) => client.name === qProjClient)) {
+      setQProjClient(liveClients[0].name);
+    }
+  }, [activeModal, qProjClient, searchData.clients]);
 
   // Profile dropdown state
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -275,7 +287,7 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
 
   const handleQuickProject = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!qProjTitle) return;
+    if (!qProjTitle || !qProjClient) return;
     const res = await quickAddProject(qProjTitle, qProjClient, qProjType);
     if (res.success) {
       addToast(`Successfully created project "${qProjTitle}" for ${qProjClient}!`);
@@ -374,7 +386,7 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-2.5 py-1 mb-1">Quick Tools</p>
               
               <button
-                onClick={() => { setActiveModal("client"); setShowQuickActions(false); }}
+                onClick={() => { setShowQuickActions(false); router.push("/admin/clients?add=1"); }}
                 className="w-full text-left px-2.5 py-2 text-xs font-semibold rounded-xl text-indigo-700 dark:text-indigo-200 hover:bg-indigo-500/10 hover:text-indigo-800 dark:hover:text-indigo-100 transition-colors flex items-center gap-2 cursor-pointer"
               >
                 <Globe className="h-3.5 w-3.5" /> Onboard New Client
@@ -673,6 +685,7 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
                       onChange={(e) => setQProjClient(e.target.value)}
                       className="w-full h-10 rounded-xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#303030] px-3 text-xs focus:ring-2 focus:ring-[#3b82f6]/40"
                     >
+                      {searchData.clients.length === 0 && <option value="">No clients available</option>}
                       {searchData.clients.map((c) => (
                         <option key={c.id} value={c.name}>{c.name}</option>
                       ))}
@@ -693,7 +706,7 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
                     </select>
                   </div>
                 </div>
-                <button type="submit" className="w-full h-10 bg-[#3b82f6] hover:bg-[#2563eb] text-white text-xs font-bold rounded-xl shadow-md transition-colors">
+                <button type="submit" disabled={!qProjClient || !qProjTitle.trim()} className="w-full h-10 bg-[#3b82f6] hover:bg-[#2563eb] disabled:cursor-not-allowed disabled:opacity-50 text-white text-xs font-bold rounded-xl shadow-md transition-colors">
                   Create Project Card
                 </button>
               </form>
@@ -780,7 +793,7 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Team lunch with Stark Acme representatives"
+                    placeholder="e.g. Client meeting travel or team lunch"
                     value={qExpenseDesc}
                     onChange={(e) => setQExpenseDesc(e.target.value)}
                     className="w-full h-10 rounded-xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#303030] px-3 text-xs focus:ring-2 focus:ring-[#3b82f6]/40"
