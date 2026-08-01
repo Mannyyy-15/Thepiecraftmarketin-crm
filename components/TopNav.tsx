@@ -34,7 +34,7 @@ import { logout } from "@/app/actions/auth";
 import { clearCurrentUserCache, getCurrentUserCached } from "@/lib/currentUserClient";
 import { LogoutConfirmModal } from "@/components/ui/LogoutConfirmModal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
-import { getMyNotifications, markAllNotificationsRead, dismissNotification, getGlobalSearchData, quickAddClient, quickAddEmployee, quickAddProject, quickAddTimesheet, quickAddExpense } from "@/app/actions/crm";
+import { getMyNotifications, markAllNotificationsRead, markNotificationRead, dismissNotification, getGlobalSearchData, quickAddClient, quickAddProject, quickAddTimesheet, quickAddExpense } from "@/app/actions/crm";
 import type { Notification } from "@/lib/schema";
 import NotificationPanel from "@/components/NotificationPanel";
 
@@ -86,7 +86,7 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
 
   // Floating Quick Action dropdowns & modals
   const [showQuickActions, setShowQuickActions] = useState(false);
-  const [activeModal, setActiveModal] = useState<"client" | "employee" | "project" | "hours" | "expense" | null>(null);
+  const [activeModal, setActiveModal] = useState<"client" | "project" | "hours" | "expense" | null>(null);
 
   useEffect(() => {
     const needsDirectoryData = showSearchModal || activeModal === "project" || activeModal === "hours";
@@ -114,8 +114,6 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
   // Quick Forms Local states
   const [qClientName, setQClientName] = useState("");
   const [qClientIndustry, setQClientIndustry] = useState("SaaS");
-  const [qEmpName, setQEmpName] = useState("");
-  const [qEmpRole, setQEmpRole] = useState("Lead Strategist");
   const [qProjTitle, setQProjTitle] = useState("");
   const [qProjClient, setQProjClient] = useState("Acme Corp");
   const [qProjType, setQProjType] = useState<"Website" | "Meta Ads" | "Branding" | "SEO" | "Content">("Website");
@@ -275,19 +273,6 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
     }
   };
 
-  const handleQuickEmployee = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!qEmpName) return;
-    const res = await quickAddEmployee(qEmpName, qEmpRole);
-    if (res.success) {
-      addToast(`Successfully sent professional invite token to ${qEmpName} (${qEmpRole})!`);
-      setQEmpName("");
-      setActiveModal(null);
-    } else {
-      addToast(`Failed to add team member: ${res.error}`, "info");
-    }
-  };
-
   const handleQuickProject = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!qProjTitle) return;
@@ -348,9 +333,11 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
       <div className="flex flex-1 items-center justify-end gap-2 relative">
         
         {/* Global Search Bar (Trigger) - Hidden on mobile, visible on desktop */}
-        <div 
+        <button
+          type="button"
           onClick={() => setShowSearchModal(true)}
-          className="relative hidden sm:block w-64 md:w-80 cursor-pointer group"
+          className="group relative hidden w-64 text-left sm:block md:w-80"
+          aria-label="Search workspace"
         >
           <Search className="pointer-events-none absolute inset-y-0 left-3 h-full w-4 text-slate-400 group-hover:text-brand-500 transition-colors" />
           <div className="h-9 w-full rounded-xl border border-[#e8e8ed] dark:border-[#303030] bg-[#f7f7f9] dark:bg-[#303030] pl-9 pr-12 text-sm text-[#8888a0] dark:text-[#5a5a68] flex items-center select-none">
@@ -359,7 +346,7 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
           <kbd className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center gap-0.5 rounded-md border border-slate-200 dark:border-[#38383f] bg-white dark:bg-[#303030] px-1.5 py-0.5 text-[10px] font-medium text-slate-500 dark:text-[#9999a8]">
             <Command className="h-2.5 w-2.5" />K
           </kbd>
-        </div>
+        </button>
 
         {/* Global Quick Action "+" Toggle Button */}
         <div className="relative">
@@ -370,7 +357,7 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
               setShowNotifications(false);
               setShowProfileMenu(false);
             }}
-            className={`inline-flex h-11 w-11 items-center justify-center rounded-xl border transition-all cursor-pointer ${
+            className={`inline-flex h-9 w-9 items-center justify-center rounded-xl border transition-all cursor-pointer ${
               showQuickActions
                 ? "bg-[#3b82f6] text-white border-[#3b82f6] shadow-[0_2px_8px_rgba(59,130,246,0.4)]"
                 : "border-[#e8e8ed] dark:border-[#303030] bg-white dark:bg-[#303030] text-slate-600 dark:text-slate-300 hover:bg-[#f7f7f9] dark:hover:bg-[#38383f]"
@@ -388,21 +375,24 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
               
               <button
                 onClick={() => { setActiveModal("client"); setShowQuickActions(false); }}
-                className="w-full text-left px-2.5 py-2 text-xs font-semibold rounded-xl text-slate-300 hover:bg-indigo-500/10 hover:text-indigo-300 transition-colors flex items-center gap-2 cursor-pointer"
+                className="w-full text-left px-2.5 py-2 text-xs font-semibold rounded-xl text-indigo-700 dark:text-indigo-200 hover:bg-indigo-500/10 hover:text-indigo-800 dark:hover:text-indigo-100 transition-colors flex items-center gap-2 cursor-pointer"
               >
                 <Globe className="h-3.5 w-3.5" /> Onboard New Client
               </button>
               
               <button
-                onClick={() => { setActiveModal("employee"); setShowQuickActions(false); }}
-                className="w-full text-left px-2.5 py-2 text-xs font-semibold rounded-xl text-slate-300 hover:bg-indigo-500/10 hover:text-indigo-300 transition-colors flex items-center gap-2 cursor-pointer"
+                onClick={() => {
+                  setShowQuickActions(false);
+                  router.push("/admin/team?invite=1");
+                }}
+                className="w-full text-left px-2.5 py-2 text-xs font-semibold rounded-xl text-indigo-700 dark:text-indigo-200 hover:bg-indigo-500/10 hover:text-indigo-800 dark:hover:text-indigo-100 transition-colors flex items-center gap-2 cursor-pointer"
               >
                 <Users className="h-3.5 w-3.5" /> Invite Team Member
               </button>
 
               <button
                 onClick={() => { setActiveModal("project"); setShowQuickActions(false); }}
-                className="w-full text-left px-2.5 py-2 text-xs font-semibold rounded-xl text-slate-300 hover:bg-indigo-500/10 hover:text-indigo-300 transition-colors flex items-center gap-2 cursor-pointer"
+                className="w-full text-left px-2.5 py-2 text-xs font-semibold rounded-xl text-indigo-700 dark:text-indigo-200 hover:bg-indigo-500/10 hover:text-indigo-800 dark:hover:text-indigo-100 transition-colors flex items-center gap-2 cursor-pointer"
               >
                 <Briefcase className="h-3.5 w-3.5" /> Create Project
               </button>
@@ -411,14 +401,14 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
 
               <button
                 onClick={() => { setActiveModal("hours"); setShowQuickActions(false); }}
-                className="w-full text-left px-2.5 py-2 text-xs font-semibold rounded-xl text-slate-300 hover:bg-emerald-500/10 hover:text-emerald-300 transition-colors flex items-center gap-2 cursor-pointer"
+                className="w-full text-left px-2.5 py-2 text-xs font-semibold rounded-xl text-emerald-700 dark:text-emerald-200 hover:bg-emerald-500/10 hover:text-emerald-800 dark:hover:text-emerald-100 transition-colors flex items-center gap-2 cursor-pointer"
               >
                 <Clock className="h-3.5 w-3.5" /> Log Billable Hours
               </button>
 
               <button
                 onClick={() => { setActiveModal("expense"); setShowQuickActions(false); }}
-                className="w-full text-left px-2.5 py-2 text-xs font-semibold rounded-xl text-slate-300 hover:bg-rose-500/10 hover:text-rose-300 transition-colors flex items-center gap-2 cursor-pointer"
+                className="w-full text-left px-2.5 py-2 text-xs font-semibold rounded-xl text-rose-700 dark:text-rose-200 hover:bg-rose-500/10 hover:text-rose-800 dark:hover:text-rose-100 transition-colors flex items-center gap-2 cursor-pointer"
               >
                 <DollarSign className="h-3.5 w-3.5" /> Submit Expense Claim
               </button>
@@ -430,7 +420,7 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
         <button
           type="button"
           onClick={() => router.push('/admin/messages')}
-          className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-[#303030] bg-[#303030] text-slate-300 hover:bg-blue-500/10 hover:text-blue-300 transition-colors cursor-pointer"
+          className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-[#303030] bg-[#303030] text-blue-200 hover:bg-blue-500/10 hover:text-blue-100 transition-colors cursor-pointer"
           aria-label="Messages"
           title="Messages"
         >
@@ -467,7 +457,7 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
           notifications={notifications}
           onMarkAllRead={handleMarkAllRead}
           onMarkOneRead={async (id) => {
-            await markAllNotificationsRead();
+            await markNotificationRead(id);
             setNotifications(notifications.map((item) => (item.id === id ? { ...item, read: 1 } : item)));
           }}
           onDismiss={(id) => {
@@ -648,54 +638,7 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
         </div>
       )}
 
-      {/* 2. Invite Team Member Modal */}
-      {activeModal === "employee" && (
-        <div className="fixed inset-0 z-50 bg-slate-950/40 dark:bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4">
-          <Card className="w-full max-w-md animate-scaleIn border border-brand-500/20 shadow-2xl">
-            <CardHeader className="py-4 border-b dark:border-[#303030]">
-              <div className="flex justify-between items-center">
-                <CardTitle className="text-sm font-bold flex items-center gap-2">
-                  <Users className="h-4.5 w-4.5 text-indigo-500" /> Invite Team Member
-                </CardTitle>
-                <button onClick={() => setActiveModal(null)} className="text-slate-400 hover:text-slate-600">
-                  <X className="h-4.5 w-4.5" />
-                </button>
-              </div>
-            </CardHeader>
-            <CardContent className="p-5">
-              <form onSubmit={handleQuickEmployee} className="space-y-4">
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Full Name</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. John Doe"
-                    value={qEmpName}
-                    onChange={(e) => setQEmpName(e.target.value)}
-                    className="w-full h-10 rounded-xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#303030] px-3 text-xs focus:ring-2 focus:ring-[#3b82f6]/40"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Professional Role</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Frontend Engineer"
-                    value={qEmpRole}
-                    onChange={(e) => setQEmpRole(e.target.value)}
-                    className="w-full h-10 rounded-xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#303030] px-3 text-xs focus:ring-2 focus:ring-[#3b82f6]/40"
-                  />
-                </div>
-                <button type="submit" className="w-full h-10 bg-[#3b82f6] hover:bg-[#2563eb] text-white text-xs font-bold rounded-xl shadow-md transition-colors">
-                  Generate Invite Token
-                </button>
-              </form>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {/* 3. Create Project Modal */}
+      {/* 2. Create Project Modal */}
       {activeModal === "project" && (
         <div className="fixed inset-0 z-50 bg-slate-950/40 dark:bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4">
           <Card className="w-full max-w-md animate-scaleIn border border-brand-500/20 shadow-2xl">

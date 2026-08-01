@@ -998,6 +998,28 @@ export async function markAllNotificationsRead() {
   }
 }
 
+// Mark one notification as read, scoped to the signed-in user.
+export async function markNotificationRead(notificationId: number) {
+  try {
+    const session = await getAuthSession();
+    if (!session || !db || !Number.isSafeInteger(notificationId) || notificationId <= 0) {
+      return { success: false };
+    }
+
+    await db.update(schema.notifications)
+      .set({ read: 1 })
+      .where(and(
+        eq(schema.notifications.id, notificationId),
+        eq(schema.notifications.userId, session.id as number)
+      ));
+
+    return { success: true };
+  } catch (error: any) {
+    console.error("markNotificationRead Error:", error);
+    return { success: false };
+  }
+}
+
 // Dismiss (delete) a specific notification
 export async function dismissNotification(notificationId: number) {
   try {
@@ -1005,8 +1027,13 @@ export async function dismissNotification(notificationId: number) {
     if (!session) return { success: false };
     if (!db) return { success: false };
 
+    if (!Number.isSafeInteger(notificationId) || notificationId <= 0) return { success: false };
+
     await db.delete(schema.notifications)
-      .where(eq(schema.notifications.id, notificationId));
+      .where(and(
+        eq(schema.notifications.id, notificationId),
+        eq(schema.notifications.userId, session.id as number)
+      ));
 
     return { success: true };
   } catch (error: any) {
@@ -3059,28 +3086,6 @@ export async function quickAddClient(name: string, industry: string) {
       details: JSON.stringify({ industry: input.data.industry })
     });
     return { success: true };
-  } catch (e: any) { return { success: false, error: e.message }; }
-}
-
-export async function quickAddEmployee(name: string, role: string) {
-  try {
-    const session = await getAuthSession();
-    if (!session || session.role !== "admin" || !db) return { success: false, error: "Unauthorized." };
-    const input = z.object({
-      name: z.string().trim().min(2).max(255),
-      role: z.string().trim().min(2).max(255),
-    }).safeParse({ name, role });
-    if (!input.success) return invalidInput(input.error);
-    const email = `${input.data.name.toLowerCase().replace(/[^a-z0-9]+/g, ".").replace(/^\.+|\.+$/g, "")}.${Date.now()}@pending.invalid`;
-    const unusablePassword = await bcrypt.hash(randomUUID(), 12);
-    await db.insert(schema.users).values({
-      name: input.data.name,
-      email,
-      password: unusablePassword,
-      systemRole: input.data.role,
-      role: "employee"
-    });
-    return { success: true, invitationRequired: true };
   } catch (e: any) { return { success: false, error: e.message }; }
 }
 

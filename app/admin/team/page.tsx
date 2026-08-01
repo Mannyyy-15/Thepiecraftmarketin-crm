@@ -88,7 +88,7 @@ export default function TeamPage() {
   const [members, setMembers] = useState<any[]>([]);
 
   // Invite member form toggle & input fields
-  const [showInviteForm, setShowInviteForm] = useState(false);
+  const [showInviteForm, setShowInviteForm] = useState(searchParams.get("invite") === "1");
   const [newName, setNewName] = useState("");
   const [newEmail, setNewEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -100,6 +100,14 @@ export default function TeamPage() {
   const [accessPassword, setAccessPassword] = useState("");
   const [showAccessPassword, setShowAccessPassword] = useState(false);
   const [passwordResetUserId, setPasswordResetUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (searchParams.get("invite") === "1") {
+      setActiveTab("directory");
+      setSelectedEmployeeDetailId(null);
+      setShowInviteForm(true);
+    }
+  }, [searchParams]);
     
   // Invite member shift schedule states
   const [inviteWorkingDays, setInviteWorkingDays] = useState<number[]>([1, 2, 3, 4, 5]);
@@ -1499,10 +1507,15 @@ export default function TeamPage() {
                         </div>
                         {/* Color Legend */}
                         <div className="flex flex-wrap gap-2 text-[10px] font-bold uppercase tracking-wider">
+                          {/* impeccable-disable-next-line gray-on-color: the colored background belongs only to the nested status dot */}
                           <span className="flex items-center gap-1 text-slate-600 dark:text-slate-400"><span className="h-2 w-2 rounded-full bg-emerald-500 block shrink-0" /> Present</span>
+                          {/* impeccable-disable-next-line gray-on-color: the colored background belongs only to the nested status dot */}
                           <span className="flex items-center gap-1 text-slate-600 dark:text-slate-400"><span className="h-2 w-2 rounded-full bg-orange-400 block shrink-0" /> Half Day</span>
+                          {/* impeccable-disable-next-line gray-on-color: the colored background belongs only to the nested status dot */}
                           <span className="flex items-center gap-1 text-slate-600 dark:text-slate-400"><span className="h-2 w-2 rounded-full bg-rose-400 block shrink-0 border border-dashed border-rose-400" /> Absent</span>
+                          {/* impeccable-disable-next-line gray-on-color: the colored background belongs only to the nested status dot */}
                           <span className="flex items-center gap-1 text-slate-600 dark:text-slate-400"><span className="h-2 w-2 rounded-full bg-amber-500 block shrink-0" /> Holiday</span>
+                          {/* impeccable-disable-next-line gray-on-color: the colored background belongs only to the nested status dot */}
                           <span className="flex items-center gap-1 text-slate-600 dark:text-slate-400"><span className="h-2 w-2 rounded-full bg-rose-500 block shrink-0" /> Leave</span>
                           <span className="flex items-center gap-1 text-slate-600 dark:text-slate-400"><span className="h-2 w-2 rounded-full bg-slate-400 dark:bg-slate-600 block shrink-0" /> Off</span>
                         </div>
@@ -2021,7 +2034,7 @@ export default function TeamPage() {
                                       
                                       <button
                                         onClick={() => handleDeleteEmployeeTask(t.id)}
-                                        className="text-slate-400 hover:text-rose-500 transition-colors p-1.5 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-900/20 lg:opacity-0 group-hover:opacity-100 focus:opacity-100 cursor-pointer"
+                                        className="text-rose-500 transition-colors p-1.5 rounded-xl hover:bg-rose-50 dark:text-rose-300 dark:hover:bg-rose-900/20 lg:opacity-0 group-hover:opacity-100 focus:opacity-100 cursor-pointer"
                                         title="Delete Task"
                                       >
                                         <Trash2 className="h-4 w-4" />
@@ -2157,7 +2170,7 @@ export default function TeamPage() {
                         e.stopPropagation();
                         handleRemoveMember(m.id, m.name);
                       }}
-                      className="absolute top-2.5 right-2.5 z-10 h-7 w-7 rounded-xl text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 flex items-center justify-center cursor-pointer transition-all"
+                      className="absolute top-2.5 right-2.5 z-10 h-7 w-7 rounded-xl text-rose-500 hover:bg-rose-50 dark:text-rose-300 dark:hover:bg-rose-950/20 flex items-center justify-center cursor-pointer transition-all"
                       title="Remove Employee"
                     >
                       <Trash2 className="h-3.5 w-3.5" />

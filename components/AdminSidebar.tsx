@@ -6,18 +6,20 @@ import { useState, useEffect } from "react";
 import {
   LayoutDashboard,
   Building2,
+  Briefcase,
+  Contact2,
+  BadgeDollarSign,
   FolderKanban,
   BarChart3,
   Target,
   Code2,
   UsersRound,
   FilePieChart,
-  CircleDollarSign,
   Receipt,
   Files,
   Settings,
   Sparkles,
-  MessageSquareText,
+  WalletCards,
   X,
   LogOut,
   Workflow,
@@ -31,28 +33,52 @@ import { LogoutConfirmModal } from "@/components/ui/LogoutConfirmModal";
 import { logout } from "@/app/actions/auth";
 import { clearCurrentUserCache, getCurrentUserCached } from "@/lib/currentUserClient";
 
-const navigation = [
-  { name: "Overview",     href: "/admin",              icon: LayoutDashboard },
-  { name: "Clients",      href: "/admin/clients",      icon: Building2 },
-  { name: "Accounts",     href: "/admin/accounts",     icon: Building2 },
-  { name: "Contacts",     href: "/admin/contacts",     icon: UsersRound },
-  { name: "Deals",        href: "/admin/deals",        icon: CircleDollarSign },
-  { name: "Team",         href: "/admin/team",         icon: UsersRound },
-  { name: "Projects",     href: "/admin/projects",     icon: FolderKanban },
-  { name: "Leads",        href: "/admin/leads",        icon: Target },
-  { name: "Meta Ads",     href: "/admin/ads",          icon: BarChart3 },
-  { name: "Website Dev",  href: "/admin/website-dev",  icon: Code2 },
-  { name: "Agency Ops",   href: "/admin/agency-operations", icon: Workflow },
-  { name: "Integrations", href: "/admin/integrations", icon: PlugZap },
-  { name: "Messages",     href: "/admin/messages",     icon: MessageSquareText },
-  { name: "Finance",      href: "/admin/finance",      icon: CircleDollarSign },
-  { name: "Invoices",     href: "/admin/invoices",     icon: Receipt },
-  { name: "Documents",    href: "/admin/documents",    icon: Files },
-  { name: "Reports",      href: "/admin/reports",      icon: FilePieChart },
-  { name: "Studio AI",    href: "/admin/studio-ai",    icon: Sparkles },
-  { name: "Settings",     href: "/admin/settings",     icon: Settings },
-  { name: "Security",     href: "/admin/security",     icon: ShieldCheck },
-];
+const navigationSections = [
+  {
+    label: "Home",
+    items: [
+      { name: "Overview", href: "/admin", icon: LayoutDashboard },
+    ],
+  },
+  {
+    label: "CRM",
+    items: [
+      { name: "Accounts", href: "/admin/accounts", icon: Building2 },
+      { name: "Contacts", href: "/admin/contacts", icon: Contact2 },
+      { name: "Leads", href: "/admin/leads", icon: Target },
+      { name: "Deals", href: "/admin/deals", icon: BadgeDollarSign },
+      { name: "Clients", href: "/admin/clients", icon: Briefcase },
+    ],
+  },
+  {
+    label: "Delivery",
+    items: [
+      { name: "Team", href: "/admin/team", icon: UsersRound },
+      { name: "Projects", href: "/admin/projects", icon: FolderKanban },
+      { name: "Meta Ads", href: "/admin/ads", icon: BarChart3 },
+      { name: "Website Dev", href: "/admin/website-dev", icon: Code2 },
+      { name: "Agency Ops", href: "/admin/agency-operations", icon: Workflow },
+    ],
+  },
+  {
+    label: "Business",
+    items: [
+      { name: "Finance", href: "/admin/finance", icon: WalletCards },
+      { name: "Invoices", href: "/admin/invoices", icon: Receipt },
+      { name: "Documents", href: "/admin/documents", icon: Files },
+      { name: "Reports", href: "/admin/reports", icon: FilePieChart },
+      { name: "Integrations", href: "/admin/integrations", icon: PlugZap },
+    ],
+  },
+  {
+    label: "System",
+    items: [
+      { name: "Studio AI", href: "/admin/studio-ai", icon: Sparkles },
+      { name: "Settings", href: "/admin/settings", icon: Settings },
+      { name: "Security", href: "/admin/security", icon: ShieldCheck },
+    ],
+  },
+] as const;
 
 function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
@@ -97,12 +123,14 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
         </Link>
       </div>
 
-      <nav className="flex flex-1 flex-col overflow-y-auto px-3 py-4">
-        <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500">
-          Workspace
-        </p>
-        <ul role="list" className="flex flex-col gap-y-0.5">
-          {navigation.map((item) => {
+      <nav className="flex flex-1 flex-col overflow-y-auto px-3 py-4" aria-label="Admin workspace">
+        {navigationSections.map((section, sectionIndex) => (
+          <div key={section.label} className={sectionIndex === 0 ? "" : "mt-4"}>
+            <p className="mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-widest text-slate-500">
+              {section.label}
+            </p>
+            <ul role="list" className="flex flex-col gap-y-0.5">
+              {section.items.map((item) => {
             const isActive =
               item.href === "/admin"
                 ? pathname === "/admin"
@@ -135,8 +163,10 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
                 </Link>
               </li>
             );
-          })}
-        </ul>
+              })}
+            </ul>
+          </div>
+        ))}
       </nav>
 
       <div className="border-t border-[#f0f0f2] dark:border-[#303030] p-3 flex items-center justify-between gap-2">
@@ -157,7 +187,7 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
         </Link>
         <button
           onClick={() => setShowLogoutModal(true)}
-          className="icon-button text-slate-500 hover:text-rose-600 hover:bg-rose-50 dark:text-slate-300 dark:hover:bg-rose-950/20 transition-all cursor-pointer"
+          className="icon-button text-rose-600 hover:bg-rose-50 dark:text-rose-300 dark:hover:bg-rose-950/20 transition-all cursor-pointer"
           aria-label="Log out"
           title="Log Out"
         >

@@ -20,7 +20,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Avatar } from "@/components/ui/Avatar";
 import { getCurrentUserCached } from "@/lib/currentUserClient";
-import { getMyNotifications, markAllNotificationsRead, dismissNotification } from "@/app/actions/crm";
+import { getMyNotifications, markAllNotificationsRead, markNotificationRead, dismissNotification } from "@/app/actions/crm";
 import NotificationPanel from "@/components/NotificationPanel";
 
 interface SearchItem {
@@ -312,7 +312,7 @@ export default function PortalTopNav({ onMenuClick }: { onMenuClick?: () => void
           notifications={notifications}
           onMarkAllRead={handleMarkAllRead}
           onMarkOneRead={async (id) => {
-            await markAllNotificationsRead();
+            await markNotificationRead(id);
             setNotifications(notifications.map((item) => (item.id === id ? { ...item, read: 1 } : item)));
           }}
           onDismiss={handleDismissNotification}
