@@ -3,7 +3,8 @@
  * Purges all operational data, projects, clients, tasks, invoices, leads, messages, logs,
  * and non-admin users from the database, retaining ONLY admin users.
  *
- * Usage: node scripts/clear-all-data-keep-admin.js
+ * Usage: set CONFIRM_PURGE=DELETE_ALL_NON_ADMIN_DATA, then run this script with
+ * an explicit DATABASE_URL. This is intentionally difficult to trigger.
  */
 
 const fs = require("fs");
@@ -26,8 +27,9 @@ function getDbUrl() {
   if (process.env.DATABASE_URL && process.env.DATABASE_URL.trim() !== "") {
     return process.env.DATABASE_URL.trim();
   }
-  // Hardcoded fallback connection string from project scripts
-  return "mysql://u257795766_admin:Thepiecraftmarketing%40123@srv2209.hstgr.io:3306/u257795766_crm";
+  throw new Error(
+    "DATABASE_URL is required. Refusing to run destructive cleanup without an explicit connection."
+  );
 }
 
 function parseUrl(urlStr) {
@@ -43,6 +45,11 @@ function parseUrl(urlStr) {
 }
 
 async function runCleanup() {
+  if (process.env.CONFIRM_PURGE !== "DELETE_ALL_NON_ADMIN_DATA") {
+    throw new Error(
+      "Refusing destructive cleanup. Set CONFIRM_PURGE=DELETE_ALL_NON_ADMIN_DATA explicitly."
+    );
+  }
   const dbUrl = getDbUrl();
   console.log(`[DB Cleanup] Connecting to database host: ${parseUrl(dbUrl).host}...`);
 
@@ -144,16 +151,7 @@ async function runCleanup() {
     console.table(remainingUsers);
 
     if (remainingUsers.length === 0) {
-      console.warn("[DB Cleanup] WARNING: No admin user found in database! Creating default admin...");
-      const bcrypt = require("bcryptjs");
-      const adminEmail = process.env.ADMIN_EMAIL || "admin@thepiecraft.com";
-      const adminPassword = process.env.ADMIN_PASSWORD || "AdminPass12345678!";
-      const hashedPassword = await bcrypt.hash(adminPassword, 12);
-      await connection.query(
-        `INSERT INTO \`users\` (name, email, password, role, system_role) VALUES (?, ?, ?, 'admin', 'Admin');`,
-        ["Admin", adminEmail, hashedPassword]
-      );
-      console.log(`[DB Cleanup] Default admin created: ${adminEmail}`);
+      throw new Error("Cleanup left no administrator account. Restore from backup immediately.");
     }
 
     console.log("[DB Cleanup] Re-enabling Foreign Key checks...");
