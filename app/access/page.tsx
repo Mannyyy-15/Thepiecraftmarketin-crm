@@ -21,7 +21,8 @@ type Runtime = "checking" | "native" | "browser";
 
 const LOGIN_TOKEN_PATTERN = /^[A-Za-z0-9_-]{43}$/;
 const APK_DOWNLOAD_PATH = "/downloads/thepiecraft-crm.apk";
-const ACCESS_ORIGIN = "https://thepiecraft-crm.vercel.app";
+const ACCESS_ORIGIN = "https://crm.thepiecraftmarketing.com";
+const ACCESS_HOST = "crm.thepiecraftmarketing.com";
 const ANDROID_PACKAGE = "com.thepiecraft.crm";
 
 export default function SecureAccessPage() {
@@ -123,7 +124,7 @@ export default function SecureAccessPage() {
   const showInstallHandoff = runtime === "browser" && Boolean(token);
   const browserFallbackUrl = token ? `${ACCESS_ORIGIN}/access#${token}` : `${ACCESS_ORIGIN}/access`;
   const openAppIntent = token
-    ? `intent://thepiecraft-crm.vercel.app/access?token=${token}#Intent;scheme=https;package=${ANDROID_PACKAGE};S.browser_fallback_url=${encodeURIComponent(browserFallbackUrl)};end`
+    ? `intent://${ACCESS_HOST}/access?token=${token}#Intent;scheme=https;package=${ANDROID_PACKAGE};S.browser_fallback_url=${encodeURIComponent(browserFallbackUrl)};end`
     : browserFallbackUrl;
 
   return (

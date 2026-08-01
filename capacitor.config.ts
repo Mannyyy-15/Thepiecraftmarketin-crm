@@ -1,6 +1,6 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
-const serverUrl = process.env.CAP_SERVER_URL || 'https://thepiecraft-crm.vercel.app';
+const serverUrl = process.env.CAP_SERVER_URL || 'https://crm.thepiecraftmarketing.com';
 const parsedServerUrl = new URL(serverUrl);
 if (parsedServerUrl.protocol !== 'https:') {
   throw new Error('CAP_SERVER_URL must use HTTPS.');

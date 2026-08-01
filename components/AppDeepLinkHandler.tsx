@@ -3,14 +3,17 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-const ACCESS_ORIGIN = "https://thepiecraft-crm.vercel.app";
+const TRUSTED_ACCESS_ORIGINS = new Set([
+  "https://crm.thepiecraftmarketing.com",
+  "https://thepiecraft-crm.vercel.app",
+]);
 const LOGIN_TOKEN_PATTERN = /^[A-Za-z0-9_-]{43}$/;
 
 function trustedAccessPath(value: string) {
   try {
     const incoming = new URL(value);
     if (
-      incoming.origin !== ACCESS_ORIGIN ||
+      !TRUSTED_ACCESS_ORIGINS.has(incoming.origin) ||
       incoming.pathname !== "/access" ||
       incoming.username !== "" ||
       incoming.password !== ""

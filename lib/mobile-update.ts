@@ -1,14 +1,14 @@
 export const androidRelease = {
-  versionCode: 2,
-  versionName: "1.1.0",
+  versionCode: 3,
+  versionName: "1.2.0",
   minimumVersionCode: 1,
   apkUrl:
-    "https://github.com/Mannyyy-15/Thepiecraftmarketin-crm/releases/download/android-v1.1.0/ThePieCraft-CRM-v1.1.0.apk",
-  sha256: "114863789ef542aabe19b0be29e4bd023c2063ca01bf9cd0c5dff26deb0eabc7",
+    "https://github.com/Mannyyy-15/Thepiecraftmarketin-crm/releases/download/android-v1.2.0/ThePieCraft-CRM-v1.2.0.apk",
+  sha256: "21e0f87be7a4345033e8785d2a06833d123766f7de038ed4276e814031bddeb2",
   title: "A new CRM app update is ready",
   notes: [
-    "Adds secure in-app Android updates without opening a browser.",
-    "Keeps the native shell current while normal CRM changes continue to update automatically.",
+    "Adds verified app links for crm.thepiecraftmarketing.com.",
+    "Keeps the original Vercel address as a safe fallback.",
   ],
 } as const;
 
