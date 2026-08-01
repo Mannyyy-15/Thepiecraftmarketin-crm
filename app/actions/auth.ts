@@ -49,6 +49,20 @@ function tokenHash(token: string) {
   return crypto.createHash("sha256").update(token).digest("hex");
 }
 
+function shiftTimeToMinutes(value: string) {
+  const match = /^(\d{2}):(\d{2}) (AM|PM)$/.exec(value);
+  if (!match) return Number.NaN;
+  const hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  if (hours < 1 || hours > 12 || minutes < 0 || minutes > 59) return Number.NaN;
+  const hour24 = match[3] === "PM" && hours !== 12
+    ? hours + 12
+    : match[3] === "AM" && hours === 12
+      ? 0
+      : hours;
+  return hour24 * 60 + minutes;
+}
+
 function privateMetadataHash(value: string) {
   return crypto
     .createHmac(
@@ -328,11 +342,13 @@ export async function createUser(formData: FormData) {
     }
 
     const emailValue = formData.get("email");
+    const nameValue = formData.get("name");
     const passwordValue = formData.get("password");
     const roleValue = formData.get("role");
     const email =
       typeof emailValue === "string" ? emailValue.trim().toLowerCase() : "";
     const password = typeof passwordValue === "string" ? passwordValue : "";
+    const requestedName = typeof nameValue === "string" ? nameValue.trim() : "";
     const role =
       roleValue === "admin" || roleValue === "employee" || roleValue === "client"
         ? roleValue
@@ -342,10 +358,26 @@ export async function createUser(formData: FormData) {
     const shiftStartTime = (formData.get("shiftStartTime") as string) || "09:00 AM";
     const shiftEndTime = (formData.get("shiftEndTime") as string) || "05:00 PM";
     const activeShiftProfile = (formData.get("activeShiftProfile") as string) || "Standard Core Hours";
+    const validWorkingDays = /^(?:[0-6](?:,[0-6])*)$/.test(workingDays);
+    const validShiftTime = /^\d{2}:\d{2} (?:AM|PM)$/;
 
     const passwordResult = role === "admin"
       ? adminAccountPasswordSchema.safeParse(password)
       : memberAccountPasswordSchema.safeParse(password);
+
+    if (
+      requestedName.length > 120 ||
+      systemRole.length > 120 ||
+      !validWorkingDays ||
+      !validShiftTime.test(shiftStartTime) ||
+      !validShiftTime.test(shiftEndTime) ||
+      shiftTimeToMinutes(shiftEndTime) <= shiftTimeToMinutes(shiftStartTime)
+    ) {
+      return {
+        success: false,
+        error: "Enter a valid name, role, working-day selection, and shift where the end is later than the start.",
+      };
+    }
 
     if (
       !email ||
@@ -362,7 +394,7 @@ export async function createUser(formData: FormData) {
       };
     }
 
-    const name = email.split("@")[0];
+    const name = requestedName || email.split("@")[0];
 
     // 2. Check if email already exists
     const existingUsers = await db

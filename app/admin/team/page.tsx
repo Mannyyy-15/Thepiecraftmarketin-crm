@@ -51,6 +51,29 @@ import { Avatar } from "@/components/ui/Avatar";
 import { Progress } from "@/components/ui/Progress";
 import { cn } from "@/components/ui/cn";
 
+const SHIFT_TIME_OPTIONS = Array.from({ length: 36 }, (_, index) => {
+  const totalMinutes = 6 * 60 + index * 30;
+  const hour24 = Math.floor(totalMinutes / 60) % 24;
+  const minutes = totalMinutes % 60;
+  const period = hour24 >= 12 ? "PM" : "AM";
+  const hour12 = hour24 % 12 || 12;
+  return `${String(hour12).padStart(2, "0")}:${String(minutes).padStart(2, "0")} ${period}`;
+});
+
+function shiftTimeToMinutes(value: string) {
+  const match = /^(\d{2}):(\d{2}) (AM|PM)$/.exec(value);
+  if (!match) return Number.NaN;
+  const hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  const period = match[3];
+  const hour24 = period === "PM" && hours !== 12
+    ? hours + 12
+    : period === "AM" && hours === 12
+      ? 0
+      : hours;
+  return hour24 * 60 + minutes;
+}
+
 export default function TeamPage() {
   const { toast, confirmDialog } = useToast();
   const searchParams = useSearchParams();
@@ -70,6 +93,7 @@ export default function TeamPage() {
   const [newEmail, setNewEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [isInviting, setIsInviting] = useState(false);
   const [newSystemRole, setNewSystemRole] = useState("Web Developer"); // "Web Developer" | "Graphic Designer" | "Video Editor" | "Digital Marketing" | "Admin"
   const [shareLogin, setShareLogin] = useState<{ link: string; name: string; email: string; expiresAt?: string } | null>(null);
   const [accessLinkUserId, setAccessLinkUserId] = useState<string | null>(null);
@@ -538,18 +562,33 @@ export default function TeamPage() {
   // Invite handler
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newEmail || !newPassword) {
-      toast("Please fill in all fields (including the password).", "error");
+    if (isInviting) return;
+    const cleanName = newName.trim();
+    const emailPrefix = newEmail.replace("@thepiecraft.com", "").trim();
+    if (!cleanName || !emailPrefix || !newPassword) {
+      toast("Enter the employee name, email prefix, and password.", "error");
+      return;
+    }
+    if (!/^[a-z0-9._-]+$/i.test(emailPrefix)) {
+      toast("Email prefix can use letters, numbers, dots, underscores, and hyphens only.", "error");
+      return;
+    }
+    if (inviteWorkingDays.length === 0) {
+      toast("Select at least one working day.", "error");
+      return;
+    }
+    if (shiftTimeToMinutes(inviteShiftEndTime) <= shiftTimeToMinutes(inviteShiftStartTime)) {
+      toast("Shift end must be later than shift start.", "error");
       return;
     }
 
-    const derivedName = newEmail.trim().split("@")[0];
-
+    setIsInviting(true);
     try {
       const formData = new FormData();
+      formData.append("name", cleanName);
       formData.append("email", newEmail.trim());
       formData.append("password", newPassword);
-      const authRole = newSystemRole === "Admin" ? "admin" : "employee";
+      const authRole = "employee";
       formData.append("role", authRole);
       formData.append("systemRole", newSystemRole);
       formData.append("workingDays", inviteWorkingDays.join(","));
@@ -564,7 +603,7 @@ export default function TeamPage() {
         if (result.userId && authRole === "employee") {
           const linkResult = await createLoginLink(result.userId);
           if (linkResult.success && linkResult.loginLink) {
-            setShareLogin({ link: linkResult.loginLink, name: derivedName, email: inviteEmail, expiresAt: linkResult.expiresAt });
+            setShareLogin({ link: linkResult.loginLink, name: cleanName, email: inviteEmail, expiresAt: linkResult.expiresAt });
           } else {
             toast("Account created, but the secure login link could not be generated. You can create another link later.", "info");
           }
@@ -576,13 +615,15 @@ export default function TeamPage() {
         setInviteShiftStartTime("09:00 AM");
         setInviteShiftEndTime("05:00 PM");
         setShowInviteForm(false);
-        toast(`Account created for ${derivedName}. Share their secure sign-in link to finish.`, "success");
+        toast(`Account created for ${cleanName}. Share their secure sign-in link to finish.`, "success");
         loadTeamData();
       } else {
         toast(`Failed to create account: ${result.error}`, "error");
       }
     } catch (err: any) {
       toast(`System error: ${err.message || "Failed to connect to database."}`, "error");
+    } finally {
+      setIsInviting(false);
     }
   };
 
@@ -860,150 +901,221 @@ export default function TeamPage() {
                 Attendance
               </button>
             </div>
-            <Button size="md" onClick={() => setShowInviteForm(!showInviteForm)} className="w-full sm:w-auto justify-center bg-brand-600 hover:bg-brand-700 text-white font-bold">
-              <UserPlus className="h-4 w-4 mr-1" />
-              Invite Member
+            <Button
+              size="md"
+              variant={showInviteForm ? "outline" : "primary"}
+              onClick={() => setShowInviteForm(!showInviteForm)}
+              aria-expanded={showInviteForm}
+              aria-controls="team-member-invite-form"
+              className="w-full justify-center sm:w-auto"
+            >
+              {showInviteForm ? <X className="h-4 w-4" /> : <UserPlus className="h-4 w-4" />}
+              {showInviteForm ? "Close invite" : "Add team member"}
             </Button>
           </div>
 
-          {/* Invite Member Drawer Form */}
           {showInviteForm && (
-            <Card className="border border-brand-500/30 bg-brand-50/10 dark:bg-brand-500/5 animate-fadeIn">
-              <CardHeader className="py-4">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <CardTitle className="text-sm font-bold flex items-center gap-2">
-                      <UserPlus className="h-4.5 w-4.5 text-indigo-500" /> Add New Employee to Roster
-                    </CardTitle>
+            <Card id="team-member-invite-form" className="mb-20 overflow-hidden rounded-2xl border border-slate-200 shadow-none dark:border-[#303030] md:mb-0">
+              <CardHeader className="items-start px-5 py-5 sm:px-6">
+                <div className="flex min-w-0 items-start gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-300">
+                    <UserPlus className="h-5 w-5" aria-hidden="true" />
                   </div>
-                  <button onClick={() => setShowInviteForm(false)} className="text-slate-400 hover:text-slate-600">
-                    <X className="h-4 w-4" />
-                  </button>
+                  <div className="min-w-0">
+                    <CardTitle className="text-base">Add employee to roster</CardTitle>
+                    <CardDescription className="mt-1 max-w-2xl leading-5">
+                      Create their workspace account and schedule. A private app-access link is generated after saving.
+                    </CardDescription>
+                  </div>
                 </div>
+                <button
+                  type="button"
+                  onClick={() => setShowInviteForm(false)}
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-[#28282d] dark:hover:text-white"
+                  aria-label="Close add employee form"
+                >
+                  <X className="h-4 w-4" aria-hidden="true" />
+                </button>
               </CardHeader>
-              <CardContent className="pb-4">
-                <form onSubmit={handleInvite} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 items-end">
+              <CardContent className="p-0">
+                <form onSubmit={handleInvite} autoComplete="off">
+                  <div className="px-5 py-5 sm:px-6 sm:py-6">
+                    <h3 className="text-sm font-semibold text-slate-950 dark:text-white">Account details</h3>
+                    <p className="mt-1 text-xs leading-5 text-slate-500 dark:text-slate-400">
+                      The email and password remain available for normal sign-in after onboarding.
+                    </p>
+                    <div className="mt-5 grid gap-4 lg:grid-cols-2">
+                      <div>
+                        <label htmlFor="new-member-name" className="mb-1.5 block text-xs font-medium text-slate-700 dark:text-slate-300">Full name</label>
+                        <input
+                          id="new-member-name"
+                          name="new-team-member-name"
+                          type="text"
+                          required
+                          maxLength={120}
+                          autoComplete="off"
+                          placeholder="e.g. Riya Sharma"
+                          value={newName}
+                          onChange={(event) => setNewName(event.target.value)}
+                          className="field-control"
+                        />
+                      </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">
-                      Email Prefix
+                    <label htmlFor="new-member-email" className="mb-1.5 block text-xs font-medium text-slate-700 dark:text-slate-300">
+                      Work email
                     </label>
                     <div className="relative">
                       <input
                         type="text"
+                        id="new-member-email"
+                        name="new-team-member-email-prefix"
                         required
-                        placeholder="john"
+                        inputMode="email"
+                        autoComplete="off"
+                        spellCheck={false}
+                        pattern="[A-Za-z0-9._-]+"
+                        placeholder="riya"
                         value={newEmail ? newEmail.replace("@thepiecraft.com", "") : ""}
                         onChange={(e) => {
-                          const val = e.target.value.replace("@thepiecraft.com", "").replace("@", "");
+                          const val = e.target.value.replace(/@thepiecraft\.com/gi, "").replace(/@/g, "").toLowerCase();
                           if (val) {
                             setNewEmail(val + "@thepiecraft.com");
                           } else {
                             setNewEmail("");
                           }
                         }}
-                        className="h-10 w-full rounded-2xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] pl-3 pr-32 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white"
+                        className="field-control pr-[8.75rem]"
+                        aria-describedby="new-member-email-domain"
                       />
-                      <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-xs text-slate-400 font-semibold select-none">
+                      <div id="new-member-email-domain" className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 select-none text-xs font-medium text-slate-500 dark:text-slate-400">
                         @thepiecraft.com
                       </div>
                     </div>
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">
-                      Password
+                    <label htmlFor="new-member-password" className="mb-1.5 block text-xs font-medium text-slate-700 dark:text-slate-300">
+                      Initial password
                     </label>
                     <div className="relative">
                       <input
                         type={showPassword ? "text" : "password"}
+                        id="new-member-password"
+                        name="new-team-member-password"
                         required
                         maxLength={PASSWORD_MAX_LENGTH}
-                        placeholder="Password for login"
+                        autoComplete="new-password"
+                        placeholder="Set any non-empty password"
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
-                        className="h-10 w-full rounded-2xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] pl-3 pr-10 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white"
+                        className="field-control pr-11"
                       />
                       <button
                         type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                        onClick={() => setShowPassword((visible) => !visible)}
+                        className="absolute right-1 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-[#38383f] dark:hover:text-white"
+                        aria-label={showPassword ? "Hide initial password" : "Show initial password"}
                       >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        {showPassword ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
                       </button>
                     </div>
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">
-                      System Role
+                    <label htmlFor="new-member-role" className="mb-1.5 block text-xs font-medium text-slate-700 dark:text-slate-300">
+                      Team role
                     </label>
                     <select
+                      id="new-member-role"
+                      name="new-team-member-role"
                       value={newSystemRole}
                       onChange={(e) => setNewSystemRole(e.target.value)}
-                      className="h-10 w-full rounded-2xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] px-3 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white"
+                      className="field-control"
                     >
                       <option value="Web Developer">Web Developer</option>
                       <option value="Graphic Designer">Graphic Designer</option>
                       <option value="Video Editor">Video Editor</option>
                       <option value="Digital Marketing">Digital Marketing</option>
-                      <option value="Admin">Admin</option>
+                      <option value="Performance Marketer">Performance Marketer</option>
+                      <option value="SEO Specialist">SEO Specialist</option>
+                      <option value="Content Strategist">Content Strategist</option>
+                      <option value="Account Manager">Account Manager</option>
                     </select>
                   </div>
+                    </div>
+                  </div>
                   
-                  {/* Shift Days */}
-                  <div className="col-span-1 sm:col-span-2 md:col-span-4">
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
-                      Working Days
-                    </label>
-                    <div className="flex flex-wrap gap-2">
+                  <div className="border-t border-slate-200 px-5 py-5 dark:border-[#303030] sm:px-6 sm:py-6">
+                    <h3 className="text-sm font-semibold text-slate-950 dark:text-white">Work schedule</h3>
+                    <p className="mt-1 text-xs leading-5 text-slate-500 dark:text-slate-400">
+                      Choose the employee&apos;s regular working days and default shift.
+                    </p>
+                    <fieldset className="mt-5">
+                      <legend className="mb-2 text-xs font-medium text-slate-700 dark:text-slate-300">Working days</legend>
+                    <div className="grid grid-cols-7 gap-1.5" aria-label="Working days">
                       {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day, idx) => (
                         <button
                           key={day}
                           type="button"
+                          aria-pressed={inviteWorkingDays.includes(idx)}
                           onClick={() => {
-                            setInviteWorkingDays(prev =>
-                              prev.includes(idx) ? prev.filter(d => d !== idx) : [...prev, idx]
+                            setInviteWorkingDays((current) =>
+                              current.includes(idx)
+                                ? current.filter((workingDay) => workingDay !== idx)
+                                : [...current, idx].sort((a, b) => a - b)
                             );
                           }}
-                          className={`h-8 px-3 rounded-xl text-xs font-bold transition-all border ${
+                          className={`min-h-11 rounded-lg border px-1 text-xs font-semibold transition-colors ${
                             inviteWorkingDays.includes(idx)
-                              ? "bg-brand-600 text-white border-brand-600 shadow-sm"
-                              : "bg-white dark:bg-[#1f1f1f] border-slate-200 dark:border-[#303030] text-slate-500 hover:border-brand-300 hover:text-brand-600"
+                              ? "border-blue-600 bg-blue-600 text-white"
+                              : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50 dark:border-[#38383f] dark:bg-[#28282d] dark:text-slate-300 dark:hover:bg-[#38383f]"
                           }`}
                         >
                           {day}
                         </button>
                       ))}
                     </div>
-                  </div>
+                    </fieldset>
 
-                  {/* Shift Timings */}
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">
-                      Shift Start
+                  <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                    <div>
+                    <label htmlFor="new-member-shift-start" className="mb-1.5 block text-xs font-medium text-slate-700 dark:text-slate-300">
+                      Shift starts
                     </label>
-                    <input
-                      type="text"
+                    <select
+                      id="new-member-shift-start"
                       value={inviteShiftStartTime}
                       onChange={e => setInviteShiftStartTime(e.target.value)}
-                      placeholder="e.g. 09:30 AM"
-                      className="h-10 w-full rounded-2xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] px-3 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">
-                      Shift End
+                      className="field-control"
+                    >
+                      {SHIFT_TIME_OPTIONS.map((time) => <option key={time} value={time}>{time}</option>)}
+                    </select>
+                    </div>
+                    <div>
+                    <label htmlFor="new-member-shift-end" className="mb-1.5 block text-xs font-medium text-slate-700 dark:text-slate-300">
+                      Shift ends
                     </label>
-                    <input
-                      type="text"
+                    <select
+                      id="new-member-shift-end"
                       value={inviteShiftEndTime}
                       onChange={e => setInviteShiftEndTime(e.target.value)}
-                      placeholder="e.g. 06:30 PM"
-                      className="h-10 w-full rounded-2xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] px-3 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white"
-                    />
+                      className="field-control"
+                    >
+                      {SHIFT_TIME_OPTIONS.map((time) => <option key={time} value={time}>{time}</option>)}
+                    </select>
+                    </div>
                   </div>
-                  <div>
-                    <Button type="submit" className="h-10 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-sm">
-                      Add Member
-                    </Button>
+                  </div>
+
+                  <div className="flex flex-col-reverse gap-3 border-t border-slate-200 px-5 pb-[max(1.25rem,calc(var(--sab)+1rem))] pt-4 dark:border-[#303030] sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:pb-5">
+                    <p className="text-xs leading-5 text-slate-500 dark:text-slate-400">
+                      The secure access link opens automatically after account creation.
+                    </p>
+                    <div className="flex flex-col-reverse gap-2 sm:flex-row">
+                      <Button type="button" variant="ghost" onClick={() => setShowInviteForm(false)} disabled={isInviting}>Cancel</Button>
+                      <Button type="submit" disabled={isInviting} className="min-w-44">
+                        {isInviting ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <UserPlus className="h-4 w-4" aria-hidden="true" />}
+                        {isInviting ? "Creating account..." : "Create & share access"}
+                      </Button>
+                    </div>
                   </div>
                 </form>
               </CardContent>
