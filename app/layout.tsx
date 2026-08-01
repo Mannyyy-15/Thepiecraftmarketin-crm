@@ -5,6 +5,7 @@ import { ToastProvider } from "@/providers/ToastProvider";
 import MobileBackHandler from "@/components/MobileBackHandler";
 import { GlobalSyncProvider } from "@/components/providers/GlobalSyncProvider";
 import AppDeepLinkHandler from "@/components/AppDeepLinkHandler";
+import NativeUpdatePrompt from "@/components/NativeUpdatePrompt";
 const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
   variable: "--font-jakarta",
@@ -39,6 +40,7 @@ export default function RootLayout({
             {children}
             <MobileBackHandler />
             <AppDeepLinkHandler />
+            <NativeUpdatePrompt />
           </ToastProvider>
         </GlobalSyncProvider>
       </body>
