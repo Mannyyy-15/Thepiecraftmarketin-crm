@@ -15,15 +15,16 @@ import {
 } from "lucide-react";
 import { redeemLoginLink } from "@/app/actions/auth";
 import { Button } from "@/components/ui/Button";
+import {
+  ACCESS_ORIGIN,
+  androidAccessUrls,
+  LOGIN_TOKEN_PATTERN,
+} from "@/lib/access-links";
 
 type AccessState = "checking" | "ready" | "redeeming" | "success" | "error" | "missing";
 type Runtime = "checking" | "native" | "browser";
 
-const LOGIN_TOKEN_PATTERN = /^[A-Za-z0-9_-]{43}$/;
-const APK_DOWNLOAD_PATH = "/downloads/thepiecraft-crm.apk";
-const ACCESS_ORIGIN = "https://crm.thepiecraftmarketing.com";
-const ACCESS_HOST = "crm.thepiecraftmarketing.com";
-const ANDROID_PACKAGE = "com.thepiecraft.crm";
+const APK_DOWNLOAD_PATH = "/api/mobile-apk";
 
 export default function SecureAccessPage() {
   const router = useRouter();
@@ -123,9 +124,7 @@ export default function SecureAccessPage() {
   const isWorking = state === "checking" || state === "redeeming" || state === "success";
   const showInstallHandoff = runtime === "browser" && Boolean(token);
   const browserFallbackUrl = token ? `${ACCESS_ORIGIN}/access#${token}` : `${ACCESS_ORIGIN}/access`;
-  const openAppIntent = token
-    ? `intent://${ACCESS_HOST}/access?token=${token}#Intent;scheme=https;package=${ANDROID_PACKAGE};S.browser_fallback_url=${encodeURIComponent(browserFallbackUrl)};end`
-    : browserFallbackUrl;
+  const appAccess = token ? androidAccessUrls(token) : null;
 
   return (
     <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#f0f0f2] px-4 py-10 dark:bg-[#161618] sm:px-6">
@@ -149,7 +148,7 @@ export default function SecureAccessPage() {
           Continue to your account
         </h1>
         <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
-          Your administrator invited you to ThePieCraft OS. Confirm below to sign in—no
+          Your administrator invited you to ThePieCraft OS. Confirm below to sign in - no
           password is needed for this visit.
         </p>
 
@@ -177,11 +176,11 @@ export default function SecureAccessPage() {
               </li>
               <li className="flex gap-3">
                 <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-900 text-xs font-bold text-white dark:bg-white dark:text-slate-950">2</span>
-                <span className="pt-0.5">Complete Android’s installation confirmation.</span>
+                <span className="pt-0.5">Complete Android&apos;s installation confirmation.</span>
               </li>
               <li className="flex gap-3">
                 <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-900 text-xs font-bold text-white dark:bg-white dark:text-slate-950">3</span>
-                <span className="pt-0.5">Return here and choose “Open app again.”</span>
+                <span className="pt-0.5">Return here and choose &quot;Open installed app.&quot;</span>
               </li>
             </ol>
 
@@ -195,13 +194,27 @@ export default function SecureAccessPage() {
                 Download APK
               </a>
               <a
-                href={openAppIntent}
+                href={appAccess?.appUrl || browserFallbackUrl}
                 className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:border-[#303030] dark:bg-[#28282d] dark:text-slate-200 dark:hover:bg-[#38383f] dark:focus-visible:ring-offset-[#161618]"
               >
-                Open app again
+                Open installed app
                 <ExternalLink className="h-4 w-4" aria-hidden="true" />
               </a>
             </div>
+
+            {appAccess && (
+              <p className="mt-4 text-center text-xs leading-5 text-slate-500 dark:text-slate-400">
+                Still on this page? Your WhatsApp browser may block app opening. Open this
+                page in Chrome, or{" "}
+                <a
+                  href={appAccess.chromeIntentUrl}
+                  className="font-semibold text-blue-600 underline underline-offset-2 dark:text-blue-300"
+                >
+                  try the Android launcher
+                </a>
+                .
+              </p>
+            )}
 
             <p className="mt-4 flex items-start gap-2 text-xs leading-5 text-slate-500 dark:text-slate-400">
               <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
@@ -236,7 +249,7 @@ export default function SecureAccessPage() {
             className="mt-6 flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-medium text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-200"
           >
             <CheckCircle2 className="h-5 w-5 shrink-0" aria-hidden="true" />
-            Signed in. Opening your workspace…
+            Signed in. Opening your workspace...
           </div>
         )}
 
@@ -252,10 +265,10 @@ export default function SecureAccessPage() {
             <>
               <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
               {state === "checking"
-                ? "Checking secure link…"
+                ? "Checking secure link..."
                 : state === "success"
-                  ? "Opening workspace…"
-                  : "Signing you in…"}
+                  ? "Opening workspace..."
+                  : "Signing you in..."}
             </>
           ) : (
             <>

@@ -38,6 +38,14 @@
                     android:host="thepiecraft-crm.vercel.app"
                     android:path="/access" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="thepiecraftcrm"
+                    android:host="access" />
+            </intent-filter>
         </activity>
 
         <provider

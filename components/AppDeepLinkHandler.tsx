@@ -2,43 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-
-const TRUSTED_ACCESS_ORIGINS = new Set([
-  "https://crm.thepiecraftmarketing.com",
-  "https://thepiecraft-crm.vercel.app",
-]);
-const LOGIN_TOKEN_PATTERN = /^[A-Za-z0-9_-]{43}$/;
-
-function trustedAccessPath(value: string) {
-  try {
-    const incoming = new URL(value);
-    if (
-      !TRUSTED_ACCESS_ORIGINS.has(incoming.origin) ||
-      incoming.pathname !== "/access" ||
-      incoming.username !== "" ||
-      incoming.password !== ""
-    ) {
-      return null;
-    }
-
-    const fragmentToken = incoming.hash.slice(1);
-    const queryEntries = [...incoming.searchParams.entries()];
-    const fragmentOnly =
-      incoming.search === "" && LOGIN_TOKEN_PATTERN.test(fragmentToken);
-    const queryOnly =
-      incoming.hash === "" &&
-      queryEntries.length === 1 &&
-      queryEntries[0][0] === "token" &&
-      LOGIN_TOKEN_PATTERN.test(queryEntries[0][1]);
-
-    if (!fragmentOnly && !queryOnly) return null;
-    const token = fragmentOnly ? fragmentToken : queryEntries[0][1];
-
-    return `/access#${token}`;
-  } catch {
-    return null;
-  }
-}
+import { trustedAccessPath } from "@/lib/access-links";
 
 export default function AppDeepLinkHandler() {
   const router = useRouter();
