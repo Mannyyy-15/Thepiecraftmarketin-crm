@@ -4,6 +4,7 @@ import { useToast } from "@/providers/ToastProvider";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { createLoginLink, createUser } from "@/app/actions/auth";
+import { PASSWORD_MAX_LENGTH } from "@/lib/security/password";
 import { ShareLoginLinkDialog } from "@/components/ShareLoginLinkDialog";
 import { getTeamUsers, getAttendance, bulkUpdateAttendance, deleteUser, updateUserRole, updateUserShiftSchedule, getUserTasks, createTask, toggleTaskStatus, deleteTask, getProjects, assignProjectLead, getPendingLeaves, approveLeave, rejectLeave } from "@/app/actions/crm";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -857,6 +858,7 @@ export default function TeamPage() {
                       <input
                         type={showPassword ? "text" : "password"}
                         required
+                        maxLength={PASSWORD_MAX_LENGTH}
                         placeholder="Password for login"
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}

@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.thepiecraft.crm",
+      "sha256_cert_fingerprints": [
+        "57:B0:47:80:45:15:0C:87:E9:14:F9:C0:39:EF:98:44:17:F4:6D:FB:AD:3F:97:37:D7:48:23:81:A4:EC:E7:16"
+      ]
+    }
+  }
+]

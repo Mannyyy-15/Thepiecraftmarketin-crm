@@ -8,4 +8,5 @@ node_modules
 scratch
 tsconfig.tsbuildinfo
 *.apk
+!public/downloads/thepiecraft-crm.apk
 *.aab

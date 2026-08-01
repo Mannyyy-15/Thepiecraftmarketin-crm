@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { login } from "@/app/actions/auth";
+import { PASSWORD_MAX_LENGTH } from "@/lib/security/password";
 import { Lock, Mail, ArrowRight, Eye, EyeOff, Sparkles, ShieldCheck, ShieldAlert, Cpu, Globe, Rocket, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -216,6 +217,7 @@ export default function LoginPage() {
                   id="password"
                   type={showPassword ? "text" : "password"}
                   required
+                  maxLength={PASSWORD_MAX_LENGTH}
                   disabled={loading}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}

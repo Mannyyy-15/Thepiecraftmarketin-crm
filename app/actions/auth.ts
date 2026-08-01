@@ -19,6 +19,11 @@ import {
 } from "@/lib/security/session";
 import { checkDistributedRateLimit } from "@/lib/security/http";
 import {
+  adminAccountPasswordSchema,
+  loginPasswordSchema,
+  memberAccountPasswordSchema,
+} from "@/lib/security/password";
+import {
   decryptMfaSecret,
   recoveryCodeMatches,
   verifyTotp,
@@ -146,9 +151,8 @@ export async function login(state: any, formData: FormData) {
 
     if (
       !email ||
-      !password ||
       email.length > 254 ||
-      password.length > 128 ||
+      !loginPasswordSchema.safeParse(password).success ||
       !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
     ) {
       return { success: false, error: "Please enter both email and password." };
@@ -339,18 +343,22 @@ export async function createUser(formData: FormData) {
     const shiftEndTime = (formData.get("shiftEndTime") as string) || "05:00 PM";
     const activeShiftProfile = (formData.get("activeShiftProfile") as string) || "Standard Core Hours";
 
+    const passwordResult = role === "admin"
+      ? adminAccountPasswordSchema.safeParse(password)
+      : memberAccountPasswordSchema.safeParse(password);
+
     if (
       !email ||
-      !password ||
       !role ||
       email.length > 254 ||
       !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||
-      password.length < 12 ||
-      password.length > 128
+      !passwordResult.success
     ) {
       return {
         success: false,
-        error: "Enter a valid email, role, and password of at least 12 characters.",
+        error: role === "admin"
+          ? "Enter a valid email, role, and password between 12 and 128 characters."
+          : "Enter a valid email, role, and a non-empty password up to 128 characters.",
       };
     }
 

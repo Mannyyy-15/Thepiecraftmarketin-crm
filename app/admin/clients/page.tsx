@@ -4,6 +4,7 @@ import { Fragment, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/providers/ToastProvider";
 import { createLoginLink, createUser } from "@/app/actions/auth";
+import { PASSWORD_MAX_LENGTH } from "@/lib/security/password";
 import { ShareLoginLinkDialog } from "@/components/ShareLoginLinkDialog";
 import {
   getClientsEnriched, onboardClient, updateClient, updateClientStage,
@@ -781,7 +782,7 @@ export default function ClientsPage() {
                       </div>
                       <div>
                         <label className={LABEL}>Temporary Password *</label>
-                        <input type="password" required value={form.loginPassword} onChange={e => f({ loginPassword: e.target.value })} placeholder="••••••••" className={INPUT} />
+                        <input type="password" required maxLength={PASSWORD_MAX_LENGTH} value={form.loginPassword} onChange={e => f({ loginPassword: e.target.value })} placeholder="••••••••" className={INPUT} />
                       </div>
                     </div>
                   </>

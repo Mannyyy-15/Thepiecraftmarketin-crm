@@ -17,6 +17,7 @@ import {
   uploadPrivateFile,
 } from "@/lib/storage/private-object-storage";
 import { sendFcmMessage } from "@/lib/google-service-account";
+import { memberAccountPasswordSchema } from "@/lib/security/password";
 
 // Helper to check user session and get authenticated profile
 async function getAuthSession() {
@@ -394,8 +395,8 @@ export async function resetClientPassword(userId: number, newPassword: string, f
     const session = await getAuthSession();
     if (!session || session.role !== "admin") return { success: false, error: "Unauthorized." };
     if (!db) return { success: false, error: "Database not connected." };
-    if (!newPassword || newPassword.length < 12 || newPassword.length > 128) {
-      return { success: false, error: "Password must be between 12 and 128 characters." };
+    if (!memberAccountPasswordSchema.safeParse(newPassword).success) {
+      return { success: false, error: "Password must be non-empty and no more than 128 characters." };
     }
 
     // Only allow resetting client-role accounts.
@@ -4277,32 +4278,147 @@ export async function clearAllData() {
     if (!session || session.role !== "admin") return { success: false, error: "Unauthorized." };
     if (!db) return { success: false, error: "Database not connected." };
 
-    // Delete in FK-safe order (children before parents)
-    await db.delete(schema.attendanceLogs);
-    await db.delete(schema.fcmTokens);
-    await db.delete(schema.aiChatMessages);
-    await db.delete(schema.aiChats);
-    await db.delete(schema.notifications);
-    await db.delete(schema.activityLog);
-    await db.delete(schema.messages);
-    await db.delete(schema.tasks);
-    await db.delete(schema.metaCampaigns);
-    await db.delete(schema.invoices);
-    await db.delete(schema.documents);
-    await db.delete(schema.timesheets);
-    await db.delete(schema.expenses);
-    await db.delete(schema.attendance);
-    await db.delete(schema.leaves);
-    await db.delete(schema.projects);
-    await db.delete(schema.leads);
-    await db.delete(schema.users).where(eq(schema.users.role, "client"));
-    await db.delete(schema.users).where(eq(schema.users.role, "employee"));
-    await db.delete(schema.clients);
+    await db.transaction(async (tx) => {
+      const adminRowsBefore = await tx
+        .select({ id: schema.users.id })
+        .from(schema.users)
+        .where(eq(schema.users.role, "admin"));
+      if (adminRowsBefore.length === 0) {
+        throw new Error("Cleanup refused because no administrator exists.");
+      }
+      const adminIds = adminRowsBefore.map((row) => row.id);
+      const [organizationRowsBefore, settingsRowsBefore, adminMembershipRowsBefore] = await Promise.all([
+        tx.select({ id: schema.organizations.id }).from(schema.organizations),
+        tx.select({ id: schema.agencySettings.id }).from(schema.agencySettings),
+        tx.select({ id: schema.organizationMemberships.id })
+          .from(schema.organizationMemberships)
+          .where(inArray(schema.organizationMemberships.userId, adminIds)),
+      ]);
+
+      const nonAdminRows = await tx
+        .select({ id: schema.users.id })
+        .from(schema.users)
+        .where(or(eq(schema.users.role, "employee"), eq(schema.users.role, "client")));
+      const nonAdminIds = nonAdminRows.map((row) => row.id);
+
+      // Remove every operational table in FK-safe child-first order. DELETE is
+      // intentional: unlike TRUNCATE, it remains covered by this transaction.
+      await tx.delete(schema.importRows);
+      await tx.delete(schema.importJobs);
+      await tx.delete(schema.automationRuns);
+      await tx.delete(schema.customFieldValues);
+      await tx.delete(schema.attributionTouchpoints);
+      await tx.delete(schema.accountContacts);
+      await tx.delete(schema.aiChatMessages);
+      await tx.delete(schema.attendanceLogs);
+
+      await tx.delete(schema.notifications);
+      await tx.delete(schema.activityLog);
+      await tx.delete(schema.messages);
+      await tx.delete(schema.tasks);
+      await tx.delete(schema.timesheets);
+      await tx.delete(schema.metaCampaigns);
+      await tx.delete(schema.invoices);
+      await tx.delete(schema.documents);
+      await tx.delete(schema.expenses);
+      await tx.delete(schema.attendance);
+      await tx.delete(schema.leaves);
+      await tx.delete(schema.aiChats);
+
+      await tx.delete(schema.projects);
+      await tx.delete(schema.leads);
+      await tx.delete(schema.clients);
+      await tx.delete(schema.deals);
+      await tx.delete(schema.contacts);
+      await tx.delete(schema.accounts);
+      await tx.delete(schema.dealStages);
+      await tx.delete(schema.customFieldDefinitions);
+      await tx.delete(schema.automationDefinitions);
+      await tx.delete(schema.auditEvents);
+      await tx.delete(schema.connectorAccounts);
+      await tx.delete(schema.webhookEventLedger);
+      await tx.delete(schema.storageObjects);
+      await tx.delete(schema.locations);
+
+      // Identity-scoped security records are removed only for identities being
+      // deleted. Administrator users, MFA, sessions, tokens, and memberships
+      // remain intact.
+      if (nonAdminIds.length > 0) {
+        await tx.delete(schema.loginLinks).where(or(
+          inArray(schema.loginLinks.userId, nonAdminIds),
+          inArray(schema.loginLinks.createdById, nonAdminIds)
+        ));
+        await tx.delete(schema.userSessions).where(inArray(schema.userSessions.userId, nonAdminIds));
+        await tx.delete(schema.mfaFactors).where(inArray(schema.mfaFactors.userId, nonAdminIds));
+        await tx.delete(schema.fcmTokens).where(inArray(schema.fcmTokens.userId, nonAdminIds));
+        await tx.delete(schema.organizationMemberships).where(inArray(schema.organizationMemberships.userId, nonAdminIds));
+        await tx.update(schema.organizationMemberships)
+          .set({ invitedById: null })
+          .where(inArray(schema.organizationMemberships.invitedById, nonAdminIds));
+      }
+
+      await tx.delete(schema.users).where(or(
+        eq(schema.users.role, "employee"),
+        eq(schema.users.role, "client")
+      ));
+
+      const adminRowsAfter = await tx
+        .select({ id: schema.users.id })
+        .from(schema.users)
+        .where(eq(schema.users.role, "admin"));
+      const [organizationRowsAfter, settingsRowsAfter, adminMembershipRowsAfter] = await Promise.all([
+        tx.select({ id: schema.organizations.id }).from(schema.organizations),
+        tx.select({ id: schema.agencySettings.id }).from(schema.agencySettings),
+        tx.select({ id: schema.organizationMemberships.id })
+          .from(schema.organizationMemberships)
+          .where(inArray(schema.organizationMemberships.userId, adminIds)),
+      ]);
+      const [remainingNonAdmins] = await tx
+        .select({ count: sql<number>`count(*)` })
+        .from(schema.users)
+        .where(or(eq(schema.users.role, "employee"), eq(schema.users.role, "client")));
+      const [remainingOperational] = await tx.select({
+        clients: sql<number>`(select count(*) from ${schema.clients})`,
+        projects: sql<number>`(select count(*) from ${schema.projects})`,
+        tasks: sql<number>`(select count(*) from ${schema.tasks})`,
+        invoices: sql<number>`(select count(*) from ${schema.invoices})`,
+        messages: sql<number>`(select count(*) from ${schema.messages})`,
+        attendance: sql<number>`(select count(*) from ${schema.attendance})`,
+        leads: sql<number>`(select count(*) from ${schema.leads})`,
+        accounts: sql<number>`(select count(*) from ${schema.accounts})`,
+        contacts: sql<number>`(select count(*) from ${schema.contacts})`,
+        deals: sql<number>`(select count(*) from ${schema.deals})`,
+        auditEvents: sql<number>`(select count(*) from ${schema.auditEvents})`,
+        storageObjects: sql<number>`(select count(*) from ${schema.storageObjects})`,
+        importJobs: sql<number>`(select count(*) from ${schema.importJobs})`,
+      }).from(schema.users).limit(1);
+
+      const adminsBefore = adminRowsBefore.map((row) => row.id).sort((a, b) => a - b);
+      const adminsAfter = adminRowsAfter.map((row) => row.id).sort((a, b) => a - b);
+      const sameIds = (before: { id: number }[], after: { id: number }[]) => {
+        const beforeIds = before.map((row) => row.id).sort((a, b) => a - b);
+        const afterIds = after.map((row) => row.id).sort((a, b) => a - b);
+        return beforeIds.length === afterIds.length &&
+          beforeIds.every((id, index) => id === afterIds[index]);
+      };
+      const adminsPreserved = adminsBefore.length === adminsAfter.length &&
+        adminsBefore.every((id, index) => id === adminsAfter[index]);
+      const protectedRowsPreserved =
+        sameIds(organizationRowsBefore, organizationRowsAfter) &&
+        sameIds(settingsRowsBefore, settingsRowsAfter) &&
+        sameIds(adminMembershipRowsBefore, adminMembershipRowsAfter);
+      const operationalRowsRemain = Object.values(remainingOperational || {})
+        .some((count) => Number(count) !== 0);
+
+      if (!adminsPreserved || !protectedRowsPreserved || Number(remainingNonAdmins?.count || 0) !== 0 || operationalRowsRemain) {
+        throw new Error("Cleanup verification failed.");
+      }
+    });
 
     revalidatePath("/admin");
     return { success: true };
-  } catch (err: any) {
-    console.error("clearAllData Error:", err);
-    return { success: false, error: err.message };
+  } catch {
+    console.error("clearAllData failed; transaction rolled back.");
+    return { success: false, error: "Cleanup failed. No partial cleanup was committed." };
   }
 }

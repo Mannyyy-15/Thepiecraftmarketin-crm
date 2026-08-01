@@ -24,6 +24,7 @@ import { Avatar } from "@/components/ui/Avatar";
 import { Progress } from "@/components/ui/Progress";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { cn } from "@/components/ui/cn";
+import { PASSWORD_MAX_LENGTH } from "@/lib/security/password";
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 function parseDetails(raw: string | null | undefined) {
@@ -123,7 +124,7 @@ export default function ClientDetailPage() {
   const handleResetPassword = async () => {
     const targetId = linkUserId ? Number(linkUserId) : login?.userId;
     if (!targetId) { toast("Select which login account belongs to this client first.", "error"); return; }
-    if (!newPass || newPass.length < 4) { toast("Enter a password (min 4 characters).", "error"); return; }
+    if (!newPass) { toast("Enter a password.", "error"); return; }
     setSavingPass(true);
     // Passing client.name ensures the user account's name is updated to exactly match the client profile, linking them
     const r = await resetClientPassword(targetId, newPass, client?.name);
@@ -458,7 +459,7 @@ export default function ClientDetailPage() {
           {/* Set / change password */}
           <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Set New Password</p>
           <div className="flex gap-2">
-            <input value={newPass} onChange={(e) => { setNewPass(e.target.value); setPassResult(null); }} placeholder="New password"
+            <input type="password" maxLength={PASSWORD_MAX_LENGTH} value={newPass} onChange={(e) => { setNewPass(e.target.value); setPassResult(null); }} placeholder="New password"
               className="flex-1 h-10 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white" />
             <button onClick={genPassword} title="Generate"
               className="shrink-0 h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-bold text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-950/20 cursor-pointer">
