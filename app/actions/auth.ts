@@ -299,8 +299,8 @@ export async function login(state: any, formData: FormData) {
  * Log out the active user and clear session cookies
  */
 export async function logout() {
+  const cookieStore = await cookies();
   try {
-    const cookieStore = await cookies();
     const token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
     const payload = token ? await decrypt(token) : null;
     if (db && payload?.jti) {
@@ -309,21 +309,21 @@ export async function logout() {
         .set({ revokedAt: new Date(), revokeReason: "user_logout" })
         .where(eq(schema.userSessions.sessionId, payload.jti));
     }
-    cookieStore.set(SESSION_COOKIE_NAME, "", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      path: "/",
-      expires: new Date(0),
-    });
-    revalidatePath("/admin", "layout");
-    revalidatePath("/employee", "layout");
-    revalidatePath("/client", "layout");
-    return { success: true };
-  } catch (error: any) {
-    console.error("Logout Server Action Error:", error);
-    return { success: false, error: "Logout failed." };
+  } catch (error) {
+    // A stale or unavailable session ledger must never prevent local sign-out.
+    console.error("Logout session revocation error:", error);
   }
+  cookieStore.set(SESSION_COOKIE_NAME, "", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    path: "/",
+    expires: new Date(0),
+  });
+  revalidatePath("/admin", "layout");
+  revalidatePath("/employee", "layout");
+  revalidatePath("/client", "layout");
+  return { success: true };
 }
 
 /**
@@ -334,7 +334,7 @@ export async function createUser(formData: FormData) {
     // 1. Verify caller session to ensure they are an Admin
     const payload = await getCurrentUser();
     if (!payload || payload.role !== "admin") {
-      return { success: false, error: "Unauthorized. Only administrators can create accounts." };
+      return { success: false, error: "Your admin session has expired. Sign out, sign in again, and retry." };
     }
 
     if (!db) {
