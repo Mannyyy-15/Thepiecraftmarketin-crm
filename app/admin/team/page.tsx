@@ -3,7 +3,7 @@ import { useToast } from "@/providers/ToastProvider";
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
-import { createLoginLink, createUser } from "@/app/actions/auth";
+import { createLoginLink, createUser, resetMemberPassword } from "@/app/actions/auth";
 import { PASSWORD_MAX_LENGTH } from "@/lib/security/password";
 import { ShareLoginLinkDialog } from "@/components/ShareLoginLinkDialog";
 import { getTeamUsers, getAttendance, bulkUpdateAttendance, deleteUser, updateUserRole, updateUserShiftSchedule, getUserTasks, createTask, toggleTaskStatus, deleteTask, getProjects, assignProjectLead, getPendingLeaves, approveLeave, rejectLeave } from "@/app/actions/crm";
@@ -38,6 +38,10 @@ import {
   TrendingUp,
   Eye,
   EyeOff,
+  KeyRound,
+  Link2,
+  RefreshCw,
+  ShieldCheck,
 } from "lucide-react";
 import KpiCard from "@/components/KpiCard";
 import { Badge } from "@/components/ui/Badge";
@@ -67,7 +71,11 @@ export default function TeamPage() {
   const [newPassword, setNewPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [newSystemRole, setNewSystemRole] = useState("Web Developer"); // "Web Developer" | "Graphic Designer" | "Video Editor" | "Digital Marketing" | "Admin"
-  const [shareLogin, setShareLogin] = useState<{ link: string; name: string; email: string } | null>(null);
+  const [shareLogin, setShareLogin] = useState<{ link: string; name: string; email: string; expiresAt?: string } | null>(null);
+  const [accessLinkUserId, setAccessLinkUserId] = useState<string | null>(null);
+  const [accessPassword, setAccessPassword] = useState("");
+  const [showAccessPassword, setShowAccessPassword] = useState(false);
+  const [passwordResetUserId, setPasswordResetUserId] = useState<string | null>(null);
     
   // Invite member shift schedule states
   const [inviteWorkingDays, setInviteWorkingDays] = useState<number[]>([1, 2, 3, 4, 5]);
@@ -522,6 +530,11 @@ export default function TeamPage() {
     }
   }, [selectedEmp, members]);
 
+  useEffect(() => {
+    setAccessPassword("");
+    setShowAccessPassword(false);
+  }, [selectedEmployeeDetailId]);
+
   // Invite handler
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -551,7 +564,7 @@ export default function TeamPage() {
         if (result.userId && authRole === "employee") {
           const linkResult = await createLoginLink(result.userId);
           if (linkResult.success && linkResult.loginLink) {
-            setShareLogin({ link: linkResult.loginLink, name: derivedName, email: inviteEmail });
+            setShareLogin({ link: linkResult.loginLink, name: derivedName, email: inviteEmail, expiresAt: linkResult.expiresAt });
           } else {
             toast("Account created, but the secure login link could not be generated. You can create another link later.", "info");
           }
@@ -570,6 +583,51 @@ export default function TeamPage() {
       }
     } catch (err: any) {
       toast(`System error: ${err.message || "Failed to connect to database."}`, "error");
+    }
+  };
+
+  const handleGenerateAccessLink = async (member: any) => {
+    if (accessLinkUserId) return;
+    setAccessLinkUserId(member.id);
+    try {
+      const result = await createLoginLink(Number(member.id));
+      if (result.success && result.loginLink) {
+        setShareLogin({
+          link: result.loginLink,
+          name: member.name,
+          email: member.email,
+          expiresAt: result.expiresAt,
+        });
+        toast("Fresh access link created. Any previous unused link is now revoked.", "success");
+      } else {
+        toast(result.error || "Could not create a fresh access link.", "error");
+      }
+    } catch {
+      toast("Could not create a fresh access link. Please try again.", "error");
+    } finally {
+      setAccessLinkUserId(null);
+    }
+  };
+
+  const handleResetMemberPassword = async (member: any) => {
+    if (!accessPassword || passwordResetUserId) {
+      if (!accessPassword) toast("Enter the new password first.", "error");
+      return;
+    }
+    setPasswordResetUserId(member.id);
+    try {
+      const result = await resetMemberPassword(Number(member.id), accessPassword);
+      if (result.success) {
+        setAccessPassword("");
+        setShowAccessPassword(false);
+        toast("Password changed. Existing sessions and unused access links were revoked.", "success");
+      } else {
+        toast(result.error || "Could not update the password.", "error");
+      }
+    } catch {
+      toast("Could not update the password. Please try again.", "error");
+    } finally {
+      setPasswordResetUserId(null);
     }
   };
 
@@ -1070,6 +1128,100 @@ export default function TeamPage() {
                     </div>
                   </CardContent>
                 </Card>
+
+                {selectedEmpData.roleRaw === "employee" && (
+                  <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-[#303030] dark:bg-[#1f1f1f]">
+                    <div className="flex flex-col gap-4 border-b border-slate-200 px-5 py-5 dark:border-[#303030] sm:flex-row sm:items-start sm:justify-between sm:px-6">
+                      <div className="flex min-w-0 items-start gap-3">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-300">
+                          <ShieldCheck className="h-5 w-5" aria-hidden="true" />
+                        </div>
+                        <div className="min-w-0">
+                          <h3 className="text-base font-semibold text-slate-950 dark:text-white">Account access</h3>
+                          <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-300">
+                            Resend app access or replace the employee&apos;s password without recreating their account.
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        size="sm"
+                        disabled={Boolean(accessLinkUserId)}
+                        onClick={() => void handleGenerateAccessLink(selectedEmpData)}
+                        className="w-full sm:w-auto"
+                      >
+                        {accessLinkUserId === selectedEmpData.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                        ) : (
+                          <Link2 className="h-4 w-4" aria-hidden="true" />
+                        )}
+                        Generate fresh link
+                      </Button>
+                    </div>
+
+                    <div className="grid gap-0 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
+                      <div className="border-b border-slate-200 px-5 py-5 dark:border-[#303030] sm:px-6 lg:border-b-0 lg:border-r">
+                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Login email</p>
+                        <a
+                          href={`mailto:${selectedEmpData.email}`}
+                          className="mt-2 block truncate text-sm font-medium text-slate-950 hover:text-blue-600 dark:text-white dark:hover:text-blue-300"
+                          title={selectedEmpData.email}
+                        >
+                          {selectedEmpData.email}
+                        </a>
+                        <p className="mt-3 text-xs leading-5 text-slate-500 dark:text-slate-400">
+                          Passwords are encrypted with one-way hashing, so the saved password cannot be displayed.
+                        </p>
+                      </div>
+
+                      <div className="px-5 py-5 sm:px-6">
+                        <label htmlFor={`access-password-${selectedEmpData.id}`} className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                          Set a new password
+                        </label>
+                        <div className="mt-2 flex flex-col gap-2 sm:flex-row">
+                          <div className="relative min-w-0 flex-1">
+                            <KeyRound className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" aria-hidden="true" />
+                            <input
+                              id={`access-password-${selectedEmpData.id}`}
+                              type={showAccessPassword ? "text" : "password"}
+                              maxLength={PASSWORD_MAX_LENGTH}
+                              autoComplete="new-password"
+                              value={accessPassword}
+                              onChange={(event) => setAccessPassword(event.target.value)}
+                              placeholder="Enter any non-empty password"
+                              className="field-control min-h-11 pl-10 pr-11"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowAccessPassword((visible) => !visible)}
+                              className="absolute right-1 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-md text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-[#38383f] dark:hover:text-white"
+                              aria-label={showAccessPassword ? "Hide new password" : "Show new password"}
+                            >
+                              {showAccessPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            </button>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            disabled={!accessPassword || Boolean(passwordResetUserId)}
+                            onClick={() => void handleResetMemberPassword(selectedEmpData)}
+                            className="w-full sm:w-auto"
+                          >
+                            {passwordResetUserId === selectedEmpData.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                            ) : (
+                              <RefreshCw className="h-4 w-4" aria-hidden="true" />
+                            )}
+                            Change password
+                          </Button>
+                        </div>
+                        <p className="mt-3 text-xs leading-5 text-slate-500 dark:text-slate-400">
+                          Changing it signs this employee out everywhere and revokes unused access links. Generate a fresh link afterward if needed.
+                        </p>
+                      </div>
+                    </div>
+                  </section>
+                )}
 
                 {/* Live Working Hours */}
                 {(() => {
@@ -2319,6 +2471,7 @@ export default function TeamPage() {
         loginLink={shareLogin?.link || ""}
         personName={shareLogin?.name || ""}
         email={shareLogin?.email}
+        expiresAt={shareLogin?.expiresAt}
       />
     </div>
   );

@@ -561,6 +561,112 @@ export async function createLoginLink(userId: number) {
   }
 }
 
+export async function resetMemberPassword(userId: number, newPassword: string) {
+  try {
+    const admin = await getCurrentUser();
+    const passwordResult = memberAccountPasswordSchema.safeParse(newPassword);
+    if (
+      !admin ||
+      admin.role !== "admin" ||
+      !db ||
+      !Number.isSafeInteger(userId) ||
+      userId <= 0 ||
+      !passwordResult.success
+    ) {
+      return {
+        success: false as const,
+        error: !passwordResult.success
+          ? "Password must be non-empty and no more than 128 characters."
+          : "Unauthorized.",
+      };
+    }
+
+    const [adminMembership] = await db
+      .select({
+        organizationId: schema.organizationMemberships.organizationId,
+        role: schema.organizationMemberships.role,
+      })
+      .from(schema.organizationMemberships)
+      .where(
+        and(
+          eq(schema.organizationMemberships.userId, admin.id),
+          eq(schema.organizationMemberships.status, "active")
+        )
+      )
+      .limit(1);
+    if (
+      !adminMembership ||
+      (adminMembership.role !== "owner" && adminMembership.role !== "admin")
+    ) {
+      return { success: false as const, error: "Organization admin access required." };
+    }
+
+    const [target] = await db
+      .select({ id: schema.users.id, role: schema.users.role })
+      .from(schema.users)
+      .innerJoin(
+        schema.organizationMemberships,
+        and(
+          eq(schema.organizationMemberships.userId, schema.users.id),
+          eq(
+            schema.organizationMemberships.organizationId,
+            adminMembership.organizationId
+          ),
+          eq(schema.organizationMemberships.status, "active")
+        )
+      )
+      .where(eq(schema.users.id, userId))
+      .limit(1);
+    if (!target || (target.role !== "employee" && target.role !== "client")) {
+      return { success: false as const, error: "Employee or client account not found." };
+    }
+
+    const rateLimit = await checkDistributedRateLimit(
+      `admin-password-reset:${admin.id}:${target.id}`,
+      10,
+      60 * 60 * 1000
+    );
+    if (!rateLimit.allowed) {
+      return { success: false as const, error: "Too many password changes. Try again later." };
+    }
+
+    const now = new Date();
+    const passwordHash = await bcrypt.hash(newPassword, 12);
+    await db.transaction(async (tx) => {
+      await tx
+        .update(schema.users)
+        .set({ password: passwordHash })
+        .where(eq(schema.users.id, target.id));
+      await tx
+        .update(schema.userSessions)
+        .set({ revokedAt: now, revokeReason: "admin_password_reset" })
+        .where(
+          and(
+            eq(schema.userSessions.userId, target.id),
+            isNull(schema.userSessions.revokedAt)
+          )
+        );
+      await tx
+        .update(schema.loginLinks)
+        .set({ revokedAt: now })
+        .where(
+          and(
+            eq(schema.loginLinks.organizationId, adminMembership.organizationId),
+            eq(schema.loginLinks.userId, target.id),
+            isNull(schema.loginLinks.usedAt),
+            isNull(schema.loginLinks.revokedAt)
+          )
+        );
+    });
+
+    revalidatePath("/admin/team");
+    return { success: true as const };
+  } catch (error) {
+    console.error("[Auth] Member password reset failed.", error);
+    return { success: false as const, error: "Could not update this password." };
+  }
+}
+
 export async function redeemLoginLink(token: string) {
   try {
     if (!db || !/^[A-Za-z0-9_-]{43}$/.test(token)) {
