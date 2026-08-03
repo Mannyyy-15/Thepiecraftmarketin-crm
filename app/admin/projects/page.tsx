@@ -716,8 +716,11 @@ export default function ProjectsPage() {
       </div>
 
       {/* ── Content ─────────────────────────────────────────────────────────── */}
-      {loading ? (
-        <CardGridSkeleton count={6} />
+      {loading && projects.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 text-slate-400 gap-2">
+          <Loader2 className="h-6 w-6 animate-spin text-brand-500" />
+          <p className="text-xs">Loading projects...</p>
+        </div>
       ) : projects.length === 0 ? (
         <EmptyState icon={<Target className="h-5 w-5" />} title="No projects yet" description="Create your first project to get started."
           action={<Button onClick={openDrawer} size="sm" className="bg-brand-600 text-white"><Plus className="h-3.5 w-3.5 mr-1" /> New Project</Button>} />

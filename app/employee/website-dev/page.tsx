@@ -238,7 +238,6 @@ export default function WebsiteDevPage() {
     }
   };
 
-  if (loading) return <WebsiteDevPageSkeleton />;
 
   return (
     <motion.div 

@@ -223,7 +223,6 @@ export default function ReportsPage() {
     return (titleMatch || clientMatch) && matchesType;
   });
 
-  if (isLoading) return <ReportsPageSkeleton />;
 
   return (
     <div className="space-y-6">

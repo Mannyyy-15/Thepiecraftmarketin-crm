@@ -216,7 +216,6 @@ export default function AdsPage() {
     .filter((c) => c.status !== "draft")
     .map((c) => ({ name: (c.name || "").split(" ")[0], roas: Number(c.roas || 0) }));
 
-  if (loading) return <AdsPageSkeleton />;
 
   return (
     <motion.div 
