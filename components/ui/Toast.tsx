@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { CheckCircle, AlertCircle, Info, X } from "lucide-react";
+import { CheckCircle2, AlertTriangle, Info, X } from "lucide-react";
 import { cn } from "./cn";
 
 export type ToastType = "success" | "error" | "info";
@@ -17,89 +17,64 @@ export interface ToastProps {
 
 const config = {
   success: {
-    icon: CheckCircle,
-    iconClass: "text-emerald-500",
-    barClass:  "bg-emerald-500",
-    border:    "border-l-emerald-500",
+    icon: CheckCircle2,
+    title: "Success",
+    iconWrap: "bg-emerald-500/10 text-emerald-500",
   },
   error: {
-    icon: AlertCircle,
-    iconClass: "text-rose-500",
-    barClass:  "bg-rose-500",
-    border:    "border-l-rose-500",
+    icon: AlertTriangle,
+    title: "Error",
+    iconWrap: "bg-rose-500/10 text-rose-500",
   },
   info: {
     icon: Info,
-    iconClass: "text-brand-500",
-    barClass:  "bg-brand-500",
-    border:    "border-l-brand-500",
+    title: "Notification",
+    iconWrap: "bg-brand-500/10 text-brand-500",
   },
 };
 
 export function Toast({ id, message, type = "info", duration = 4000, onClose }: ToastProps) {
-  const [progress, setProgress] = useState(100);
   const cfg = config[type];
   const Icon = cfg.icon;
 
   useEffect(() => {
     if (duration <= 0) return;
-    const start = Date.now();
-    const tick = setInterval(() => {
-      const elapsed = Date.now() - start;
-      const remaining = Math.max(0, 100 - (elapsed / duration) * 100);
-      setProgress(remaining);
-      if (remaining <= 0) {
-        clearInterval(tick);
-        onClose(id);
-      }
-    }, 40);
-    return () => clearInterval(tick);
+    const timer = setTimeout(() => onClose(id), duration);
+    return () => clearTimeout(timer);
   }, [id, duration, onClose]);
 
   return (
     <motion.div
-      initial={{ opacity: 0, x: 56, scale: 0.94 }}
-      animate={{ opacity: 1, x: 0,  scale: 1 }}
-      exit={{    opacity: 0, x: 56, scale: 0.94 }}
-      transition={{ type: "spring", damping: 22, stiffness: 300 }}
+      initial={{ opacity: 0, y: -10, scale: 0.97 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -6, scale: 0.97 }}
+      transition={{ duration: 0.18, ease: [0.25, 0.1, 0.25, 1] }}
       className={cn(
-        "pointer-events-auto relative w-full max-w-sm overflow-hidden rounded-2xl",
-        "border border-l-[3px] border-slate-200 dark:border-[#303030]/60",
-        "bg-white/95 dark:bg-[#303030]/95 backdrop-blur-xl",
-        "shadow-xl shadow-slate-900/10 dark:shadow-black/40",
-        cfg.border
+        "pointer-events-auto relative w-full max-w-sm overflow-hidden rounded-[16px]",
+        "border border-slate-200 dark:border-[#303030]",
+        "bg-white dark:bg-[#1f1f1f]",
+        "shadow-[0_8px_24px_rgba(0,0,0,0.10)] dark:shadow-black/40"
       )}
+      role="status"
     >
-      <div className="flex items-center gap-3 px-4 py-3.5">
-        <motion.div
-          initial={{ scale: 0.4, rotate: -15, opacity: 0 }}
-          animate={{ scale: 1,   rotate: 0,   opacity: 1 }}
-          transition={{ type: "spring", damping: 12, stiffness: 350, delay: 0.08 }}
-          className="shrink-0"
-        >
-          <Icon className={cn("w-5 h-5", cfg.iconClass)} />
-        </motion.div>
+      <div className="flex items-start gap-3 px-4 py-3.5">
+        <div className={cn("mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px]", cfg.iconWrap)}>
+          <Icon className="h-4 w-4" />
+        </div>
 
-        <p className="flex-1 text-sm font-medium text-slate-800 dark:text-slate-200 leading-snug">
-          {message}
-        </p>
+        <div className="min-w-0 flex-1">
+          <p className="text-[13px] font-semibold leading-tight text-slate-900 dark:text-white">{cfg.title}</p>
+          <p className="mt-0.5 text-[13px] leading-snug text-slate-500 dark:text-slate-400">{message}</p>
+        </div>
 
         <button
           onClick={() => onClose(id)}
-          className="shrink-0 rounded-lg p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#303030] transition-all duration-100 active:scale-90 cursor-pointer"
+          aria-label="Dismiss notification"
+          className="shrink-0 rounded-lg p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-[#303030] dark:hover:text-slate-200 active:scale-90 cursor-pointer"
         >
-          <X className="w-4 h-4" />
+          <X className="h-3.5 w-3.5" />
         </button>
       </div>
-
-      {duration > 0 && (
-        <div className="h-[2px] bg-slate-100 dark:bg-[#303030]">
-          <div
-            className={cn("h-full rounded-full", cfg.barClass)}
-            style={{ width: `${progress}%`, transition: "width 40ms linear" }}
-          />
-        </div>
-      )}
     </motion.div>
   );
 }

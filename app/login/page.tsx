@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { login } from "@/app/actions/auth";
 import { PASSWORD_MAX_LENGTH } from "@/lib/security/password";
-import { Lock, Mail, ArrowRight, Eye, EyeOff, Sparkles, ShieldCheck, ShieldAlert, Cpu, Globe, Rocket, CheckCircle2 } from "lucide-react";
+import { Lock, Mail, ArrowRight, Eye, EyeOff, Sparkles, ShieldCheck, Cpu, Globe, Rocket, CheckCircle2, AlertTriangle, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function LoginPage() {
@@ -96,26 +96,42 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen w-full flex bg-[#03050a] text-slate-100 font-sans selection:bg-indigo-500/30 selection:text-indigo-200">
       
-      {/* Toast Notification Layer */}
+      {/* Notification Layer */}
       <AnimatePresence>
         {toast && (
-          <motion.div 
-            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+          <motion.div
+            initial={{ opacity: 0, y: -12, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -10, scale: 0.95 }}
-            className={`fixed top-6 right-6 z-50 flex items-center gap-3.5 px-5 py-4 rounded-2xl border backdrop-blur-2xl shadow-2xl ${
-              toast.type === "success" 
-                ? "bg-emerald-950/60 border-emerald-500/30 text-emerald-200 shadow-emerald-950/40" 
-                : "bg-rose-950/60 border-rose-500/30 text-rose-200 shadow-rose-950/40"
-            }`}
+            exit={{ opacity: 0, y: -6, scale: 0.98 }}
+            transition={{ duration: 0.18, ease: [0.25, 0.1, 0.25, 1] }}
+            className="fixed top-6 right-6 z-50 w-[calc(100vw-3rem)] max-w-sm rounded-[16px] border border-[#303030] bg-[#1f1f1f]/95 p-4 shadow-[0_8px_24px_rgba(0,0,0,0.45)] backdrop-blur-xl"
+            role="alert"
           >
-            <div className={`p-2 rounded-xl shrink-0 ${toast.type === "success" ? "bg-emerald-500/20 text-emerald-400" : "bg-rose-500/20 text-rose-400"}`}>
-              {toast.type === "success" ? <ShieldCheck className="w-5 h-5" /> : <ShieldAlert className="w-5 h-5" />}
+            <div className="flex items-start gap-3">
+              <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] ${toast.type === "success" ? "bg-emerald-500/10 text-emerald-400" : "bg-rose-500/10 text-rose-400"}`}>
+                {toast.type === "success" ? <CheckCircle2 className="h-4 w-4" /> : <AlertTriangle className="h-4 w-4" />}
+              </div>
+
+              <div className="min-w-0 flex-1">
+                <p className="text-[13px] font-semibold leading-tight text-white">
+                  {toast.type === "success" ? "Login successful" : "Login failed"}
+                </p>
+                <p className="mt-0.5 text-[13px] leading-snug text-slate-400">{toast.message}</p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setToast(null)}
+                aria-label="Dismiss notification"
+                className="shrink-0 rounded-lg p-1 text-slate-400 transition-colors hover:bg-white/10 hover:text-slate-200"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
             </div>
 
             {mfaRequired && (
-              <div className="space-y-2.5">
-                <label htmlFor="mfaCode" className="text-xs font-bold text-slate-300 ml-1">
+              <div className="mt-3 space-y-2">
+                <label htmlFor="mfaCode" className="text-[11px] font-semibold text-slate-400">
                   Verification code
                 </label>
                 <input
@@ -128,23 +144,10 @@ export default function LoginPage() {
                   value={mfaCode}
                   onChange={(event) => setMfaCode(event.target.value)}
                   placeholder="6-digit code or recovery code"
-                  className="w-full px-4 py-3.5 bg-slate-900/50 border border-slate-700/50 rounded-2xl text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 disabled:opacity-50 transition-all font-medium text-sm"
+                  className="w-full rounded-[10px] border border-[#303030] bg-[#1f1f1f] px-3.5 py-2.5 text-sm text-white placeholder:text-slate-500 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 disabled:opacity-50 transition-all font-medium"
                 />
               </div>
             )}
-            <div className="flex flex-col">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">System Alert</span>
-              <span className="text-sm font-semibold pr-2 mt-0.5">{toast.message}</span>
-            </div>
-            <button 
-              type="button"
-              onClick={() => setToast(null)}
-              className="p-1.5 hover:bg-white/10 rounded-lg transition-colors ml-auto"
-            >
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M1 1L11 11M1 11L11 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </button>
           </motion.div>
         )}
       </AnimatePresence>
