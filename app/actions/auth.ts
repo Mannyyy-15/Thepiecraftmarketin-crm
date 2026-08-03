@@ -23,6 +23,7 @@ import {
   loginPasswordSchema,
   memberAccountPasswordSchema,
 } from "@/lib/security/password";
+import { uploadPrivateFile, deletePrivateFile } from "@/lib/storage/private-object-storage";
 import {
   decryptMfaSecret,
   recoveryCodeMatches,
@@ -140,6 +141,7 @@ async function establishUserSession(user: AuthenticatedUser) {
     ipHash: ip ? privateMetadataHash(ip) : null,
     expiresAt,
   });
+  await db.update(schema.users).set({ lastLoginAt: new Date() }).where(eq(schema.users.id, user.id));
   (await cookies()).set(SESSION_COOKIE_NAME, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
@@ -858,17 +860,92 @@ export async function getCurrentUser() {
 }
 
 /**
- * Uploads a profile avatar, updates the database, and re-issues the JWT
+ * Uploads a profile avatar, inserts a storageObjects record, and updates avatarUrl
  */
 export async function updateUserAvatar(formData: FormData) {
-  void formData;
-  const session = await getCurrentUser();
-  if (!session) return { success: false, error: "Unauthorized" };
+  try {
+    const session = await getCurrentUser();
+    if (!session || !db) return { success: false, error: "Unauthorized" };
 
-  // Public/local uploads are intentionally disabled. Re-enable this action only
-  // after a private object-store adapter, content inspection and signed URLs exist.
-  return {
-    success: false,
-    error: "Avatar uploads are temporarily unavailable.",
-  };
+    const file = formData.get("file");
+    if (!(file instanceof File)) {
+      return { success: false, error: "No image file provided." };
+    }
+
+    const allowedMimeTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
+    if (!allowedMimeTypes.has(file.type)) {
+      return { success: false, error: "File must be a JPEG, PNG, or WebP image." };
+    }
+
+    if (file.size <= 0 || file.size > 5 * 1024 * 1024) {
+      return { success: false, error: "Image size must be less than 5MB." };
+    }
+
+    const [membership] = await db
+      .select({ organizationId: schema.organizationMemberships.organizationId })
+      .from(schema.organizationMemberships)
+      .where(and(
+        eq(schema.organizationMemberships.userId, Number(session.id)),
+        eq(schema.organizationMemberships.status, "active")
+      ))
+      .limit(1);
+
+    if (!membership) return { success: false, error: "No active organization membership." };
+
+    const buffer = new Uint8Array(await file.arrayBuffer());
+    const uploadResult = await uploadPrivateFile({
+      organizationId: membership.organizationId,
+      ownerUserId: Number(session.id),
+      data: buffer,
+      fileName: file.name,
+      mimeType: file.type,
+    });
+
+    const previousAvatars = await db
+      .select()
+      .from(schema.storageObjects)
+      .where(and(
+        eq(schema.storageObjects.entityType, "avatar"),
+        eq(schema.storageObjects.entityId, Number(session.id)),
+        isNull(schema.storageObjects.deletedAt)
+      ));
+
+    for (const prev of previousAvatars) {
+      await db
+        .update(schema.storageObjects)
+        .set({ deletedAt: new Date() })
+        .where(eq(schema.storageObjects.id, prev.id));
+
+      deletePrivateFile(prev.objectKey).catch(err => {
+        console.error("deletePrivateFile error for old avatar:", err);
+      });
+    }
+
+    const [inserted] = await db.insert(schema.storageObjects).values({
+      organizationId: membership.organizationId,
+      objectKey: uploadResult.key,
+      bucket: process.env.OBJECT_STORAGE_BUCKET || "",
+      originalName: file.name,
+      contentType: file.type,
+      sizeBytes: uploadResult.size,
+      checksumSha256: uploadResult.sha256,
+      scanStatus: "clean",
+      visibility: "organization",
+      entityType: "avatar",
+      entityId: Number(session.id),
+      uploadedById: Number(session.id),
+    });
+
+    const avatarUrl = `/api/avatars/${inserted.insertId}`;
+    await db.update(schema.users).set({ avatarUrl }).where(eq(schema.users.id, Number(session.id)));
+
+    revalidatePath("/admin");
+    revalidatePath("/employee");
+    revalidatePath("/client");
+
+    return { success: true, avatarUrl };
+  } catch (error: any) {
+    console.error("updateUserAvatar error:", error);
+    return { success: false, error: error?.message || "Failed to upload avatar." };
+  }
 }

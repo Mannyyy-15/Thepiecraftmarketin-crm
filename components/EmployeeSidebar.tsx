@@ -46,7 +46,7 @@ const navigation = [
 function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const router = useRouter();
-  const [user, setUser] = useState<{ name: string; email: string; systemRole: string } | null>(null);
+  const [user, setUser] = useState<{ name: string; email: string; systemRole: string; avatarUrl?: string | null } | null>(null);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
@@ -56,7 +56,8 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
         setUser({
           name: res.name as string,
           email: res.email as string,
-          systemRole: (res as typeof res & { systemRole?: string }).systemRole || "Web Developer"
+          systemRole: (res as typeof res & { systemRole?: string }).systemRole || "Web Developer",
+          avatarUrl: res.avatarUrl || null,
         });
       }
     });
@@ -157,7 +158,7 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
 
       <div className="border-t border-[#f0f0f2] dark:border-[#303030] p-3 flex items-center justify-between gap-2">
         <div className="flex flex-1 items-center gap-3 rounded-xl p-2 hover:bg-[#f7f7f9] dark:hover:bg-[#303030] transition-colors cursor-pointer min-w-0">
-          <Avatar name={user?.name || "Employee"} status="online" size="sm" />
+          <Avatar name={user?.name || "Employee"} src={user?.avatarUrl || undefined} status="online" size="sm" />
           <div className="flex flex-col min-w-0">
             <span className="text-sm font-medium text-slate-900 dark:text-white truncate">
               {user?.name || "Team Member"}

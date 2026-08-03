@@ -6,7 +6,8 @@ import { useSearchParams } from "next/navigation";
 import { createLoginLink, createUser, resetMemberPassword } from "@/app/actions/auth";
 import { PASSWORD_MAX_LENGTH } from "@/lib/security/password";
 import { ShareLoginLinkDialog } from "@/components/ShareLoginLinkDialog";
-import { getTeamUsers, getAttendance, bulkUpdateAttendance, deleteUser, updateUserRole, updateUserShiftSchedule, getUserTasks, createTask, toggleTaskStatus, deleteTask, getProjects, assignProjectLead, getPendingLeaves, approveLeave, rejectLeave } from "@/app/actions/crm";
+import { getTeamUsers, getAttendance, bulkUpdateAttendance, deleteUser, updateUserRole, updateUserShiftSchedule, getUserTasks, createTask, toggleTaskStatus, deleteTask, getProjects, assignProjectLead, getPendingLeaves, approveLeave, rejectLeave, updateEmployeePermissions, getTeamPresence } from "@/app/actions/crm";
+import { EMPLOYEE_PERMISSIONS, parseEmployeePermissions, type EmployeePermission } from "@/lib/member-permissions";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { getMemberStatusVariant, getMemberStatusLabel } from "@/lib/statusHelpers";
 import { MemberGridSkeleton, CalendarSkeleton, Skeleton, TaskListSkeleton } from "@/components/ui/Skeleton";
@@ -476,37 +477,46 @@ export default function TeamPage() {
     }
   };
 
-  // Derives real online/offline status from today's punch-in record
-  const getMemberLiveStatus = (memberId: string): "online" | "offline" => {
-    const todayStr = new Date().toLocaleDateString("en-CA");
-    const rec = allAttendanceRecords.find(
-      a => String(a.userId) === memberId && a.date === todayStr
-    );
-    return rec?.punchInTime && !rec?.punchOutTime ? "online" : "offline";
-  };
-
   const loadTeamData = useCallback(async (showLoader = false) => {
     if (showLoader) setIsTeamLoading(true);
     try {
-      const [usersRes, attendanceRes, leavesRes] = await Promise.all([
+      const [usersRes, attendanceRes, leavesRes, presenceRes] = await Promise.all([
         getTeamUsers(),
         getAttendance(),
         getPendingLeaves(),
+        getTeamPresence(),
       ]);
 
       if (usersRes.success && usersRes.data) {
-        const mapped = usersRes.data.map((u: any) => ({
-          id: String(u.id),
-          name: u.name,
-          role: u.systemRole || (u.role === "admin" ? "Admin" : "Web Developer"),
-          email: u.email,
-          roleRaw: u.role,
-          status: "online" as const,
-          workingDays: u.workingDays ? u.workingDays.split(",").map(Number) : [1, 2, 3, 4, 5],
-          shiftStartTime: u.shiftStartTime || "09:00 AM",
-          shiftEndTime: u.shiftEndTime || "05:00 PM",
-          activeShiftProfile: u.activeShiftProfile || "Standard Core Hours",
-        }));
+        const presenceMap = new Map<number, { sessionActive: boolean; punchedIn: boolean }>(
+          presenceRes.success && presenceRes.data
+            ? presenceRes.data.map((p: any) => [p.userId, { sessionActive: p.sessionActive, punchedIn: p.punchedIn }])
+            : []
+        );
+
+        const mapped = usersRes.data.map((u: any) => {
+          const pres = presenceMap.get(u.id);
+          const status = pres?.punchedIn
+            ? ("online" as const)
+            : pres?.sessionActive
+            ? ("away" as const)
+            : ("offline" as const);
+
+          return {
+            id: String(u.id),
+            name: u.name,
+            role: u.systemRole || (u.role === "admin" ? "Admin" : "Web Developer"),
+            email: u.email,
+            roleRaw: u.role,
+            permissions: parseEmployeePermissions(u.permissions),
+            lastLoginAt: u.lastLoginAt,
+            status,
+            workingDays: u.workingDays ? u.workingDays.split(",").map(Number) : [1, 2, 3, 4, 5],
+            shiftStartTime: u.shiftStartTime || "09:00 AM",
+            shiftEndTime: u.shiftEndTime || "05:00 PM",
+            activeShiftProfile: u.activeShiftProfile || "Standard Core Hours",
+          };
+        });
         setMembers(mapped);
         const nonAdmins = mapped.filter((m: any) => m.roleRaw !== "admin");
         if (nonAdmins.length > 0 && !selectedEmp) {
@@ -1144,8 +1154,15 @@ export default function TeamPage() {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <KpiCard title="Active Team Size" value={`${members.filter(m => m.roleRaw !== "admin").length}`} change="+1" changeType="positive" accent="brand" icon={<Users className="h-5 w-5" />} />
             <KpiCard title="System Role Types" value={`${new Set(members.filter(m => m.roleRaw !== "admin").map(m => m.role)).size}`} change="Designated" changeType="positive" accent="emerald" icon={<Settings className="h-5 w-5" />} />
-            <KpiCard title="Online Now" value={`${members.filter((t) => t.roleRaw !== "admin" && getMemberLiveStatus(t.id) === "online").length}`} accent="amber" icon={<Activity className="h-5 w-5" />} />
+            <KpiCard title="Punched In Now" value={`${members.filter((t) => t.roleRaw !== "admin" && t.status === "online").length}`} accent="emerald" icon={<Activity className="h-5 w-5" />} />
             <KpiCard title="Leave Today" value={`${members.filter(t => { const s = t.roleRaw !== "admin" && attendanceOverrides.get(`${t.id}-22`); return s === "vacation" || s === "sick"; }).length}`} accent="rose" />
+          </div>
+
+          <div className="flex flex-wrap items-center gap-4 px-1 text-xs text-slate-500 dark:text-slate-400">
+            <span className="font-semibold text-slate-700 dark:text-slate-300">Presence Legend:</span>
+            <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" /> Punched in</span>
+            <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-amber-500" /> Logged in</span>
+            <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-slate-400" /> Offline</span>
           </div>
         </>
       )}
@@ -1182,12 +1199,12 @@ export default function TeamPage() {
                   <CardContent className="p-6">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                       <div className="flex items-center gap-4">
-                        <Avatar name={selectedEmpData.name} size="lg" status={getMemberLiveStatus(selectedEmpData.id)} />
+                        <Avatar name={selectedEmpData.name} size="lg" status={selectedEmpData.status} />
                         <div>
                           <div className="flex items-center gap-2.5">
                             <h2 className="text-lg font-bold text-slate-900 dark:text-white leading-tight">{selectedEmpData.name}</h2>
-                            <Badge variant={getMemberStatusVariant(getMemberLiveStatus(selectedEmpData.id))} dot>
-                              {getMemberStatusLabel(getMemberLiveStatus(selectedEmpData.id))}
+                            <Badge variant={getMemberStatusVariant(selectedEmpData.status)} dot>
+                              {getMemberStatusLabel(selectedEmpData.status)}
                             </Badge>
                           </div>
                           <p className="text-xs font-semibold text-brand-600 dark:text-indigo-400 mt-1">{selectedEmpData.role}</p>
@@ -1349,6 +1366,57 @@ export default function TeamPage() {
                           Changing it signs this employee out everywhere and revokes unused access links. Generate a fresh link afterward if needed.
                         </p>
                       </div>
+                    </div>
+                  </section>
+                )}
+
+                {selectedEmpData.roleRaw === "employee" && (
+                  <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 dark:border-[#303030] dark:bg-[#1f1f1f] sm:p-6">
+                    <div className="flex items-center gap-3 border-b border-slate-100 pb-4 dark:border-[#303030]">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-300">
+                        <Settings className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <h3 className="text-base font-semibold text-slate-950 dark:text-white">Permissions</h3>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">Grant specific management capabilities to this employee.</p>
+                      </div>
+                    </div>
+                    <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      {EMPLOYEE_PERMISSIONS.map((perm) => {
+                        const isChecked = selectedEmpData.permissions?.includes(perm);
+                        return (
+                          <label key={perm} className="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-100 p-3 hover:bg-slate-50 dark:border-[#2a2a30] dark:hover:bg-[#25252b]">
+                            <input
+                              type="checkbox"
+                              checked={!!isChecked}
+                              onChange={async (e) => {
+                                const current = selectedEmpData.permissions || [];
+                                const next = e.target.checked
+                                  ? Array.from(new Set([...current, perm]))
+                                  : current.filter((p: string) => p !== perm);
+                                const res = await updateEmployeePermissions(Number(selectedEmpData.id), next as any);
+                                if (res.success) {
+                                  toast("Permissions updated successfully.", "success");
+                                  setMembers(prev => prev.map(m => m.id === selectedEmpData.id ? { ...m, permissions: next } : m));
+                                } else {
+                                  toast(res.error || "Failed to update permissions", "error");
+                                }
+                              }}
+                              className="mt-0.5 h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                            />
+                            <div>
+                              <p className="text-xs font-semibold text-slate-900 dark:text-white capitalize">{perm.replace("_", " ")}</p>
+                              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                                {perm === "manage_clients" && "Create & edit client accounts"}
+                                {perm === "manage_projects" && "Create & edit projects"}
+                                {perm === "manage_tasks" && "Create & assign tasks beyond own"}
+                                {perm === "manage_invoices" && "Create & manage client invoices"}
+                                {perm === "manage_expenses" && "Approve & edit expense claims"}
+                              </p>
+                            </div>
+                          </label>
+                        );
+                      })}
                     </div>
                   </section>
                 )}
@@ -2226,7 +2294,7 @@ export default function TeamPage() {
 
                     <div className="relative h-16 bg-brand-hero">
                       <div className="absolute -bottom-6 left-4">
-                        <Avatar name={m.name} size="lg" status={getMemberLiveStatus(m.id)} />
+                        <Avatar name={m.name} size="lg" status={m.status} />
                       </div>
                     </div>
 
@@ -2272,7 +2340,7 @@ export default function TeamPage() {
                             </div>
                           )}
                         </div>
-                        <Badge variant={getMemberStatusVariant(getMemberLiveStatus(m.id))} dot>{getMemberStatusLabel(getMemberLiveStatus(m.id))}</Badge>
+                        <Badge variant={getMemberStatusVariant(m.status)} dot>{getMemberStatusLabel(m.status)}</Badge>
                       </div>
 
                       {/* Today's live punch status */}
@@ -2451,7 +2519,7 @@ export default function TeamPage() {
                         {/* Employee header row */}
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-2.5">
-                            <Avatar name={m.name} size="sm" status={getMemberLiveStatus(m.id)} />
+                            <Avatar name={m.name} size="sm" status={m.status} />
                             <div>
                               <p className="text-xs font-bold text-slate-900 dark:text-white">{m.name}</p>
                               <p className="text-[10px] text-slate-400 font-medium">{m.role} · {m.shiftStartTime}–{m.shiftEndTime}</p>

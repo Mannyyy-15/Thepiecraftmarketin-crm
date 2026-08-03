@@ -49,7 +49,7 @@ export default function EmployeeTopNav() {
   const router = useRouter();
   const title = titleFromPath(pathname);
 
-  const [user, setUser] = useState<{ name: string; email: string } | null>(null);
+  const [user, setUser] = useState<{ name: string; email: string; avatarUrl?: string | null } | null>(null);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -71,7 +71,7 @@ export default function EmployeeTopNav() {
 
   useEffect(() => {
     getCurrentUserCached().then((res) => {
-      if (res) setUser({ name: res.name as string, email: res.email as string });
+      if (res) setUser({ name: res.name as string, email: res.email as string, avatarUrl: res.avatarUrl || null });
     });
   }, []);
 
@@ -197,7 +197,7 @@ export default function EmployeeTopNav() {
             className="rounded-full transition-all cursor-pointer hover:opacity-80 active:scale-95 active:opacity-70 ring-2 ring-transparent hover:ring-brand-500/30"
             aria-label="Profile menu"
           >
-            <Avatar name={user?.name || "User"} status="online" size="sm" />
+            <Avatar name={user?.name || "User"} src={user?.avatarUrl || undefined} status="online" size="sm" />
           </button>
 
           {/* Profile Dropdown */}
@@ -205,7 +205,7 @@ export default function EmployeeTopNav() {
             <div className="absolute left-0 mt-2.5 w-60 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl z-50 overflow-hidden animate-fadeIn">
               {/* User info header */}
               <div className="px-4 py-3.5 border-b border-slate-100 dark:border-slate-800/80 flex items-center gap-3">
-                <Avatar name={user?.name || "User"} status="online" size="md" />
+                <Avatar name={user?.name || "User"} src={user?.avatarUrl || undefined} status="online" size="md" />
                 <div className="min-w-0">
                   <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{user?.name || "Team Member"}</p>
                   <p className="text-[11px] text-slate-400 truncate">{user?.email || "employee@thepiecraft.com"}</p>
@@ -316,7 +316,7 @@ export default function EmployeeTopNav() {
 
           {/* Desktop Avatar */}
           <div className="ml-1 hidden lg:block">
-            <Avatar name={user?.name || "User"} status="online" size="sm" />
+            <Avatar name={user?.name || "User"} src={user?.avatarUrl || undefined} status="online" size="sm" />
           </div>
         </div>
       </header>

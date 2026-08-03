@@ -40,3 +40,20 @@ test("tenant migration has a deterministic, non-destructive legacy backfill", as
   assert.match(migration, /INSERT IGNORE INTO `organization_memberships`/);
   assert.doesNotMatch(migration, /\bDROP\s+(TABLE|DATABASE)\b/i);
 });
+
+test("office settings and punch locations stay inside the active organization", async () => {
+  const source = await readFile(
+    new URL("../app/actions/punch.ts", import.meta.url),
+    "utf8"
+  );
+  const migration = await readFile(
+    new URL("../drizzle/0007_locations_organization_required.sql", import.meta.url),
+    "utf8"
+  );
+
+  assert.match(source, /organizationId: context\.organizationId/);
+  assert.match(source, /eq\(schema\.locations\.organizationId, context\.organizationId\)/);
+  assert.match(source, /isNull\(schema\.locations\.organizationId\)/);
+  assert.match(migration, /UPDATE `locations`[\s\S]*WHERE `organization_id` IS NULL/);
+  assert.match(migration, /MODIFY COLUMN `organization_id` int NOT NULL/);
+});

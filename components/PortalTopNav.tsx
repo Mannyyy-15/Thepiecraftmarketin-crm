@@ -47,12 +47,12 @@ export default function PortalTopNav({ onMenuClick }: { onMenuClick?: () => void
   const pathname = usePathname();
   const router = useRouter();
   const title = titleFromPath(pathname);
-  const [user, setUser] = useState<{ name: string; email: string } | null>(null);
+  const [user, setUser] = useState<{ name: string; email: string; avatarUrl?: string | null } | null>(null);
 
   useEffect(() => {
     getCurrentUserCached().then((res) => {
       if (res) {
-        setUser({ name: res.name as string, email: res.email as string });
+        setUser({ name: res.name as string, email: res.email as string, avatarUrl: res.avatarUrl || null });
       }
     });
   }, []);
@@ -311,7 +311,7 @@ export default function PortalTopNav({ onMenuClick }: { onMenuClick?: () => void
         />
 
         <div className="ml-1 hidden sm:block">
-          <Avatar name={user?.name || "Client"} size="sm" />
+          <Avatar name={user?.name || "Client"} src={user?.avatarUrl || undefined} size="sm" />
         </div>
       </div>
 

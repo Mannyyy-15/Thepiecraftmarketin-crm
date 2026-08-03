@@ -50,6 +50,20 @@
       "when": 1785580800000,
       "tag": "0006_locations_tenant",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1785582500000,
+      "tag": "0007_locations_organization_required",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "5",
+      "when": 1785582600000,
+      "tag": "0008_employee_permissions",
+      "breakpoints": true
     }
   ]
 }

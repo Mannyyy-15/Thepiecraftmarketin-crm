@@ -10,6 +10,8 @@ export interface GeoValidation {
   ok: boolean;
   /** Short, user-facing reason when ok is false. */
   message: string;
+  /** Machine-readable error code when ok is false. */
+  code?: "NO_LOCATION" | "WIFI_MISMATCH" | "OUT_OF_RANGE";
   /** The location id that was validated against (when ok). */
   locationId?: number;
   /** The client IP that passed validation (when ok). */
@@ -79,7 +81,11 @@ export async function validateGeofence(organizationId: number, userLat: number, 
   }
 
   if (!rows || rows.length === 0) {
-    return { ok: false, message: "No office location configured." };
+    return {
+      ok: false,
+      message: "Your admin has not set up an office location yet. Ask them to configure it in Settings → Office & Punch.",
+      code: "NO_LOCATION",
+    };
   }
   const loc = rows[0];
 
@@ -88,7 +94,11 @@ export async function validateGeofence(organizationId: number, userLat: number, 
     // If we have an office BSSID configured in DB, we must strictly validate it
     if (loc.bssid && loc.bssid.trim().length > 0) {
       if (!userBssid || userBssid.toLowerCase() !== loc.bssid.toLowerCase()) {
-        return { ok: false, message: `Please connect to the official office Wi-Fi network to clock in.` };
+        return {
+          ok: false,
+          message: "Please connect to the official office Wi-Fi network to clock in.",
+          code: "WIFI_MISMATCH",
+        };
       }
     }
   }
@@ -96,7 +106,11 @@ export async function validateGeofence(organizationId: number, userLat: number, 
   const distance = Number(loc.distance_meters);
   const radius = Number(loc.radius_meters);
   if (distance > radius) {
-    return { ok: false, message: `You're ${Math.round(distance)}m from office.` };
+    return {
+      ok: false,
+      message: `You're ${Math.round(distance)}m from office.`,
+      code: "OUT_OF_RANGE",
+    };
   }
 
   return { ok: true, message: "ok", locationId: loc.id, verifiedIp: clientIp === "unknown" ? "dev-local" : clientIp };

@@ -1,7 +1,7 @@
 "use server";
 
 import { headers } from "next/headers";
-import { sql, eq } from "drizzle-orm";
+import { and, asc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import * as schema from "@/lib/schema";
 import { getCurrentUser } from "./auth";
@@ -16,6 +16,33 @@ export interface PunchResult {
   message: string;
   /** Only present when success is true */
   logId?: number;
+}
+
+async function getPunchOrganizationContext(userId: number, requireAdmin = false) {
+  if (!db || !Number.isSafeInteger(userId) || userId <= 0) return null;
+  const [membership] = await db
+    .select({
+      organizationId: schema.organizationMemberships.organizationId,
+      membershipRole: schema.organizationMemberships.role,
+    })
+    .from(schema.organizationMemberships)
+    .innerJoin(
+      schema.organizations,
+      eq(schema.organizations.id, schema.organizationMemberships.organizationId)
+    )
+    .where(
+      and(
+        eq(schema.organizationMemberships.userId, userId),
+        eq(schema.organizationMemberships.status, "active"),
+        eq(schema.organizations.status, "active"),
+        requireAdmin
+          ? inArray(schema.organizationMemberships.role, ["owner", "admin"])
+          : undefined
+      )
+    )
+    .orderBy(asc(schema.organizationMemberships.id))
+    .limit(1);
+  return membership || null;
 }
 
 // ---------------------------------------------------------------------------
@@ -47,6 +74,8 @@ export async function processPunchAction(
   const userId = session.id as number;
 
   if (!db) return { success: false, message: "Database is not connected." };
+  const context = await getPunchOrganizationContext(userId);
+  if (!context) return { success: false, message: "No active organization membership." };
 
   // -- 2. Validate inputs ---------------------------------------------------
   if (!Number.isFinite(userLat) || !Number.isFinite(userLng)) {
@@ -96,6 +125,7 @@ export async function processPunchAction(
         ) AS distance_meters
       FROM locations
       WHERE id = ${locationId}
+        AND organization_id = ${context.organizationId}
       LIMIT 1
     `);
 
@@ -170,13 +200,17 @@ export async function getLocations() {
     return { success: false, data: [] };
   }
   if (!db) return { success: false, data: [] };
+  const context = await getPunchOrganizationContext(Number(session.id));
+  if (!context) return { success: false, data: [], error: "No active organization membership." };
   try {
     const rows = await db.select({
       id:           schema.locations.id,
       name:         schema.locations.name,
       address:      schema.locations.address,
       radiusMeters: schema.locations.radiusMeters,
-    }).from(schema.locations);
+    })
+      .from(schema.locations)
+      .where(eq(schema.locations.organizationId, context.organizationId));
     return { success: true, data: rows };
   } catch (err: any) {
     console.error("[punch] getLocations error:", err);
@@ -193,8 +227,25 @@ export async function getOfficeLocation() {
   if (!session?.id || session.role !== "admin") return { success: false, data: null };
   if (!db) return { success: false, data: null };
   try {
-    const rows = await db.select().from(schema.locations).orderBy(schema.locations.id).limit(1);
-    return { success: true, data: rows[0] || null };
+    const context = await getPunchOrganizationContext(Number(session.id), true);
+    if (!context) return { success: false, data: null, error: "Organization admin access required." };
+    const rows = await db
+      .select()
+      .from(schema.locations)
+      .where(eq(schema.locations.organizationId, context.organizationId))
+      .orderBy(schema.locations.id)
+      .limit(1);
+    if (rows[0]) return { success: true, data: rows[0] };
+
+    // Keep a legacy unscoped office visible so the admin can save it once;
+    // updateOfficeLocation will atomically attach it to this organization.
+    const legacyRows = await db
+      .select()
+      .from(schema.locations)
+      .where(isNull(schema.locations.organizationId))
+      .orderBy(schema.locations.id)
+      .limit(1);
+    return { success: true, data: legacyRows[0] || null };
   } catch (err: any) {
     console.error("[punch] getOfficeLocation error:", err);
     return { success: false, data: null, error: "Could not load office location." };
@@ -216,6 +267,8 @@ export async function updateOfficeLocation(input: OfficeLocationInput) {
   if (!session?.id || session.role !== "admin") return { success: false, error: "Unauthorized." };
   if (!db) return { success: false, error: "Database not connected." };
   try {
+    const context = await getPunchOrganizationContext(Number(session.id), true);
+    if (!context) return { success: false, error: "Organization admin access required." };
     const latitude = Number(input.latitude);
     const longitude = Number(input.longitude);
     const radiusMeters = Number(input.radiusMeters);
@@ -237,6 +290,7 @@ export async function updateOfficeLocation(input: OfficeLocationInput) {
       return { success: false, error: "Invalid office location settings." };
     }
     const values = {
+      organizationId: context.organizationId,
       name,
       address: input.address?.trim() || null,
       latitude: String(latitude),
@@ -245,11 +299,42 @@ export async function updateOfficeLocation(input: OfficeLocationInput) {
       wifiPublicIp,
       bssid: input.bssid?.trim() || null,
     };
-    const existing = await db.select({ id: schema.locations.id }).from(schema.locations).orderBy(schema.locations.id).limit(1);
+    const existing = await db
+      .select({ id: schema.locations.id })
+      .from(schema.locations)
+      .where(eq(schema.locations.organizationId, context.organizationId))
+      .orderBy(schema.locations.id)
+      .limit(1);
     if (existing.length > 0) {
-      await db.update(schema.locations).set(values).where(eq(schema.locations.id, existing[0].id));
+      await db
+        .update(schema.locations)
+        .set(values)
+        .where(
+          and(
+            eq(schema.locations.id, existing[0].id),
+            eq(schema.locations.organizationId, context.organizationId)
+          )
+        );
     } else {
-      await db.insert(schema.locations).values(values);
+      const [legacy] = await db
+        .select({ id: schema.locations.id })
+        .from(schema.locations)
+        .where(isNull(schema.locations.organizationId))
+        .orderBy(schema.locations.id)
+        .limit(1);
+      if (legacy) {
+        await db
+          .update(schema.locations)
+          .set(values)
+          .where(
+            and(
+              eq(schema.locations.id, legacy.id),
+              isNull(schema.locations.organizationId)
+            )
+          );
+      } else {
+        await db.insert(schema.locations).values(values);
+      }
     }
     return { success: true };
   } catch (err: any) {

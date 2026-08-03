@@ -11,9 +11,11 @@ import {
   User,
   TrendingUp,
   Timer,
+  MapPin,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/Card";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { getCurrentUserCached } from "@/lib/currentUserClient";
 import {
@@ -97,6 +99,7 @@ export default function EmployeeDashboardPage() {
   const [attMessage, setAttMessage] = useState<string | null>(null);
   const [isPunching, setIsPunching] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [noLocationConfigured, setNoLocationConfigured] = useState(false);
 
   const [isNativeApp, setIsNativeApp] = useState(false);
 
@@ -146,9 +149,14 @@ export default function EmployeeDashboardPage() {
       const res = await punchIn(loc.lat, loc.lng, loc.bssid || undefined);
       if (res.success) {
         setAttMessage("Punched in successfully! Have a great shift!");
+        setNoLocationConfigured(false);
         loadDashboardData();
       } else {
-        toast(res.error || "Failed to punch in", "error", 2500);
+        if (res.code === "NO_LOCATION") {
+          setNoLocationConfigured(true);
+        } else {
+          toast(res.error || "Failed to punch in", "error", 2500);
+        }
       }
     } catch (err: any) {
       toast("Error: " + err.message, "error", 2500);
@@ -169,9 +177,14 @@ export default function EmployeeDashboardPage() {
       const res = await punchOut(loc.lat, loc.lng, loc.bssid || undefined);
       if (res.success) {
         setAttMessage("Punched out successfully! Shift logged.");
+        setNoLocationConfigured(false);
         loadDashboardData();
       } else {
-        toast(res.error || "Failed to punch out", "error", 2500);
+        if (res.code === "NO_LOCATION") {
+          setNoLocationConfigured(true);
+        } else {
+          toast(res.error || "Failed to punch out", "error", 2500);
+        }
       }
     } catch (err: any) {
       toast("Error: " + err.message, "error", 2500);
@@ -316,6 +329,15 @@ export default function EmployeeDashboardPage() {
 
             </CardContent>
           </Card>
+
+          {noLocationConfigured && (
+            <EmptyState
+              icon={<MapPin className="h-6 w-6 text-amber-500" />}
+              title="Office location not set up"
+              description="Your admin needs to configure the office location in Settings → Office & Punch before you can punch in."
+              className="rounded-2xl border border-amber-200 bg-amber-50/50 dark:border-amber-900/40 dark:bg-amber-950/20 py-6"
+            />
+          )}
 
           {/* Desktop Slide-to-Punch */}
           {isNativeApp ? (

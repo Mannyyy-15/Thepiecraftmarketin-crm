@@ -24,6 +24,8 @@ export const users = mysqlTable("users", {
   shiftEndTime: varchar("shift_end_time", { length: 255 }).notNull().default("05:00 PM"),
   activeShiftProfile: varchar("active_shift_profile", { length: 255 }).notNull().default("Standard Core Hours"),
   avatarUrl: varchar("avatar_url", { length: 500 }),
+  permissions: text("permissions").notNull().default("[]"),
+  lastLoginAt: timestamp("last_login_at"),
   organizationId: int("organization_id").references(() => organizations.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 }, (table) => ({
@@ -277,7 +279,7 @@ export const leads = mysqlTable("leads", {
 // 14. Locations Table (Geofencing)
 export const locations = mysqlTable("locations", {
   id: int("id").primaryKey().autoincrement(),
-  organizationId: int("organization_id").references(() => organizations.id, { onDelete: "cascade" }),
+  organizationId: int("organization_id").notNull().references(() => organizations.id, { onDelete: "cascade" }),
   name: varchar("name", { length: 255 }).notNull(),
   address: varchar("address", { length: 500 }),
   latitude: decimal("latitude", { precision: 10, scale: 8 }).notNull(),

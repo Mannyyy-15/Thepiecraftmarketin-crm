@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { User, Save, Clock, CalendarDays } from "lucide-react";
+import { User, Save, Clock, CalendarDays, Upload } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
-import { getCurrentUser } from "@/app/actions/auth";
+import { getCurrentUser, updateUserAvatar } from "@/app/actions/auth";
 import { getFreshUserProfile, updateMyProfile } from "@/app/actions/crm";
 import { useToast } from "@/providers/ToastProvider";
+import { clearCurrentUserCache } from "@/lib/currentUserClient";
 
 export default function EmployeeProfilePage() {
   const { toast } = useToast();
@@ -15,6 +16,7 @@ export default function EmployeeProfilePage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [saving, setSaving] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   useEffect(() => {
     getFreshUserProfile().then((res: any) => {
@@ -25,6 +27,23 @@ export default function EmployeeProfilePage() {
       }
     });
   }, []);
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingAvatar(true);
+    const formData = new FormData();
+    formData.append("file", file);
+    const res = await updateUserAvatar(formData);
+    if (res.success && res.avatarUrl) {
+      clearCurrentUserCache();
+      setUser((prev: any) => ({ ...prev, avatarUrl: res.avatarUrl }));
+      toast("Profile photo updated!", "success");
+    } else {
+      toast(res.error || "Failed to upload avatar", "error");
+    }
+    setUploadingAvatar(false);
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -55,10 +74,17 @@ export default function EmployeeProfilePage() {
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-4 mb-6">
-            <Avatar name={user?.name || "U"} size="lg" />
+            <div className="relative group">
+              <Avatar name={user?.name || "U"} src={user?.avatarUrl || undefined} size="lg" />
+              <label className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-white">
+                <Upload className="h-4 w-4" />
+                <input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleAvatarChange} disabled={uploadingAvatar} className="hidden" />
+              </label>
+            </div>
             <div>
               <h3 className="text-sm font-bold text-slate-900 dark:text-white">{user?.name || "User"}</h3>
               <p className="text-xs text-slate-400">{user?.email}</p>
+              {uploadingAvatar && <p className="text-[10px] text-brand-600 dark:text-brand-400 font-semibold mt-0.5">Uploading...</p>}
             </div>
           </div>
 

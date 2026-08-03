@@ -10,6 +10,7 @@ import KpiCard from "@/components/KpiCard";
 import { Badge } from "@/components/ui/Badge";
 import { getMyAssignedTasks, toggleTaskStatus } from "@/app/actions/crm";
 import { useRefreshOnFocus } from "@/lib/use-refresh-on-focus";
+import { useActionCache } from "@/hooks/useActionCache";
 
 type Task = {
   id: number;
@@ -68,8 +69,14 @@ const DUE_ORDER = ["Overdue", "Today", "Tomorrow", "This week", "Later", "No due
 
 export default function EmployeeTasksPage() {
   const { toast } = useToast();
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: cachedTasks, isLoading: loading, refresh: load, setData: setTasksData } = useActionCache<Task[]>(
+    "employee_assigned_tasks",
+    async () => {
+      const res = await getMyAssignedTasks();
+      return { success: res.success, data: (res.data || []) as unknown as Task[], error: (res as any).error };
+    }
+  );
+  const tasks = cachedTasks || [];
   const [updating, setUpdating] = useState<number | null>(null);
 
   const [search, setSearch] = useState("");
@@ -78,14 +85,7 @@ export default function EmployeeTasksPage() {
   const [projectFilter, setProjectFilter] = useState<string>("all");
   const [groupBy, setGroupBy] = useState<GroupBy>("due");
 
-  const load = async () => {
-    const res = await getMyAssignedTasks();
-    if (res.success && res.data) setTasks(res.data as unknown as Task[]);
-    setLoading(false);
-  };
-
-  useEffect(() => { load(); }, []);
-  useRefreshOnFocus(load);
+  useRefreshOnFocus(() => load(false));
 
   const projects = useMemo(() => {
     const m = new Map<string, string>();
@@ -149,18 +149,18 @@ export default function EmployeeTasksPage() {
     const next = task.done ? 0 : 1;
     setUpdating(task.id);
     // Optimistic
-    setTasks((prev) => prev.map((t) => (t.id === task.id
-      ? { ...t, done: next, status: next ? "done" : "in-progress" } : t)));
+    setTasksData((prev) => (prev ? prev.map((t) => (t.id === task.id
+      ? { ...t, done: next, status: next ? "done" : "in-progress" } : t)) : []));
     try {
       const res = await toggleTaskStatus(task.id, next === 1);
       if (!res.success) {
-        setTasks((prev) => prev.map((t) => (t.id === task.id ? task : t))); // revert
+        setTasksData((prev) => (prev ? prev.map((t) => (t.id === task.id ? task : t)) : [])); // revert
         toast(res.error || "Could not update task.", "error");
       } else {
         toast(next ? "Task marked done ✓" : "Task reopened", "success", 2000);
       }
     } catch {
-      setTasks((prev) => prev.map((t) => (t.id === task.id ? task : t)));
+      setTasksData((prev) => (prev ? prev.map((t) => (t.id === task.id ? task : t)) : []));
       toast("Could not update task.", "error");
     } finally {
       setUpdating(null);

@@ -46,6 +46,8 @@ export default function SettingsPage() {
   const [detectingIp, setDetectingIp] = useState(false);
   const [detectingWifi, setDetectingWifi] = useState(false);
 
+  const [officeConfigured, setOfficeConfigured] = useState(true);
+
   useEffect(() => {
     (async () => {
       setLoading(true);
@@ -60,12 +62,15 @@ export default function SettingsPage() {
         }));
       }
       if (o?.success && o.data) {
+        setOfficeConfigured(true);
         const d: any = o.data;
         setOffice({
           name: d.name || "Office", address: d.address || "",
           latitude: d.latitude || "", longitude: d.longitude || "",
           radiusMeters: d.radiusMeters || 150, wifiPublicIp: d.wifiPublicIp || "", bssid: d.bssid || "",
         });
+      } else {
+        setOfficeConfigured(false);
       }
       setLoading(false);
     })();
@@ -89,6 +94,7 @@ export default function SettingsPage() {
       radiusMeters: Number(office.radiusMeters), wifiPublicIp: office.wifiPublicIp, bssid: office.bssid,
     });
     setSaving(false);
+    if (res.success) setOfficeConfigured(true);
     toast(res.success ? "Office location saved." : (res.error || "Failed to save office."), res.success ? "success" : "error");
   };
 
@@ -257,6 +263,12 @@ export default function SettingsPage() {
                 <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2"><MapPin className="h-4 w-4 text-emerald-500" /> Office & Punch-in</h2>
                 <p className="text-xs text-slate-400 mt-0.5">Employees can only punch in on the office Wi-Fi and within this radius.</p>
               </div>
+              {!officeConfigured && (
+                <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-4 text-xs text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-300">
+                  <p className="font-semibold">No office location configured yet</p>
+                  <p className="mt-0.5">Fill in the form below and save to enable employee punch-in.</p>
+                </div>
+              )}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="sm:col-span-2"><label className={LABEL}>Office name</label><input className={INPUT} value={office.name} onChange={(e) => setOff({ name: e.target.value })} /></div>
                 <div>

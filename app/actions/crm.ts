@@ -3,7 +3,7 @@
 import { db } from "@/lib/db";
 import { randomUUID } from "crypto";
 import * as schema from "@/lib/schema";
-import { eq, and, or, inArray, desc, gte, asc, isNotNull, isNull, like, notInArray, sql } from "drizzle-orm";
+import { eq, and, or, inArray, desc, gte, gt, asc, isNotNull, isNull, like, notInArray, sql } from "drizzle-orm";
 import { getCurrentUser } from "./auth";
 import { validateGeofence } from "@/lib/geofence";
 import { sendEmail } from "@/lib/mailer";
@@ -18,6 +18,7 @@ import {
 } from "@/lib/storage/private-object-storage";
 import { sendFcmMessage } from "@/lib/google-service-account";
 import { memberAccountPasswordSchema } from "@/lib/security/password";
+import { parseEmployeePermissions, serializeEmployeePermissions, type EmployeePermission } from "@/lib/member-permissions";
 
 // Helper to check user session and get authenticated profile
 async function getAuthSession() {
@@ -42,6 +43,8 @@ const publicUserFields = {
   shiftEndTime: schema.users.shiftEndTime,
   activeShiftProfile: schema.users.activeShiftProfile,
   avatarUrl: schema.users.avatarUrl,
+  permissions: schema.users.permissions,
+  lastLoginAt: schema.users.lastLoginAt,
   createdAt: schema.users.createdAt,
 };
 
@@ -67,6 +70,39 @@ async function getOrganizationContext(session: AuthSession): Promise<Organizatio
     .orderBy(asc(schema.organizationMemberships.id))
     .limit(1);
   return membership || null;
+}
+
+async function hasEmployeePermission(session: AuthSession, permission: EmployeePermission) {
+  if (session.role === "admin") return true;
+  if (session.role !== "employee" || !db) return false;
+  const [user] = await db.select({ permissions: schema.users.permissions })
+    .from(schema.users).where(eq(schema.users.id, Number(session.id))).limit(1);
+  return parseEmployeePermissions(user?.permissions).includes(permission);
+}
+
+export async function updateEmployeePermissions(userId: number, permissions: EmployeePermission[]) {
+  try {
+    const session = await getAuthSession();
+    if (!session || session.role !== "admin" || !db) {
+      return { success: false, error: "Unauthorized." };
+    }
+    const context = await getAdminOrganizationContext(session);
+    if (!context) return { success: false, error: "No active administrator membership." };
+
+    const isActive = await isActiveOrganizationUser(context.organizationId, userId, ["employee", "admin"]);
+    if (!isActive) return { success: false, error: "User not found in your organization." };
+
+    const serialized = serializeEmployeePermissions(permissions);
+    await db.update(schema.users)
+      .set({ permissions: serialized })
+      .where(eq(schema.users.id, userId));
+
+    revalidatePath("/admin/team");
+    return { success: true };
+  } catch (error: any) {
+    console.error("updateEmployeePermissions Error:", error);
+    return { success: false, error: error?.message || "Failed to update permissions." };
+  }
 }
 
 async function getAdminOrganizationContext(session: AuthSession) {
@@ -310,9 +346,12 @@ export async function onboardClient(formData: FormData) {
 export async function createClientAccount(formData: FormData) {
   try {
     const session = await getAuthSession();
-    if (!session || session.role !== "admin" || !db) return { success: false, error: "Unauthorized." };
-    const context = await getAdminOrganizationContext(session);
-    if (!context) return { success: false, error: "No active administrator membership." };
+    if (!session || !db) return { success: false, error: "Unauthorized." };
+    if (!await hasEmployeePermission(session, "manage_clients")) return { success: false, error: "Permission denied." };
+    const context = session.role === "admin"
+      ? await getAdminOrganizationContext(session)
+      : await getOrganizationContext(session);
+    if (!context) return { success: false, error: "No active organization membership." };
 
     const input = z.object({
       brandName: z.string().trim().min(1).max(255),
@@ -797,13 +836,12 @@ export async function getProjects() {
 export async function createProject(formData: FormData) {
   try {
     const session = await getAuthSession();
-    if (!session || session.role !== "admin") {
-      return { success: false, error: "Unauthorized." };
-    }
-
-    if (!db) return { success: false, error: "Database not connected." };
-    const context = await getAdminOrganizationContext(session);
-    if (!context) return { success: false, error: "No active administrator membership." };
+    if (!session || !db) return { success: false, error: "Unauthorized." };
+    if (!await hasEmployeePermission(session, "manage_projects")) return { success: false, error: "Permission denied." };
+    const context = session.role === "admin"
+      ? await getAdminOrganizationContext(session)
+      : await getOrganizationContext(session);
+    if (!context) return { success: false, error: "No active organization membership." };
 
     const name = formData.get("name") as string;
     const clientIdStr = formData.get("clientId") as string;
@@ -1459,7 +1497,7 @@ export async function punchIn(lat?: number, lng?: number, bssid?: string) {
       return { success: false, error: "Location required. Enable GPS and retry." };
     }
     const geo = await validateGeofence(context.organizationId, lat, lng, bssid);
-    if (!geo.ok) return { success: false, error: geo.message };
+    if (!geo.ok) return { success: false, error: geo.message, code: geo.code };
 
     const todayStr = new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD in local time
 
@@ -1532,7 +1570,7 @@ export async function punchOut(lat?: number, lng?: number, bssid?: string) {
       return { success: false, error: "Location required. Enable GPS and retry." };
     }
     const geo = await validateGeofence(context.organizationId, lat, lng, bssid);
-    if (!geo.ok) return { success: false, error: geo.message };
+    if (!geo.ok) return { success: false, error: geo.message, code: geo.code };
 
     const todayStr = new Date().toLocaleDateString("en-CA");
 
@@ -1840,6 +1878,72 @@ export async function getTeamUsers() {
     return { success: true, data: usersList };
   } catch (error: any) {
     console.error("getTeamUsers Error:", error);
+    return { success: false, data: [], error: error.message };
+  }
+}
+
+export async function getTeamPresence() {
+  try {
+    const session = await getAuthSession();
+    if (!session || session.role !== "admin" || !db) {
+      return { success: false, data: [], error: "Unauthorized." };
+    }
+    const context = await getAdminOrganizationContext(session);
+    if (!context) return { success: false, data: [], error: "No active administrator membership." };
+
+    const teamUsers = await db
+      .select({ id: schema.users.id })
+      .from(schema.organizationMemberships)
+      .innerJoin(schema.users, eq(schema.users.id, schema.organizationMemberships.userId))
+      .where(and(
+        eq(schema.organizationMemberships.organizationId, context.organizationId),
+        eq(schema.organizationMemberships.status, "active"),
+        inArray(schema.users.role, ["admin", "employee"])
+      ));
+
+    const userIds = teamUsers.map(u => u.id);
+    if (userIds.length === 0) return { success: true, data: [] };
+
+    const activeSessions = await db
+      .select({ userId: schema.userSessions.userId })
+      .from(schema.userSessions)
+      .where(and(
+        eq(schema.userSessions.organizationId, context.organizationId),
+        inArray(schema.userSessions.userId, userIds),
+        isNull(schema.userSessions.revokedAt),
+        gt(schema.userSessions.expiresAt, new Date())
+      ));
+
+    const activeSessionUserIds = new Set(activeSessions.map(s => s.userId));
+
+    const todayStr = new Date().toLocaleDateString("en-CA");
+    const todayAttendance = await db
+      .select({
+        userId: schema.attendance.userId,
+        punchInTime: schema.attendance.punchInTime,
+        punchOutTime: schema.attendance.punchOutTime,
+      })
+      .from(schema.attendance)
+      .where(and(
+        eq(schema.attendance.date, todayStr),
+        inArray(schema.attendance.userId, userIds)
+      ));
+
+    const punchedInUserIds = new Set(
+      todayAttendance
+        .filter(a => a.punchInTime && !a.punchOutTime)
+        .map(a => a.userId)
+    );
+
+    const presenceData = userIds.map(userId => ({
+      userId,
+      sessionActive: activeSessionUserIds.has(userId),
+      punchedIn: punchedInUserIds.has(userId),
+    }));
+
+    return { success: true, data: presenceData };
+  } catch (error: any) {
+    console.error("getTeamPresence Error:", error);
     return { success: false, data: [], error: error.message };
   }
 }
@@ -2227,10 +2331,12 @@ export async function getAttendancePageData() {
 export async function createTask(userId: number, title: string, priority: string, projectId: number | null, dueDate?: string | null, description?: string) {
   try {
     const session = await getAuthSession();
-    if (!session || session.role !== "admin") return { success: false, error: "Unauthorized." };
-    if (!db) return { success: false, error: "Database not connected." };
-    const context = await getAdminOrganizationContext(session);
-    if (!context) return { success: false, error: "No active administrator membership." };
+    if (!session || !db) return { success: false, error: "Unauthorized." };
+    if (!await hasEmployeePermission(session, "manage_tasks")) return { success: false, error: "Permission denied." };
+    const context = session.role === "admin"
+      ? await getAdminOrganizationContext(session)
+      : await getOrganizationContext(session);
+    if (!context) return { success: false, error: "No active organization membership." };
     const input = z.object({
       userId: idSchema,
       title: z.string().trim().min(1).max(255),
@@ -2921,10 +3027,12 @@ export async function getInvoices() {
 export async function createInvoice(formData: FormData) {
   try {
     const session = await getAuthSession();
-    if (!session || session.role !== "admin") return { success: false, error: "Unauthorized." };
-    if (!db) return { success: false, error: "Database not connected." };
-    const context = await getAdminOrganizationContext(session);
-    if (!context) return { success: false, error: "No active administrator membership." };
+    if (!session || !db) return { success: false, error: "Unauthorized." };
+    if (!await hasEmployeePermission(session, "manage_invoices")) return { success: false, error: "Permission denied." };
+    const context = session.role === "admin"
+      ? await getAdminOrganizationContext(session)
+      : await getOrganizationContext(session);
+    if (!context) return { success: false, error: "No active organization membership." };
 
     const clientId = parseInt(formData.get("clientId") as string);
     const projectIdStr = formData.get("projectId") as string;
@@ -3013,10 +3121,12 @@ export interface CreateInvoiceFullInput {
 export async function createInvoiceFull(input: CreateInvoiceFullInput) {
   try {
     const session = await getAuthSession();
-    if (!session || session.role !== "admin") return { success: false, error: "Unauthorized." };
-    if (!db) return { success: false, error: "Database not connected." };
-    const context = await getAdminOrganizationContext(session);
-    if (!context) return { success: false, error: "No active administrator membership." };
+    if (!session || !db) return { success: false, error: "Unauthorized." };
+    if (!await hasEmployeePermission(session, "manage_invoices")) return { success: false, error: "Permission denied." };
+    const context = session.role === "admin"
+      ? await getAdminOrganizationContext(session)
+      : await getOrganizationContext(session);
+    if (!context) return { success: false, error: "No active organization membership." };
 
     if (input.clientId) {
       const [client] = await db.select({ id: schema.clients.id }).from(schema.clients).where(and(
@@ -3114,10 +3224,12 @@ export async function createInvoiceFull(input: CreateInvoiceFullInput) {
 export async function updateInvoiceStatus(invoiceId: number, status: "draft" | "sent" | "paid" | "overdue", paidDate?: string) {
   try {
     const session = await getAuthSession();
-    if (!session || session.role !== "admin") return { success: false, error: "Unauthorized." };
-    if (!db) return { success: false, error: "Database not connected." };
-    const context = await getAdminOrganizationContext(session);
-    if (!context) return { success: false, error: "No active administrator membership." };
+    if (!session || !db) return { success: false, error: "Unauthorized." };
+    if (!await hasEmployeePermission(session, "manage_invoices")) return { success: false, error: "Permission denied." };
+    const context = session.role === "admin"
+      ? await getAdminOrganizationContext(session)
+      : await getOrganizationContext(session);
+    if (!context) return { success: false, error: "No active organization membership." };
 
     await db.update(schema.invoices)
       .set({ status, ...(paidDate ? { paidDate } : {}) })
@@ -3135,10 +3247,12 @@ export async function updateInvoiceStatus(invoiceId: number, status: "draft" | "
 export async function deleteInvoice(invoiceId: number) {
   try {
     const session = await getAuthSession();
-    if (!session || session.role !== "admin") return { success: false, error: "Unauthorized." };
-    if (!db) return { success: false, error: "Database not connected." };
-    const context = await getAdminOrganizationContext(session);
-    if (!context) return { success: false, error: "No active administrator membership." };
+    if (!session || !db) return { success: false, error: "Unauthorized." };
+    if (!await hasEmployeePermission(session, "manage_invoices")) return { success: false, error: "Permission denied." };
+    const context = session.role === "admin"
+      ? await getAdminOrganizationContext(session)
+      : await getOrganizationContext(session);
+    if (!context) return { success: false, error: "No active organization membership." };
 
     await db.delete(schema.invoices).where(and(eq(schema.invoices.id, invoiceId), eq(schema.invoices.organizationId, context.organizationId)));
     revalidateInvoiceSurfaces();
@@ -3153,10 +3267,12 @@ export async function deleteInvoice(invoiceId: number) {
 export async function autoGenerateInvoices() {
   try {
     const session = await getAuthSession();
-    if (!session || session.role !== "admin") return { success: false, error: "Unauthorized.", generated: 0 };
-    if (!db) return { success: false, error: "Database not connected.", generated: 0 };
-    const context = await getAdminOrganizationContext(session);
-    if (!context) return { success: false, error: "No active administrator membership.", generated: 0 };
+    if (!session || !db) return { success: false, error: "Unauthorized.", generated: 0 };
+    if (!await hasEmployeePermission(session, "manage_invoices")) return { success: false, error: "Permission denied.", generated: 0 };
+    const context = session.role === "admin"
+      ? await getAdminOrganizationContext(session)
+      : await getOrganizationContext(session);
+    if (!context) return { success: false, error: "No active organization membership.", generated: 0 };
 
     const today = new Date();
     const todayStr = today.toISOString().split("T")[0];
@@ -3418,10 +3534,12 @@ export async function getProjectTasksGrouped() {
 export async function addProjectTask(projectId: number, title: string, priority: string, assignToUserId?: number, dueDate?: string | null, description?: string) {
   try {
     const session = await getAuthSession();
-    if (!session || session.role !== "admin") return { success: false, error: "Unauthorized." };
-    if (!db) return { success: false, error: "Database not connected." };
-    const context = await getAdminOrganizationContext(session);
-    if (!context) return { success: false, error: "No active administrator membership." };
+    if (!session || !db) return { success: false, error: "Unauthorized." };
+    if (!await hasEmployeePermission(session, "manage_tasks")) return { success: false, error: "Permission denied." };
+    const context = session.role === "admin"
+      ? await getAdminOrganizationContext(session)
+      : await getOrganizationContext(session);
+    if (!context) return { success: false, error: "No active organization membership." };
     const input = z.object({
       projectId: idSchema,
       title: z.string().trim().min(1).max(255),
