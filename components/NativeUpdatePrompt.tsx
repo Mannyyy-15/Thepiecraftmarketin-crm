@@ -25,6 +25,8 @@ export default function NativeUpdatePrompt() {
   const [isDownloading, setIsDownloading] = useState(false);
 
   const checkForUpdate = useCallback(async () => {
+    // Only check for updates inside the native APK, never in a browser
+    if (!Capacitor.isNativePlatform()) return;
     try {
       let currentVersion = 1;
       if (Capacitor.isNativePlatform()) {
