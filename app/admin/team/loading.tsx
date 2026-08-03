@@ -2,19 +2,10 @@ import { MemberGridSkeleton, Skeleton } from "@/components/ui/Skeleton";
 
 export default function Loading() {
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <Skeleton className="h-7 w-40" />
-        <div className="flex gap-2">
-          <Skeleton className="h-9 w-28 rounded-xl" />
-          <Skeleton className="h-9 w-28 rounded-xl" />
-        </div>
+    <div className="w-full space-y-4">
+      <div className="h-1 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+        <div className="h-full w-1/3 animate-[pulse_1s_infinite] rounded-full bg-brand-500" />
       </div>
-      <div className="flex gap-2">
-        <Skeleton className="h-9 w-24 rounded-lg" />
-        <Skeleton className="h-9 w-24 rounded-lg" />
-      </div>
-      <MemberGridSkeleton count={6} />
     </div>
   );
 }

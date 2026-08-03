@@ -340,40 +340,29 @@ export default function EmployeeDashboardPage() {
           )}
 
           {/* Desktop Slide-to-Punch */}
-          {isNativeApp ? (
-            <div className="hidden lg:block space-y-3">
-              <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center">
-                {isPunchedOut
-                  ? "Shift completed for today"
-                  : isNotPunchedYet
-                  ? "Slide to begin your shift"
-                  : "Slide to end your shift"}
-              </p>
+          <div className="hidden lg:block space-y-3">
+            <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center">
+              {isPunchedOut
+                ? "Shift completed for today"
+                : isNotPunchedYet
+                ? "Slide to begin your shift"
+                : "Slide to end your shift"}
+            </p>
 
-              {isPunchedOut ? (
-                <div className="relative h-[60px] rounded-full flex items-center justify-center bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 opacity-60">
-                  <span className="text-[13px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                    <CheckCircle2 className="h-4 w-4" /> Shift Logged
-                  </span>
-                </div>
-              ) : (
-                <SlideToPunch
-                  variant={isNotPunchedYet ? "in" : "out"}
-                  loading={isPunching}
-                  onComplete={handleSlideComplete}
-                />
-              )}
-            </div>
-          ) : (
-            <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200/60 dark:border-amber-800/30 rounded-2xl p-5 text-center shadow-inner hidden lg:block">
-               <p className="text-sm font-bold text-amber-800 dark:text-amber-400">
-                 Mobile App Required
-               </p>
-               <p className="text-xs font-medium text-amber-700/80 dark:text-amber-500/80 mt-1">
-                 For security and accurate GPS tracking, please use the official PieCraft mobile app to punch in and punch out.
-               </p>
-            </div>
-          )}
+            {isPunchedOut ? (
+              <div className="relative h-[60px] rounded-full flex items-center justify-center bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 opacity-60">
+                <span className="text-[13px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                  <CheckCircle2 className="h-4 w-4" /> Shift Logged
+                </span>
+              </div>
+            ) : (
+              <SlideToPunch
+                variant={isNotPunchedYet ? "in" : "out"}
+                loading={isPunching}
+                onComplete={handleSlideComplete}
+              />
+            )}
+          </div>
         </div>
 
         {/* ── RIGHT: Activity log ────────────────────────── */}
@@ -568,7 +557,7 @@ export default function EmployeeDashboardPage() {
       </div>
 
       {/* ── Mobile Slide-to-Punch (fixed, above nav) ─────────── */}
-      {isNativeApp && !isPunchedOut && (
+      {!isPunchedOut && (
         <div className="lg:hidden fixed bottom-[7rem] left-4 right-4 z-50">
           <div className="rounded-full shadow-2xl">
             <SlideToPunch
@@ -576,19 +565,6 @@ export default function EmployeeDashboardPage() {
               loading={isPunching}
               onComplete={handleSlideComplete}
             />
-          </div>
-        </div>
-      )}
-
-      {!isNativeApp && !isPunchedOut && (
-        <div className="lg:hidden fixed bottom-[7rem] left-4 right-4 z-50">
-          <div className="bg-amber-50 dark:bg-amber-900/90 border border-amber-200 dark:border-amber-700 shadow-2xl rounded-2xl p-4 text-center">
-             <p className="text-sm font-bold text-amber-800 dark:text-amber-400">
-               Mobile App Required
-             </p>
-             <p className="text-[11px] font-medium text-amber-700 dark:text-amber-200 mt-1">
-               Please use the PieCraft mobile app to punch in.
-             </p>
           </div>
         </div>
       )}
