@@ -33,8 +33,8 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${jakarta.variable} dark`}>
-      <body className="font-sans antialiased bg-background text-foreground">
+    <html lang="en" className={`${jakarta.variable} dark`} suppressHydrationWarning>
+      <body className="font-sans antialiased bg-background text-foreground" suppressHydrationWarning>
         <GlobalSyncProvider>
           <ToastProvider>
             {children}
