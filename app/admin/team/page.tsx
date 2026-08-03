@@ -2247,9 +2247,37 @@ export default function TeamPage() {
             );
           })()
         ) : isTeamLoading && members.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-slate-400 gap-2">
-            <Loader2 className="h-6 w-6 animate-spin text-brand-500" />
-            <p className="text-xs font-medium">Loading team directory...</p>
+          <div className="space-y-6">
+            <Skeleton className="h-10 w-full max-w-md rounded-2xl" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="rounded-[20px] border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] overflow-hidden">
+                  <div className="relative">
+                    <Skeleton className="h-16 w-full rounded-none" />
+                    <div className="absolute -bottom-6 left-4">
+                      <Skeleton className="h-12 w-12 rounded-full" />
+                    </div>
+                  </div>
+                  <div className="p-5 pt-10 space-y-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="space-y-1.5 flex-1">
+                        <Skeleton className="h-4 w-28" />
+                        <Skeleton className="h-3 w-20" />
+                      </div>
+                      <Skeleton className="h-5 w-16 rounded-full shrink-0" />
+                    </div>
+                    <div className="flex items-center gap-2 pt-2 border-t border-slate-100 dark:border-[#303030]">
+                      <Skeleton className="h-8 w-8 rounded-full" />
+                      <div className="space-y-1 flex-1">
+                        <Skeleton className="h-3 w-24" />
+                        <Skeleton className="h-2.5 w-16" />
+                      </div>
+                      <Skeleton className="h-7 w-14 rounded-xl" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
       ) : (
           <div className="space-y-6">

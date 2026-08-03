@@ -283,9 +283,13 @@ export default function EmployeeDashboardPage() {
 
               {/* Status row */}
               <div className="flex flex-col items-center gap-1">
-                <span className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-slate-400">
-                  {isLoading ? "Loading…" : isPunchedIn ? "Time Elapsed" : isPunchedOut ? "Total Shift Hours" : "Working Hours"}
-                </span>
+                {isLoading ? (
+                  <Skeleton className="h-2.5 w-28" />
+                ) : (
+                  <span className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-slate-400">
+                    {isPunchedIn ? "Time Elapsed" : isPunchedOut ? "Total Shift Hours" : "Working Hours"}
+                  </span>
+                )}
                 {!isLoading && isPunchedIn && (
                   <span className="flex items-center gap-1.5 text-[10px] font-bold text-emerald-400">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
