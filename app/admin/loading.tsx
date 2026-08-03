@@ -1,5 +1,10 @@
-import { InlinePagePreloader } from "@/components/AppPreloader";
+import { PageHeaderSkeleton, KpiCardsSkeleton } from "@/components/ui/Skeleton";
 
 export default function Loading() {
-  return <InlinePagePreloader title="Loading Admin Dashboard..." />;
+  return (
+    <div className="space-y-6">
+      <PageHeaderSkeleton />
+      <KpiCardsSkeleton count={4} />
+    </div>
+  );
 }

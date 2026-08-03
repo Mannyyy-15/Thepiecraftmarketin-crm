@@ -1,22 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, ShieldCheck } from "lucide-react";
+import { Sparkles } from "lucide-react";
 
 export function AppPreloader() {
-  const pathname = usePathname();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Show preloader briefly on route change to guarantee smooth state transition
-    setLoading(true);
+    // Show preloader once on app open only, not on route changes
     const timer = setTimeout(() => {
       setLoading(false);
     }, 450);
     return () => clearTimeout(timer);
-  }, [pathname]);
+  }, []);
 
   return (
     <AnimatePresence>
@@ -68,22 +65,5 @@ export function AppPreloader() {
         </motion.div>
       )}
     </AnimatePresence>
-  );
-}
-
-export function InlinePagePreloader({ title = "Loading data..." }: { title?: string }) {
-  return (
-    <div className="flex flex-col items-center justify-center py-20 px-4 select-none">
-      <div className="relative flex items-center justify-center mb-4">
-        <div className="absolute -inset-3 rounded-2xl bg-gradient-to-r from-brand-500/30 to-indigo-500/30 blur-md animate-pulse" />
-        <div className="relative flex h-12 w-12 items-center justify-center rounded-xl border border-brand-500/30 bg-slate-900/80 shadow-lg shadow-brand-500/20">
-          <span className="text-lg font-black text-brand-400">P</span>
-        </div>
-      </div>
-      <p className="text-xs font-bold text-slate-300 tracking-wide mb-3">{title}</p>
-      <div className="h-1 w-36 overflow-hidden rounded-full bg-slate-800">
-        <div className="h-full w-full rounded-full bg-gradient-to-r from-brand-500 to-indigo-500 animate-[pulse_1s_infinite]" />
-      </div>
-    </div>
   );
 }

@@ -1,5 +1,5 @@
-import { InlinePagePreloader } from "@/components/AppPreloader";
+import { MemberGridSkeleton } from "@/components/ui/Skeleton";
 
 export default function Loading() {
-  return <InlinePagePreloader title="Loading Team Directory..." />;
+  return <MemberGridSkeleton />;
 }

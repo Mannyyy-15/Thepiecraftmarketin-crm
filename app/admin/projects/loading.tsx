@@ -1,5 +1,5 @@
-import { InlinePagePreloader } from "@/components/AppPreloader";
+import { CardGridSkeleton } from "@/components/ui/Skeleton";
 
 export default function Loading() {
-  return <InlinePagePreloader title="Loading Projects..." />;
+  return <CardGridSkeleton />;
 }
