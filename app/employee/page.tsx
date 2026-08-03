@@ -24,6 +24,7 @@ import {
   punchIn,
   punchOut,
 } from "@/app/actions/crm";
+import { useActionCache } from "@/hooks/useActionCache";
 import { getValidatedLocation } from "@/lib/getLocation";
 import SlideToPunch from "@/components/SlideToPunch";
 
@@ -37,16 +38,15 @@ function ShiftTimerDigits({ attendance, isLoading }: { attendance: any; isLoadin
       setElapsedSeconds(0);
       return;
     }
+    const startMs = new Date(punchInTime).getTime();
+    const endMs = punchOutTime ? new Date(punchOutTime).getTime() : Date.now();
+    const diff = Math.max(0, Math.floor((endMs - startMs) / 1000));
+    setElapsedSeconds(diff);
 
-    const startedAt = new Date(punchInTime).getTime();
-    if (punchOutTime) {
-      setElapsedSeconds(Math.max(0, Math.floor((new Date(punchOutTime).getTime() - startedAt) / 1000)));
-      return;
-    }
-
-    const update = () => setElapsedSeconds(Math.max(0, Math.floor((Date.now() - startedAt) / 1000)));
-    update();
-    const interval = window.setInterval(update, 1000);
+    if (punchOutTime) return;
+    const interval = window.setInterval(() => {
+      setElapsedSeconds(Math.max(0, Math.floor((Date.now() - startMs) / 1000)));
+    }, 1000);
     return () => window.clearInterval(interval);
   }, [attendance?.punchInTime, attendance?.punchOutTime]);
 
@@ -98,10 +98,19 @@ export default function EmployeeDashboardPage() {
   const [todayAttendance, setTodayAttendance] = useState<any>(null);
   const [attMessage, setAttMessage] = useState<string | null>(null);
   const [isPunching, setIsPunching] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const [noLocationConfigured, setNoLocationConfigured] = useState(false);
-
   const [isNativeApp, setIsNativeApp] = useState(false);
+
+  const { data: cachedProfile, refresh: refreshProfile } = useActionCache("user_profile", getFreshUserProfile);
+  const { data: cachedAttendance, isLoading, refresh: refreshAttendance } = useActionCache("today_attendance", getTodayAttendance);
+
+  useEffect(() => {
+    if (cachedProfile) setUser(cachedProfile);
+  }, [cachedProfile]);
+
+  useEffect(() => {
+    setTodayAttendance(cachedAttendance ?? null);
+  }, [cachedAttendance]);
 
   useEffect(() => {
     let active = true;
@@ -112,31 +121,8 @@ export default function EmployeeDashboardPage() {
   }, []);
 
   const loadDashboardData = async () => {
-    setIsLoading(true);
-    try {
-      const [profileRes, attRes] = await Promise.all([
-        getFreshUserProfile(),
-        getTodayAttendance(),
-      ]);
-      if (profileRes.success && profileRes.data) {
-        setUser(profileRes.data);
-      } else {
-        const currentUser = await getCurrentUserCached() as any;
-        if (currentUser) setUser(currentUser);
-      }
-      if (attRes.success && attRes.data) {
-        setTodayAttendance(attRes.data);
-      } else {
-        setTodayAttendance(null);
-      }
-    } catch (err) {
-      console.error("Error loading dashboard data:", err);
-    } finally {
-      setIsLoading(false);
-    }
+    await Promise.all([refreshProfile(false), refreshAttendance(false)]);
   };
-
-  useEffect(() => { loadDashboardData(); }, []);
 
   const handlePunchInAction = async () => {
     setIsPunching(true);

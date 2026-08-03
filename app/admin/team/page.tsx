@@ -2246,8 +2246,11 @@ export default function TeamPage() {
               </div>
             );
           })()
-        ) : isTeamLoading ? (
-          <MemberGridSkeleton count={6} />
+        ) : isTeamLoading && members.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 text-slate-400 gap-2">
+            <Loader2 className="h-6 w-6 animate-spin text-brand-500" />
+            <p className="text-xs font-medium">Loading team directory...</p>
+          </div>
       ) : (
           <div className="space-y-6">
             {/* Search bar */}

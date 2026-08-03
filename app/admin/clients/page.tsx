@@ -17,7 +17,7 @@ import {
   ExternalLink, Globe, Laptop, Layers, Mail, MapPin, Megaphone,
   MoreHorizontal, Phone, Plus, Receipt, Search, Tag, Trash2,
   TrendingUp, Users, X, ArrowLeft, ArrowRight, Code2, Zap,
-  FileText, Clock, AlertCircle, BadgeCheck, Send, RefreshCw,
+  FileText, Clock, AlertCircle, BadgeCheck, Send, RefreshCw, Loader2,
   SlidersHorizontal, Sparkles, CalendarDays, Link as LinkIcon, Edit2,
   Instagram, User,
 } from "lucide-react";
@@ -443,8 +443,11 @@ export default function ClientsPage() {
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{filtered.length} client{filtered.length !== 1 ? "s" : ""}</span>
           </div>
 
-          {loading ? (
-            <CardGridSkeleton count={6} />
+          {loading && clients.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 text-slate-400 gap-2">
+              <Loader2 className="h-6 w-6 animate-spin text-brand-500" />
+              <p className="text-xs font-medium">Loading clients...</p>
+            </div>
           ) : filtered.length === 0 ? (
             <EmptyState icon={<Building2 className="h-5 w-5" />} title={search ? "No matching clients" : "No clients yet"} description={search ? "Try a different search term." : "Add your first client to get started."}
               action={!search ? <Button size="sm" onClick={() => setDrawerOpen(true)} className="bg-brand-600 text-white"><Plus className="h-3.5 w-3.5 mr-1" /> Add Client</Button> : undefined} />
