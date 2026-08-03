@@ -221,7 +221,12 @@ export default function EmployeeTopNav() {
               </div>
 
               {/* Logout button */}
-              <div className="p-2">
+              <div className="p-2 space-y-1">
+                <div className="flex items-center justify-center px-3 py-2">
+                  <span className="text-[10px] font-extrabold text-brand-600 dark:text-brand-400 bg-brand-500/10 px-3 py-1 rounded-full uppercase tracking-wider border border-brand-500/20">
+                    v1.5.0 (Build 7)
+                  </span>
+                </div>
                 <button
                   onClick={() => { setShowProfileMenu(false); setShowLogoutModal(true); }}
                   disabled={isLoggingOut}
