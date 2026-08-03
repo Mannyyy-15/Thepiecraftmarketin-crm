@@ -72,8 +72,6 @@ export default function EmployeeProjectsPage() {
     return p.name.toLowerCase().includes(q) || (p.clientName || "").toLowerCase().includes(q);
   });
 
-  if (loading) return <ProjectBoardSkeleton />;
-
   return (
     <div className="space-y-6">
       {/* Controls */}
@@ -100,7 +98,12 @@ export default function EmployeeProjectsPage() {
         </div>
       </div>
 
-      {filtered.length === 0 ? (
+      {loading && projects.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 text-slate-400 gap-2">
+          <Loader2 className="h-6 w-6 animate-spin text-brand-500" />
+          <p className="text-xs">Loading projects...</p>
+        </div>
+      ) : filtered.length === 0 ? (
         <EmptyState
           icon={<Target className="h-5 w-5" />}
           title={search ? "No matching projects" : "No projects assigned"}
