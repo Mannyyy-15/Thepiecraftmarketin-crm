@@ -7,6 +7,7 @@ import { eq, and, or, inArray, desc, gte, gt, asc, isNotNull, isNull, like, notI
 import { getCurrentUser } from "./auth";
 import { validateGeofence } from "@/lib/geofence";
 import { sendEmail } from "@/lib/mailer";
+import { sendSmsWhatsAppNotification } from "@/lib/sms";
 import { revalidatePath } from "next/cache";
 import bcrypt from "bcryptjs";
 import Razorpay from "razorpay";
@@ -5280,5 +5281,94 @@ export async function clearAllData() {
   } catch {
     console.error("clearAllData failed; transaction rolled back.");
     return { success: false, error: "Cleanup failed. No partial cleanup was committed." };
+  }
+}
+
+export async function getAuditLogs() {
+  try {
+    const session = await getAuthSession();
+    if (!session || session.role !== "admin" || !db) {
+      return { success: false, data: [], error: "Unauthorized" };
+    }
+    const context = await getAdminOrganizationContext(session);
+    if (!context) return { success: false, data: [], error: "No active admin context" };
+
+    const logs = await db
+      .select({
+        id: schema.auditEvents.id,
+        action: schema.auditEvents.action,
+        entityType: schema.auditEvents.entityType,
+        entityId: schema.auditEvents.entityId,
+        metadata: schema.auditEvents.metadata,
+        createdAt: schema.auditEvents.createdAt,
+        actorId: schema.auditEvents.actorUserId,
+        actorName: schema.users.name,
+        actorEmail: schema.users.email,
+      })
+      .from(schema.auditEvents)
+      .leftJoin(schema.users, eq(schema.users.id, schema.auditEvents.actorUserId))
+      .where(eq(schema.auditEvents.organizationId, context.organizationId))
+      .orderBy(desc(schema.auditEvents.createdAt))
+      .limit(100);
+
+    return { success: true, data: logs };
+  } catch (error: any) {
+    console.error("getAuditLogs error:", error);
+    return { success: false, data: [], error: error?.message || "Failed to fetch audit logs" };
+  }
+}
+
+export async function sendInvoiceReminder(invoiceId: number) {
+  try {
+    const session = await getAuthSession();
+    if (!session || !db) return { success: false, error: "Unauthorized" };
+
+    const [invoice] = await db
+      .select()
+      .from(schema.invoices)
+      .where(eq(schema.invoices.id, invoiceId))
+      .limit(1);
+
+    if (!invoice) return { success: false, error: "Invoice not found." };
+
+    let phone = "";
+    let clientName = "Valued Client";
+    if (invoice.clientId) {
+      const [client] = await db
+        .select()
+        .from(schema.clients)
+        .where(eq(schema.clients.id, invoice.clientId))
+        .limit(1);
+      if (client) {
+        clientName = client.name || clientName;
+        try {
+          const parsed = JSON.parse(client.details || "{}");
+          phone = parsed.phone || parsed.contactPhone || "";
+        } catch {}
+      }
+    }
+
+    const msg = `Hello ${clientName}, reminder from ThePieCraft: Invoice #${invoice.invoiceNumber} for ₹${invoice.amount.toLocaleString()} is due on ${invoice.dueDate || "receipt"}. Please make payment promptly. Thank you!`;
+
+    const smsRes = await sendSmsWhatsAppNotification({
+      to: phone || "+15550000000",
+      message: msg,
+    });
+
+    if (invoice.clientId) {
+      const [clientUser] = await db
+        .select({ id: schema.users.id })
+        .from(schema.users)
+        .where(and(eq(schema.users.role, "client"), eq(schema.users.id, invoice.clientId)))
+        .limit(1);
+      if (clientUser) {
+        await createNotification(clientUser.id, "invoice_reminder", `Invoice #${invoice.invoiceNumber} Payment Reminder`, msg, `/client/invoices`);
+      }
+    }
+
+    return { success: true, provider: smsRes.provider };
+  } catch (error: any) {
+    console.error("sendInvoiceReminder error:", error);
+    return { success: false, error: error?.message || "Failed to send invoice reminder" };
   }
 }
