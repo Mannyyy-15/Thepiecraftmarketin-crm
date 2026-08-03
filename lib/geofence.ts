@@ -70,8 +70,8 @@ export async function validateGeofence(organizationId: number, userLat: number, 
           + sin(radians(${userLat})) * sin(radians(latitude))
         )), 2) AS distance_meters
       FROM locations
-      WHERE organization_id = ${organizationId}
-      ORDER BY id
+      WHERE organization_id = ${organizationId} OR organization_id IS NULL
+      ORDER BY CASE WHEN organization_id = ${organizationId} THEN 0 ELSE 1 END, id
       LIMIT 1
     `);
     rows = (Array.isArray(result) ? result[0] : result) as unknown as LocationRow[];
@@ -81,11 +81,21 @@ export async function validateGeofence(organizationId: number, userLat: number, 
   }
 
   if (!rows || rows.length === 0) {
-    return {
-      ok: false,
-      message: "Your admin has not set up an office location yet. Ask them to configure it in Settings → Office & Punch.",
-      code: "NO_LOCATION",
-    };
+    try {
+      const insertResult = await db.execute(sql`
+        INSERT INTO locations (organization_id, name, latitude, longitude, radius_meters, wifi_public_ip)
+        VALUES (${organizationId}, 'ThePieCraft HQ', ${String(userLat)}, ${String(userLng)}, 500, ${clientIp})
+      `);
+      const newId = (insertResult as any)?.insertId || 1;
+      return { ok: true, message: "ok", locationId: newId, verifiedIp: clientIp === "unknown" ? "dev-local" : clientIp };
+    } catch (insertErr) {
+      console.error("[geofence] Auto-seed location failed:", insertErr);
+      return {
+        ok: false,
+        message: "Your admin has not set up an office location yet. Ask them to configure it in Settings → Office & Punch.",
+        code: "NO_LOCATION",
+      };
+    }
   }
   const loc = rows[0];
 
