@@ -1,14 +1,14 @@
 export const androidRelease = {
-  versionCode: 6,
-  versionName: "1.4.0",
+  versionCode: 7,
+  versionName: "1.5.0",
   minimumVersionCode: 1,
   apkUrl: "https://crm.thepiecraftmarketing.com/api/mobile-apk",
-  sha256: "0000000000000000000000000000000000000000000000000000000000000006",
-  title: "PieCraft CRM v1.4.0 Update Available",
+  sha256: "0000000000000000000000000000000000000000000000000000000000000007",
+  title: "PieCraft CRM v1.5.0 Update Available",
   notes: [
-    "Redesigned animated app preloader with glowing PieCraft shield ring.",
-    "Instant auto-dismiss preloader upon data hydration.",
-    "Ultra-smooth page navigation & 0ms local storage caching.",
+    "Fixed in-app update detector for all mobile devices.",
+    "Added visible App Version badge in sidebar footers (v1.5.0 Build 7).",
+    "Redesigned animated 3D app preloader with instant auto-dismiss.",
   ],
 } as const;
 

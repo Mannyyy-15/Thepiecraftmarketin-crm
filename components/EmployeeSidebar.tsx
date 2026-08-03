@@ -166,6 +166,9 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
             <span className="text-xs text-slate-500 dark:text-slate-400 truncate">
               {user?.email || "employee@thepiecraft.com"}
             </span>
+            <span className="inline-block mt-1 text-[9px] font-extrabold text-brand-600 dark:text-brand-400 bg-brand-500/10 px-2 py-0.5 rounded-full w-fit uppercase tracking-wider">
+              v1.5.0 (Build 7)
+            </span>
           </div>
         </div>
         <button

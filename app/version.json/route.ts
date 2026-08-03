@@ -6,7 +6,12 @@ export const revalidate = 0;
 
 export async function GET() {
   return NextResponse.json(
-    { platform: "android", ...androidRelease },
+    {
+      latestVersion: androidRelease.versionName,
+      versionCode: androidRelease.versionCode,
+      apkUrl: androidRelease.apkUrl,
+      notes: androidRelease.notes,
+    },
     {
       headers: {
         "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
