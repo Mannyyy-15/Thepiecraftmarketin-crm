@@ -1,15 +1,14 @@
 export const androidRelease = {
-  versionCode: 9,
-  versionName: "1.5.2",
+  versionCode: 10,
+  versionName: "1.5.3",
   minimumVersionCode: 1,
-  apkUrl: "https://github.com/Mannyyy-15/Thepiecraftmarketin-crm/releases/download/android-v1.5.2/ThePieCraft-CRM-v1.5.2.apk",
-  sha256: "AB95FEC84030DEFB6A59E73CA023EDC183929CDCFC150A0D85AEC30E39C536CC",
-  title: "PieCraft CRM v1.5.2 Update Available",
+  apkUrl: "https://github.com/Mannyyy-15/Thepiecraftmarketin-crm/releases/download/android-v1.5.3/ThePieCraft-CRM-v1.5.3.apk",
+  sha256: "1E0DAD59104E0568E671D86AEFCA70C9F90D27E76866E496CEFBB39A5867909A",
+  title: "PieCraft CRM v1.5.3 Update Available",
   notes: [
+    "Employee and client pages now share the admin design language — same colors, spacing, borders, and page headers across the whole app.",
+    "Sidebars and top bars are unified on all three sides for a consistent look in dark mode.",
     "Updates now install directly inside the app — no browser, no manual APK download.",
-    "Attendance: admin-marked full-day presence shows completed shift hours, and counts toward weekly hours.",
-    "Attendance dates now use the organization timezone, so punches always land on the right day.",
-    "Update prompt now appears only in the native app, never on the website.",
   ],
 } as const;
 
