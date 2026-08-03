@@ -37,17 +37,17 @@ const STATUS_CONFIG: Record<string, { label: string; dot: string; pill: string }
 const PRIORITY_PILL: Record<string, string> = {
   high:   "bg-rose-100 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 border-rose-300 dark:border-rose-800",
   medium: "bg-amber-100 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 border-amber-300 dark:border-amber-800",
-  low:    "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700",
+  low:    "bg-slate-100 dark:bg-[#303030] text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700",
 };
 
 const TASK_PRIORITY_PILL: Record<string, string> = {
   high:   "bg-rose-50 text-rose-500 border-rose-200 dark:bg-rose-950/20 dark:border-rose-800/40",
   medium: "bg-amber-50 text-amber-500 border-amber-200 dark:bg-amber-950/20 dark:border-amber-800/40",
-  low:    "bg-slate-50 text-slate-400 border-slate-200 dark:bg-slate-800/40 dark:border-slate-700",
+  low:    "bg-slate-50 text-slate-400 border-slate-200 dark:bg-[#303030]/40 dark:border-slate-700",
 };
 
 const INV_STATUS: Record<string, { label: string; pill: string }> = {
-  draft:   { label: "Draft",   pill: "bg-slate-100 dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700" },
+  draft:   { label: "Draft",   pill: "bg-slate-100 dark:bg-[#303030] text-slate-500 border-slate-200 dark:border-slate-700" },
   sent:    { label: "Sent",    pill: "bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 border-blue-500/20" },
   paid:    { label: "Paid",    pill: "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 border-emerald-500/20" },
   overdue: { label: "Overdue", pill: "bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 border-rose-500/20" },
@@ -56,13 +56,13 @@ const INV_STATUS: Record<string, { label: string; pill: string }> = {
 const PROJ_TYPE_ICON: Record<string, React.ElementType> = { meta_ads: Megaphone, web_dev: Code2, other: Zap };
 const PROJ_TYPE_LABEL: Record<string, string> = { meta_ads: "Meta Ads", web_dev: "Web Development", other: "Other" };
 
-const INPUT  = "h-11 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white placeholder:text-slate-400 transition-all";
-const SELECT = "h-11 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white cursor-pointer transition-all";
+const INPUT  = "h-11 w-full rounded-xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white placeholder:text-slate-400 transition-all";
+const SELECT = "h-11 w-full rounded-xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white cursor-pointer transition-all";
 const LABEL  = "block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5";
 
 function BentoCard({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={cn("rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-950 p-5", className)}>
+    <div className={cn("rounded-2xl border border-slate-200/80 dark:border-[#303030]/80 bg-white dark:bg-[#1f1f1f] p-5", className)}>
       {children}
     </div>
   );
@@ -72,7 +72,7 @@ function SectionTitle({ icon: Icon, label, action }: { icon: React.ElementType; 
   return (
     <div className="flex items-center justify-between gap-3 mb-4">
       <div className="flex items-center gap-2">
-        <div className="h-6 w-6 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
+        <div className="h-6 w-6 rounded-lg bg-slate-100 dark:bg-[#303030] flex items-center justify-center shrink-0">
           <Icon className="h-3 w-3 text-slate-500" />
         </div>
         <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{label}</span>
@@ -364,7 +364,7 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
 
         {/* ── Header card (full width) ─────────────────────────────────────── */}
-        <BentoCard className="lg:col-span-12 bg-slate-50 dark:bg-slate-900/40">
+        <BentoCard className="lg:col-span-12 bg-slate-50 dark:bg-[#303030]/40">
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div className="flex items-start gap-4">
               <div className="h-14 w-14 rounded-2xl bg-brand-500 flex items-center justify-center shrink-0 shadow-sm">
@@ -399,7 +399,7 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
           </div>
 
           {/* Info strip */}
-          <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center gap-6">
+          <div className="mt-4 pt-4 border-t border-slate-100 dark:border-[#303030] flex flex-wrap items-center gap-6">
             {project.lead && (
               <div className="flex items-center gap-2">
                 <Avatar name={project.lead.name} size="xs" />
@@ -443,7 +443,7 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
 
           {/* Lead highlight */}
           {project.lead ? (
-            <div className="mb-4 flex items-center gap-3 px-3.5 py-3 rounded-xl bg-slate-50 border border-slate-200 dark:bg-slate-900/40 dark:border-slate-800">
+            <div className="mb-4 flex items-center gap-3 px-3.5 py-3 rounded-xl bg-slate-50 border border-slate-200 dark:bg-[#303030]/40 dark:border-[#303030]">
               <div className="relative shrink-0">
                 <Avatar name={project.lead.name} size="sm" />
                 <div className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-amber-400 flex items-center justify-center shadow-sm">
@@ -457,8 +457,8 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
               <span className="text-[8px] font-bold text-amber-600 bg-amber-50 dark:bg-amber-950/20 px-2 py-0.5 rounded-full border border-amber-200 dark:border-amber-800/40 shrink-0">LEAD</span>
             </div>
           ) : (
-            <div className="mb-4 flex items-center gap-3 px-3.5 py-3 rounded-xl border border-dashed border-slate-200 dark:border-slate-800">
-              <div className="h-8 w-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
+            <div className="mb-4 flex items-center gap-3 px-3.5 py-3 rounded-xl border border-dashed border-slate-200 dark:border-[#303030]">
+              <div className="h-8 w-8 rounded-lg bg-slate-100 dark:bg-[#303030] flex items-center justify-center shrink-0">
                 <Crown className="h-3.5 w-3.5 text-slate-400" />
               </div>
               <p className="text-xs text-slate-400">No project lead assigned</p>
@@ -479,7 +479,7 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
                   ? Math.round(member.workload.done / member.workload.total * 100) : 0;
                 return (
                   <div key={member.id}
-                    className="group flex items-center gap-3 px-3 py-2.5 rounded-xl border border-slate-100 dark:border-slate-800/60 hover:border-slate-200 dark:hover:border-slate-700 bg-white dark:bg-slate-950 transition-all">
+                    className="group flex items-center gap-3 px-3 py-2.5 rounded-xl border border-slate-100 dark:border-[#303030]/60 hover:border-slate-200 dark:hover:border-slate-700 bg-white dark:bg-[#1f1f1f] transition-all">
                     <Avatar name={member.name} size="xs" className="shrink-0" />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5 mb-0.5">
@@ -492,7 +492,7 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
                             <span className="text-[9px] text-slate-400">{member.workload.done}/{member.workload.total} tasks</span>
                             <span className="text-[9px] font-bold text-brand-600 dark:text-brand-400">{pct}%</span>
                           </div>
-                          <div className="h-1 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                          <div className="h-1 w-full bg-slate-100 dark:bg-[#303030] rounded-full overflow-hidden">
                             <div className="h-full bg-brand-500 rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
                           </div>
                         </>
@@ -518,7 +518,7 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
                 <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Overall progress</span>
                 <span className="text-xs font-extrabold text-brand-600 dark:text-brand-400">{tasksPct}%</span>
               </div>
-              <div className="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+              <div className="h-2 bg-slate-100 dark:bg-[#303030] rounded-full overflow-hidden">
                 <div className="h-full bg-brand-500 rounded-full transition-all duration-500" style={{ width: `${tasksPct}%` }} />
               </div>
             </div>
@@ -583,7 +583,7 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
         {/* ── Project Details ──────────────────────────────────────────────── */}
         <BentoCard className="lg:col-span-4">
           <SectionTitle icon={SlidersHorizontal} label="Project Details" />
-          <div className="divide-y divide-slate-100 dark:divide-slate-800/60">
+          <div className="divide-y divide-slate-100 dark:divide-[#303030]/60">
             {[
               { label: "Billing Model",       value: project.billingModel?.replace(/_/g, " ") },
               { label: "Contract Duration",   value: project.contractDuration ? `${project.contractDuration} months` : null },
@@ -598,7 +598,7 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
           </div>
 
           {Object.keys(sd).length > 0 && (
-            <div className="pt-3 mt-1 border-t border-slate-100 dark:border-slate-800">
+            <div className="pt-3 mt-1 border-t border-slate-100 dark:border-[#303030]">
               <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-3">
                 {project.projectType === "meta_ads" ? "Ads Setup" : "Dev Stack"}
               </p>
@@ -614,7 +614,7 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
           )}
 
           {(project.contractLink || (project.projectType === "web_dev" && sd.oldWebsiteUrl)) && (
-            <div className="pt-3 mt-1 border-t border-slate-100 dark:border-slate-800 space-y-2">
+            <div className="pt-3 mt-1 border-t border-slate-100 dark:border-[#303030] space-y-2">
               {project.contractLink && (
                 <a href={project.contractLink} target="_blank" rel="noreferrer"
                   className="flex items-center gap-2 text-xs font-bold text-brand-600 dark:text-brand-400 hover:underline">
@@ -637,7 +637,7 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
           <SectionTitle icon={Users} label="Client Contact" />
           <div className="space-y-4">
             {project.client && (
-              <div className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/30 border border-slate-200/80 dark:border-slate-800/80 text-left">
+              <div className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-[#303030]/30 border border-slate-200/80 dark:border-[#303030]/80 text-left">
                 <div className="h-9 w-9 rounded-xl bg-brand-500 flex items-center justify-center text-xs font-extrabold text-white shrink-0">
                   {(project.clientName || "?").substring(0, 2).toUpperCase()}
                 </div>
@@ -674,16 +674,16 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
       {editOpen && (
         <>
           <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40" onClick={() => setEditOpen(false)} />
-          <div className="fixed right-0 top-0 h-full w-full max-w-[540px] bg-white dark:bg-slate-950 z-50 shadow-2xl flex flex-col">
+          <div className="fixed right-0 top-0 h-full w-full max-w-[540px] bg-white dark:bg-[#1f1f1f] z-50 shadow-2xl flex flex-col">
 
-            <div className="shrink-0 px-6 pt-5 pb-4 border-b border-slate-200 dark:border-slate-800">
+            <div className="shrink-0 px-6 pt-5 pb-4 border-b border-slate-200 dark:border-[#303030]">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Edit Project</p>
                   <h2 className="text-base font-bold text-slate-900 dark:text-white mt-0.5 truncate max-w-[360px]">{project.name}</h2>
                 </div>
                 <button onClick={() => setEditOpen(false)}
-                  className="h-8 w-8 rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer shrink-0">
+                  className="h-8 w-8 rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#303030] transition-all cursor-pointer shrink-0">
                   <X className="h-4 w-4" />
                 </button>
               </div>
@@ -694,7 +694,7 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
 
                 {/* Core */}
                 <section>
-                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-3 pb-1 border-b border-slate-100 dark:border-slate-800">Core Info</p>
+                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-3 pb-1 border-b border-slate-100 dark:border-[#303030]">Core Info</p>
                   <div className="space-y-3">
                     <div>
                       <label className={LABEL}>Project Name *</label>
@@ -730,7 +730,7 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
 
                 {/* Timeline */}
                 <section>
-                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-3 pb-1 border-b border-slate-100 dark:border-slate-800">Timeline</p>
+                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-3 pb-1 border-b border-slate-100 dark:border-[#303030]">Timeline</p>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className={LABEL}>Start Date</label>
@@ -745,7 +745,7 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
 
                 {/* Financials */}
                 <section>
-                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-3 pb-1 border-b border-slate-100 dark:border-slate-800">Financials</p>
+                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-3 pb-1 border-b border-slate-100 dark:border-[#303030]">Financials</p>
                   <div className="space-y-3">
                     <div>
                       <label className={LABEL}>Billing Model</label>
@@ -781,7 +781,7 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
 
                 {/* Client contact */}
                 <section>
-                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-3 pb-1 border-b border-slate-100 dark:border-slate-800">Client Contact</p>
+                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-3 pb-1 border-b border-slate-100 dark:border-[#303030]">Client Contact</p>
                   <div className="space-y-3">
                     <div>
                       <label className={LABEL}>Contact Name</label>
@@ -800,7 +800,7 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
 
               </div>
 
-              <div className="shrink-0 px-6 py-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-900/20 flex items-center justify-end gap-3">
+              <div className="shrink-0 px-6 py-4 border-t border-slate-200 dark:border-[#303030] bg-slate-50/40 dark:bg-[#303030]/20 flex items-center justify-end gap-3">
                 <Button type="button" variant="outline" size="sm" onClick={() => setEditOpen(false)}>Cancel</Button>
                 <Button type="submit" size="sm" disabled={editSaving}
                   className="bg-brand-600 text-white font-bold min-w-[130px] justify-center">

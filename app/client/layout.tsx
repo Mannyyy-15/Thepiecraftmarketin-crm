@@ -42,7 +42,7 @@ export default function PortalLayout({
 
         {/* Floating Mobile Bottom Navigation */}
         <div className="mobile-nav-safe lg:hidden fixed left-4 right-4 z-40 select-none">
-          <nav aria-label="Primary navigation" className="bg-white/95 dark:bg-slate-950/95 backdrop-blur-2xl border border-slate-200/70 dark:border-slate-800/70 rounded-[26px] shadow-[0_8px_40px_rgba(0,0,0,0.14)] dark:shadow-[0_8px_40px_rgba(0,0,0,0.45)]">
+          <nav aria-label="Primary navigation" className="bg-white/95 dark:bg-[#1f1f1f]/95 backdrop-blur-2xl border border-slate-200/70 dark:border-[#303030]/70 rounded-[26px] shadow-[0_8px_40px_rgba(0,0,0,0.14)] dark:shadow-[0_8px_40px_rgba(0,0,0,0.45)]">
             <div className="flex items-center justify-around h-16 px-2">
               {mainNavTabs.map((tab) => {
                 const isActive = tab.exact ? pathname === tab.href : pathname.startsWith(tab.href);

@@ -64,8 +64,8 @@ export function Toast({ id, message, type = "info", duration = 4000, onClose }: 
       transition={{ type: "spring", damping: 22, stiffness: 300 }}
       className={cn(
         "pointer-events-auto relative w-full max-w-sm overflow-hidden rounded-2xl",
-        "border border-l-[3px] border-slate-200 dark:border-slate-700/60",
-        "bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl",
+        "border border-l-[3px] border-slate-200 dark:border-[#303030]/60",
+        "bg-white/95 dark:bg-[#303030]/95 backdrop-blur-xl",
         "shadow-xl shadow-slate-900/10 dark:shadow-black/40",
         cfg.border
       )}
@@ -86,14 +86,14 @@ export function Toast({ id, message, type = "info", duration = 4000, onClose }: 
 
         <button
           onClick={() => onClose(id)}
-          className="shrink-0 rounded-lg p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-100 active:scale-90 cursor-pointer"
+          className="shrink-0 rounded-lg p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#303030] transition-all duration-100 active:scale-90 cursor-pointer"
         >
           <X className="w-4 h-4" />
         </button>
       </div>
 
       {duration > 0 && (
-        <div className="h-[2px] bg-slate-100 dark:bg-slate-800">
+        <div className="h-[2px] bg-slate-100 dark:bg-[#303030]">
           <div
             className={cn("h-full rounded-full", cfg.barClass)}
             style={{ width: `${progress}%`, transition: "width 40ms linear" }}

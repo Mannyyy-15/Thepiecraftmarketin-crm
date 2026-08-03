@@ -58,8 +58,8 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
   };
 
   return (
-    <div className="flex h-full w-full flex-col bg-white dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800/80 lg:rounded-2xl shadow-soft overflow-hidden">
-      <div className="flex h-16 shrink-0 items-center px-5 border-b border-slate-200 dark:border-slate-800">
+    <div className="flex h-full w-full flex-col bg-white dark:bg-[#1f1f1f] lg:rounded-[20px] dark:border dark:border-[#303030] shadow-[0_2px_16px_rgba(0,0,0,0.07)] dark:shadow-none overflow-hidden">
+      <div className="flex h-16 shrink-0 items-center px-5 border-b border-slate-200 dark:border-[#303030]">
         <Link href="/client" className="flex items-center gap-2.5" onClick={onNavigate}>
           <div className="relative w-9 h-9 rounded-xl bg-portal-hero flex items-center justify-center shadow-sm">
             <span className="text-white font-bold text-lg">P</span>
@@ -95,7 +95,7 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
                     "group relative flex min-h-11 items-center gap-x-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all cursor-pointer",
                     isActive
                       ? "bg-portal-50 dark:bg-portal-500/10 text-portal-700 dark:text-portal-300"
-                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-900"
+                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-[#303030]"
                   )}
                 >
                   {isActive && (
@@ -117,7 +117,7 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
         </ul>
 
         <div className="mt-auto mx-1 pt-6">
-          <div className="relative overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 p-4">
+          <div className="relative overflow-hidden rounded-2xl border border-slate-200 dark:border-[#303030] bg-slate-50 dark:bg-[#303030] p-4">
             <LifeBuoy className="h-5 w-5 text-portal-600 dark:text-portal-400 mb-2" />
             <p className="text-sm font-semibold text-slate-900 dark:text-white">
               Need a hand?
@@ -132,7 +132,7 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
         </div>
       </nav>
 
-      <div className="border-t border-slate-200 dark:border-slate-800 p-3 flex items-center justify-between gap-2">
+      <div className="border-t border-slate-200 dark:border-[#303030] p-3 flex items-center justify-between gap-2">
         <div className="flex flex-1 items-center gap-3 rounded-xl p-2 min-w-0">
           <Avatar name={user?.name || "Client"} src={user?.avatarUrl || undefined} size="sm" />
           <div className="flex flex-col min-w-0">
@@ -196,7 +196,7 @@ export default function ClientSidebar({
             >
               <button
                 onClick={onClose}
-                className="icon-button absolute top-4 right-4 z-10 text-slate-500 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                className="icon-button absolute top-4 right-4 z-10 text-slate-500 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#303030] cursor-pointer"
                 aria-label="Close menu"
               >
                 <X className="h-5 w-5" />

@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Avatar } from "@/components/ui/Avatar";
 import { getDocuments } from "@/app/actions/crm";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 const iconForType: Record<string, JSX.Element> = {
   PDF: <FileText className="h-4 w-4" />,
@@ -115,6 +116,7 @@ export default function DocumentsPage() {
 
   return (
     <div className="space-y-6">
+      <PageHeader eyebrow="Library" title="Documents" description="Shared files and folders from the team." />
       <div>
         <h2 className="text-sm font-semibold text-slate-900 dark:text-white mb-3">Folders</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -131,7 +133,7 @@ export default function DocumentsPage() {
       </div>
 
       <Card className="overflow-hidden">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 sm:p-5 border-b border-slate-200 dark:border-slate-800">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 sm:p-5 border-b border-slate-200 dark:border-[#303030]">
           <h2 className="text-base font-semibold text-slate-900 dark:text-white">Recent files</h2>
           <div className="relative max-w-sm sm:w-72">
             <Search className="pointer-events-none absolute inset-y-0 left-3 h-full w-4 text-slate-400" />
@@ -140,13 +142,13 @@ export default function DocumentsPage() {
               placeholder="Search files…"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-9 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 pl-9 pr-3 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 text-slate-800 dark:text-white"
+              className="h-9 w-full rounded-xl border border-slate-200 dark:border-[#303030] bg-slate-50 dark:bg-[#303030] pl-9 pr-3 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 text-slate-800 dark:text-white"
             />
           </div>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 bg-slate-50/60 dark:bg-slate-900/40">
+            <thead className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 bg-slate-50/60 dark:bg-[#303030]/40">
               <tr>
                 <th className="px-5 py-3 text-left font-semibold">Name</th>
                 <th className="px-5 py-3 text-left font-semibold hidden md:table-cell">Client</th>
@@ -156,12 +158,12 @@ export default function DocumentsPage() {
                 <th className="px-5 py-3" />
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+            <tbody className="divide-y divide-slate-100 dark:divide-[#303030]">
               {filteredFiles.map((d) => (
-                <tr key={d.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-900/40 cursor-pointer">
+                <tr key={d.id} className="hover:bg-slate-50/60 dark:hover:bg-[#303030]/40 cursor-pointer">
                   <td className="px-5 py-3.5">
                     <div className="flex items-center gap-3">
-                      <div className={`h-9 w-9 rounded-xl flex items-center justify-center shrink-0 ${typeColor[d.type] ?? "bg-slate-100 dark:bg-slate-800 text-slate-500"}`}>
+                      <div className={`h-9 w-9 rounded-xl flex items-center justify-center shrink-0 ${typeColor[d.type] ?? "bg-slate-100 dark:bg-[#303030] text-slate-500"}`}>
                         {iconForType[d.type] ?? <File className="h-4 w-4" />}
                       </div>
                       {d.url ? (
@@ -188,7 +190,7 @@ export default function DocumentsPage() {
                     <button 
                       onClick={() => d.url && window.open(d.url, "_blank")}
                       aria-label="More" 
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#303030] cursor-pointer"
                     >
                       <MoreHorizontal className="h-4 w-4" />
                     </button>

@@ -23,6 +23,7 @@ import { Progress } from "@/components/ui/Progress";
 import KpiCard from "@/components/KpiCard";
 import { getClientStatusVariant, getClientStatusLabel } from "@/lib/statusHelpers";
 import { getMyClients, getFreshUserProfile } from "@/app/actions/crm";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 // Deterministic avatar gradient + initials derived from the client name, so
 // real clients (which don't carry logoBg/initials) still render nicely.
@@ -101,6 +102,7 @@ export default function EmployeeClientsPage() {
 
   return (
     <div className="space-y-6">
+      <PageHeader eyebrow="Portfolio" title="My Clients" description="The accounts you manage and their health." />
       {/* KPI Cards — your managed client portfolio */}
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
         <KpiCard
@@ -147,7 +149,7 @@ export default function EmployeeClientsPage() {
       {/* Composition Modal */}
       {composeEmailTo && (
         <Card className="border-brand-500/40 animate-slideDown">
-          <div className="p-5 sm:p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+          <div className="p-5 sm:p-6 border-b border-slate-200 dark:border-[#303030] flex justify-between items-center">
             <div>
               <h3 className="text-base font-semibold text-slate-900 dark:text-white">Compose Client Outreach</h3>
               <p className="text-xs text-slate-500">Sending strategic email update to {composeEmailTo} account stakeholders.</p>
@@ -165,7 +167,7 @@ export default function EmployeeClientsPage() {
                   required
                   value={emailSubject}
                   onChange={(e) => setEmailSubject(e.target.value)}
-                  className="w-full h-10 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white"
+                  className="w-full h-10 rounded-xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] px-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white"
                 />
               </div>
               <div>
@@ -177,7 +179,7 @@ export default function EmployeeClientsPage() {
                   rows={6}
                   value={emailBody}
                   onChange={(e) => setEmailBody(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-3 text-xs leading-relaxed text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-500/40 font-medium"
+                  className="w-full rounded-xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] p-3 text-xs leading-relaxed text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-500/40 font-medium"
                 />
               </div>
               <div className="flex justify-end gap-2">
@@ -195,7 +197,7 @@ export default function EmployeeClientsPage() {
 
       {/* Main clients grid */}
       <Card>
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 sm:p-5 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/10">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 sm:p-5 border-b border-slate-200 dark:border-[#303030] bg-slate-50/50 dark:bg-[#303030]/10">
           
           {/* Live Search */}
           <div className="relative flex-1 max-w-md">
@@ -205,13 +207,13 @@ export default function EmployeeClientsPage() {
               placeholder="Search by name or industry…"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-10 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 pl-9 pr-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500"
+              className="h-10 w-full rounded-xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] pl-9 pr-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500"
             />
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
             {/* Interactive Toggle Switch */}
-            <label className="flex items-center gap-2 cursor-pointer select-none text-xs font-semibold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800/80 px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-900 transition-all">
+            <label className="flex items-center gap-2 cursor-pointer select-none text-xs font-semibold text-slate-600 dark:text-slate-300 bg-white dark:bg-[#1f1f1f] border border-slate-200 dark:border-[#303030]/80 px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-[#303030] transition-all">
               <input
                 type="checkbox"
                 checked={onlyMyAccounts}
@@ -233,7 +235,7 @@ export default function EmployeeClientsPage() {
         {/* Clients Table */}
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 bg-slate-50/60 dark:bg-slate-900/40">
+            <thead className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 bg-slate-50/60 dark:bg-[#303030]/40">
               <tr>
                 <th className="px-5 py-3 text-left font-semibold">Client Name</th>
                 <th className="px-5 py-3 text-left font-semibold hidden md:table-cell">Industry</th>
@@ -244,7 +246,7 @@ export default function EmployeeClientsPage() {
                 <th className="px-5 py-3 text-right font-semibold">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+            <tbody className="divide-y divide-slate-100 dark:divide-[#303030]">
               {loading ? (
                 <tr>
                   <td colSpan={7} className="px-5 py-16 text-center text-slate-400">
@@ -268,7 +270,7 @@ export default function EmployeeClientsPage() {
                   const phone = contact.phone || contact.contactPhone || "";
                   const email = contact.email || contact.contactEmail || "";
                   return (
-                  <tr key={c.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors duration-150">
+                  <tr key={c.id} className="hover:bg-slate-50 dark:hover:bg-[#303030]/50 transition-colors duration-150">
                     <td className="px-5 py-3.5">
                       <div className="flex items-center gap-3">
                         <div className={`h-9 w-9 rounded-xl bg-gradient-to-br ${vis.logoBg} text-white text-xs font-bold flex items-center justify-center shrink-0`}>
@@ -306,7 +308,7 @@ export default function EmployeeClientsPage() {
                         <button
                           onClick={() => handleComposeEmail(c.name)}
                           aria-label="Email stakeholders"
-                          className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition-colors"
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-slate-100 dark:hover:bg-[#303030] cursor-pointer transition-colors"
                         >
                           <Mail className="h-4 w-4" />
                         </button>
@@ -314,7 +316,7 @@ export default function EmployeeClientsPage() {
                           <a
                             href={`tel:${phone}`}
                             aria-label={`Call ${c.name}`}
-                            className="hidden sm:inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition-colors"
+                            className="hidden sm:inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-slate-100 dark:hover:bg-[#303030] cursor-pointer transition-colors"
                           >
                             <Phone className="h-4 w-4" />
                           </a>
@@ -322,7 +324,7 @@ export default function EmployeeClientsPage() {
                           <button
                             onClick={() => toast("No phone number on file for this client.", "info")}
                             aria-label="No phone on file"
-                            className="hidden sm:inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-300 dark:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition-colors"
+                            className="hidden sm:inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-300 dark:text-slate-600 hover:bg-slate-100 dark:hover:bg-[#303030] cursor-pointer transition-colors"
                           >
                             <Phone className="h-4 w-4" />
                           </button>
@@ -337,7 +339,7 @@ export default function EmployeeClientsPage() {
           </table>
         </div>
 
-        <div className="flex items-center justify-between px-5 py-3 border-t border-slate-200 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400 font-medium">
+        <div className="flex items-center justify-between px-5 py-3 border-t border-slate-200 dark:border-[#303030] text-xs text-slate-500 dark:text-slate-400 font-medium">
           <span>Showing 1–{filteredClients.length} of {filteredClients.length} clients</span>
           <div className="flex items-center gap-1">
             <Button variant="outline" size="sm" disabled>Previous</Button>

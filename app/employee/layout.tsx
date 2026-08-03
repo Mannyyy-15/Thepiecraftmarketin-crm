@@ -99,7 +99,7 @@ export default function DashboardLayout({
 
         {/* ── FLOATING Mobile Bottom Navigation Bar ── */}
         <div className="mobile-nav-safe lg:hidden fixed left-4 right-4 z-40 select-none">
-          <nav aria-label="Primary navigation" className="bg-white/95 dark:bg-slate-950/95 backdrop-blur-2xl border border-slate-200/70 dark:border-slate-800/70 rounded-[26px] shadow-[0_8px_40px_rgba(0,0,0,0.14)] dark:shadow-[0_8px_40px_rgba(0,0,0,0.45)]">
+          <nav aria-label="Primary navigation" className="bg-white/95 dark:bg-[#1f1f1f]/95 backdrop-blur-2xl border border-slate-200/70 dark:border-[#303030]/70 rounded-[26px] shadow-[0_8px_40px_rgba(0,0,0,0.14)] dark:shadow-[0_8px_40px_rgba(0,0,0,0.45)]">
             <div className="flex items-center justify-around h-16 px-2">
               
               {/* Main 4 Tabs */}
@@ -237,13 +237,13 @@ export default function DashboardLayout({
                 animate={{ y: 0 }}
                 exit={{ y: "100%" }}
                 transition={{ type: "spring", damping: 30, stiffness: 280 }}
-                className="relative bg-white dark:bg-slate-950 border-t border-slate-200/80 dark:border-slate-800/80 rounded-t-[32px] shadow-[0_-20px_60px_rgba(0,0,0,0.12)] dark:shadow-[0_-20px_60px_rgba(0,0,0,0.4)] pb-10 z-10 select-none"
+                className="relative bg-white dark:bg-[#1f1f1f] border-t border-slate-200/80 dark:border-[#303030]/80 rounded-t-[32px] shadow-[0_-20px_60px_rgba(0,0,0,0.12)] dark:shadow-[0_-20px_60px_rgba(0,0,0,0.4)] pb-10 z-10 select-none"
               >
                 {/* Gradient accent line */}
                 <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-brand-500/40 to-transparent" />
 
                 {/* Drag handle */}
-                <div className="w-10 h-1 bg-slate-200 dark:bg-slate-800 rounded-full mx-auto mt-3 mb-5" />
+                <div className="w-10 h-1 bg-slate-200 dark:bg-[#303030] rounded-full mx-auto mt-3 mb-5" />
 
                 {/* Header */}
                 <div className="flex justify-between items-center px-5 pb-4 border-b border-slate-100 dark:border-slate-900/80">
@@ -253,7 +253,7 @@ export default function DashboardLayout({
                   </div>
                   <button
                     onClick={() => setShowOthersDrawer(false)}
-                    className="h-9 w-9 rounded-2xl flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-900 cursor-pointer transition-all"
+                    className="h-9 w-9 rounded-2xl flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-[#303030] cursor-pointer transition-all"
                   >
                     <X className="h-4 w-4" />
                   </button>
@@ -271,13 +271,13 @@ export default function DashboardLayout({
                         className={`flex items-center gap-3 p-4 rounded-2xl border transition-all duration-200 cursor-pointer ${
                           isActive
                             ? "bg-brand-50 dark:bg-brand-950/30 border-brand-500/40"
-                            : "bg-slate-50/80 dark:bg-slate-900/50 border-slate-200/60 dark:border-slate-800/60 hover:border-brand-500/25 active:scale-[0.98]"
+                            : "bg-slate-50/80 dark:bg-[#303030]/50 border-slate-200/60 dark:border-[#303030]/60 hover:border-brand-500/25 active:scale-[0.98]"
                         }`}
                       >
                         <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${
                           isActive
                             ? "bg-brand-500/10"
-                            : "bg-white dark:bg-slate-800 shadow-sm"
+                            : "bg-white dark:bg-[#303030] shadow-sm"
                         }`}>
                           <opt.icon className={`h-4.5 w-4.5 ${isActive ? "text-brand-600 dark:text-brand-400" : "text-slate-500 dark:text-slate-400"}`} />
                         </div>

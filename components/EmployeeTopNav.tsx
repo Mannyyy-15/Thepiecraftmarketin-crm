@@ -184,9 +184,9 @@ export default function EmployeeTopNav() {
 
   return (
     <>
-      <header className="z-30 mx-3 mt-3 sm:mx-4 sm:mt-4 lg:mx-6 lg:mt-5 flex h-14 sm:h-16 shrink-0 items-center gap-3 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-950/90 backdrop-blur-xl shadow-soft px-3 sm:px-4">
+      <header className="z-30 mx-3 mt-3 sm:mx-4 sm:mt-4 lg:mx-6 lg:mt-5 flex h-14 sm:h-16 shrink-0 items-center gap-3 rounded-[20px] bg-white/90 dark:bg-[#1f1f1f]/95 backdrop-blur-xl px-4 sm:px-5 shadow-[0_2px_12px_rgba(0,0,0,0.07)] dark:shadow-none dark:border dark:border-[#303030]">
         
-        {/* ── LEFT: Mobile Profile Avatar (replaces hamburger) ── */}
+        {/* â”€â”€ LEFT: Mobile Profile Avatar (replaces hamburger) â”€â”€ */}
         <div className="lg:hidden relative" ref={profileMenuRef}>
           <button
             type="button"
@@ -202,9 +202,9 @@ export default function EmployeeTopNav() {
 
           {/* Profile Dropdown */}
           {showProfileMenu && (
-            <div className="absolute left-0 mt-2.5 w-60 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl z-50 overflow-hidden animate-fadeIn">
+            <div className="absolute left-0 mt-2.5 w-60 rounded-2xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#303030] shadow-xl z-50 overflow-hidden animate-fadeIn">
               {/* User info header */}
-              <div className="px-4 py-3.5 border-b border-slate-100 dark:border-slate-800/80 flex items-center gap-3">
+              <div className="px-4 py-3.5 border-b border-slate-100 dark:border-[#303030]/80 flex items-center gap-3">
                 <Avatar name={user?.name || "User"} src={user?.avatarUrl || undefined} status="online" size="md" />
                 <div className="min-w-0">
                   <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{user?.name || "Team Member"}</p>
@@ -213,10 +213,10 @@ export default function EmployeeTopNav() {
               </div>
 
               {/* Status chip */}
-              <div className="px-4 py-2.5 border-b border-slate-100 dark:border-slate-800/80">
+              <div className="px-4 py-2.5 border-b border-slate-100 dark:border-[#303030]/80">
                 <div className="flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-400">
                   <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                  Active — Shift in progress
+                  Active â€” Shift in progress
                 </div>
               </div>
 
@@ -240,7 +240,7 @@ export default function EmployeeTopNav() {
           )}
         </div>
 
-        {/* ── CENTER: Page breadcrumb (desktop) / Page title (mobile) ── */}
+        {/* â”€â”€ CENTER: Page breadcrumb (desktop) / Page title (mobile) â”€â”€ */}
         <div className="flex items-center gap-2 text-sm flex-1 min-w-0">
           {/* Desktop breadcrumb */}
           <div className="hidden lg:flex items-center gap-2">
@@ -252,33 +252,33 @@ export default function EmployeeTopNav() {
           <span className="lg:hidden text-sm font-extrabold text-slate-900 dark:text-white truncate">{title}</span>
         </div>
 
-        {/* ── RIGHT: Action buttons ── */}
+        {/* â”€â”€ RIGHT: Action buttons â”€â”€ */}
         <div className="flex items-center gap-1.5 sm:gap-2">
           
-          {/* Search — desktop only bar, mobile icon */}
+          {/* Search â€” desktop only bar, mobile icon */}
           <div
             onClick={() => setShowSearchModal(true)}
             className="relative hidden sm:block w-56 md:w-72 cursor-pointer group"
           >
             <Search className="pointer-events-none absolute inset-y-0 left-3 h-full w-4 text-slate-400 group-hover:text-brand-500 transition-colors" />
-            <div className="h-9 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 pl-9 pr-12 text-sm text-slate-400 dark:text-slate-500 flex items-center select-none">
-              Search…
+            <div className="h-9 w-full rounded-xl border border-slate-200 dark:border-[#303030] bg-slate-50 dark:bg-[#303030] pl-9 pr-12 text-sm text-slate-400 dark:text-slate-500 flex items-center select-none">
+              Searchâ€¦
             </div>
-            <kbd className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center gap-0.5 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-1.5 py-0.5 text-[10px] font-medium text-slate-500 dark:text-slate-400">
+            <kbd className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center gap-0.5 rounded-md border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#303030] px-1.5 py-0.5 text-[10px] font-medium text-slate-500 dark:text-slate-400">
               <Command className="h-2.5 w-2.5" />K
             </kbd>
           </div>
 
-          {/* Mobile Messages link — replaces search icon */}
+          {/* Mobile Messages link â€” replaces search icon */}
           <Link
             href="/employee/messages"
-            className="sm:hidden inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 transition-all cursor-pointer hover:bg-slate-50 active:scale-95"
+            className="sm:hidden inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#303030] text-slate-600 dark:text-slate-300 transition-all cursor-pointer hover:bg-slate-50 active:scale-95"
             aria-label="Messages"
           >
             <MessageSquareText className="h-4 w-4" />
           </Link>
 
-          {/* Dark mode toggle — desktop only */}
+          {/* Dark mode toggle â€” desktop only */}
           {/* Notifications bell */}
           <div className="relative">
             <button
@@ -289,8 +289,8 @@ export default function EmployeeTopNav() {
               }}
               className={`relative inline-flex h-9 w-9 items-center justify-center rounded-xl border transition-all cursor-pointer ${
                 showNotifications
-                  ? "bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-brand-600"
-                  : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-50 active:scale-95"
+                  ? "bg-slate-100 dark:bg-[#303030] border-slate-300 dark:border-[#303030] text-brand-600"
+                  : "border-slate-200 dark:border-[#303030] bg-white dark:bg-[#303030] text-slate-600 dark:text-slate-300 hover:bg-slate-50 active:scale-95"
               }`}
               aria-label="Notifications"
             >
@@ -333,18 +333,18 @@ export default function EmployeeTopNav() {
           onClick={() => setShowSearchModal(false)}
         >
           <div
-            className="w-full max-w-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl overflow-hidden animate-scaleIn"
+            className="w-full max-w-lg bg-white dark:bg-[#303030] border border-slate-200 dark:border-[#303030] rounded-2xl shadow-2xl overflow-hidden animate-scaleIn"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="relative p-4 border-b border-slate-100 dark:border-slate-800/80">
+            <div className="relative p-4 border-b border-slate-100 dark:border-[#303030]/80">
               <Search className="absolute left-7 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none" />
               <input
                 type="search"
                 autoFocus
-                placeholder="Search pages, projects, clients…"
+                placeholder="Search pages, projects, clientsâ€¦"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-11 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl pl-11 pr-10 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500/40"
+                className="w-full h-11 bg-slate-50 dark:bg-[#1f1f1f] border border-slate-200 dark:border-[#303030] rounded-xl pl-11 pr-10 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500/40"
               />
               <button
                 onClick={() => setShowSearchModal(false)}

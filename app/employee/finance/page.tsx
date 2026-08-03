@@ -32,6 +32,7 @@ import { Skeleton, TableRowsSkeleton } from "@/components/ui/Skeleton";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
 import { getExpenses, claimExpense, getTimesheets } from "@/app/actions/crm";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 const claimStatus = {
   approved: "success",
@@ -138,6 +139,7 @@ export default function EmployeeFinancePage() {
 
   return (
     <div className="space-y-6">
+      <PageHeader eyebrow="Compensation" title="Finance & Timesheets" description="Log hours, review timesheets, and claim expenses." />
       {/* KPI Cards Grid */}
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
         <KpiCard
@@ -202,7 +204,7 @@ export default function EmployeeFinancePage() {
                   required
                   value={expenseTitle}
                   onChange={(e) => setExpenseTitle(e.target.value)}
-                  className="w-full h-10 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white"
+                  className="w-full h-10 rounded-xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] px-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white"
                 />
               </div>
               <div>
@@ -216,7 +218,7 @@ export default function EmployeeFinancePage() {
                   required
                   value={expenseAmount}
                   onChange={(e) => setExpenseAmount(e.target.value)}
-                  className="w-full h-10 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white"
+                  className="w-full h-10 rounded-xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] px-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white"
                 />
               </div>
               <div className="flex flex-col justify-end gap-2 sm:flex-row sm:items-end">
@@ -227,7 +229,7 @@ export default function EmployeeFinancePage() {
                   <select
                     value={expenseCategory}
                     onChange={(e) => setExpenseCategory(e.target.value)}
-                    className="w-full h-10 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white"
+                    className="w-full h-10 rounded-xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] px-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white"
                   >
                     <option value="software">Software</option>
                     <option value="travel">Travel</option>
@@ -311,7 +313,7 @@ export default function EmployeeFinancePage() {
             ) : (
               expenseClaims.slice(0, 8).map((claim: any) => (
                 <div key={claim.id} className="flex items-center gap-3">
-                  <div className="h-9 w-9 rounded-xl flex items-center justify-center bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400">
+                  <div className="h-9 w-9 rounded-xl flex items-center justify-center bg-slate-100 dark:bg-[#303030] text-slate-600 dark:text-slate-400">
                     <Receipt className="h-4 w-4" />
                   </div>
                   <div className="min-w-0 flex-1">
@@ -343,7 +345,7 @@ export default function EmployeeFinancePage() {
         </CardHeader>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 bg-slate-50/60 dark:bg-slate-900/40">
+            <thead className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 bg-slate-50/60 dark:bg-[#303030]/40">
               <tr>
                 <th className="px-5 py-3 text-left font-semibold">Date</th>
                 <th className="px-5 py-3 text-left font-semibold">Activity Summary</th>
@@ -351,7 +353,7 @@ export default function EmployeeFinancePage() {
                 <th className="px-5 py-3 text-left font-semibold">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+            <tbody className="divide-y divide-slate-100 dark:divide-[#303030]">
               {isLoading ? (
                 <TableRowsSkeleton rows={5} cols={4} />
               ) : timeLogs.length === 0 ? (
@@ -360,7 +362,7 @@ export default function EmployeeFinancePage() {
                 </tr>
               ) : (
                 timeLogs.map((log: any) => (
-                  <tr key={log.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-900/40">
+                  <tr key={log.id} className="hover:bg-slate-50/60 dark:hover:bg-[#303030]/40">
                     <td className="px-5 py-3.5 text-xs text-slate-500 dark:text-slate-400 font-medium">{log.date}</td>
                     <td className="px-5 py-3.5 text-xs text-slate-600 dark:text-slate-300 max-w-xs truncate">{log.description}</td>
                     <td className="px-5 py-3.5 text-right font-medium text-slate-700 dark:text-slate-200 tabular-nums">

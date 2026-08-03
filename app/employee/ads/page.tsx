@@ -28,6 +28,7 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { getCampaignStatusVariant } from "@/lib/statusHelpers";
 import { getMetaCampaigns, getClients } from "@/app/actions/crm";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export default function AdsPage() {
   const [campaigns, setCampaigns] = useState<any[]>([]);
@@ -74,6 +75,7 @@ export default function AdsPage() {
 
   return (
     <div className="space-y-6">
+      <PageHeader eyebrow="Marketing" title="Ad Campaigns" description="Spend and performance across your campaigns." />
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
         <KpiCard title="Total Spend" value={`₹${fmtK(totals.spend)}`} change={`${campaigns.length} campaigns`} changeType="neutral" accent="brand" icon={<DollarSign className="h-5 w-5" />} />
         <KpiCard title="Impressions" value={fmtK(totals.impressions)} change="all time" changeType="neutral" accent="amber" icon={<Eye className="h-5 w-5" />} />
@@ -152,7 +154,7 @@ export default function AdsPage() {
         </CardHeader>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 bg-slate-50/60 dark:bg-slate-900/40">
+            <thead className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 bg-slate-50/60 dark:bg-[#303030]/40">
               <tr>
                 <th className="px-5 py-3 text-left font-semibold">Campaign</th>
                 <th className="px-5 py-3 text-left font-semibold hidden md:table-cell">Client</th>
@@ -163,7 +165,7 @@ export default function AdsPage() {
                 <th className="px-5 py-3 text-left font-semibold">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+            <tbody className="divide-y divide-slate-100 dark:divide-[#303030]">
               {campaigns.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-5 py-12 text-center">
@@ -178,7 +180,7 @@ export default function AdsPage() {
                 const clientName = c.clientName || (c.clientId ? clientMap[c.clientId] : "") || "—";
                 const ctr = c.ctr || (c.impressions ? (c.clicks / c.impressions) * 100 : 0);
                 return (
-                <tr key={c.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors duration-150">
+                <tr key={c.id} className="hover:bg-slate-50 dark:hover:bg-[#303030]/50 transition-colors duration-150">
                   <td className="px-5 py-3.5">
                     <div className="font-medium text-slate-900 dark:text-white">{c.name}</div>
                     <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{c.platform || "Meta Ads"}</div>

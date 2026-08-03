@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { getReports } from "@/app/actions/crm";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export default function ReportsPage() {
   const [reports, setReports] = useState<any[]>([]);
@@ -44,18 +45,19 @@ export default function ReportsPage() {
 
   return (
     <div className="space-y-6">
+      <PageHeader eyebrow="Insights" title="Reports" description="Monthly, quarterly, and custom reports." />
       <Card className="overflow-hidden">
         <CardHeader>
           <CardTitle>Recent Reports</CardTitle>
         </CardHeader>
-        <div className="divide-y divide-slate-100 dark:divide-slate-800">
+        <div className="divide-y divide-slate-100 dark:divide-[#303030]">
           {reports.map((report) => {
             const category = report.name?.toLowerCase().includes("monthly") ? "Monthly" :
               report.name?.toLowerCase().includes("quarterly") ? "Quarterly" :
               report.name?.toLowerCase().includes("seo") || report.name?.toLowerCase().includes("audit") ? "Audit" : "Custom";
 
             return (
-              <div key={report.id} className="flex items-center gap-4 p-4 sm:p-5 hover:bg-slate-50/60 dark:hover:bg-slate-900/40">
+              <div key={report.id} className="flex items-center gap-4 p-4 sm:p-5 hover:bg-slate-50/60 dark:hover:bg-[#303030]/40">
                 <div className="h-10 w-10 rounded-xl bg-brand-50 dark:bg-brand-500/10 text-brand-600 dark:text-brand-300 flex items-center justify-center shrink-0">
                   <FileText className="h-5 w-5" />
                 </div>

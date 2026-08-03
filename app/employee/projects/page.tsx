@@ -16,6 +16,7 @@ import { getProjectStatusVariant, getProjectStatusLabel } from "@/lib/statusHelp
 import { useToast } from "@/providers/ToastProvider";
 import { ProjectBoardSkeleton } from "@/components/ui/Skeleton";
 import { useRefreshOnFocus } from "@/lib/use-refresh-on-focus";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 function parseDetails(raw: string | null | undefined) {
   try { return JSON.parse(raw || "{}"); } catch { return {}; }
@@ -74,6 +75,7 @@ export default function EmployeeProjectsPage() {
 
   return (
     <div className="space-y-6">
+      <PageHeader eyebrow="Work" title="Projects" description="Track project progress and deliverables." />
       {/* Controls */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 justify-between">
         <div className="relative w-full sm:w-72">
@@ -83,14 +85,14 @@ export default function EmployeeProjectsPage() {
             placeholder="Search projects…"
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="h-9 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 pl-9 pr-3 text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-900 dark:text-white transition-all"
+            className="h-9 w-full rounded-xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#303030] pl-9 pr-3 text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-900 dark:text-white transition-all"
           />
         </div>
-        <div className="inline-flex items-center rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-0.5">
+        <div className="inline-flex items-center rounded-xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#303030] p-0.5">
           {([{ key: "board", Icon: LayoutGrid, label: "Board" }, { key: "list", Icon: List, label: "List" }] as const).map(v => (
             <button key={v.key} onClick={() => setView(v.key)}
               className={cn("inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium cursor-pointer transition-all",
-                view === v.key ? "bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white" : "text-slate-500 hover:text-slate-700"
+                view === v.key ? "bg-slate-100 dark:bg-[#303030] text-slate-900 dark:text-white" : "text-slate-500 hover:text-slate-700"
               )}>
               <v.Icon className="h-3.5 w-3.5" /> {v.label}
             </button>
@@ -123,7 +125,7 @@ export default function EmployeeProjectsPage() {
 
             return (
               <div key={p.id} className={cn(
-                "rounded-2xl border-l-4 border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-950 p-5 transition-all duration-200 hover:shadow-md",
+                "rounded-2xl border-l-4 border border-slate-200/80 dark:border-[#303030]/80 bg-white dark:bg-[#1f1f1f] p-5 transition-all duration-200 hover:shadow-md",
                 isMeta ? "border-l-indigo-500" : "border-l-emerald-500"
               )}>
                 <div className="flex items-start justify-between gap-2 mb-3">
@@ -136,7 +138,7 @@ export default function EmployeeProjectsPage() {
                     </Badge>
                   </div>
                   {total > 0 && (
-                    <span className="shrink-0 text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-500">
+                    <span className="shrink-0 text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-slate-50 dark:bg-[#303030] border border-slate-200 dark:border-[#303030] text-slate-500">
                       {done}/{total}
                     </span>
                   )}
@@ -145,7 +147,7 @@ export default function EmployeeProjectsPage() {
                 <Link href={"/employee/projects/${p.id}"} className="block text-sm font-bold text-slate-900 dark:text-white truncate hover:text-brand-600 hover:underline transition-colors">{p.name}</Link>
                 <p className="text-xs text-slate-400 mt-0.5 truncate">{p.clientName || "Unknown client"}</p>
 
-                <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 grid grid-cols-2 gap-2 text-xs">
+                <div className="mt-3 pt-3 border-t border-slate-100 dark:border-[#303030] grid grid-cols-2 gap-2 text-xs">
                   {isMeta ? (
                     <>
                       <div>
@@ -177,7 +179,7 @@ export default function EmployeeProjectsPage() {
                       <ExternalLink className="h-2.5 w-2.5" />Repo
                     </a>
                     {d.oldWebsiteUrl && (
-                      <a href={d.oldWebsiteUrl} target="_blank" rel="noreferrer" className="ml-1 inline-flex items-center gap-1 text-[9px] font-bold text-slate-500 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-2 py-0.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
+                      <a href={d.oldWebsiteUrl} target="_blank" rel="noreferrer" className="ml-1 inline-flex items-center gap-1 text-[9px] font-bold text-slate-500 bg-slate-50 dark:bg-[#303030] border border-slate-200 dark:border-[#303030] px-2 py-0.5 rounded-full hover:bg-slate-100 dark:hover:bg-[#303030] transition-all">
                         <Globe className="h-2.5 w-2.5" />Old Site
                       </a>
                     )}
@@ -186,7 +188,7 @@ export default function EmployeeProjectsPage() {
 
                 <div className="mt-4">
                   {pct === null ? (
-                    <div className="h-1.5 rounded-full bg-slate-100 dark:bg-slate-800" aria-hidden="true" />
+                    <div className="h-1.5 rounded-full bg-slate-100 dark:bg-[#303030]" aria-hidden="true" />
                   ) : (
                     <Progress value={pct} size="sm" barClassName={isMeta ? "bg-indigo-500" : "bg-emerald-500"} />
                   )}
@@ -202,7 +204,7 @@ export default function EmployeeProjectsPage() {
                 </div>
 
                 {/* Task section */}
-                <div className="mt-3 border-t border-slate-100 dark:border-slate-800 pt-3">
+                <div className="mt-3 border-t border-slate-100 dark:border-[#303030] pt-3">
                   {tasks.length > 0 ? (
                     <>
                       <button
@@ -220,7 +222,7 @@ export default function EmployeeProjectsPage() {
                           {tasks.map((task: any) => (
                             <div key={task.id} className={cn(
                               "flex items-center gap-2.5 p-2.5 rounded-lg border transition-all",
-                              task.done === 1 ? "border-slate-100 dark:border-slate-800/50 bg-slate-50/50 dark:bg-slate-900/30" : "border-slate-200 dark:border-slate-800"
+                              task.done === 1 ? "border-slate-100 dark:border-[#303030]/50 bg-slate-50/50 dark:bg-[#303030]/30" : "border-slate-200 dark:border-[#303030]"
                             )}>
                               <button onClick={() => handleToggleTask(task.id, task.done === 1)} disabled={toggling === task.id}
                                 className="shrink-0 cursor-pointer hover:scale-110 transition-transform" aria-label={task.done ? "Mark incomplete" : "Mark complete"}>
@@ -236,7 +238,7 @@ export default function EmployeeProjectsPage() {
                               </span>
                               <span className={cn("shrink-0 text-[9px] font-bold px-1.5 py-0.5 rounded-full border",
                                 task.priority === "high" ? "bg-rose-50 text-rose-600 border-rose-200 dark:bg-rose-950/20 dark:text-rose-400 dark:border-rose-900/30"
-                                : task.priority === "low" ? "bg-slate-50 text-slate-500 border-slate-200 dark:bg-slate-900 dark:border-slate-800"
+                                : task.priority === "low" ? "bg-slate-50 text-slate-500 border-slate-200 dark:bg-[#303030] dark:border-[#303030]"
                                 : "bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-950/20 dark:text-amber-400 dark:border-amber-900/30"
                               )}>{task.priority}</span>
                             </div>
@@ -253,10 +255,10 @@ export default function EmployeeProjectsPage() {
           })}
         </div>
       ) : (
-        <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800/60 bg-white dark:bg-slate-950 overflow-hidden">
+        <div className="rounded-2xl border border-slate-200/80 dark:border-[#303030]/60 bg-white dark:bg-[#1f1f1f] overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="text-[10px] uppercase tracking-wider text-slate-400 bg-slate-50/60 dark:bg-slate-900/40 border-b border-slate-100 dark:border-slate-800">
+              <thead className="text-[10px] uppercase tracking-wider text-slate-400 bg-slate-50/60 dark:bg-[#303030]/40 border-b border-slate-100 dark:border-[#303030]">
                 <tr>
                   <th className="px-5 py-3 text-left font-bold">Project</th>
                   <th className="px-5 py-3 text-left font-bold hidden sm:table-cell">Type</th>
@@ -266,7 +268,7 @@ export default function EmployeeProjectsPage() {
                   <th className="px-5 py-3 text-left font-bold">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+              <tbody className="divide-y divide-slate-100 dark:divide-[#303030]">
                 {filtered.map(p => {
                   const tg = taskMap[p.id];
                   const total = tg?.total || 0;
@@ -274,7 +276,7 @@ export default function EmployeeProjectsPage() {
                   const pct = taskProgress(total, done);
                   const isMeta = p.projectType === "meta_ads";
                   return (
-                    <tr key={p.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors duration-150">
+                    <tr key={p.id} className="hover:bg-slate-50 dark:hover:bg-[#303030]/50 transition-colors duration-150">
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-2.5">
                           <div className={cn("h-7 w-7 rounded-lg flex items-center justify-center shrink-0", isMeta ? "bg-indigo-500/10" : "bg-emerald-500/10")}>

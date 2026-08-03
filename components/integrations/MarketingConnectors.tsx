@@ -80,32 +80,32 @@ export default function MarketingConnectors() {
         {providers.map((provider) => {
           const connector = connectors.find((item) => item.provider === provider.id && item.status === "connected");
           return (
-            <button key={provider.id} type="button" onClick={() => setSelected(provider.id)} className={`rounded-2xl border p-5 text-left transition ${selected === provider.id ? "border-indigo-500 ring-2 ring-indigo-500/15" : "border-slate-200 dark:border-slate-800"} bg-white dark:bg-slate-950`}>
+            <button key={provider.id} type="button" onClick={() => setSelected(provider.id)} className={`rounded-2xl border p-5 text-left transition ${selected === provider.id ? "border-indigo-500 ring-2 ring-indigo-500/15" : "border-slate-200 dark:border-[#303030]"} bg-white dark:bg-[#1f1f1f]`}>
               <div className="flex items-start justify-between gap-3">
-                <span className="rounded-xl bg-slate-100 p-2 dark:bg-slate-800">{provider.id === "search_console" ? <Search className="h-5 w-5" /> : <BarChart3 className="h-5 w-5" />}</span>
+                <span className="rounded-xl bg-slate-100 p-2 dark:bg-[#303030]">{provider.id === "search_console" ? <Search className="h-5 w-5" /> : <BarChart3 className="h-5 w-5" />}</span>
                 <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${connector ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300" : "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300"}`}>{connector ? "Connected" : "Setup required"}</span>
               </div>
               <h2 className="mt-4 font-semibold">{provider.name}</h2>
               <p className="mt-1 text-sm text-slate-500">{provider.description}</p>
-              {connector && <p className="mt-3 text-xs text-slate-500">{connector.displayName} · {connector.externalAccountId}</p>}
+              {connector && <p className="mt-3 text-xs text-slate-500">{connector.displayName} Â· {connector.externalAccountId}</p>}
             </button>
           );
         })}
       </div>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-[#303030] dark:bg-[#1f1f1f]">
         <div className="flex items-center gap-2"><Link2 className="h-5 w-5 text-indigo-600" /><h2 className="font-semibold">Configure {providers.find((item) => item.id === selected)?.name}</h2></div>
         <p className="mt-1 text-sm text-slate-500">Tokens are encrypted before storage and are never returned to the browser.</p>
         <form action={connect} className="mt-5 grid gap-3 sm:grid-cols-2">
-          <input required name="displayName" maxLength={255} placeholder="Connection name" className="rounded-xl border border-slate-300 bg-transparent px-3 py-2 text-sm dark:border-slate-700" />
-          <input required name="externalAccountId" maxLength={255} placeholder="Account / property ID" className="rounded-xl border border-slate-300 bg-transparent px-3 py-2 text-sm dark:border-slate-700" />
-          <input required name="credential" type="password" minLength={20} autoComplete="off" placeholder={providers.find((item) => item.id === selected)?.credentialLabel} className="rounded-xl border border-slate-300 bg-transparent px-3 py-2 text-sm sm:col-span-2 dark:border-slate-700" />
+          <input required name="displayName" maxLength={255} placeholder="Connection name" className="rounded-xl border border-slate-300 bg-transparent px-3 py-2 text-sm dark:border-[#303030]" />
+          <input required name="externalAccountId" maxLength={255} placeholder="Account / property ID" className="rounded-xl border border-slate-300 bg-transparent px-3 py-2 text-sm dark:border-[#303030]" />
+          <input required name="credential" type="password" minLength={20} autoComplete="off" placeholder={providers.find((item) => item.id === selected)?.credentialLabel} className="rounded-xl border border-slate-300 bg-transparent px-3 py-2 text-sm sm:col-span-2 dark:border-[#303030]" />
           <button disabled={pending || !organizationId} className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50 sm:col-span-2"><RefreshCw className="h-4 w-4" /> Encrypt and connect</button>
         </form>
       </section>
 
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        {["UTM + click-ID attribution", "Budget pacing + anomalies", "Creative fatigue + profit", "Lead-quality feedback"].map((capability) => <div key={capability} className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white p-3 text-sm font-medium dark:border-slate-800 dark:bg-slate-950"><CheckCircle2 className="h-4 w-4 text-emerald-600" />{capability}</div>)}
+        {["UTM + click-ID attribution", "Budget pacing + anomalies", "Creative fatigue + profit", "Lead-quality feedback"].map((capability) => <div key={capability} className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white p-3 text-sm font-medium dark:border-[#303030] dark:bg-[#1f1f1f]"><CheckCircle2 className="h-4 w-4 text-emerald-600" />{capability}</div>)}
       </section>
 
       {connectors.filter((item) => item.status === "connected").map((connector) => (

@@ -95,7 +95,7 @@ export default function EmployeeProfilePage() {
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full h-10 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40"
+                className="w-full h-10 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#303030] px-4 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40"
               />
             </div>
             <div>
@@ -104,7 +104,7 @@ export default function EmployeeProfilePage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full h-10 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40"
+                className="w-full h-10 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#303030] px-4 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40"
               />
             </div>
             <div className="pt-2">
@@ -127,14 +127,14 @@ export default function EmployeeProfilePage() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 gap-4">
-            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
+            <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#303030] border border-slate-100 dark:border-[#303030]">
               <div className="flex items-center gap-2 mb-2">
                 <CalendarDays className="h-3.5 w-3.5 text-brand-500" />
                 <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Working Days</span>
               </div>
               <p className="text-sm font-bold text-slate-800 dark:text-slate-200">{workDays}</p>
             </div>
-            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
+            <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#303030] border border-slate-100 dark:border-[#303030]">
               <div className="flex items-center gap-2 mb-2">
                 <Clock className="h-3.5 w-3.5 text-brand-500" />
                 <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Shift Hours</span>

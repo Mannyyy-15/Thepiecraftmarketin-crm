@@ -7,6 +7,7 @@ import { Avatar } from "@/components/ui/Avatar";
 import { getCurrentUserCached } from "@/lib/currentUserClient";
 import { sendMessage, getConversations, getConversationMessages, markConversationRead, getMessagingContacts } from "@/app/actions/crm";
 import { useToast } from "@/providers/ToastProvider";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 // Real contact shape (replaces the old MockContact).
 interface Contact {
@@ -229,7 +230,7 @@ export default function EmployeeMessagesPage() {
       <div className="px-4 pt-4 pb-2 flex items-center gap-2">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
-          <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search or start new chat" className="w-full h-10 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 pl-9 pr-4 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500/40" />
+          <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search or start new chat" className="w-full h-10 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#303030] pl-9 pr-4 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500/40" />
         </div>
         <button onClick={() => { setShowContactPicker(true); setPickerSearch(""); }} className="h-10 w-10 rounded-xl bg-brand-500 text-white flex items-center justify-center hover:bg-brand-600 transition-colors shrink-0 cursor-pointer" title="New conversation">
           <Plus className="h-4 w-4" />
@@ -246,7 +247,7 @@ export default function EmployeeMessagesPage() {
         )}
         {filteredList.length === 0 && search && <p className="text-xs text-slate-400 text-center py-8">No matches</p>}
         {filteredList.map((contact) => (
-          <div key={contact.id} onClick={() => setActiveContact(contact)} className="flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all hover:bg-slate-50 dark:hover:bg-slate-900/50 active:scale-[0.98]">
+          <div key={contact.id} onClick={() => setActiveContact(contact)} className="flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all hover:bg-slate-50 dark:hover:bg-[#303030]/50 active:scale-[0.98]">
             <div className="relative shrink-0">
               <Avatar name={contact.clientName || contact.name} size="sm" />
               <span className={`absolute -bottom-0.5 -right-0.5 ${statusDot(contact.status)}`} />
@@ -264,9 +265,11 @@ export default function EmployeeMessagesPage() {
   );
 
   return (
-    <div className="flex gap-4 h-[calc(100vh-12rem)]">
+    <div className="space-y-5">
+      <PageHeader eyebrow="Communication" title="Messages" description="Chat with your team and clients." />
+      <div className="flex gap-4 h-[calc(100vh-15rem)]">
       <Card className="w-80 shrink-0 hidden lg:flex flex-col overflow-hidden">
-        <div className="p-4 border-b border-slate-100 dark:border-slate-800/80">
+        <div className="p-4 border-b border-slate-100 dark:border-[#303030]/80">
           <h3 className="text-sm font-bold text-slate-900 dark:text-white">All Contacts</h3>
         </div>
         <div className="flex-1 overflow-y-auto p-3 space-y-1">
@@ -282,7 +285,7 @@ export default function EmployeeMessagesPage() {
                   <span className="ml-auto text-[9px] font-bold text-slate-400">{items.length}</span>
                 </div>
                 {items.map((contact) => (
-                  <div key={contact.id} onClick={() => addChatContact(contact)} className="flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors active:scale-[0.98]">
+                  <div key={contact.id} onClick={() => addChatContact(contact)} className="flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:bg-slate-50 dark:hover:bg-[#303030]/50 transition-colors active:scale-[0.98]">
                     <div className="relative shrink-0">
                       <Avatar name={contact.clientName || contact.name} size="sm" />
                       <span className={`absolute -bottom-0.5 -right-0.5 ${statusDot(contact.status)}`} />
@@ -304,8 +307,8 @@ export default function EmployeeMessagesPage() {
       <Card className="flex-1 flex flex-col overflow-hidden">
         {activeContact ? (
           <>
-            <div className="flex items-center gap-3 px-4 py-3 border-b border-slate-100 dark:border-slate-800/80 shrink-0">
-              <button onClick={() => setActiveContact(null)} className="lg:hidden p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg cursor-pointer">
+            <div className="flex items-center gap-3 px-4 py-3 border-b border-slate-100 dark:border-[#303030]/80 shrink-0">
+              <button onClick={() => setActiveContact(null)} className="lg:hidden p-1 hover:bg-slate-100 dark:hover:bg-[#303030] rounded-lg cursor-pointer">
                 <ArrowLeft className="h-4 w-4" />
               </button>
               <div className="relative">
@@ -323,7 +326,7 @@ export default function EmployeeMessagesPage() {
                 const isMine = m.senderId === activeContact.id;
                 return (
                   <div key={m.id} className={`flex ${isMine ? "justify-start" : "justify-end"}`}>
-                    <div className={`max-w-[80%] rounded-2xl px-4 py-2.5 ${isMine ? "bg-slate-100 dark:bg-slate-800 rounded-bl-sm" : "bg-brand-500 text-white rounded-br-sm"}`}>
+                    <div className={`max-w-[80%] rounded-2xl px-4 py-2.5 ${isMine ? "bg-slate-100 dark:bg-[#303030] rounded-bl-sm" : "bg-brand-500 text-white rounded-br-sm"}`}>
                       <p className="text-sm leading-relaxed">{m.message}</p>
                       <p className={`text-[10px] mt-1 ${isMine ? "text-slate-400" : "text-white/70"}`}>
                         {new Date(m.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
@@ -334,9 +337,9 @@ export default function EmployeeMessagesPage() {
               })}
               <div ref={chatEndRef} />
             </CardContent>
-            <div className="border-t border-slate-100 dark:border-slate-800/80 p-4 shrink-0">
+            <div className="border-t border-slate-100 dark:border-[#303030]/80 p-4 shrink-0">
               <form onSubmit={(e) => { e.preventDefault(); handleSend(); }} className="flex gap-2">
-                <input type="text" value={newMsg} onChange={(e) => setNewMsg(e.target.value)} placeholder="Type a message..." className="flex-1 h-11 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40" />
+                <input type="text" value={newMsg} onChange={(e) => setNewMsg(e.target.value)} placeholder="Type a message..." className="flex-1 h-11 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#303030] px-4 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40" />
                 <button type="submit" className="h-11 w-11 rounded-xl bg-brand-500 text-white flex items-center justify-center hover:bg-brand-600 transition-colors cursor-pointer disabled:opacity-50" disabled={!newMsg.trim()}>
                   <Send className="h-4 w-4" />
                 </button>
@@ -360,16 +363,16 @@ export default function EmployeeMessagesPage() {
       {/* Contact picker */}
       {showContactPicker && (
         <div className="fixed inset-0 z-50 bg-black/40" onClick={() => setShowContactPicker(false)}>
-          <div className="absolute bottom-0 left-0 right-0 bg-white dark:bg-slate-950 rounded-t-2xl p-4 max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+          <div className="absolute bottom-0 left-0 right-0 bg-white dark:bg-[#1f1f1f] rounded-t-2xl p-4 max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-bold text-slate-900 dark:text-white">New Conversation</h3>
-              <button onClick={() => setShowContactPicker(false)} className="h-8 w-8 rounded-xl flex items-center justify-center text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer">
+              <button onClick={() => setShowContactPicker(false)} className="h-8 w-8 rounded-xl flex items-center justify-center text-slate-400 hover:bg-slate-100 dark:hover:bg-[#303030] cursor-pointer">
                 <X className="h-4 w-4" />
               </button>
             </div>
             <div className="relative mb-3">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
-              <input type="text" value={pickerSearch} onChange={(e) => setPickerSearch(e.target.value)} placeholder="Search contacts..." className="w-full h-10 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 pl-9 pr-4 text-xs focus:outline-none" />
+              <input type="text" value={pickerSearch} onChange={(e) => setPickerSearch(e.target.value)} placeholder="Search contacts..." className="w-full h-10 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#303030] pl-9 pr-4 text-xs focus:outline-none" />
             </div>
 
             {([["admins", "Admin", pickerFiltered.admins], ["employees", "Team", pickerFiltered.employees], ["clients", "Clients", pickerFiltered.clients]] as const).map(([key, label, items]) => {
@@ -387,7 +390,7 @@ export default function EmployeeMessagesPage() {
                   {isExpanded && (
                     <div className="space-y-0.5">
                       {items.map((contact) => (
-                        <div key={contact.id} onClick={() => addChatContact(contact)} className="flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors active:scale-[0.98]">
+                        <div key={contact.id} onClick={() => addChatContact(contact)} className="flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:bg-slate-50 dark:hover:bg-[#303030]/50 transition-colors active:scale-[0.98]">
                           <Avatar name={contact.clientName || contact.name} size="sm" />
                           <div className="min-w-0 flex-1">
                             <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{contact.clientName || contact.name}</p>
@@ -405,6 +408,7 @@ export default function EmployeeMessagesPage() {
           </div>
         </div>
       )}
+    </div>
     </div>
   );
 }

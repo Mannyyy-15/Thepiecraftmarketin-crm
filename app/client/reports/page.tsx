@@ -169,18 +169,18 @@ export default function ClientReportsPage() {
                   placeholder="Search reports…"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="h-9 w-48 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 pl-9 pr-3 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-portal-500/40 text-slate-800 dark:text-white"
+                  className="h-9 w-48 rounded-xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#303030] pl-9 pr-3 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-portal-500/40 text-slate-800 dark:text-white"
                 />
               </div>
             </div>
           </CardHeader>
-          <div className="divide-y divide-slate-100 dark:divide-slate-800">
+          <div className="divide-y divide-slate-100 dark:divide-[#303030]">
             {filteredReports.map((r) => {
               const cat = r.name?.toLowerCase().includes("monthly") ? "Monthly" :
                           r.name?.toLowerCase().includes("quarterly") ? "Quarterly" :
                           r.name?.toLowerCase().includes("seo") || r.name?.toLowerCase().includes("audit") ? "Audit" : "Custom";
               return (
-                <div key={r.id} className="flex items-center gap-3 p-4 sm:p-5 hover:bg-slate-50/60 dark:hover:bg-slate-900/40 transition-colors">
+                <div key={r.id} className="flex items-center gap-3 p-4 sm:p-5 hover:bg-slate-50/60 dark:hover:bg-[#303030]/40 transition-colors">
                   <div className="h-10 w-10 rounded-xl bg-portal-50 dark:bg-portal-500/10 text-portal-600 dark:text-portal-300 flex items-center justify-center shrink-0">
                     <FileText className="h-5 w-5" />
                   </div>

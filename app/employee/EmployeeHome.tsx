@@ -74,7 +74,7 @@ function ShiftTimerDigits({ attendance, isLoading }: { attendance: any; isLoadin
               text-3xl sm:text-5xl lg:text-6xl
               border shadow-inner transition-all duration-300
               bg-slate-900/80 dark:bg-[#222226]
-              border-slate-700/50 dark:border-slate-800/60
+              border-slate-700/50 dark:border-[#303030]/60
               ${isLoading ? "text-slate-700 animate-pulse" : "text-white"}
               ${!isLoading && isLive && item.label === "SEC" ? "text-emerald-300" : ""}
             `}>
@@ -243,7 +243,7 @@ export default function EmployeeHome({ initialProfile, initialAttendance }: Empl
           initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -12 }}
-          className="fixed top-24 left-1/2 -translate-x-1/2 z-50 px-5 py-3.5 bg-slate-900 dark:bg-slate-950 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl text-xs font-semibold text-white flex items-center gap-3 whitespace-nowrap"
+          className="fixed top-24 left-1/2 -translate-x-1/2 z-50 px-5 py-3.5 bg-slate-900 dark:bg-[#1f1f1f] backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl text-xs font-semibold text-white flex items-center gap-3 whitespace-nowrap"
         >
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
           {attMessage}
@@ -310,7 +310,7 @@ export default function EmployeeHome({ initialProfile, initialAttendance }: Empl
 
               {/* Shift schedule pill — inside clock card */}
               <div className="flex items-center gap-2 flex-wrap justify-center">
-                <div className="flex items-center gap-2 bg-slate-800/70 dark:bg-slate-800/50 border border-slate-700/40 rounded-xl px-3.5 py-1.5">
+                <div className="flex items-center gap-2 bg-slate-800/70 dark:bg-[#303030]/50 border border-slate-700/40 rounded-xl px-3.5 py-1.5">
                   <Clock className="h-3 w-3 text-slate-400" />
                   <span className="text-[11px] font-semibold text-slate-300">
                     {user?.shiftStartTime || "10:00 AM"} — {user?.shiftEndTime || "07:30 PM"}
@@ -347,7 +347,7 @@ export default function EmployeeHome({ initialProfile, initialAttendance }: Empl
             </p>
 
             {isPunchedOut ? (
-              <div className="relative h-[60px] rounded-full flex items-center justify-center bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 opacity-60">
+              <div className="relative h-[60px] rounded-full flex items-center justify-center bg-slate-100 dark:bg-[#303030] border border-slate-200 dark:border-[#303030] opacity-60">
                 <span className="text-[13px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
                   <CheckCircle2 className="h-4 w-4" /> Shift Logged
                 </span>
@@ -364,7 +364,7 @@ export default function EmployeeHome({ initialProfile, initialAttendance }: Empl
 
         {/* ── RIGHT: Activity log ────────────────────────── */}
         <div className="lg:col-span-2">
-          <Card className="h-full rounded-[24px] border border-slate-200 dark:border-slate-800/60 bg-white dark:bg-slate-900/80 shadow-sm dark:shadow-none overflow-hidden">
+          <Card className="h-full rounded-[24px] border border-slate-200 dark:border-[#303030]/60 bg-white dark:bg-[#303030]/80 shadow-sm dark:shadow-none overflow-hidden">
             <CardContent className="p-5 lg:p-6 h-full flex flex-col gap-4">
 
               {isLoading ? (
@@ -404,7 +404,7 @@ export default function EmployeeHome({ initialProfile, initialAttendance }: Empl
                       </span>
                     )}
                     {isPunchedOut && (
-                      <span className="shrink-0 flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 text-[10px] font-bold px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-700/40 mt-0.5">
+                      <span className="shrink-0 flex items-center gap-1.5 bg-slate-100 dark:bg-[#303030]/60 text-slate-500 dark:text-slate-400 text-[10px] font-bold px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-700/40 mt-0.5">
                         <CheckCircle2 className="w-3 h-3" />
                         Done
                       </span>
@@ -424,7 +424,7 @@ export default function EmployeeHome({ initialProfile, initialAttendance }: Empl
                     <div className={`rounded-2xl p-4 border transition-all ${
                       todayAttendance?.punchInTime
                         ? "bg-emerald-50/60 dark:bg-emerald-950/25 border-emerald-200/70 dark:border-emerald-800/30"
-                        : "bg-slate-50 dark:bg-slate-800/30 border-slate-100 dark:border-slate-700/20"
+                        : "bg-slate-50 dark:bg-[#303030]/30 border-slate-100 dark:border-slate-700/20"
                     }`}>
                       <div className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-3">
@@ -464,14 +464,14 @@ export default function EmployeeHome({ initialProfile, initialAttendance }: Empl
 
                     {/* Timeline connector */}
                     <div className="flex items-center gap-3 px-2">
-                      <div className={`flex-1 h-px ${todayAttendance?.punchInTime ? "bg-slate-200 dark:bg-slate-700" : "bg-slate-100 dark:bg-slate-800"}`} />
+                      <div className={`flex-1 h-px ${todayAttendance?.punchInTime ? "bg-slate-200 dark:bg-slate-700" : "bg-slate-100 dark:bg-[#303030]"}`} />
                       <div className={`flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest ${
                         isPunchedIn ? "text-emerald-500 dark:text-emerald-400" : "text-slate-300 dark:text-slate-600"
                       }`}>
                         {isPunchedIn && <Timer className="h-3 w-3" />}
                         <span>{isPunchedIn ? "In Progress" : "→"}</span>
                       </div>
-                      <div className={`flex-1 h-px ${todayAttendance?.punchInTime ? "bg-slate-200 dark:bg-slate-700" : "bg-slate-100 dark:bg-slate-800"}`} />
+                      <div className={`flex-1 h-px ${todayAttendance?.punchInTime ? "bg-slate-200 dark:bg-slate-700" : "bg-slate-100 dark:bg-[#303030]"}`} />
                     </div>
 
                     {/* Punch Out card */}
@@ -480,7 +480,7 @@ export default function EmployeeHome({ initialProfile, initialAttendance }: Empl
                         ? "bg-rose-50/60 dark:bg-rose-950/25 border-rose-200/70 dark:border-rose-800/30"
                         : isPunchedIn
                         ? "bg-amber-50/50 dark:bg-amber-950/15 border-amber-200/40 dark:border-amber-800/20"
-                        : "bg-slate-50 dark:bg-slate-800/30 border-slate-100 dark:border-slate-700/20"
+                        : "bg-slate-50 dark:bg-[#303030]/30 border-slate-100 dark:border-slate-700/20"
                     }`}>
                       <div className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-3">
@@ -540,7 +540,7 @@ export default function EmployeeHome({ initialProfile, initialAttendance }: Empl
                     </div>
                   )}
                   {isNotPunchedYet && (
-                    <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800/40 rounded-2xl px-4 py-3.5 border border-slate-100 dark:border-slate-700/30">
+                    <div className="flex items-center gap-2 bg-slate-50 dark:bg-[#303030]/40 rounded-2xl px-4 py-3.5 border border-slate-100 dark:border-slate-700/30">
                       <User className="h-4 w-4 text-slate-400 shrink-0" />
                       <span className="text-xs font-medium text-slate-400">Slide right to begin your shift</span>
                     </div>

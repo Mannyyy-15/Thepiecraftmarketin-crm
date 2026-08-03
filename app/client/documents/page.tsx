@@ -170,10 +170,10 @@ export default function ClientDocumentsPage() {
               key={f.id}
               onClick={() => setActiveFolder(isActive ? null : f.name)}
               className={cn(
-                "group text-left rounded-2xl border bg-white dark:bg-slate-900/60 p-5 transition-all cursor-pointer",
+                "group text-left rounded-2xl border bg-white dark:bg-[#303030]/60 p-5 transition-all cursor-pointer",
                 isActive
                   ? "border-indigo-500 shadow-glow"
-                  : "border-slate-200 dark:border-slate-800 hover:shadow-soft hover:-translate-y-0.5"
+                  : "border-slate-200 dark:border-[#303030] hover:shadow-soft hover:-translate-y-0.5"
               )}
             >
               <div className="flex items-start justify-between">
@@ -220,8 +220,8 @@ export default function ClientDocumentsPage() {
       </Card>
 
       {/* File list */}
-      <Card className="overflow-hidden border border-slate-200 dark:border-slate-850">
-        <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 border-b border-slate-205 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20">
+      <Card className="overflow-hidden border border-slate-200 dark:border-[#303030]">
+        <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 border-b border-slate-205 dark:border-[#303030] bg-slate-50/50 dark:bg-[#1f1f1f]/20">
           <CardTitle className="text-sm font-bold">
             {activeFolder ? folderCategories.find(c => c.name === activeFolder)?.label : "All Files"}
             {activeFolder && (
@@ -240,13 +240,13 @@ export default function ClientDocumentsPage() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search files…"
-              className="h-9 w-48 sm:w-64 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 pl-9 pr-3 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-portal-500/40 text-slate-800 dark:text-white"
+              className="h-9 w-48 sm:w-64 rounded-xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#303030] pl-9 pr-3 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-portal-500/40 text-slate-800 dark:text-white"
             />
           </div>
         </CardHeader>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 bg-slate-50/60 dark:bg-slate-900/40">
+            <thead className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 bg-slate-50/60 dark:bg-[#303030]/40">
               <tr>
                 <th className="px-5 py-3 text-left font-semibold">Name</th>
                 <th className="px-5 py-3 text-left font-semibold hidden md:table-cell">Folder</th>
@@ -256,7 +256,7 @@ export default function ClientDocumentsPage() {
                 <th className="px-5 py-3" />
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+            <tbody className="divide-y divide-slate-100 dark:divide-[#303030]">
               {filtered.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-5 py-10 text-center text-sm text-slate-500 dark:text-slate-400">
@@ -267,7 +267,7 @@ export default function ClientDocumentsPage() {
                 filtered.map((d) => {
                   const catLabel = folderCategories.find(c => c.name === d.folder)?.label || d.folder;
                   return (
-                    <tr key={d.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-900/40 transition-colors">
+                    <tr key={d.id} className="hover:bg-slate-50/60 dark:hover:bg-[#303030]/40 transition-colors">
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-3">
                           <div className={cn("h-9 w-9 rounded-xl flex items-center justify-center shrink-0", colorForType[d.type] || "bg-slate-100 text-slate-500")}>
@@ -308,7 +308,7 @@ export default function ClientDocumentsPage() {
                           </button>
                           <button
                             aria-label="More"
-                            className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                            className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#303030] cursor-pointer"
                           >
                             <MoreHorizontal className="h-4 w-4" />
                           </button>

@@ -82,7 +82,7 @@ export function Avatar({ name = "", src, size = "md", className, status, interac
       <img
         src={finalSrc}
         alt={name}
-        className={cn("rounded-full object-cover ring-2 ring-white dark:ring-slate-900 bg-slate-50 dark:bg-slate-800", sizes[size])}
+        className={cn("rounded-full object-cover ring-2 ring-white dark:ring-slate-900 bg-slate-50 dark:bg-[#303030]", sizes[size])}
       />
 
       {status && (
@@ -115,7 +115,7 @@ export function AvatarGroup({
       ))}
       {remaining > 0 && (
         <span className={cn(
-          "inline-flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 ring-2 ring-white dark:ring-slate-900 font-medium",
+          "inline-flex items-center justify-center rounded-full bg-slate-100 dark:bg-[#303030] text-slate-600 dark:text-slate-300 ring-2 ring-white dark:ring-slate-900 font-medium",
           sizes[size!]
         )}>
           +{remaining}

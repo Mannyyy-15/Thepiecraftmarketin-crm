@@ -78,10 +78,10 @@ export default function ClientProjectsPage() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search projects…"
-            className="h-9 w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 pl-9 pr-3 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-portal-500/40 focus:border-portal-500"
+            className="h-9 w-full rounded-lg border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#303030] pl-9 pr-3 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-portal-500/40 focus:border-portal-500"
           />
         </div>
-        <div className="inline-flex items-center rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-0.5 overflow-x-auto">
+        <div className="inline-flex items-center rounded-lg border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#303030] p-0.5 overflow-x-auto">
           {(["all", "active", "review", "completed"] as Filter[]).map((f) => (
             <button
               key={f}
@@ -94,7 +94,7 @@ export default function ClientProjectsPage() {
               )}
             >
               {f === "all" ? "All" : f === "active" ? "Active" : f === "review" ? "In Review" : "Completed"}
-              <span className="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 text-[10px] tabular-nums">
+              <span className="rounded bg-slate-100 dark:bg-[#303030] px-1.5 py-0.5 text-[10px] tabular-nums">
                 {counts[f]}
               </span>
             </button>
@@ -178,7 +178,7 @@ export default function ClientProjectsPage() {
                     <p className="mt-3 text-xs text-slate-500 dark:text-slate-400 line-clamp-2">{p.description}</p>
                   )}
 
-                  <div className="mt-4 pt-3.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                  <div className="mt-4 pt-3.5 border-t border-slate-100 dark:border-[#303030] flex items-center justify-between">
                     <span className="text-xs text-slate-400">
                       {p.projectType ? (
                         <span className="capitalize">{p.projectType.replace(/_/g, " ")}</span>

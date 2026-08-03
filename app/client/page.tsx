@@ -211,7 +211,7 @@ export default function ClientOverviewPage() {
               </div>
             ) : (
               upcomingMilestones.map((m: any) => (
-                <div key={m.id} className="flex items-start gap-3 rounded-lg border border-slate-200 dark:border-slate-800 p-3">
+                <div key={m.id} className="flex items-start gap-3 rounded-lg border border-slate-200 dark:border-[#303030] p-3">
                   <div className="h-8 w-8 rounded-lg bg-portal-50 dark:bg-portal-500/10 text-portal-600 dark:text-portal-300 flex items-center justify-center shrink-0">
                     <Target className="h-4 w-4" />
                   </div>
@@ -247,14 +247,14 @@ export default function ClientOverviewPage() {
                 <div className="h-5 w-5 border-2 border-slate-200 border-t-portal-500 rounded-full animate-spin" />
               </div>
             ) : projects.length === 0 ? (
-              <div className="rounded-lg border border-dashed border-slate-200 dark:border-slate-800 p-6 text-center">
+              <div className="rounded-lg border border-dashed border-slate-200 dark:border-[#303030] p-6 text-center">
                 <p className="text-sm text-slate-500 dark:text-slate-400">No active engagements yet — your account team will assign new projects here.</p>
               </div>
             ) : (
               projects.slice(0, 4).map((p: any) => {
                 const progress = typeof p.progress === "number" ? Math.max(0, Math.min(100, p.progress)) : null;
                 return (
-                  <div key={p.id} className="rounded-lg border border-slate-200 dark:border-slate-800 p-4 hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
+                  <div key={p.id} className="rounded-lg border border-slate-200 dark:border-[#303030] p-4 hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
                         <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{p.name}</p>
@@ -300,7 +300,7 @@ export default function ClientOverviewPage() {
                       ? "rounded-lg border border-amber-200 dark:border-amber-500/20 bg-amber-50 dark:bg-amber-500/5 p-3"
                       : a.tone === "info"
                       ? "rounded-lg border border-portal-200 dark:border-portal-500/20 bg-portal-50 dark:bg-portal-500/5 p-3"
-                      : "rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 p-3"
+                      : "rounded-lg border border-slate-200 dark:border-[#303030] bg-slate-50 dark:bg-[#303030] p-3"
                   }
                 >
                   <p
@@ -358,9 +358,9 @@ export default function ClientOverviewPage() {
               {upcomingMilestones.map((m: any, i: number) => (
                 <li key={m.id} className="relative pl-8 sm:pl-10">
                   {i !== upcomingMilestones.length - 1 && (
-                    <span className="absolute left-3 sm:left-4 top-6 bottom-[-1.5rem] w-px bg-slate-200 dark:bg-slate-800" />
+                    <span className="absolute left-3 sm:left-4 top-6 bottom-[-1.5rem] w-px bg-slate-200 dark:bg-[#303030]" />
                   )}
-                  <span className={`absolute left-0 top-0 inline-flex h-6 w-6 sm:h-8 sm:w-8 items-center justify-center rounded-full ring-4 ring-white dark:ring-slate-950 ${i === 0 ? "bg-portal-500 text-white" : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"}`}>
+                  <span className={`absolute left-0 top-0 inline-flex h-6 w-6 sm:h-8 sm:w-8 items-center justify-center rounded-full ring-4 ring-white dark:ring-slate-950 ${i === 0 ? "bg-portal-500 text-white" : "bg-slate-100 dark:bg-[#303030] text-slate-500 dark:text-slate-400"}`}>
                     <Target className="h-3 w-3 sm:h-4 sm:w-4" />
                   </span>
                   <div>

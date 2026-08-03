@@ -130,10 +130,10 @@ export default function ClientInvoicesPage() {
             <div className="relative max-w-xs hidden sm:block">
               <Search className="pointer-events-none absolute inset-y-0 left-3 h-full w-4 text-slate-400" />
               <input type="search" placeholder="Search documents…" value={search} onChange={(e) => setSearch(e.target.value)}
-                className="h-9 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 pl-9 pr-3 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-portal-500/40" />
+                className="h-9 w-full rounded-xl border border-slate-200 dark:border-[#303030] bg-slate-50 dark:bg-[#303030] pl-9 pr-3 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-portal-500/40" />
             </div>
           </CardHeader>
-          <div className="divide-y divide-slate-100 dark:divide-slate-800">
+          <div className="divide-y divide-slate-100 dark:divide-[#303030]">
             {filtered.length === 0 ? (
               <div className="flex flex-col items-center gap-2 py-12">
                 <Receipt className="h-8 w-8 text-slate-300 dark:text-slate-700" />
@@ -143,9 +143,9 @@ export default function ClientInvoicesPage() {
               const Icon = statusIcon[inv.status] || FileText;
               const canPay = inv.status === "sent" || inv.status === "overdue";
               const typeLabel = inv.invoiceNumber.startsWith("PROP-") ? "Proposal" : inv.invoiceNumber.startsWith("CONT-") ? "Contract" : "Invoice";
-              const typeBadgeClass = typeLabel === "Proposal" ? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400" : typeLabel === "Contract" ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400";
+              const typeBadgeClass = typeLabel === "Proposal" ? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400" : typeLabel === "Contract" ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" : "bg-slate-100 text-slate-600 dark:bg-[#303030] dark:text-slate-400";
               return (
-                <div key={inv.id} className="flex items-center gap-3 p-4 hover:bg-slate-50 dark:hover:bg-slate-900/40 transition-colors cursor-pointer" onClick={() => openInvoice(inv)}>
+                <div key={inv.id} className="flex items-center gap-3 p-4 hover:bg-slate-50 dark:hover:bg-[#303030]/40 transition-colors cursor-pointer" onClick={() => openInvoice(inv)}>
                   <div className={`h-9 w-9 rounded-xl flex items-center justify-center shrink-0 ${
                     inv.status === "paid" ? "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-500"
                     : inv.status === "overdue" ? "bg-rose-50 dark:bg-rose-950/30 text-rose-500"
@@ -200,13 +200,13 @@ export default function ClientInvoicesPage() {
       {drawerInvoice && (
         <div className="fixed inset-0 z-50 flex justify-end">
           <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-sm" onClick={closeDrawer} />
-          <div className="relative w-full max-w-md bg-white dark:bg-slate-950 shadow-2xl h-full overflow-y-auto animate-slideIn">
-            <div className="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-800">
+          <div className="relative w-full max-w-md bg-white dark:bg-[#1f1f1f] shadow-2xl h-full overflow-y-auto animate-slideIn">
+            <div className="flex items-center justify-between p-5 border-b border-slate-100 dark:border-[#303030]">
               <div>
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{drawerInvoice.invoiceNumber.startsWith("PROP-") ? "Proposal" : drawerInvoice.invoiceNumber.startsWith("CONT-") ? "Contract" : "Invoice"}</p>
                 <h3 className="text-base font-bold text-slate-900 dark:text-white">{drawerInvoice.invoiceNumber}</h3>
               </div>
-              <button onClick={closeDrawer} className="h-8 w-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"><X className="h-4 w-4" /></button>
+              <button onClick={closeDrawer} className="h-8 w-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-[#303030] cursor-pointer"><X className="h-4 w-4" /></button>
             </div>
             <div className="p-5 space-y-4">
               <div className="flex items-center justify-between">
@@ -217,19 +217,19 @@ export default function ClientInvoicesPage() {
               {drawerInvoice.payload?.type === "proposal" && (
                 <div className="space-y-4">
                   {drawerInvoice.payload.proposalIntro && (
-                    <div className="rounded-xl bg-slate-50 dark:bg-slate-900/50 p-4 border border-slate-100 dark:border-slate-800">
+                    <div className="rounded-xl bg-slate-50 dark:bg-[#303030]/50 p-4 border border-slate-100 dark:border-[#303030]">
                       <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Executive Summary</h4>
                       <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-line">{drawerInvoice.payload.proposalIntro}</p>
                     </div>
                   )}
                   {drawerInvoice.payload.proposalGoals && (
-                    <div className="rounded-xl bg-slate-50 dark:bg-slate-900/50 p-4 border border-slate-100 dark:border-slate-800">
+                    <div className="rounded-xl bg-slate-50 dark:bg-[#303030]/50 p-4 border border-slate-100 dark:border-[#303030]">
                       <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Goals & Objectives</h4>
                       <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-line">{drawerInvoice.payload.proposalGoals}</p>
                     </div>
                   )}
                   {drawerInvoice.payload.proposalScope && (
-                    <div className="rounded-xl bg-slate-50 dark:bg-slate-900/50 p-4 border border-slate-100 dark:border-slate-800">
+                    <div className="rounded-xl bg-slate-50 dark:bg-[#303030]/50 p-4 border border-slate-100 dark:border-[#303030]">
                       <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Proposed Solution</h4>
                       <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-line">{drawerInvoice.payload.proposalScope}</p>
                     </div>
@@ -240,13 +240,13 @@ export default function ClientInvoicesPage() {
               {drawerInvoice.payload?.type === "contract" && (
                 <div className="space-y-4">
                   {drawerInvoice.payload.contractParties && (
-                    <div className="rounded-xl bg-slate-50 dark:bg-slate-900/50 p-4 border border-slate-100 dark:border-slate-800">
+                    <div className="rounded-xl bg-slate-50 dark:bg-[#303030]/50 p-4 border border-slate-100 dark:border-[#303030]">
                       <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Parties Involved</h4>
                       <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-line">{drawerInvoice.payload.contractParties}</p>
                     </div>
                   )}
                   {drawerInvoice.payload.contractScope && (
-                    <div className="rounded-xl bg-slate-50 dark:bg-slate-900/50 p-4 border border-slate-100 dark:border-slate-800">
+                    <div className="rounded-xl bg-slate-50 dark:bg-[#303030]/50 p-4 border border-slate-100 dark:border-[#303030]">
                       <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Scope of Work</h4>
                       <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-line">{drawerInvoice.payload.contractScope}</p>
                     </div>
@@ -254,8 +254,8 @@ export default function ClientInvoicesPage() {
                 </div>
               )}
 
-              <div className="rounded-xl border border-slate-200 dark:border-slate-800 divide-y divide-slate-100 dark:divide-slate-800 mt-4">
-                <div className="p-3 bg-slate-50 dark:bg-slate-900/50 rounded-t-xl border-b border-slate-200 dark:border-slate-800">
+              <div className="rounded-xl border border-slate-200 dark:border-[#303030] divide-y divide-slate-100 dark:divide-[#303030] mt-4">
+                <div className="p-3 bg-slate-50 dark:bg-[#303030]/50 rounded-t-xl border-b border-slate-200 dark:border-[#303030]">
                   <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                     {drawerInvoice.payload?.type === "proposal" ? "Pricing Estimate" : drawerInvoice.payload?.type === "contract" ? "Payment Schedule" : "Services"}
                   </h4>
@@ -274,7 +274,7 @@ export default function ClientInvoicesPage() {
                 ))}
               </div>
 
-              <div className="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-slate-800">
+              <div className="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-[#303030]">
                 <span className="text-sm font-bold text-slate-900 dark:text-white">
                   {drawerInvoice.payload?.type === "proposal" ? "Total Estimated Investment" : drawerInvoice.payload?.type === "contract" ? "Total Contract Value" : "Total"}
                 </span>
@@ -289,7 +289,7 @@ export default function ClientInvoicesPage() {
               )}
 
               {drawerInvoice.payload?.type === "contract" && drawerInvoice.payload.contractTerms && (
-                <div className="rounded-xl bg-slate-50 dark:bg-slate-900/50 p-4 border border-slate-100 dark:border-slate-800 mt-4 max-h-48 overflow-y-auto">
+                <div className="rounded-xl bg-slate-50 dark:bg-[#303030]/50 p-4 border border-slate-100 dark:border-[#303030] mt-4 max-h-48 overflow-y-auto">
                   <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Legal Terms</h4>
                   <p className="text-xs text-slate-600 dark:text-slate-400 whitespace-pre-line">{drawerInvoice.payload.contractTerms}</p>
                 </div>

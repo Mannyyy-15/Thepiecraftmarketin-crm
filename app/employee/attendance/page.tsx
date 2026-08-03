@@ -16,6 +16,7 @@ import {
   getAttendancePageData,
   requestLeave,
 } from "@/app/actions/crm";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 function parseShiftTime(t: string) {
   const [time, period] = t.trim().split(/\s+/);
@@ -238,7 +239,7 @@ export default function EmployeeAttendancePage() {
     const holidayName = holidays[cell.dateStr];
 
     let statusType = "normal";
-    let bgBorderClass = "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 hover:border-indigo-500/50 hover:bg-slate-50 dark:hover:bg-slate-900/60";
+    let bgBorderClass = "bg-white dark:bg-[#303030] border-slate-200 dark:border-[#303030] text-slate-800 dark:text-slate-200 hover:border-indigo-500/50 hover:bg-slate-50 dark:hover:bg-[#303030]/60";
     let statusLabel = "Normal Work Day";
     let indicatorColor = "";
 
@@ -259,7 +260,7 @@ export default function EmployeeAttendancePage() {
       indicatorColor = "bg-rose-500";
     } else if (attRecord?.status === "off_duty") {
       statusType = "week-off";
-      bgBorderClass = "bg-slate-50/50 dark:bg-slate-900/40 border-slate-100 dark:border-slate-800/80 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-900/50";
+      bgBorderClass = "bg-slate-50/50 dark:bg-[#303030]/40 border-slate-100 dark:border-[#303030]/80 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-[#303030]/50";
       statusLabel = "Off Duty";
       indicatorColor = "bg-slate-300 dark:bg-slate-700";
     } else if (attRecord?.status === "half-day") {
@@ -288,18 +289,18 @@ export default function EmployeeAttendancePage() {
       }
     } else if (isToday) {
       statusType = "today-unpunched";
-      bgBorderClass = "bg-slate-50 dark:bg-slate-900 border-dashed border-indigo-500/40 text-indigo-600 dark:text-indigo-400 hover:border-indigo-500/50 hover:bg-indigo-500/5";
+      bgBorderClass = "bg-slate-50 dark:bg-[#303030] border-dashed border-indigo-500/40 text-indigo-600 dark:text-indigo-400 hover:border-indigo-500/50 hover:bg-indigo-500/5";
       statusLabel = "Not Checked In Yet";
       indicatorColor = "bg-slate-400";
     } else if (isFuture) {
       if (isWorkDay) {
         statusType = "scheduled";
-        bgBorderClass = "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 hover:border-indigo-500/50 hover:bg-slate-50 dark:hover:bg-slate-900/60";
+        bgBorderClass = "bg-white dark:bg-[#303030] border-slate-200 dark:border-[#303030] text-slate-800 dark:text-slate-200 hover:border-indigo-500/50 hover:bg-slate-50 dark:hover:bg-[#303030]/60";
         statusLabel = "Scheduled Shift";
         indicatorColor = "bg-indigo-500/40";
       } else {
         statusType = "week-off";
-        bgBorderClass = "bg-slate-50/50 dark:bg-slate-900/40 border-slate-100 dark:border-slate-800/80 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-900/50";
+        bgBorderClass = "bg-slate-50/50 dark:bg-[#303030]/40 border-slate-100 dark:border-[#303030]/80 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-[#303030]/50";
         statusLabel = "Off Duty (Week Off)";
         indicatorColor = "bg-slate-300 dark:bg-slate-700";
       }
@@ -311,14 +312,14 @@ export default function EmployeeAttendancePage() {
         indicatorColor = "bg-rose-500";
       } else {
         statusType = "week-off";
-        bgBorderClass = "bg-slate-50/50 dark:bg-slate-900/40 border-slate-100 dark:border-slate-800/80 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-900/50";
+        bgBorderClass = "bg-slate-50/50 dark:bg-[#303030]/40 border-slate-100 dark:border-[#303030]/80 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-[#303030]/50";
         statusLabel = "Off Duty (Week Off)";
         indicatorColor = "bg-slate-300 dark:bg-slate-700";
       }
     }
 
     if (!cell.isCurrentMonth) {
-      bgBorderClass = "opacity-40 bg-slate-50/20 dark:bg-slate-950/20 border-transparent text-slate-400 dark:text-slate-600 hover:bg-transparent";
+      bgBorderClass = "opacity-40 bg-slate-50/20 dark:bg-[#1f1f1f]/20 border-transparent text-slate-400 dark:text-slate-600 hover:bg-transparent";
     }
 
     return {
@@ -383,9 +384,10 @@ export default function EmployeeAttendancePage() {
 
   return (
     <div className="space-y-6 relative">
+      <PageHeader eyebrow="Time Tracking" title="Attendance & Leave" description="Punch in/out history, calendar, and leave requests." />
       {/* Toast Notification */}
       {attMessage && (
-        <div className="fixed top-6 right-6 z-50 p-4 bg-slate-900/90 dark:bg-slate-950/90 backdrop-blur-xl border border-indigo-500/30 rounded-2xl shadow-glow text-xs font-semibold text-white animate-fadeIn flex items-center gap-3">
+        <div className="fixed top-6 right-6 z-50 p-4 bg-slate-900/90 dark:bg-[#1f1f1f]/90 backdrop-blur-xl border border-indigo-500/30 rounded-2xl shadow-glow text-xs font-semibold text-white animate-fadeIn flex items-center gap-3">
           <span className="w-2.5 h-2.5 rounded-full bg-indigo-500 animate-pulse" />
           <span>{attMessage}</span>
         </div>
@@ -395,7 +397,7 @@ export default function EmployeeAttendancePage() {
       {isAttendanceLoading ? (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
           <div className="lg:col-span-2">
-            <Card className="border-slate-200/80 dark:border-slate-800 shadow-soft rounded-2xl overflow-hidden">
+            <Card className="border-slate-200/80 dark:border-[#303030] shadow-soft rounded-2xl overflow-hidden">
               <div className="p-5">
                 <div className="flex items-center justify-between mb-4">
                   <Skeleton className="h-5 w-32" />
@@ -410,7 +412,7 @@ export default function EmployeeAttendancePage() {
             </Card>
           </div>
           <div className="space-y-4">
-            <Card className="rounded-2xl border border-slate-200/80 dark:border-slate-800 p-5 space-y-4">
+            <Card className="rounded-2xl border border-slate-200/80 dark:border-[#303030] p-5 space-y-4">
               <Skeleton className="h-5 w-28" />
               <div className="grid grid-cols-2 gap-3">
                 {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-16 rounded-xl" />)}
@@ -423,8 +425,8 @@ export default function EmployeeAttendancePage() {
         
         {/* Left Column: Calendar History */}
         <div className="lg:col-span-2 space-y-4">
-          <Card className="border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-soft rounded-2xl overflow-hidden">
-            <CardHeader className="border-b border-slate-100 dark:border-slate-800/60 pb-4">
+          <Card className="border-slate-200/80 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] shadow-soft rounded-2xl overflow-hidden">
+            <CardHeader className="border-b border-slate-100 dark:border-[#303030]/60 pb-4">
               <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3">
                 <div>
                   <CardTitle className="text-base font-bold flex items-center gap-2">
@@ -433,10 +435,10 @@ export default function EmployeeAttendancePage() {
                 </div>
 
                 {/* Calendar Month Switcher */}
-                <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 p-1 rounded-xl w-fit">
+                <div className="flex items-center gap-2 bg-slate-50 dark:bg-[#303030] border border-slate-200/50 dark:border-[#303030] p-1 rounded-xl w-fit">
                   <button
                     onClick={handlePrevMonth}
-                    className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
+                    className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#303030] transition-all cursor-pointer"
                   >
                     <ChevronLeft className="h-4 w-4" />
                   </button>
@@ -445,7 +447,7 @@ export default function EmployeeAttendancePage() {
                   </span>
                   <button
                     onClick={handleNextMonth}
-                    className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
+                    className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#303030] transition-all cursor-pointer"
                   >
                     <ChevronRight className="h-4 w-4" />
                   </button>
@@ -512,7 +514,7 @@ export default function EmployeeAttendancePage() {
           </Card>
 
           {/* Color Legend */}
-          <Card className="border-slate-200/80 dark:border-slate-800/60 bg-slate-50/50 dark:bg-slate-900/40 shadow-soft rounded-2xl">
+          <Card className="border-slate-200/80 dark:border-[#303030]/60 bg-slate-50/50 dark:bg-[#303030]/40 shadow-soft rounded-2xl">
             <CardContent className="p-4 flex flex-wrap items-center justify-center gap-x-5 gap-y-2.5 text-[11px] font-bold text-slate-500 dark:text-slate-400">
               <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-emerald-500" /> Present</span>
               <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-orange-500" /> Half Day</span>
@@ -527,7 +529,7 @@ export default function EmployeeAttendancePage() {
 
         {/* Right Column: Leave Form */}
         <div className="lg:col-span-1 space-y-4">
-          <Card className="border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-950 shadow-soft rounded-2xl overflow-hidden relative">
+          <Card className="border-slate-200/80 dark:border-[#303030]/80 bg-white dark:bg-[#1f1f1f] shadow-soft rounded-2xl overflow-hidden relative">
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 to-brand-500" />
             
             <CardHeader className="pb-3">
@@ -545,7 +547,7 @@ export default function EmployeeAttendancePage() {
             <CardContent className="space-y-4">
               {/* Day Summary */}
               {selectedDaySummary && (
-                <div className="rounded-2xl border border-slate-200/70 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/40 p-3.5 space-y-2">
+                <div className="rounded-2xl border border-slate-200/70 dark:border-[#303030] bg-slate-50/60 dark:bg-[#303030]/40 p-3.5 space-y-2">
                   <span className="text-[9px] font-extrabold uppercase tracking-widest text-slate-400 block">Day Summary</span>
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200">
@@ -572,7 +574,7 @@ export default function EmployeeAttendancePage() {
                   <select
                     value={reqLeaveType}
                     onChange={(e) => setReqLeaveType(e.target.value)}
-                    className="w-full h-9 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/40 text-slate-700 dark:text-slate-300"
+                    className="w-full h-9 rounded-xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#303030] px-3 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/40 text-slate-700 dark:text-slate-300"
                   >
                     <option value="sick">Sick Leave ✚</option>
                     <option value="vacation">Vacation / Holiday ⛱</option>
@@ -591,7 +593,7 @@ export default function EmployeeAttendancePage() {
                       required
                       value={reqStartDate}
                       onChange={(e) => setReqStartDate(e.target.value)}
-                      className="w-full h-9 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/40 text-slate-700 dark:text-slate-300"
+                      className="w-full h-9 rounded-xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#303030] px-3 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/40 text-slate-700 dark:text-slate-300"
                     />
                   </div>
                   <div>
@@ -603,7 +605,7 @@ export default function EmployeeAttendancePage() {
                       required
                       value={reqEndDate}
                       onChange={(e) => setReqEndDate(e.target.value)}
-                      className="w-full h-9 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/40 text-slate-700 dark:text-slate-300"
+                      className="w-full h-9 rounded-xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#303030] px-3 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/40 text-slate-700 dark:text-slate-300"
                     />
                   </div>
                 </div>
@@ -618,7 +620,7 @@ export default function EmployeeAttendancePage() {
                     value={reqReason}
                     onChange={(e) => setReqReason(e.target.value)}
                     placeholder="Enter reason..."
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-2.5 text-xs leading-relaxed text-slate-700 dark:text-slate-350 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 font-semibold"
+                    className="w-full rounded-xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] p-2.5 text-xs leading-relaxed text-slate-700 dark:text-slate-350 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 font-semibold"
                   />
                 </div>
 
@@ -633,8 +635,8 @@ export default function EmployeeAttendancePage() {
           </Card>
 
           {/* Recent Leaves Card */}
-          <Card className="border-slate-200/80 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/60 shadow-soft rounded-2xl overflow-hidden">
-            <CardHeader className="py-3 px-4 border-b border-slate-100 dark:border-slate-800/60">
+          <Card className="border-slate-200/80 dark:border-[#303030]/80 bg-slate-50/50 dark:bg-[#303030]/60 shadow-soft rounded-2xl overflow-hidden">
+            <CardHeader className="py-3 px-4 border-b border-slate-100 dark:border-[#303030]/60">
               <span className="text-[9px] font-extrabold uppercase tracking-widest text-slate-400 block">History</span>
               <CardTitle className="text-xs font-bold text-slate-800 dark:text-slate-200">
                 Recent Leave Logs
@@ -646,7 +648,7 @@ export default function EmployeeAttendancePage() {
                   <p className="text-[11px] text-slate-400 dark:text-slate-500 italic py-3 text-center">No leaves requested yet.</p>
                 ) : (
                   myLeaves.slice(-4).reverse().map((leave) => (
-                    <div key={leave.id} className="flex justify-between items-center p-3 rounded-xl bg-white/70 dark:bg-slate-950/50 border border-slate-200/60 dark:border-slate-800 text-[11px]">
+                    <div key={leave.id} className="flex justify-between items-center p-3 rounded-xl bg-white/70 dark:bg-[#1f1f1f]/50 border border-slate-200/60 dark:border-[#303030] text-[11px]">
                       <div className="truncate mr-2">
                         <span className="font-bold text-slate-800 dark:text-slate-200 capitalize">{leave.leaveType} Leave</span>
                         <span className="block text-[9px] text-slate-500 dark:text-slate-500 font-medium mt-0.5">{leave.startDate} → {leave.endDate}</span>

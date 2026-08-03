@@ -30,6 +30,7 @@ import {
 } from "@/app/actions/crm";
 import { getProjectStatusVariant, getProjectStatusLabel } from "@/lib/statusHelpers";
 import { useRefreshOnFocus } from "@/lib/use-refresh-on-focus";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 interface Task {
   id: number;
@@ -383,7 +384,7 @@ export default function OverviewPage({ initialData }: OverviewPageProps) {
     return (
       <div className="space-y-5">
         <KpiCardsSkeleton count={4} />
-        <Card className="border border-slate-200/80 dark:border-slate-800/60 rounded-2xl">
+        <Card className="border border-slate-200/80 dark:border-[#303030]/60 rounded-2xl">
           <div className="p-5 space-y-4">
             <div className="flex items-center justify-between">
               <Skeleton className="h-5 w-32" />
@@ -396,7 +397,7 @@ export default function OverviewPage({ initialData }: OverviewPageProps) {
             <Skeleton className="h-56 w-full rounded-xl" />
           </div>
         </Card>
-        <Card className="border border-slate-200/80 dark:border-slate-800/60 rounded-2xl">
+        <Card className="border border-slate-200/80 dark:border-[#303030]/60 rounded-2xl">
           <div className="p-5 space-y-3">
             <Skeleton className="h-5 w-24" />
             <TaskListSkeleton count={4} />
@@ -408,6 +409,7 @@ export default function OverviewPage({ initialData }: OverviewPageProps) {
 
   return (
     <div className="space-y-5">
+      <PageHeader eyebrow="My Week" title="Overview" description="Your week at a glance — hours, tasks, and projects." />
       {/* Reorder wrapper: mobile = chart first, desktop = KPIs first */}
       <div className="flex flex-col gap-5">
 
@@ -455,7 +457,7 @@ export default function OverviewPage({ initialData }: OverviewPageProps) {
 
         {/* Working Hours — order-1 on mobile, order-2 on desktop */}
         <div className="order-1 sm:order-2">
-          <Card className="border-slate-200/80 dark:border-[#2e2e33] bg-white dark:bg-[#18181b] shadow-soft rounded-2xl overflow-hidden">
+          <Card className="border-slate-200/80 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] shadow-soft rounded-2xl overflow-hidden">
             <CardContent className="p-4 sm:p-6">
               {/* Header row: title + pills + date inputs */}
               <div className="flex flex-col gap-3 mb-5">
@@ -599,19 +601,19 @@ export default function OverviewPage({ initialData }: OverviewPageProps) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Task Checklist */}
         <div className="lg:col-span-2">
-          <Card className="border-slate-200/80 dark:border-[#2e2e33] bg-white dark:bg-[#18181b] shadow-soft rounded-2xl overflow-hidden h-full flex flex-col">
-            <CardHeader className="border-b border-slate-100 dark:border-[#2e2e33] pb-3 flex flex-row items-center justify-between flex-wrap gap-2">
+          <Card className="border-slate-200/80 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] shadow-soft rounded-2xl overflow-hidden h-full flex flex-col">
+            <CardHeader className="border-b border-slate-100 dark:border-[#303030] pb-3 flex flex-row items-center justify-between flex-wrap gap-2">
               <CardTitle className="text-sm font-bold flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4 text-brand-600 dark:text-brand-300" /> Tasks
               </CardTitle>
-              <div className="flex gap-1 bg-slate-50 dark:bg-brand-950/30 p-0.5 rounded-lg border border-slate-200 dark:border-[#2e2e33]">
+              <div className="flex gap-1 bg-slate-50 dark:bg-brand-950/30 p-0.5 rounded-lg border border-slate-200 dark:border-[#303030]">
                 {(["pending", "completed", "all"] as const).map((filter) => (
                   <button
                     key={filter}
                     onClick={() => setTaskFilter(filter)}
                     className={`px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wider rounded-md transition-all cursor-pointer ${
                       taskFilter === filter
-                        ? "bg-white dark:bg-[#18181b] text-brand-600 dark:text-brand-300 shadow-sm"
+                        ? "bg-white dark:bg-[#1f1f1f] text-brand-600 dark:text-brand-300 shadow-sm"
                         : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
                     }`}
                   >
@@ -683,8 +685,8 @@ export default function OverviewPage({ initialData }: OverviewPageProps) {
 
         {/* Shift Details */}
         <div className="lg:col-span-1">
-          <Card className="border-slate-200/80 dark:border-[#2e2e33] bg-white dark:bg-[#18181b] shadow-soft rounded-2xl overflow-hidden">
-            <CardHeader className="py-3 px-5 border-b border-slate-100 dark:border-[#2e2e33]">
+          <Card className="border-slate-200/80 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] shadow-soft rounded-2xl overflow-hidden">
+            <CardHeader className="py-3 px-5 border-b border-slate-100 dark:border-[#303030]">
               <CardTitle className="text-xs font-bold">Shift Details</CardTitle>
             </CardHeader>
             <CardContent className="p-4 sm:p-5">
@@ -716,8 +718,8 @@ export default function OverviewPage({ initialData }: OverviewPageProps) {
       </div>
 
       {/* Assigned Projects */}
-      <Card className="border-slate-200/80 dark:border-[#2e2e33] bg-white dark:bg-[#18181b] shadow-soft rounded-2xl overflow-hidden">
-        <CardHeader className="border-b border-slate-100 dark:border-[#2e2e33] pb-3.5">
+      <Card className="border-slate-200/80 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] shadow-soft rounded-2xl overflow-hidden">
+        <CardHeader className="border-b border-slate-100 dark:border-[#303030] pb-3.5">
           <CardTitle className="text-sm font-bold flex items-center gap-2">
             <FolderKanban className="h-4.5 w-4.5 text-brand-600 dark:text-brand-300" /> Assigned Projects
           </CardTitle>
@@ -733,7 +735,7 @@ export default function OverviewPage({ initialData }: OverviewPageProps) {
                 return (
                   <Card
                     key={project.id}
-                    className="border-slate-200 dark:border-[#2e2e33] hover:border-brand-400/30 dark:hover:border-brand-600/40 hover:shadow-soft transition-all duration-200 bg-white dark:bg-[#18181b]"
+                    className="border-slate-200 dark:border-[#303030] hover:border-brand-400/30 dark:hover:border-brand-600/40 hover:shadow-soft transition-all duration-200 bg-white dark:bg-[#1f1f1f]"
                   >
                     <CardContent className="p-4 space-y-3">
                       <div className="flex justify-between items-start gap-2">

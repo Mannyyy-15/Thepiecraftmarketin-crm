@@ -176,12 +176,12 @@ export default function PortalTopNav({ onMenuClick }: { onMenuClick?: () => void
   };
 
   return (
-    <header className="z-30 mx-3 mt-3 sm:mx-4 sm:mt-4 lg:mx-6 lg:mt-5 flex h-14 sm:h-16 shrink-0 items-center gap-3 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white/85 dark:bg-slate-950/85 backdrop-blur-xl shadow-soft px-3 sm:px-4">
+    <header className="z-30 mx-3 mt-3 sm:mx-4 sm:mt-4 lg:mx-6 lg:mt-5 flex h-14 sm:h-16 shrink-0 items-center gap-3 rounded-[20px] bg-white/90 dark:bg-[#1f1f1f]/95 backdrop-blur-xl px-4 sm:px-5 shadow-[0_2px_12px_rgba(0,0,0,0.07)] dark:shadow-none dark:border dark:border-[#303030]">
       {onMenuClick && (
         <button
           type="button"
           onClick={onMenuClick}
-          className="lg:hidden -ml-2 inline-flex h-9 w-9 items-center justify-center rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+          className="lg:hidden -ml-2 inline-flex h-9 w-9 items-center justify-center rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#303030] cursor-pointer"
           aria-label="Open menu"
         >
           <Menu className="h-5 w-5" />
@@ -199,7 +199,7 @@ export default function PortalTopNav({ onMenuClick }: { onMenuClick?: () => void
         {/* Help Message Shortcut */}
         <button
           onClick={() => setActiveModal("message")}
-          className="hidden sm:inline-flex items-center gap-2 h-9 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+          className="hidden sm:inline-flex items-center gap-2 h-9 rounded-xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#303030] px-3 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-[#303030] transition-colors cursor-pointer"
         >
           <MessageSquare className="h-4 w-4 text-portal-600 dark:text-portal-400" />
           Message Lead
@@ -211,10 +211,10 @@ export default function PortalTopNav({ onMenuClick }: { onMenuClick?: () => void
           className="relative hidden sm:block w-48 md:w-64 cursor-pointer group"
         >
           <Search className="pointer-events-none absolute inset-y-0 left-3 h-full w-4 text-slate-400 group-hover:text-brand-500 transition-colors" />
-          <div className="h-9 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 pl-9 pr-12 text-xs text-slate-450 dark:text-slate-500 flex items-center select-none">
-            Search projects, invoices…
+          <div className="h-9 w-full rounded-xl border border-slate-200 dark:border-[#303030] bg-slate-50 dark:bg-[#303030] pl-9 pr-12 text-xs text-slate-450 dark:text-slate-500 flex items-center select-none">
+            Search projects, invoicesâ€¦
           </div>
-          <kbd className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center gap-0.5 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-1.5 py-0.5 text-[9px] font-medium text-slate-500 dark:text-slate-400">
+          <kbd className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center gap-0.5 rounded-md border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#303030] px-1.5 py-0.5 text-[9px] font-medium text-slate-500 dark:text-slate-400">
             <Command className="h-2 w-2" />K
           </kbd>
         </div>
@@ -223,7 +223,7 @@ export default function PortalTopNav({ onMenuClick }: { onMenuClick?: () => void
         <button
           type="button"
           onClick={() => setShowSearchModal(true)}
-          className="sm:hidden inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
+          className="sm:hidden inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#303030] text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#303030] cursor-pointer"
           aria-label="Search"
         >
           <Search className="h-4 w-4" />
@@ -237,10 +237,10 @@ export default function PortalTopNav({ onMenuClick }: { onMenuClick?: () => void
               setShowQuickActions(!showQuickActions);
               setShowNotifications(false);
             }}
-            className={`inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 transition-all cursor-pointer ${
+            className={`inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 dark:border-[#303030] text-slate-600 dark:text-slate-300 transition-all cursor-pointer ${
               showQuickActions 
                 ? "bg-indigo-600 text-white shadow-glow border-indigo-600" 
-                : "bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800"
+                : "bg-white dark:bg-[#303030] hover:bg-slate-50 dark:hover:bg-[#303030]"
             }`}
             title="Submit Briefs & Requests"
           >
@@ -248,7 +248,7 @@ export default function PortalTopNav({ onMenuClick }: { onMenuClick?: () => void
           </button>
 
           {showQuickActions && (
-            <div className="absolute right-0 mt-2.5 w-56 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-2.5 shadow-xl z-50 animate-fadeIn">
+            <div className="absolute right-0 mt-2.5 w-56 rounded-2xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#303030] p-2.5 shadow-xl z-50 animate-fadeIn">
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-2.5 py-1 mb-1">Actions</p>
               
               <button
@@ -283,10 +283,10 @@ export default function PortalTopNav({ onMenuClick }: { onMenuClick?: () => void
               setShowNotifications(true);
               setShowQuickActions(false);
             }}
-            className={`relative inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 transition-all cursor-pointer ${
+            className={`relative inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 dark:border-[#303030] transition-all cursor-pointer ${
               showNotifications
-                ? "bg-slate-100 dark:bg-slate-800 text-indigo-600"
-                : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                ? "bg-slate-100 dark:bg-[#303030] text-indigo-600"
+                : "bg-white dark:bg-[#303030] text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#303030]"
             }`}
             aria-label="Notifications"
           >
@@ -316,18 +316,18 @@ export default function PortalTopNav({ onMenuClick }: { onMenuClick?: () => void
       </div>
 
       {/* ========================================================================= */}
-      {/* 🔍 CLIENT SEARCH MODAL */}
+      {/* ðŸ” CLIENT SEARCH MODAL */}
       {/* ========================================================================= */}
       {showSearchModal && (
         <div 
-          className="fixed inset-0 z-50 bg-slate-950/40 dark:bg-slate-950/70 backdrop-blur-md flex items-start justify-center pt-[10vh] px-4 animate-fadeIn"
+          className="fixed inset-0 z-50 bg-slate-950/40 dark:bg-[#1f1f1f]/70 backdrop-blur-md flex items-start justify-center pt-[10vh] px-4 animate-fadeIn"
           onClick={() => setShowSearchModal(false)}
         >
           <div 
-            className="w-full max-w-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl overflow-hidden animate-scaleIn"
+            className="w-full max-w-2xl bg-white dark:bg-[#303030] border border-slate-200 dark:border-[#303030] rounded-2xl shadow-2xl overflow-hidden animate-scaleIn"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="relative p-4 border-b border-slate-100 dark:border-slate-800/80">
+            <div className="relative p-4 border-b border-slate-100 dark:border-[#303030]/80">
               <Search className="absolute left-7 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none" />
               <input
                 type="search"
@@ -335,7 +335,7 @@ export default function PortalTopNav({ onMenuClick }: { onMenuClick?: () => void
                 placeholder="Search active projects, pending invoices, brand assets..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-11 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-850 rounded-xl pl-11 pr-12 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500/40"
+                className="w-full h-11 bg-slate-50 dark:bg-[#1f1f1f] border border-slate-200 dark:border-[#303030] rounded-xl pl-11 pr-12 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500/40"
               />
               <button
                 onClick={() => setShowSearchModal(false)}
@@ -357,10 +357,10 @@ export default function PortalTopNav({ onMenuClick }: { onMenuClick?: () => void
                     setShowSearchModal(false);
                     router.push(item.url);
                   }}
-                  className="w-full text-left p-2.5 rounded-xl text-slate-700 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-indigo-600 dark:hover:text-white flex items-center justify-between cursor-pointer group transition-all"
+                  className="w-full text-left p-2.5 rounded-xl text-slate-700 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-[#303030]/60 hover:text-indigo-600 dark:hover:text-white flex items-center justify-between cursor-pointer group transition-all"
                 >
                   <div className="min-w-0 flex-1 flex items-center gap-3">
-                    <div className="h-7 w-7 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
+                    <div className="h-7 w-7 rounded-lg bg-slate-100 dark:bg-[#303030] flex items-center justify-center shrink-0">
                       {item.category === "Project" && <Briefcase className="h-3.5 w-3.5 text-emerald-500" />}
                       {item.category === "Invoice" && <DollarSign className="h-3.5 w-3.5 text-blue-500" />}
                       {item.category === "Document" && <FileText className="h-3.5 w-3.5 text-amber-500" />}
@@ -371,7 +371,7 @@ export default function PortalTopNav({ onMenuClick }: { onMenuClick?: () => void
                       <p className="text-[10px] text-slate-450 dark:text-slate-500 truncate leading-snug">{item.details}</p>
                     </div>
                   </div>
-                  <span className="text-[9px] font-bold uppercase px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 shrink-0 select-none">
+                  <span className="text-[9px] font-bold uppercase px-2 py-0.5 rounded bg-slate-100 dark:bg-[#303030] text-slate-500 shrink-0 select-none">
                     {item.category}
                   </span>
                 </div>
@@ -388,14 +388,14 @@ export default function PortalTopNav({ onMenuClick }: { onMenuClick?: () => void
       )}
 
       {/* ========================================================================= */}
-      {/* 🎁 CLIENT MODALS */}
+      {/* ðŸŽ CLIENT MODALS */}
       {/* ========================================================================= */}
       
       {/* 1. Request Project */}
       {activeModal === "project" && (
-        <div className="fixed inset-0 z-50 bg-slate-950/40 dark:bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-850 rounded-2xl p-5 shadow-2xl animate-scaleIn">
-            <div className="flex justify-between items-center pb-4 border-b dark:border-slate-800">
+        <div className="fixed inset-0 z-50 bg-slate-950/40 dark:bg-[#1f1f1f]/70 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-white dark:bg-[#303030] border border-slate-200 dark:border-[#303030] rounded-2xl p-5 shadow-2xl animate-scaleIn">
+            <div className="flex justify-between items-center pb-4 border-b dark:border-[#303030]">
               <span className="text-sm font-bold flex items-center gap-2">
                 <Briefcase className="h-4.5 w-4.5 text-indigo-500" /> Request Creative Project
               </span>
@@ -412,7 +412,7 @@ export default function PortalTopNav({ onMenuClick }: { onMenuClick?: () => void
                   placeholder="e.g. Q4 Performance Landing Page"
                   value={qProjName}
                   onChange={(e) => setQProjName(e.target.value)}
-                  className="w-full h-10 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-xs focus:ring-2 focus:ring-indigo-500/40 text-slate-800 dark:text-white"
+                  className="w-full h-10 rounded-xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] px-3 text-xs focus:ring-2 focus:ring-indigo-500/40 text-slate-800 dark:text-white"
                 />
               </div>
               <div>
@@ -421,7 +421,7 @@ export default function PortalTopNav({ onMenuClick }: { onMenuClick?: () => void
                   placeholder="Specify key parameters, audience groups, and assets..."
                   value={qProjDesc}
                   onChange={(e) => setQProjDesc(e.target.value)}
-                  className="w-full h-20 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-3 text-xs focus:ring-2 focus:ring-indigo-500/40 text-slate-800 dark:text-white resize-none"
+                  className="w-full h-20 rounded-xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] p-3 text-xs focus:ring-2 focus:ring-indigo-500/40 text-slate-800 dark:text-white resize-none"
                 />
               </div>
               <button type="submit" className="w-full h-10 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-md">
@@ -434,9 +434,9 @@ export default function PortalTopNav({ onMenuClick }: { onMenuClick?: () => void
 
       {/* 2. Message Account Manager */}
       {activeModal === "message" && (
-        <div className="fixed inset-0 z-50 bg-slate-950/40 dark:bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-850 rounded-2xl p-5 shadow-2xl animate-scaleIn">
-            <div className="flex justify-between items-center pb-4 border-b dark:border-slate-800">
+        <div className="fixed inset-0 z-50 bg-slate-950/40 dark:bg-[#1f1f1f]/70 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-white dark:bg-[#303030] border border-slate-200 dark:border-[#303030] rounded-2xl p-5 shadow-2xl animate-scaleIn">
+            <div className="flex justify-between items-center pb-4 border-b dark:border-[#303030]">
               <span className="text-sm font-bold flex items-center gap-2">
                 <MessageSquare className="h-4.5 w-4.5 text-indigo-500" /> Send Account Message
               </span>
@@ -452,7 +452,7 @@ export default function PortalTopNav({ onMenuClick }: { onMenuClick?: () => void
                   placeholder="Type a message or brief update to your account team..."
                   value={qMsgText}
                   onChange={(e) => setQMsgText(e.target.value)}
-                  className="w-full h-24 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-3 text-xs focus:ring-2 focus:ring-indigo-500/40 text-slate-800 dark:text-white resize-none"
+                  className="w-full h-24 rounded-xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] p-3 text-xs focus:ring-2 focus:ring-indigo-500/40 text-slate-800 dark:text-white resize-none"
                 />
               </div>
               <button type="submit" className="w-full h-10 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-md">
@@ -465,9 +465,9 @@ export default function PortalTopNav({ onMenuClick }: { onMenuClick?: () => void
 
       {/* 3. Submit Document / Asset */}
       {activeModal === "upload" && (
-        <div className="fixed inset-0 z-50 bg-slate-950/40 dark:bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-850 rounded-2xl p-5 shadow-2xl animate-scaleIn">
-            <div className="flex justify-between items-center pb-4 border-b dark:border-slate-800">
+        <div className="fixed inset-0 z-50 bg-slate-950/40 dark:bg-[#1f1f1f]/70 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-white dark:bg-[#303030] border border-slate-200 dark:border-[#303030] rounded-2xl p-5 shadow-2xl animate-scaleIn">
+            <div className="flex justify-between items-center pb-4 border-b dark:border-[#303030]">
               <span className="text-sm font-bold flex items-center gap-2">
                 <Upload className="h-4.5 w-4.5 text-indigo-500" /> Submit Brand Deliverable
               </span>
@@ -484,7 +484,7 @@ export default function PortalTopNav({ onMenuClick }: { onMenuClick?: () => void
                   placeholder="e.g. Brand assets.zip"
                   value={qDocName}
                   onChange={(e) => setQDocName(e.target.value)}
-                  className="w-full h-10 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-xs focus:ring-2 focus:ring-indigo-500/40 text-slate-800 dark:text-white"
+                  className="w-full h-10 rounded-xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] px-3 text-xs focus:ring-2 focus:ring-indigo-500/40 text-slate-800 dark:text-white"
                 />
               </div>
               <button type="submit" className="w-full h-10 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-md">
@@ -496,7 +496,7 @@ export default function PortalTopNav({ onMenuClick }: { onMenuClick?: () => void
       )}
 
       {/* ========================================================================= */}
-      {/* 🚀 CLIENT TOAST MESSAGING POPUP NOTIFIER */}
+      {/* ðŸš€ CLIENT TOAST MESSAGING POPUP NOTIFIER */}
       {/* ========================================================================= */}
       <div className="fixed bottom-5 right-5 z-55 flex flex-col gap-2.5 max-w-sm w-full pointer-events-none">
         {toasts.map((t) => (
