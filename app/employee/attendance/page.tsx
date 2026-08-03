@@ -17,6 +17,24 @@ import {
   requestLeave,
 } from "@/app/actions/crm";
 
+function parseShiftTime(t: string) {
+  const [time, period] = t.trim().split(/\s+/);
+  const [h, m] = time.split(":").map(Number);
+  const hour = period === "PM" && h !== 12 ? h + 12 : period === "AM" && h === 12 ? 0 : h;
+  return ((hour * 60 + (m || 0)) % 1440 + 1440) % 1440;
+}
+
+function shiftDurationMins(start: string, end: string) {
+  const diff = parseShiftTime(end) - parseShiftTime(start);
+  return diff > 0 ? diff : diff + 1440;
+}
+
+function formatDuration(mins: number) {
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return m === 0 ? `${h}h` : `${h}h ${m}m`;
+}
+
 export default function EmployeeAttendancePage() {
   const { toast, confirmDialog } = useToast();
 
@@ -252,7 +270,9 @@ export default function EmployeeAttendancePage() {
     } else if (attRecord && (attRecord.punchInTime || attRecord.status === "checked_in" || attRecord.status === "present")) {
       statusType = "present";
       bgBorderClass = "bg-emerald-500/5 dark:bg-emerald-500/10 border-emerald-500/30 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400 hover:border-emerald-500/50 hover:bg-emerald-500/10";
-      statusLabel = attRecord.punchInTime ? "Punched Present" : "Present (Admin)";
+      statusLabel = attRecord.punchInTime
+        ? "Punched Present"
+        : `Present · Full Day (${formatDuration(shiftDurationMins(user?.shiftStartTime || "09:00 AM", user?.shiftEndTime || "05:00 PM"))})`;
       indicatorColor = "bg-emerald-500";
     } else if (leaveRecord) {
       if (leaveRecord.status === "approved") {
@@ -319,6 +339,47 @@ export default function EmployeeAttendancePage() {
 
   const activeSelectedCell = calendarCells.find(c => c.dateStr === selectedCalendarDate);
   const activeSelectedMeta = activeSelectedCell ? getCellMeta(activeSelectedCell) : null;
+
+  const selectedAtt = activeSelectedCell ? myAttendanceList.find(a => a.date === activeSelectedCell.dateStr) : null;
+
+  const selectedDaySummary = (() => {
+    if (!selectedAtt) return null;
+    const shiftStart = user?.shiftStartTime || "09:00 AM";
+    const shiftEnd = user?.shiftEndTime || "05:00 PM";
+    if (selectedAtt.status === "vacation" || selectedAtt.status === "on-leave") {
+      return { label: "Vacation / Holiday", line: "Approved time off", badge: "bg-amber-500" };
+    }
+    if (selectedAtt.status === "sick") {
+      return { label: "Sick Leave", line: "Reported sick", badge: "bg-rose-500" };
+    }
+    if (selectedAtt.status === "off_duty") {
+      return { label: "Off Duty", line: "Scheduled week off", badge: "bg-slate-300 dark:bg-slate-600" };
+    }
+    if (selectedAtt.status === "half-day") {
+      return { label: "Half Day Shift", line: "Half-day work", badge: "bg-orange-500" };
+    }
+    if (selectedAtt.punchInTime) {
+      const pin = new Date(selectedAtt.punchInTime);
+      const pout = selectedAtt.punchOutTime ? new Date(selectedAtt.punchOutTime) : null;
+      const fmt = (d: Date) => d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+      const hours = pout ? Math.max(0, (pout.getTime() - pin.getTime()) / 3600000) : null;
+      return {
+        label: "Punched Present",
+        line: pout
+          ? `In ${fmt(pin)} · Out ${fmt(pout)} · ${hours!.toFixed(1)}h worked`
+          : `In ${fmt(pin)} · currently on shift`,
+        badge: "bg-emerald-500",
+      };
+    }
+    if (selectedAtt.status === "present" || selectedAtt.status === "checked_in") {
+      return {
+        label: "Present · Full Day",
+        line: `${shiftStart} – ${shiftEnd} · ${formatDuration(shiftDurationMins(shiftStart, shiftEnd))} completed`,
+        badge: "bg-emerald-500",
+      };
+    }
+    return { label: "Present", line: "Marked present", badge: "bg-emerald-500" };
+  })();
 
   return (
     <div className="space-y-6 relative">
@@ -482,6 +543,22 @@ export default function EmployeeAttendancePage() {
             </CardHeader>
             
             <CardContent className="space-y-4">
+              {/* Day Summary */}
+              {selectedDaySummary && (
+                <div className="rounded-2xl border border-slate-200/70 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/40 p-3.5 space-y-2">
+                  <span className="text-[9px] font-extrabold uppercase tracking-widest text-slate-400 block">Day Summary</span>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200">
+                      {selectedDaySummary.label}
+                    </span>
+                    <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${selectedDaySummary.badge}`} />
+                  </div>
+                  <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-400">
+                    {selectedDaySummary.line}
+                  </p>
+                </div>
+              )}
+
               {/* Leave Form */}
               <form onSubmit={handleRequestLeave} className="space-y-3.5">
                 <span className="text-[9px] font-extrabold uppercase tracking-widest text-slate-400 block mb-1">

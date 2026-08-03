@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { App } from "@capacitor/app";
-import { Capacitor } from "@capacitor/core";
+import { Capacitor, registerPlugin } from "@capacitor/core";
+import type { PluginListenerHandle } from "@capacitor/core";
 import { Download, Loader2, RefreshCw, ShieldCheck, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
@@ -17,14 +18,27 @@ interface UpdateManifest {
   notes: readonly string[];
 }
 
+interface AppUpdaterPlugin {
+  install(options: { url: string; sha256: string }): Promise<{ status: string }>;
+  addListener(eventName: "downloadProgress", listenerFunc: (event: { percent: number }) => void): Promise<PluginListenerHandle>;
+}
+
+const AppUpdater = registerPlugin<AppUpdaterPlugin>("AppUpdater", {
+  install: async () => ({ status: "unsupported" }),
+  addListener: async () => ({ remove: async () => {} }),
+});
+
 const SNOOZE_KEY = "thepiecraft.native-update.snoozed-until";
 
 export default function NativeUpdatePrompt() {
   const [manifest, setManifest] = useState<UpdateManifest | null>(null);
   const [installedVersion, setInstalledVersion] = useState(1);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadPercent, setDownloadPercent] = useState<number | null>(null);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
 
   const checkForUpdate = useCallback(async () => {
+    if (!Capacitor.isNativePlatform()) return;
     try {
       let currentVersion = 1;
       if (Capacitor.isNativePlatform()) {
@@ -59,17 +73,28 @@ export default function NativeUpdatePrompt() {
   const handleInstall = async () => {
     if (!manifest) return;
     setIsDownloading(true);
+    setDownloadError(null);
+    setDownloadPercent(null);
     try {
-      const downloadUrl = manifest.apkUrl.startsWith("http")
-        ? manifest.apkUrl
-        : `${window.location.origin}${manifest.apkUrl}`;
-      window.location.href = downloadUrl;
-    } catch {
-      /* fallback */
+      const result = await AppUpdater.install({ url: manifest.apkUrl, sha256: manifest.sha256 });
+      if (result.status === "permission_required") {
+        setDownloadError("Allow ThePieCraft CRM to install unknown apps in the screen that opened, then tap Update Now again.");
+      }
+    } catch (e: any) {
+      setDownloadError(e?.message || "The update failed to download.");
     } finally {
-      setTimeout(() => setIsDownloading(false), 3000);
+      setIsDownloading(false);
     }
   };
+
+  useEffect(() => {
+    if (!manifest || !Capacitor.isNativePlatform()) return;
+    let listener: PluginListenerHandle | undefined;
+    AppUpdater.addListener("downloadProgress", ({ percent }) => setDownloadPercent(percent))
+      .then((l) => { listener = l; })
+      .catch(() => {});
+    return () => { void listener?.remove(); };
+  }, [manifest]);
 
   useEffect(() => {
     void checkForUpdate();
@@ -88,6 +113,7 @@ export default function NativeUpdatePrompt() {
     };
   }, [checkForUpdate]);
 
+  if (!Capacitor.isNativePlatform()) return null;
   if (!manifest) return null;
 
   const isMandatory = installedVersion < manifest.minimumVersionCode;
@@ -131,6 +157,28 @@ export default function NativeUpdatePrompt() {
           </ul>
         </div>
 
+        {/* Download progress */}
+        {isDownloading && downloadPercent !== null && (
+          <div>
+            <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-brand-600 to-indigo-600 transition-all duration-200"
+                style={{ width: `${downloadPercent}%` }}
+              />
+            </div>
+            <p className="mt-1.5 text-[10px] font-bold text-slate-400 text-right tabular-nums">
+              {downloadPercent}%
+            </p>
+          </div>
+        )}
+
+        {/* Error / permission hint */}
+        {downloadError && (
+          <p className="text-[11px] font-semibold text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-xl px-3 py-2">
+            {downloadError}
+          </p>
+        )}
+
         {/* Actions */}
         <div className="flex items-center gap-3 pt-1">
           {!isMandatory && (
@@ -138,6 +186,7 @@ export default function NativeUpdatePrompt() {
               type="button"
               variant="outline"
               className="flex-1 border-white/10 text-slate-300 hover:bg-white/5"
+              disabled={isDownloading}
               onClick={() => {
                 window.localStorage.setItem(SNOOZE_KEY, String(Date.now() + 6 * 60 * 60 * 1000));
                 setManifest(null);
@@ -153,11 +202,16 @@ export default function NativeUpdatePrompt() {
             disabled={isDownloading}
           >
             {isDownloading ? (
-              <Loader2 className="h-4 w-4 animate-spin mr-1.5" />
+              <>
+                <Loader2 className="h-4 w-4 animate-spin mr-1.5" />
+                {downloadPercent !== null ? `Downloading ${downloadPercent}%` : "Downloading..."}
+              </>
             ) : (
-              <Download className="h-4 w-4 mr-1.5" />
+              <>
+                <Download className="h-4 w-4 mr-1.5" />
+                Update Now
+              </>
             )}
-            {isDownloading ? "Updating..." : "Update Now"}
           </Button>
         </div>
 

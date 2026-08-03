@@ -82,7 +82,14 @@ function addDays(dateStr: string, days: number) {
   return toLocalDateStr(date);
 }
 
-function computeHoursFromAttendance(attendance: any[], startStr: string, endStr: string) {
+function parseShiftMinutes(t: string) {
+  const [time, period] = t.trim().split(/\s+/);
+  const [h, m] = time.split(":").map(Number);
+  const hour = period === "PM" && h !== 12 ? h + 12 : period === "AM" && h === 12 ? 0 : h;
+  return ((hour * 60 + (m || 0)) % 1440 + 1440) % 1440;
+}
+
+function computeHoursFromAttendance(attendance: any[], startStr: string, endStr: string, shiftStart = "09:00 AM", shiftEnd = "05:00 PM") {
   const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const result: { day: string; hours: number; isWeekend: boolean; absent: boolean }[] = [];
   const [sy, sm, sd] = startStr.split("-").map(Number);
@@ -91,6 +98,8 @@ function computeHoursFromAttendance(attendance: any[], startStr: string, endStr:
   const end = new Date(ey, em - 1, ed);
   if (isNaN(start.getTime()) || isNaN(end.getTime()) || start > end) return result;
   const todayStr = toLocalDateStr(new Date());
+  const shiftDiff = parseShiftMinutes(shiftEnd) - parseShiftMinutes(shiftStart);
+  const shiftMins = shiftDiff > 0 ? shiftDiff : 480; // overnight or malformed shift -> 8h default
   const cur = new Date(start);
   while (cur <= end) {
     const dateStr = toLocalDateStr(cur);
@@ -104,6 +113,9 @@ function computeHoursFromAttendance(attendance: any[], startStr: string, endStr:
         ? new Date(dayAtt.punchOutTime).getTime()
         : dateStr === todayStr ? Date.now() : 0;
       if (pout > pin) hours = Math.max(0, (pout - pin) / 3600000);
+    } else if (dayAtt && (dayAtt.status === "present" || dayAtt.status === "checked_in")) {
+      // Admin-marked full-day present (no punch times) credits the scheduled shift
+      hours = shiftMins / 60;
     }
     result.push({
       day: dayNames[dow],
@@ -197,7 +209,8 @@ export default function EmployeeOverview() {
       setAllTimesheets(timesheets);
       setAllAttendance(attendance);
 
-      // Today's hours: prefer attendance punch times (most accurate), fall back to timesheets
+      // Today's hours: prefer attendance punch times (most accurate), then admin-marked
+      // full-day present (credits the scheduled shift), then fall back to timesheets
       const todayStr = toLocalDateStr(new Date());
       const todayAtt = attendance.find((a: any) => a.date === todayStr);
       let todayHoursVal = 0;
@@ -205,6 +218,9 @@ export default function EmployeeOverview() {
         const pin = new Date(todayAtt.punchInTime).getTime();
         const pout = todayAtt.punchOutTime ? new Date(todayAtt.punchOutTime).getTime() : Date.now();
         todayHoursVal = Math.max(0, (pout - pin) / 3600000);
+      } else if (todayAtt && (todayAtt.status === "present" || todayAtt.status === "checked_in")) {
+        const sDiff = parseShiftMinutes(user?.shiftEndTime || "05:00 PM") - parseShiftMinutes(user?.shiftStartTime || "09:00 AM");
+        todayHoursVal = (sDiff > 0 ? sDiff : 480) / 60;
       } else {
         todayHoursVal = timesheets
           .filter((t: any) => t.date === todayStr)
@@ -225,11 +241,11 @@ export default function EmployeeOverview() {
 
   useEffect(() => {
     if (allAttendance.length > 0) {
-      setWeeklyHours(computeHoursFromAttendance(allAttendance, rangeStart, rangeEnd));
+      setWeeklyHours(computeHoursFromAttendance(allAttendance, rangeStart, rangeEnd, user?.shiftStartTime, user?.shiftEndTime));
     } else {
       setWeeklyHours(computeHoursChart(allTimesheets, rangeStart, rangeEnd));
     }
-  }, [allAttendance, allTimesheets, rangeStart, rangeEnd]);
+  }, [allAttendance, allTimesheets, rangeStart, rangeEnd, user]);
 
   const handlePill = (pill: Pill) => {
     setActivePill(pill);

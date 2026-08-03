@@ -1,14 +1,15 @@
 export const androidRelease = {
-  versionCode: 8,
-  versionName: "1.5.1",
+  versionCode: 9,
+  versionName: "1.5.2",
   minimumVersionCode: 1,
-  apkUrl: "https://github.com/Mannyyy-15/Thepiecraftmarketin-crm/releases/download/android-v1.5.1/ThePieCraft-CRM-v1.5.1.apk",
-  sha256: "11B23C9C3FAE6079EE465624360BA9978A5D169EC572A4E4C502D525F47DF392",
-  title: "PieCraft CRM v1.5.1 Update Available",
+  apkUrl: "https://github.com/Mannyyy-15/Thepiecraftmarketin-crm/releases/download/android-v1.5.2/ThePieCraft-CRM-v1.5.2.apk",
+  sha256: "AB95FEC84030DEFB6A59E73CA023EDC183929CDCFC150A0D85AEC30E39C536CC",
+  title: "PieCraft CRM v1.5.2 Update Available",
   notes: [
-    "App preloader now shows once on launch only, never on page changes.",
-    "Route changes use lightweight skeleton placeholders for smooth transitions.",
-    "Faster in-app updates with a direct download link.",
+    "Updates now install directly inside the app — no browser, no manual APK download.",
+    "Attendance: admin-marked full-day presence shows completed shift hours, and counts toward weekly hours.",
+    "Attendance dates now use the organization timezone, so punches always land on the right day.",
+    "Update prompt now appears only in the native app, never on the website.",
   ],
 } as const;
 

@@ -31,6 +31,7 @@ type AuthSession = NonNullable<Awaited<ReturnType<typeof getAuthSession>>>;
 type OrganizationContext = {
   organizationId: number;
   membershipRole: "owner" | "admin" | "manager" | "member" | "client";
+  timezone: string;
 };
 
 const publicUserFields = {
@@ -60,6 +61,7 @@ async function getOrganizationContext(session: AuthSession): Promise<Organizatio
     .select({
       organizationId: schema.organizationMemberships.organizationId,
       membershipRole: schema.organizationMemberships.role,
+      timezone: schema.organizations.timezone,
     })
     .from(schema.organizationMemberships)
     .innerJoin(schema.organizations, eq(schema.organizations.id, schema.organizationMemberships.organizationId))
@@ -71,6 +73,13 @@ async function getOrganizationContext(session: AuthSession): Promise<Organizatio
     .orderBy(asc(schema.organizationMemberships.id))
     .limit(1);
   return membership || null;
+}
+
+// "Today" in the organization's timezone — server (Vercel) runs UTC, so without
+// this a punch between 00:00-05:29 IST gets stored under yesterday's date and
+// the employee calendar (local IST) shows nothing for the day they were present.
+function todayInOrgTimezone(timezone: string) {
+  return new Date().toLocaleDateString("en-CA", { timeZone: timezone });
 }
 
 async function hasEmployeePermission(session: AuthSession, permission: EmployeePermission) {
@@ -1290,7 +1299,7 @@ export async function getTodayAttendance() {
     const context = await getOrganizationContext(session);
     if (!context) return { success: false, error: "No active organization membership." };
 
-    const todayStr = new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD in local time
+    const todayStr = todayInOrgTimezone(context.timezone); // YYYY-MM-DD in org local time
     const record = await db.select()
       .from(schema.attendance)
       .where(and(
@@ -1500,7 +1509,7 @@ export async function punchIn(lat?: number, lng?: number, bssid?: string) {
     const geo = await validateGeofence(context.organizationId, lat, lng, bssid);
     if (!geo.ok) return { success: false, error: geo.message, code: geo.code };
 
-    const todayStr = new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD in local time
+    const todayStr = todayInOrgTimezone(context.timezone); // YYYY-MM-DD in org local time
 
     const existing = await db.select()
       .from(schema.attendance)
@@ -1573,7 +1582,7 @@ export async function punchOut(lat?: number, lng?: number, bssid?: string) {
     const geo = await validateGeofence(context.organizationId, lat, lng, bssid);
     if (!geo.ok) return { success: false, error: geo.message, code: geo.code };
 
-    const todayStr = new Date().toLocaleDateString("en-CA");
+    const todayStr = todayInOrgTimezone(context.timezone);
 
     const existing = await db.select()
       .from(schema.attendance)
