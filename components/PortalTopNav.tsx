@@ -259,7 +259,7 @@ export default function PortalTopNav({ onMenuClick }: { onMenuClick?: () => void
         >
           <Search className="pointer-events-none absolute inset-y-0 left-3 h-full w-4 text-slate-400 group-hover:text-brand-500 transition-colors" />
           <div className="h-9 w-full rounded-xl border border-slate-200 dark:border-[#303030] bg-slate-50 dark:bg-[#303030] pl-9 pr-12 text-xs text-slate-450 dark:text-slate-500 flex items-center select-none">
-            Search projects, invoicesâ€¦
+            Search projects, invoices…
           </div>
           <kbd className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center gap-0.5 rounded-md border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#303030] px-1.5 py-0.5 text-[9px] font-medium text-slate-500 dark:text-slate-400">
             <Command className="h-2 w-2" />K
@@ -545,7 +545,7 @@ export default function PortalTopNav({ onMenuClick }: { onMenuClick?: () => void
       )}
 
       {/* ========================================================================= */}
-      {/* ðŸš€ CLIENT TOAST MESSAGING POPUP NOTIFIER */}
+      {/* 🚀 CLIENT TOAST MESSAGING POPUP NOTIFIER */}
       {/* ========================================================================= */}
       <div className="fixed bottom-5 right-5 z-55 flex flex-col gap-2.5 max-w-sm w-full pointer-events-none">
         {toasts.map((t) => (

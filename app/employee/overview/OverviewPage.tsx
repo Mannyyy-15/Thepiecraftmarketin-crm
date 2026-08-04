@@ -589,7 +589,7 @@ export default function OverviewPage({ initialData }: OverviewPageProps) {
               <div className="flex items-center gap-4 mt-2 text-[10px] font-semibold text-slate-400">
                 <span className="flex items-center gap-1.5"><span className="h-2 w-3 rounded-sm bg-brand-600" />Present</span>
                 <span className="flex items-center gap-1.5"><span className="h-2 w-3 rounded-sm bg-rose-400" />Absent</span>
-                <span className="flex items-center gap-1.5"><span className="h-2 w-3 rounded-sm bg-slate-300 dark:bg-slate-600" />Weekend</span>
+                <span className="flex items-center gap-1.5"><span className="h-2 w-3 rounded-sm bg-slate-300 dark:bg-[#3f3f3f]" />Weekend</span>
               </div>
             </CardContent>
           </Card>

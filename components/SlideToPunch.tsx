@@ -28,7 +28,7 @@ const COMPLETE_AT = 0.92; // fraction of travel that counts as "completed"
  *  - Pointer Events + setPointerCapture: the drag keeps tracking even if the
  *    finger drifts off the handle, so it never "sticks" mid-track.
  *  - The handle is moved by writing transform directly to the DOM ref during
- *    the drag (no React state per frame) â€” buttery on low-end phones.
+ *    the drag (no React state per frame) — buttery on low-end phones.
  *  - touch-action:none stops the browser from stealing the gesture for scroll.
  *  - On release it either snaps to the end (and fires onComplete) or springs
  *    back to 0 with a single CSS transition.
@@ -150,9 +150,9 @@ export default function SlideToPunch({
   }, [done, paint]);
 
   const text = done
-    ? variant === "in" ? "Punching inâ€¦" : "Punching outâ€¦"
+    ? variant === "in" ? "Punching in…" : "Punching out…"
     : loading
-    ? "Processingâ€¦"
+    ? "Processing…"
     : label ?? (variant === "in" ? "Slide to punch in" : "Slide to punch out");
 
   return (
@@ -178,7 +178,7 @@ export default function SlideToPunch({
 
       {/* Draggable handle.
           Vertical centering comes from top:PAD (track is HANDLE+2*PAD tall), so
-          the inline transform is free to do ONLY horizontal translate â€” that's
+          the inline transform is free to do ONLY horizontal translate — that's
           what keeps it from dropping out of the track when grabbed. */}
       <div
         ref={handleRef}

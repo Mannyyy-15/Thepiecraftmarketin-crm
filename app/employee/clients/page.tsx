@@ -150,7 +150,7 @@ export default function EmployeeClientsPage() {
 
   const handleComposeEmail = (clientName: string) => {
     setComposeEmailTo(clientName);
-    setEmailSubject(`Strategy & Planning Alignment â€” ThePieCraft`);
+    setEmailSubject(`Strategy & Planning Alignment — ThePieCraft`);
     setEmailBody(`Hi team,\n\nI'd like to sync on our outstanding deliverables and map out our strategic focus for the upcoming quarter.\n\nBest,\n${myName}`);
   };
 
@@ -173,11 +173,11 @@ export default function EmployeeClientsPage() {
           </Button>
         ) : undefined}
       />
-      {/* KPI Cards â€” your managed client portfolio */}
+      {/* KPI Cards — your managed client portfolio */}
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
         <KpiCard
           title="Portfolio MRR"
-          value={`â‚¹${portfolioMRR.toLocaleString()}`}
+          value={`₹${portfolioMRR.toLocaleString()}`}
           change={`${myClients.length} accounts`}
           changeType="neutral"
           accent="brand"
@@ -202,7 +202,7 @@ export default function EmployeeClientsPage() {
         <KpiCard
           title="Portfolio Health"
           value={`${avgHealth}%`}
-          change={avgHealth > 75 ? "Excellent" : avgHealth > 0 ? "Needs Review" : "â€”"}
+          change={avgHealth > 75 ? "Excellent" : avgHealth > 0 ? "Needs Review" : "—"}
           changeType={avgHealth > 75 ? "positive" : avgHealth > 0 ? "negative" : "neutral"}
           accent="portal"
           icon={<Heart className="h-5 w-5" />}
@@ -274,7 +274,7 @@ export default function EmployeeClientsPage() {
             <Search className="pointer-events-none absolute inset-y-0 left-3 h-full w-4 text-slate-400" />
             <input
               type="search"
-              placeholder="Search by name or industryâ€¦"
+              placeholder="Search by name or industry…"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="h-10 w-full rounded-xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] pl-9 pr-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500"
@@ -329,7 +329,7 @@ export default function EmployeeClientsPage() {
                     <div className="flex flex-col items-center justify-center gap-2">
                       <AlertTriangle className="h-8 w-8 text-slate-300 dark:text-slate-700" />
                       <p className="text-sm font-semibold">No clients to show.</p>
-                      <p className="text-xs">{onlyMyAccounts ? "You have no assigned accounts yet â€” turn off \"Only my accounts\" to see all." : "Try a different search."}</p>
+                      <p className="text-xs">{onlyMyAccounts ? "You have no assigned accounts yet — turn off \"Only my accounts\" to see all." : "Try a different search."}</p>
                     </div>
                   </td>
                 </tr>
@@ -352,8 +352,8 @@ export default function EmployeeClientsPage() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-5 py-3.5 hidden md:table-cell text-slate-600 dark:text-slate-300 font-medium capitalize">{(c.stage || "").replace(/_/g, " ") || "â€”"}</td>
-                    <td className="px-5 py-3.5 font-semibold text-slate-900 dark:text-white tabular-nums">â‚¹{(c.totalMRR || 0).toLocaleString()}</td>
+                    <td className="px-5 py-3.5 hidden md:table-cell text-slate-600 dark:text-slate-300 font-medium capitalize">{(c.stage || "").replace(/_/g, " ") || "—"}</td>
+                    <td className="px-5 py-3.5 font-semibold text-slate-900 dark:text-white tabular-nums">₹{(c.totalMRR || 0).toLocaleString()}</td>
                     <td className="px-5 py-3.5 hidden lg:table-cell">
                       <div className="flex items-center gap-2 min-w-[120px]">
                         <Progress value={c.health} size="sm" className="w-20" barClassName={c.health > 70 ? "bg-gradient-to-r from-emerald-500 to-emerald-600" : c.health > 40 ? "bg-gradient-to-r from-amber-500 to-amber-600" : "bg-gradient-to-r from-rose-500 to-rose-600"} />
@@ -410,7 +410,7 @@ export default function EmployeeClientsPage() {
         </div>
 
         <div className="flex items-center justify-between px-5 py-3 border-t border-slate-200 dark:border-[#303030] text-xs text-slate-500 dark:text-slate-400 font-medium">
-          <span>Showing 1â€“{filteredClients.length} of {filteredClients.length} clients</span>
+          <span>Showing 1–{filteredClients.length} of {filteredClients.length} clients</span>
           <div className="flex items-center gap-1">
             <Button variant="outline" size="sm" disabled>Previous</Button>
             <Button variant="outline" size="sm" disabled>Next</Button>

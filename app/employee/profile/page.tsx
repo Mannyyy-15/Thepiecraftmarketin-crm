@@ -9,6 +9,7 @@ import { getCurrentUser, updateUserAvatar } from "@/app/actions/auth";
 import { getFreshUserProfile, updateMyProfile } from "@/app/actions/crm";
 import { useToast } from "@/providers/ToastProvider";
 import { clearCurrentUserCache } from "@/lib/currentUserClient";
+import { useActionCache } from "@/hooks/useActionCache";
 
 export default function EmployeeProfilePage() {
   const { toast } = useToast();
@@ -18,15 +19,15 @@ export default function EmployeeProfilePage() {
   const [saving, setSaving] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
+  const { data: cachedProfile, refresh: refreshProfile } = useActionCache("user_profile", getFreshUserProfile);
+
   useEffect(() => {
-    getFreshUserProfile().then((res: any) => {
-      if (res.success && res.data) {
-        setUser(res.data);
-        setName(res.data.name || "");
-        setEmail(res.data.email || "");
-      }
-    });
-  }, []);
+    if (cachedProfile) {
+      setUser(cachedProfile);
+      setName((cachedProfile as any).name || "");
+      setEmail((cachedProfile as any).email || "");
+    }
+  }, [cachedProfile]);
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -38,6 +39,7 @@ export default function EmployeeProfilePage() {
     if (res.success && res.avatarUrl) {
       clearCurrentUserCache();
       setUser((prev: any) => ({ ...prev, avatarUrl: res.avatarUrl }));
+      void refreshProfile(false);
       toast("Profile photo updated!", "success");
     } else {
       toast(res.error || "Failed to upload avatar", "error");
@@ -49,6 +51,8 @@ export default function EmployeeProfilePage() {
     setSaving(true);
     const res = await updateMyProfile({ name, email });
     if (res.success) {
+      clearCurrentUserCache();
+      void refreshProfile(false);
       toast("Profile updated successfully", "success");
     } else {
       toast(res.error || "Failed to update profile", "error");
@@ -95,7 +99,7 @@ export default function EmployeeProfilePage() {
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full h-10 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#303030] px-4 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40"
+                className="w-full h-10 rounded-xl border border-slate-300 dark:border-[#4a4a4a] bg-white dark:bg-[#1f1f1f] px-4 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500"
               />
             </div>
             <div>
@@ -104,7 +108,7 @@ export default function EmployeeProfilePage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full h-10 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#303030] px-4 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40"
+                className="w-full h-10 rounded-xl border border-slate-300 dark:border-[#4a4a4a] bg-white dark:bg-[#1f1f1f] px-4 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500"
               />
             </div>
             <div className="pt-2">

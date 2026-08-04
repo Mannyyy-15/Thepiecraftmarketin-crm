@@ -67,7 +67,7 @@ const TYPES = {
     accent: "from-slate-500 to-slate-600",
     border: "border-l-slate-400",
     ring: "ring-slate-500/20",
-    badgeBg: "bg-slate-50 dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200",
+    badgeBg: "bg-slate-50 dark:bg-[#303030] text-slate-600 dark:text-slate-400 border-slate-200",
     statuses: ["planning", "active", "completed"],
     description: "",
     features: [],
@@ -78,7 +78,7 @@ const TYPES = {
 function getPriorityClass(p: string) {
   switch (p) {
     case "high": return "bg-rose-50 text-rose-700 dark:bg-rose-950/20 dark:text-rose-400 border border-rose-200/60 dark:border-rose-900/30";
-    case "low":  return "bg-slate-50 text-slate-600 dark:bg-slate-900 dark:text-slate-400 border border-slate-200/60 dark:border-slate-800/30";
+    case "low":  return "bg-slate-50 text-slate-600 dark:bg-[#303030] dark:text-slate-400 border border-slate-200/60 dark:border-[#303030]/30";
     default:     return "bg-amber-50 text-amber-700 dark:bg-amber-950/20 dark:text-amber-400 border border-amber-200/60 dark:border-amber-900/30";
   }
 }
@@ -122,20 +122,20 @@ const LABEL   = "block text-[9px] font-bold text-slate-400 uppercase tracking-wi
 function SectionHeader({ icon: Icon, label }: { icon: React.ElementType; label: string }) {
   return (
     <div className="flex items-center gap-2.5 mb-5">
-      <div className="h-6 w-6 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
+      <div className="h-6 w-6 rounded-xl bg-slate-100 dark:bg-[#303030] flex items-center justify-center shrink-0">
         <Icon className="h-3 w-3 text-slate-500 dark:text-slate-400" />
       </div>
       <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">{label}</span>
-      <div className="flex-1 h-px bg-slate-100 dark:bg-slate-800" />
+      <div className="flex-1 h-px bg-slate-100 dark:bg-[#303030]" />
     </div>
   );
 }
 
 function ToggleRow({ label, value, onChange }: { label: string; value: boolean; onChange: () => void }) {
   return (
-    <div className="flex items-center justify-between rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/60 px-3.5 py-2.5 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900 transition-all" onClick={onChange}>
+    <div className="flex items-center justify-between rounded-2xl border border-slate-200 dark:border-[#303030] bg-slate-50/60 dark:bg-[#303030]/60 px-3.5 py-2.5 cursor-pointer hover:bg-slate-50 dark:hover:bg-[#303030] transition-all" onClick={onChange}>
       <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">{label}</span>
-      <div className={cn("h-5 w-9 rounded-full transition-all relative border-2 shrink-0", value ? "bg-emerald-500 border-emerald-500" : "bg-slate-200 dark:bg-slate-700 border-slate-200 dark:border-slate-700")}>
+      <div className={cn("h-5 w-9 rounded-full transition-all relative border-2 shrink-0", value ? "bg-emerald-500 border-emerald-500" : "bg-slate-200 dark:bg-[#3f3f3f] border-slate-200 dark:border-[#3f3f3f]")}>
         <span className={cn("absolute top-0.5 h-3 w-3 rounded-full bg-white shadow transition-transform", value ? "translate-x-4" : "translate-x-0.5")} />
       </div>
     </div>
@@ -710,7 +710,7 @@ export default function ProjectsPage() {
           <div className="relative w-full sm:w-64">
             <Search className="pointer-events-none absolute inset-y-0 left-3 h-full w-3.5 text-slate-400" />
             <input type="search" placeholder="Search projects or clients…" value={search} onChange={e => setSearch(e.target.value)}
-              className="h-9 w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 pl-9 pr-3 text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-900 dark:text-white transition-all" />
+              className="h-9 w-full rounded-2xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#303030] pl-9 pr-3 text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-900 dark:text-white transition-all" />
           </div>
         </div>
       </div>
@@ -852,7 +852,7 @@ export default function ProjectsPage() {
 
                       {/* Domain & Website Link Block */}
                       {(d.domain || d.domainExpiry) && (
-                        <div className="mt-4 bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-3 border border-slate-100 dark:border-slate-800/60">
+                        <div className="mt-4 bg-slate-50 dark:bg-[#303030]/50 rounded-2xl p-3 border border-slate-100 dark:border-[#303030]/60">
                           <div className="flex items-center justify-between gap-2">
                             <div className="min-w-0">
                               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Website</p>
@@ -986,16 +986,16 @@ export default function ProjectsPage() {
         </div>
       )}
 
-      {/* ═══════════════════════════════════════════════════════════════════════
+      {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
           TASK MANAGEMENT MODAL
-      ═══════════════════════════════════════════════════════════════════════ */}
+      â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
       {taskModalProject && (
         <>
           <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40" onClick={() => setTaskModalProject(null)} />
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="w-full max-w-lg bg-white dark:bg-slate-950 rounded-[20px] shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col max-h-[90vh]">
+            <div className="w-full max-w-lg bg-white dark:bg-[#1f1f1f] rounded-[20px] shadow-2xl border border-slate-200 dark:border-[#303030] flex flex-col max-h-[90vh]">
               {/* Header */}
-              <div className="shrink-0 px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3">
+              <div className="shrink-0 px-5 py-4 border-b border-slate-200 dark:border-[#303030] flex items-center justify-between gap-3">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 mb-0.5">
                     <ListTodo className="h-3.5 w-3.5 text-brand-500 shrink-0" />
@@ -1003,7 +1003,7 @@ export default function ProjectsPage() {
                   </div>
                   <h2 className="text-sm font-bold text-slate-900 dark:text-white truncate">{taskModalProject.name}</h2>
                 </div>
-                <button onClick={() => setTaskModalProject(null)} className="shrink-0 h-8 w-8 rounded-2xl flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"><X className="h-4 w-4" /></button>
+                <button onClick={() => setTaskModalProject(null)} className="shrink-0 h-8 w-8 rounded-2xl flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#303030] transition-all cursor-pointer"><X className="h-4 w-4" /></button>
               </div>
 
               {/* Task list */}
@@ -1017,7 +1017,7 @@ export default function ProjectsPage() {
                 ) : (
                   taskModalTasks.map((task: any) => (
                     <div key={task.id} className={cn("flex items-center gap-3 p-3 rounded-2xl border transition-all",
-                      task.done === 1 ? "border-slate-100 dark:border-slate-800/60 bg-slate-50/50 dark:bg-slate-900/30" : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950"
+                      task.done === 1 ? "border-slate-100 dark:border-[#303030]/60 bg-slate-50/50 dark:bg-[#303030]/30" : "border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f]"
                     )}>
                       <button
                         onClick={() => handleTaskToggle(task.id, task.done === 1)}
@@ -1041,7 +1041,7 @@ export default function ProjectsPage() {
                       </div>
                       <span className={cn("text-[9px] font-bold px-1.5 py-0.5 rounded-full border shrink-0",
                         task.priority === "high" ? "bg-rose-50 text-rose-600 border-rose-200 dark:bg-rose-950/20 dark:text-rose-400 dark:border-rose-900/30"
-                        : task.priority === "low" ? "bg-slate-50 text-slate-500 border-slate-200 dark:bg-slate-900 dark:text-slate-500 dark:border-slate-800"
+                        : task.priority === "low" ? "bg-slate-50 text-slate-500 border-slate-200 dark:bg-[#303030] dark:text-slate-500 dark:border-[#303030]"
                         : "bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-950/20 dark:text-amber-400 dark:border-amber-900/30"
                       )}>{task.priority}</span>
                       <button
@@ -1059,7 +1059,7 @@ export default function ProjectsPage() {
 
               {/* Progress strip */}
               {taskModalTasks.length > 0 && (
-                <div className="shrink-0 px-5 py-3 border-t border-slate-100 dark:border-slate-800">
+                <div className="shrink-0 px-5 py-3 border-t border-slate-100 dark:border-[#303030]">
                   <div className="flex items-center justify-between mb-1.5">
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Progress</span>
                     <span className="text-[10px] font-bold text-slate-600 dark:text-slate-300">
@@ -1074,7 +1074,7 @@ export default function ProjectsPage() {
               )}
 
               {/* Add task footer */}
-              <div className="shrink-0 px-5 py-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-900/20 space-y-2.5">
+              <div className="shrink-0 px-5 py-4 border-t border-slate-200 dark:border-[#303030] bg-slate-50/40 dark:bg-[#303030]/20 space-y-2.5">
                 <div className="flex gap-2">
                   <input
                     type="text"
@@ -1083,13 +1083,13 @@ export default function ProjectsPage() {
                     value={newTaskTitle}
                     onChange={e => setNewTaskTitle(e.target.value)}
                     onKeyDown={e => e.key === "Enter" && handleAddTask()}
-                    className="flex-1 h-9 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-xs text-slate-800 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/30 transition-all"
+                    className="flex-1 h-9 rounded-2xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] px-3 text-xs text-slate-800 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/30 transition-all"
                   />
                   <div className="flex gap-1.5">
                     {["low", "medium", "high"].map(pr => (
                       <button key={pr} type="button" onClick={() => setNewTaskPriority(pr)}
                         className={cn("h-9 px-2.5 rounded-2xl border text-[10px] font-bold capitalize transition-all cursor-pointer",
-                          newTaskPriority === pr ? "bg-slate-900 dark:bg-white border-transparent text-white dark:text-slate-900" : "border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-900"
+                          newTaskPriority === pr ? "bg-slate-900 dark:bg-white border-transparent text-white dark:text-slate-900" : "border-slate-200 dark:border-[#303030] text-slate-500 hover:bg-slate-50 dark:hover:bg-[#303030]"
                         )}>{pr}</button>
                     ))}
                   </div>
@@ -1117,27 +1117,27 @@ export default function ProjectsPage() {
         </>
       )}
 
-      {/* ═══════════════════════════════════════════════════════════════════════
+      {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
           EDIT PROJECT DRAWER
-      ═══════════════════════════════════════════════════════════════════════ */}
+      â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
 
 
-      {/* ═══════════════════════════════════════════════════════════════════════
+      {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
           DRAWER — New Project
-      ═══════════════════════════════════════════════════════════════════════ */}
+      â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
       {drawerOpen && (
         <>
           <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40" onClick={closeDrawer} />
 
-          <div className="fixed right-0 top-0 h-full w-full max-w-[560px] bg-white dark:bg-slate-950 z-50 shadow-2xl flex flex-col animate-[slide-in-right_280ms_cubic-bezier(0.16,1,0.3,1)]">
+          <div className="fixed right-0 top-0 h-full w-full max-w-[560px] bg-white dark:bg-[#1f1f1f] z-50 shadow-2xl flex flex-col animate-[slide-in-right_280ms_cubic-bezier(0.16,1,0.3,1)]">
 
             {/* Panel header */}
-            <div className="shrink-0 px-6 pt-5 pb-4 border-b border-slate-200 dark:border-slate-800">
+            <div className="shrink-0 px-6 pt-5 pb-4 border-b border-slate-200 dark:border-[#303030]">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0">
                   {drawerStep === 1 && (
                     <button type="button" onClick={() => { setDrawerStep(0); setFormTab(0); }}
-                      className="shrink-0 h-8 w-8 rounded-2xl flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer" aria-label="Back">
+                      className="shrink-0 h-8 w-8 rounded-2xl flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#303030] transition-all cursor-pointer" aria-label="Back">
                       <ChevronLeft className="h-4 w-4" />
                     </button>
                   )}
@@ -1158,7 +1158,7 @@ export default function ProjectsPage() {
                   </div>
                 </div>
                 <button onClick={closeDrawer} aria-label="Close"
-                  className="shrink-0 h-8 w-8 rounded-2xl flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer">
+                  className="shrink-0 h-8 w-8 rounded-2xl flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#303030] transition-all cursor-pointer">
                   <X className="h-4 w-4" />
                 </button>
               </div>
@@ -1176,7 +1176,7 @@ export default function ProjectsPage() {
                   return (
                     <button key={t} type="button"
                       onClick={() => { setProjectType(t); setForm(p => ({ ...p, status: cfg.statuses[0] })); setDrawerStep(1); setFormTab(0); }}
-                      className="w-full flex items-start gap-4 p-5 border-2 border-slate-200 dark:border-slate-800 hover:border-brand-500 dark:hover:border-brand-500 rounded-[20px] cursor-pointer text-left transition-all group bg-white dark:bg-slate-900/50 hover:bg-brand-500/[0.02]"
+                      className="w-full flex items-start gap-4 p-5 border-2 border-slate-200 dark:border-[#303030] hover:border-brand-500 dark:hover:border-brand-500 rounded-[20px] cursor-pointer text-left transition-all group bg-white dark:bg-[#303030]/50 hover:bg-brand-500/[0.02]"
                     >
                       <div className={cn("h-12 w-12 rounded-[20px] flex items-center justify-center bg-gradient-to-br text-white shadow-sm shrink-0 mt-0.5", cfg.accent)}>
                         <TIcon className="h-5 w-5" />
@@ -1189,7 +1189,7 @@ export default function ProjectsPage() {
                         <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">{cfg.description}</p>
                         <div className="mt-3 flex flex-wrap gap-1.5">
                           {cfg.features.map(feat => (
-                            <span key={feat} className="text-[9px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">{feat}</span>
+                            <span key={feat} className="text-[9px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-[#303030] text-slate-500 dark:text-slate-400">{feat}</span>
                           ))}
                         </div>
                       </div>
@@ -1204,7 +1204,7 @@ export default function ProjectsPage() {
               <form onSubmit={handleSubmit} className="flex-1 flex flex-col overflow-hidden">
 
                 {/* Step indicator */}
-                <div className="shrink-0 px-6 py-3.5 border-b border-slate-100 dark:border-slate-800/80 bg-slate-50/60 dark:bg-slate-900/30">
+                <div className="shrink-0 px-6 py-3.5 border-b border-slate-100 dark:border-[#303030]/80 bg-slate-50/60 dark:bg-[#303030]/30">
                   <div className="flex items-center">
                     {typeCfg.steps.map((label, i) => (
                       <Fragment key={i}>
@@ -1214,14 +1214,14 @@ export default function ProjectsPage() {
                           )}>
                           <span className={cn(
                             "h-5 w-5 rounded-full flex items-center justify-center text-[9px] font-extrabold shrink-0 transition-all",
-                            formTab === i ? "bg-brand-600 text-white shadow-sm" : formTab > i ? "bg-brand-100 dark:bg-brand-900/40 text-brand-600 dark:text-brand-400" : "bg-slate-200 dark:bg-slate-800 text-slate-500"
+                            formTab === i ? "bg-brand-600 text-white shadow-sm" : formTab > i ? "bg-brand-100 dark:bg-brand-900/40 text-brand-600 dark:text-brand-400" : "bg-slate-200 dark:bg-[#303030] text-slate-500"
                           )}>
                             {formTab > i ? <CheckCircle2 className="h-3 w-3" /> : i + 1}
                           </span>
                           {label}
                         </button>
                         {i < typeCfg.steps.length - 1 && (
-                          <div className={cn("flex-1 h-px mx-2.5 transition-all", formTab > i ? "bg-brand-300 dark:bg-brand-700" : "bg-slate-200 dark:bg-slate-800")} />
+                          <div className={cn("flex-1 h-px mx-2.5 transition-all", formTab > i ? "bg-brand-300 dark:bg-brand-700" : "bg-slate-200 dark:bg-[#303030]")} />
                         )}
                       </Fragment>
                     ))}
@@ -1315,7 +1315,7 @@ export default function ProjectsPage() {
                                   return (
                                     <button key={u.id} type="button"
                                       onClick={() => f({ teamMemberIds: checked ? (form.teamMemberIds || []).filter((id: number) => id !== u.id) : [...(form.teamMemberIds || []), u.id] })}
-                                      className={cn("px-3 py-1.5 rounded-xl border text-xs font-medium transition-all cursor-pointer", checked ? "bg-brand-500 border-brand-500 text-white" : "border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-brand-400")}
+                                      className={cn("px-3 py-1.5 rounded-xl border text-xs font-medium transition-all cursor-pointer", checked ? "bg-brand-500 border-brand-500 text-white" : "border-slate-200 dark:border-[#3f3f3f] text-slate-600 dark:text-slate-300 hover:border-brand-400")}
                                     >{u.name}</button>
                                   );
                                 })}
@@ -1328,7 +1328,7 @@ export default function ProjectsPage() {
                                   {["low", "medium", "high"].map(pr => (
                                     <button key={pr} type="button" onClick={() => f({ priority: pr })}
                                       className={cn("flex-1 h-11 border text-[10px] font-bold rounded-2xl capitalize transition-all cursor-pointer",
-                                        form.priority === pr ? "bg-slate-900 border-slate-900 text-white dark:bg-white dark:border-white dark:text-slate-900" : "border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-900"
+                                        form.priority === pr ? "bg-slate-900 border-slate-900 text-white dark:bg-white dark:border-white dark:text-slate-900" : "border-slate-200 dark:border-[#303030] text-slate-500 hover:bg-slate-50 dark:hover:bg-[#303030]"
                                       )}>{pr}</button>
                                   ))}
                                 </div>
@@ -1374,7 +1374,7 @@ export default function ProjectsPage() {
                                 {[{ val: "website", label: "Website" }, { val: "whatsapp", label: "WhatsApp" }, { val: "instant_form", label: "Lead Form" }].map(({ val, label }) => (
                                   <button key={val} type="button" onClick={() => f({ conversionLocation: val })}
                                     className={cn("h-10 border text-xs font-bold rounded-2xl transition-all cursor-pointer",
-                                      form.conversionLocation === val ? "bg-indigo-600 border-indigo-600 text-white shadow-sm" : "border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-900"
+                                      form.conversionLocation === val ? "bg-indigo-600 border-indigo-600 text-white shadow-sm" : "border-slate-200 dark:border-[#303030] text-slate-500 hover:bg-slate-50 dark:hover:bg-[#303030]"
                                     )}>{label}</button>
                                 ))}
                               </div>
@@ -1569,7 +1569,7 @@ export default function ProjectsPage() {
                                   {["low", "medium", "high"].map(pr => (
                                     <button key={pr} type="button" onClick={() => f({ priority: pr })}
                                       className={cn("flex-1 h-11 border text-[10px] font-bold rounded-2xl capitalize transition-all cursor-pointer",
-                                        form.priority === pr ? "bg-slate-900 border-slate-900 text-white dark:bg-white dark:border-white dark:text-slate-900" : "border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-900"
+                                        form.priority === pr ? "bg-slate-900 border-slate-900 text-white dark:bg-white dark:border-white dark:text-slate-900" : "border-slate-200 dark:border-[#303030] text-slate-500 hover:bg-slate-50 dark:hover:bg-[#303030]"
                                       )}>{pr}</button>
                                   ))}
                                 </div>
@@ -1599,7 +1599,7 @@ export default function ProjectsPage() {
                                   return (
                                     <button key={u.id} type="button"
                                       onClick={() => f({ teamMemberIds: checked ? (form.teamMemberIds || []).filter((id: number) => id !== u.id) : [...(form.teamMemberIds || []), u.id] })}
-                                      className={cn("px-3 py-1.5 rounded-xl border text-xs font-medium transition-all cursor-pointer", checked ? "bg-brand-500 border-brand-500 text-white" : "border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-brand-400")}
+                                      className={cn("px-3 py-1.5 rounded-xl border text-xs font-medium transition-all cursor-pointer", checked ? "bg-brand-500 border-brand-500 text-white" : "border-slate-200 dark:border-[#3f3f3f] text-slate-600 dark:text-slate-300 hover:border-brand-400")}
                                     >{u.name}</button>
                                   );
                                 })}
@@ -1718,7 +1718,7 @@ export default function ProjectsPage() {
                         <>
                           {form.clientId === "__agency__" && form.setupType === "existing" && (
                             <div className="flex flex-col items-center justify-center py-12 text-center">
-                              <div className="h-12 w-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4">
+                              <div className="h-12 w-12 rounded-full bg-slate-100 dark:bg-[#303030] flex items-center justify-center mb-4">
                                 <Boxes className="h-6 w-6 text-brand-500" />
                               </div>
                               <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-1">No additional details needed</h3>
@@ -1807,7 +1807,7 @@ export default function ProjectsPage() {
                                   {["low", "medium", "high"].map(pr => (
                                     <button key={pr} type="button" onClick={() => f({ priority: pr })}
                                       className={cn("flex-1 h-11 border text-[10px] font-bold rounded-2xl capitalize transition-all cursor-pointer",
-                                        form.priority === pr ? "bg-slate-900 border-slate-900 text-white dark:bg-white dark:border-white dark:text-slate-900" : "border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-900"
+                                        form.priority === pr ? "bg-slate-900 border-slate-900 text-white dark:bg-white dark:border-white dark:text-slate-900" : "border-slate-200 dark:border-[#303030] text-slate-500 hover:bg-slate-50 dark:hover:bg-[#303030]"
                                       )}>{pr}</button>
                                   ))}
                                 </div>
@@ -1821,7 +1821,7 @@ export default function ProjectsPage() {
                                   return (
                                     <button key={u.id} type="button"
                                       onClick={() => f({ teamMemberIds: checked ? (form.teamMemberIds || []).filter((id: number) => id !== u.id) : [...(form.teamMemberIds || []), u.id] })}
-                                      className={cn("px-3 py-1.5 rounded-xl border text-xs font-medium transition-all cursor-pointer", checked ? "bg-brand-500 border-brand-500 text-white" : "border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-brand-400")}
+                                      className={cn("px-3 py-1.5 rounded-xl border text-xs font-medium transition-all cursor-pointer", checked ? "bg-brand-500 border-brand-500 text-white" : "border-slate-200 dark:border-[#3f3f3f] text-slate-600 dark:text-slate-300 hover:border-brand-400")}
                                     >{u.name}</button>
                                   );
                                 })}
@@ -1873,7 +1873,7 @@ export default function ProjectsPage() {
                 </div>
 
                 {/* Form footer */}
-                <div className="shrink-0 px-6 py-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-900/20 flex items-center justify-between gap-3">
+                <div className="shrink-0 px-6 py-4 border-t border-slate-200 dark:border-[#303030] bg-slate-50/40 dark:bg-[#303030]/20 flex items-center justify-between gap-3">
                   <p className="text-[10px] font-semibold text-slate-400">Step {formTab + 1} of {typeCfg.steps.length}</p>
                   <div className="flex gap-2">
                     {formTab > 0 && (

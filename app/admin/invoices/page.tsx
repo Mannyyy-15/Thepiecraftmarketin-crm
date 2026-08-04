@@ -669,14 +669,14 @@ export default function AdminInvoicesPage() {
                 <th className="px-4 py-2.5 text-right font-semibold">Actions</th>
               </tr>
             </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+              <tbody className="divide-y divide-slate-100 dark:divide-[#303030]">
               {invoices.length === 0 ? (
                 <tr><td colSpan={5} className="px-4 py-10 text-center text-xs text-slate-400">No documents yet — create one above.</td></tr>
               ) : invoices.map((inv) => {
                 const typeLabel = inv.invoiceNumber.startsWith("PROP-") ? "Proposal" : inv.invoiceNumber.startsWith("CONT-") ? "Contract" : "Invoice";
-                const typeBadgeClass = typeLabel === "Proposal" ? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400" : typeLabel === "Contract" ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400";
+                const typeBadgeClass = typeLabel === "Proposal" ? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400" : typeLabel === "Contract" ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" : "bg-slate-100 text-slate-600 dark:bg-[#303030] dark:text-slate-400";
                 return (
-                <tr key={inv.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                <tr key={inv.id} className="hover:bg-slate-50 dark:hover:bg-[#303030]/50 transition-colors">
                   <td className="px-4 py-3 font-semibold text-slate-800 dark:text-slate-200">
                     <div className="flex flex-col items-start gap-1">
                       <span>{inv.invoiceNumber}</span>
@@ -715,21 +715,21 @@ export default function AdminInvoicesPage() {
       {showDocTypeModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setShowDocTypeModal(false)} />
-          <div className="relative w-full max-w-sm bg-white dark:bg-slate-900 rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+          <div className="relative w-full max-w-sm bg-white dark:bg-[#303030] rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             <div className="p-6">
               <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">What would you like to create?</h2>
               <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">Select a document type to start drafting.</p>
               
               <div className="space-y-3">
-                <button onClick={() => { setDocType("proposal"); setShowDocTypeModal(false); }} className="w-full text-left p-4 rounded-xl border-2 border-slate-100 dark:border-slate-800 hover:border-brand-500 dark:hover:border-brand-500 transition-colors bg-white dark:bg-slate-900 group">
+                <button onClick={() => { setDocType("proposal"); setShowDocTypeModal(false); }} className="w-full text-left p-4 rounded-xl border-2 border-slate-100 dark:border-[#303030] hover:border-brand-500 dark:hover:border-brand-500 transition-colors bg-white dark:bg-[#303030] group">
                   <div className="font-bold text-slate-900 dark:text-white group-hover:text-brand-600">Proposal</div>
                   <div className="text-xs text-slate-500 mt-1">Pitch services and give an estimate</div>
                 </button>
-                <button onClick={() => { setDocType("contract"); setShowDocTypeModal(false); }} className="w-full text-left p-4 rounded-xl border-2 border-slate-100 dark:border-slate-800 hover:border-brand-500 dark:hover:border-brand-500 transition-colors bg-white dark:bg-slate-900 group">
+                <button onClick={() => { setDocType("contract"); setShowDocTypeModal(false); }} className="w-full text-left p-4 rounded-xl border-2 border-slate-100 dark:border-[#303030] hover:border-brand-500 dark:hover:border-brand-500 transition-colors bg-white dark:bg-[#303030] group">
                   <div className="font-bold text-slate-900 dark:text-white group-hover:text-brand-600">Contract</div>
                   <div className="text-xs text-slate-500 mt-1">Formal agreement and payment schedule</div>
                 </button>
-                <button onClick={() => { setDocType("invoice"); setShowDocTypeModal(false); }} className="w-full text-left p-4 rounded-xl border-2 border-slate-100 dark:border-slate-800 hover:border-brand-500 dark:hover:border-brand-500 transition-colors bg-white dark:bg-slate-900 group">
+                <button onClick={() => { setDocType("invoice"); setShowDocTypeModal(false); }} className="w-full text-left p-4 rounded-xl border-2 border-slate-100 dark:border-[#303030] hover:border-brand-500 dark:hover:border-brand-500 transition-colors bg-white dark:bg-[#303030] group">
                   <div className="font-bold text-slate-900 dark:text-white group-hover:text-brand-600">Invoice</div>
                   <div className="text-xs text-slate-500 mt-1">Bill for completed or ongoing work</div>
                 </button>

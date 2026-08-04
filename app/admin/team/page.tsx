@@ -431,7 +431,7 @@ export default function TeamPage() {
 
   const todayDateStr = new Date().toLocaleDateString("en-CA");
 
-  // Derives the real attendance status for a cell â€” same logic as the employee calendar
+  // Derives the real attendance status for a cell — same logic as the employee calendar
   const getEffectiveStatus = (
     userId: string,
     dateStr: string,
@@ -450,32 +450,32 @@ export default function TeamPage() {
     switch (status) {
       case "present":
         return compact
-          ? { bg: "bg-emerald-500 text-white shadow-sm shadow-emerald-500/20", symbol: "âœ“" }
-          : { bg: "bg-emerald-500/10 hover:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400", border: "border-emerald-500/30 hover:border-emerald-500/50", label: "Present", symbol: "âœ“" };
+          ? { bg: "bg-emerald-500 text-white shadow-sm shadow-emerald-500/20", symbol: "✓" }
+          : { bg: "bg-emerald-500/10 hover:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400", border: "border-emerald-500/30 hover:border-emerald-500/50", label: "Present", symbol: "✓" };
       case "half-day":
         return compact
-          ? { bg: "bg-orange-400 text-white shadow-sm shadow-orange-400/20", symbol: "Â½" }
-          : { bg: "bg-orange-400/10 hover:bg-orange-400/15 text-orange-600 dark:text-orange-400", border: "border-orange-400/30 hover:border-orange-400/50", label: "Half Day", symbol: "Â½" };
+          ? { bg: "bg-orange-400 text-white shadow-sm shadow-orange-400/20", symbol: "½" }
+          : { bg: "bg-orange-400/10 hover:bg-orange-400/15 text-orange-600 dark:text-orange-400", border: "border-orange-400/30 hover:border-orange-400/50", label: "Half Day", symbol: "½" };
       case "vacation":
         return compact
-          ? { bg: "bg-amber-500 text-white shadow-sm shadow-amber-500/20", symbol: "â›±" }
-          : { bg: "bg-amber-500/10 hover:bg-amber-500/15 text-amber-600 dark:text-amber-400", border: "border-amber-500/30 hover:border-amber-500/50", label: "Holiday", symbol: "â›±" };
+          ? { bg: "bg-amber-500 text-white shadow-sm shadow-amber-500/20", symbol: "⛱" }
+          : { bg: "bg-amber-500/10 hover:bg-amber-500/15 text-amber-600 dark:text-amber-400", border: "border-amber-500/30 hover:border-amber-500/50", label: "Holiday", symbol: "⛱" };
       case "sick":
         return compact
-          ? { bg: "bg-rose-500 text-white shadow-sm shadow-rose-500/20", symbol: "âœš" }
-          : { bg: "bg-rose-500/10 hover:bg-rose-500/15 text-rose-600 dark:text-rose-400", border: "border-rose-500/30 hover:border-rose-500/50", label: "Leave", symbol: "âœš" };
+          ? { bg: "bg-rose-500 text-white shadow-sm shadow-rose-500/20", symbol: "✚" }
+          : { bg: "bg-rose-500/10 hover:bg-rose-500/15 text-rose-600 dark:text-rose-400", border: "border-rose-500/30 hover:border-rose-500/50", label: "Leave", symbol: "✚" };
       case "absent":
         return compact
-          ? { bg: "bg-rose-300 dark:bg-rose-900/60 text-rose-700 dark:text-rose-300", symbol: "âœ—" }
-          : { bg: "bg-rose-500/5 hover:bg-rose-500/10 text-rose-500 dark:text-rose-400", border: "border-rose-300/40 hover:border-rose-400/50 border-dashed", label: "Absent", symbol: "âœ—" };
+          ? { bg: "bg-rose-300 dark:bg-rose-900/60 text-rose-700 dark:text-rose-300", symbol: "✗" }
+          : { bg: "bg-rose-500/5 hover:bg-rose-500/10 text-rose-500 dark:text-rose-400", border: "border-rose-300/40 hover:border-rose-400/50 border-dashed", label: "Absent", symbol: "✗" };
       case "scheduled":
         return compact
-          ? { bg: "bg-slate-100 dark:bg-[#303030] text-slate-400 dark:text-slate-500", symbol: "Â·" }
-          : { bg: "bg-white dark:bg-[#1f1f1f]/40 hover:bg-slate-50 dark:hover:bg-[#303030]/60 text-slate-500 dark:text-slate-400", border: "border-slate-200 dark:border-[#303030] hover:border-indigo-400/40", label: "Scheduled", symbol: "Â·" };
+          ? { bg: "bg-slate-100 dark:bg-[#303030] text-slate-400 dark:text-slate-500", symbol: "·" }
+          : { bg: "bg-white dark:bg-[#1f1f1f]/40 hover:bg-slate-50 dark:hover:bg-[#303030]/60 text-slate-500 dark:text-slate-400", border: "border-slate-200 dark:border-[#303030] hover:border-indigo-400/40", label: "Scheduled", symbol: "·" };
       default: // off
         return compact
           ? { bg: "bg-slate-100 dark:bg-[#303030] text-slate-400 dark:text-slate-500", symbol: "-" }
-          : { bg: "bg-slate-50/50 dark:bg-[#1f1f1f]/20 hover:bg-slate-100/40 dark:hover:bg-[#303030]/40 text-slate-400 dark:text-slate-500", border: "border-slate-100 dark:border-[#303030]/50 hover:border-slate-200 dark:hover:border-slate-700", label: "Week Off", symbol: "âœ–" };
+          : { bg: "bg-slate-50/50 dark:bg-[#1f1f1f]/20 hover:bg-slate-100/40 dark:hover:bg-[#303030]/40 text-slate-400 dark:text-slate-500", border: "border-slate-100 dark:border-[#303030]/50 hover:border-slate-200 dark:hover:border-slate-700", label: "Week Off", symbol: "✖" };
     }
   };
 
@@ -874,7 +874,7 @@ export default function TeamPage() {
     try {
       const res = await approveLeave(leaveId);
       if (res.success) {
-        toast("Leave request approved successfully! â›±", "success");
+        toast("Leave request approved successfully! ⛱", "success");
         await loadTeamData();
       } else {
         toast(`Failed to approve leave: ${res.error}`, "error");
@@ -1459,7 +1459,7 @@ export default function TeamPage() {
                         <CardContent className="p-5 sm:p-7 flex flex-col items-center justify-center gap-4 min-h-[180px]">
                           <div className="text-center">
                             <span className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-slate-500 block">
-                              {isPunchedIn ? "Time Elapsed â€” Live" : isPunchedOut ? "Total Shift Hours" : "Today's Working Hours"}
+                              {isPunchedIn ? "Time Elapsed — Live" : isPunchedOut ? "Total Shift Hours" : "Today's Working Hours"}
                             </span>
                             {isPunchedIn && (
                               <span className="text-[10px] text-emerald-400 font-semibold mt-1 block animate-pulse">â— Currently Active</span>
@@ -1486,7 +1486,7 @@ export default function TeamPage() {
                           <div className="flex items-center gap-2 flex-wrap justify-center">
                             <div className="bg-slate-800/60 text-[10px] text-slate-400 font-semibold px-3 py-1.5 rounded-2xl flex items-center gap-1.5 border border-slate-700/40">
                               <Clock className="h-3 w-3" />
-                              {selectedEmpData.shiftStartTime} â€” {selectedEmpData.shiftEndTime}
+                              {selectedEmpData.shiftStartTime} — {selectedEmpData.shiftEndTime}
                             </div>
                             {isPunchedOut && totalHours && (
                               <div className="bg-emerald-900/30 text-[10px] text-emerald-400 font-bold px-3 py-1.5 rounded-2xl flex items-center gap-1.5 border border-emerald-800/40">
@@ -1519,7 +1519,7 @@ export default function TeamPage() {
                                   <span className="text-sm font-bold text-slate-700 dark:text-slate-300">Punch In</span>
                                 </div>
                                 <span className="text-sm font-mono font-bold tabular-nums text-slate-500 dark:text-slate-400">
-                                  {punchInDisplay ?? "â€” â€”"}
+                                  {punchInDisplay ?? "— —"}
                                 </span>
                               </div>
                               {todayRec?.punchInTime && (
@@ -1537,14 +1537,14 @@ export default function TeamPage() {
                                   <span className="text-sm font-bold text-slate-700 dark:text-slate-300">Punch Out</span>
                                 </div>
                                 <span className="text-sm font-mono font-bold tabular-nums text-slate-500 dark:text-slate-400">
-                                  {punchOutDisplay ?? "â€” â€”"}
+                                  {punchOutDisplay ?? "— —"}
                                 </span>
                               </div>
                               {isPunchedOut && (
-                                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1 ml-6">Shift ended â€¢ {totalHours}h total</p>
+                                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1 ml-6">Shift ended • {totalHours}h total</p>
                               )}
                               {isPunchedIn && (
-                                <p className="text-xs text-brand-500 dark:text-brand-400 font-medium mt-1 ml-6 animate-pulse">Active â€” awaiting check-out</p>
+                                <p className="text-xs text-brand-500 dark:text-brand-400 font-medium mt-1 ml-6 animate-pulse">Active — awaiting check-out</p>
                               )}
                               {!todayRec?.punchInTime && (
                                 <p className="text-xs text-slate-500 dark:text-slate-500 font-medium mt-1 ml-6">Not started today</p>
@@ -1730,7 +1730,7 @@ export default function TeamPage() {
                               <div className="space-y-4">
                                 <div className="p-2.5 bg-indigo-500/10 border border-indigo-500/20 rounded-2xl text-center shadow-sm">
                                   <p className="text-xs font-bold text-indigo-600 dark:text-indigo-400">
-                                    ðŸ“… Selected Date: {calMonthName} {selectedSingleDay}, {calYear}
+                                    📅 Selected Date: {calMonthName} {selectedSingleDay}, {calYear}
                                   </p>
                                 </div>
 
@@ -1748,7 +1748,7 @@ export default function TeamPage() {
                                           : "border-slate-200 dark:border-[#303030] bg-slate-50/60 dark:bg-[#1f1f1f]/60 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-[#303030]/80 hover:text-slate-800 dark:hover:text-slate-250"
                                       }`}
                                     >
-                                      <span>â›± Holiday</span>
+                                      <span>⛱ Holiday</span>
                                     </button>
                                     <button
                                       type="button"
@@ -1759,7 +1759,7 @@ export default function TeamPage() {
                                           : "border-slate-200 dark:border-[#303030] bg-slate-50/60 dark:bg-[#1f1f1f]/60 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-[#303030]/80 hover:text-slate-800 dark:hover:text-slate-250"
                                       }`}
                                     >
-                                      <span>âœš Leave</span>
+                                      <span>✚ Leave</span>
                                     </button>
                                     <button
                                       type="button"
@@ -1770,7 +1770,7 @@ export default function TeamPage() {
                                           : "border-slate-200 dark:border-[#303030] bg-slate-50/60 dark:bg-[#1f1f1f]/60 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-[#303030]/80 hover:text-slate-800 dark:hover:text-slate-250"
                                       }`}
                                     >
-                                      <span>âœ“ Present</span>
+                                      <span>✓ Present</span>
                                     </button>
                                     <button
                                       type="button"
@@ -1781,7 +1781,7 @@ export default function TeamPage() {
                                           : "border-slate-200 dark:border-[#303030] bg-slate-50/60 dark:bg-[#1f1f1f]/60 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-[#303030]/80 hover:text-slate-800 dark:hover:text-slate-250"
                                       }`}
                                     >
-                                      <span>âœ– Week Off</span>
+                                      <span>✖ Week Off</span>
                                     </button>
                                   </div>
                                 </div>
@@ -1816,7 +1816,7 @@ export default function TeamPage() {
                                         : "border-slate-200 dark:border-[#303030] bg-slate-50/60 dark:bg-[#1f1f1f]/60 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-[#303030]/80 hover:text-slate-800 dark:hover:text-slate-250"
                                     }`}
                                   >
-                                    <span>â›± Holiday</span>
+                                    <span>⛱ Holiday</span>
                                   </button>
                                   <button
                                     type="button"
@@ -1827,7 +1827,7 @@ export default function TeamPage() {
                                         : "border-slate-200 dark:border-[#303030] bg-slate-50/60 dark:bg-[#1f1f1f]/60 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-[#303030]/80 hover:text-slate-800 dark:hover:text-slate-250"
                                     }`}
                                   >
-                                    <span>âœš Leave</span>
+                                    <span>✚ Leave</span>
                                   </button>
                                   <button
                                     type="button"
@@ -1838,7 +1838,7 @@ export default function TeamPage() {
                                         : "border-slate-200 dark:border-[#303030] bg-slate-50/60 dark:bg-[#1f1f1f]/60 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-[#303030]/80 hover:text-slate-800 dark:hover:text-slate-250"
                                     }`}
                                   >
-                                    <span>âœ“ Present</span>
+                                    <span>✓ Present</span>
                                   </button>
                                   <button
                                     type="button"
@@ -1849,7 +1849,7 @@ export default function TeamPage() {
                                         : "border-slate-200 dark:border-[#303030] bg-slate-50/60 dark:bg-[#1f1f1f]/60 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-[#303030]/80 hover:text-slate-800 dark:hover:text-slate-250"
                                     }`}
                                   >
-                                    <span>âœ– Week Off</span>
+                                    <span>✖ Week Off</span>
                                   </button>
                                 </div>
                               </div>
@@ -1994,7 +1994,7 @@ export default function TeamPage() {
                               <select value={projectToAssign} onChange={e => setProjectToAssign(e.target.value)} className="h-11 min-w-0 flex-1 rounded-xl border border-slate-800 bg-slate-950 px-3 text-base text-white focus:outline-none focus:ring-2 focus:ring-brand-500/40 sm:text-sm">
                                 <option value="">Choose a project</option>
                                 {allProjects.filter((project: any) => String(project.leadId) !== selectedEmployeeDetailId).map((project: any) => (
-                                  <option key={project.id} value={project.id}>{project.name}{project.clientName ? ` â€” ${project.clientName}` : " â€” Internal"}</option>
+                                  <option key={project.id} value={project.id}>{project.name}{project.clientName ? ` — ${project.clientName}` : " — Internal"}</option>
                                 ))}
                               </select>
                               <Button type="button" onClick={() => projectToAssign && handleAssignProject(Number(projectToAssign))} disabled={!projectToAssign || isAssigningProject} className="h-11 justify-center bg-brand-600 font-semibold text-white hover:bg-brand-700 sm:w-36">
@@ -2043,7 +2043,7 @@ export default function TeamPage() {
                                 >
                                   <option value="">Internal / no project</option>
                                   {allProjects.map(p => (
-                                    <option key={p.id} value={p.id}>{p.name}{p.clientName ? ` â€” ${p.clientName}` : " â€” Internal"}</option>
+                                    <option key={p.id} value={p.id}>{p.name}{p.clientName ? ` — ${p.clientName}` : " — Internal"}</option>
                                   ))}
                                 </select>
 
@@ -2199,10 +2199,10 @@ export default function TeamPage() {
                                   <span className={`text-[10px] font-extrabold uppercase tracking-widest ${
                                     leave.leaveType === "sick" ? "text-rose-500" : "text-amber-500"
                                   }`}>
-                                    {leave.leaveType === "sick" ? "âœš Sick Leave" : "â›± Vacation Leave"}
+                                    {leave.leaveType === "sick" ? "✚ Sick Leave" : "⛱ Vacation Leave"}
                                   </span>
                                   <p className="text-xs text-slate-600 dark:text-slate-300 mt-1">
-                                    {leave.startDate} â€” {leave.endDate}
+                                    {leave.startDate} — {leave.endDate}
                                   </p>
                                 </div>
                                 <Badge
@@ -2397,7 +2397,7 @@ export default function TeamPage() {
                               <span className={`w-1.5 h-1.5 rounded-full ${!pOut ? "bg-emerald-500 animate-pulse" : "bg-emerald-400"}`} />
                               In {pIn}
                             </span>
-                            {pOut && <span className="text-rose-500">Â· Out {pOut}</span>}
+                            {pOut && <span className="text-rose-500">· Out {pOut}</span>}
                           </div>
                         );
                       })()}
@@ -2497,7 +2497,7 @@ export default function TeamPage() {
           {/* Row 2: Shift Schedule Calendar + Pending Leaves side by side */}
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
 
-            {/* Shift Schedule Calendar â€” takes 2/3 width on xl */}
+            {/* Shift Schedule Calendar — takes 2/3 width on xl */}
             <Card className="xl:col-span-2 overflow-hidden">
               <CardHeader className="border-b border-slate-100 dark:border-[#303030]">
                 <div className="flex items-center gap-2">
@@ -2529,10 +2529,10 @@ export default function TeamPage() {
                 </div>
               </CardHeader>
               <CardContent className="p-0">
-                {/* One employee per card row â€” week columns inside */}
+                {/* One employee per card row — week columns inside */}
                 <div className="divide-y divide-slate-100 dark:divide-[#303030]/60">
                   {members.filter(m => m.roleRaw !== "admin").map((m) => {
-                    // Split month days into weeks (Sunâ€“Sat rows)
+                    // Split month days into weeks (Sun–Sat rows)
                     const weeks: number[][] = [];
                     let currentWeek: number[] = Array(calFirstDayOfWeek).fill(0);
                     for (let d = 1; d <= calDaysInMonth; d++) {
@@ -2564,7 +2564,7 @@ export default function TeamPage() {
                             <Avatar name={m.name} size="sm" status={m.status} />
                             <div>
                               <p className="text-xs font-bold text-slate-900 dark:text-white">{m.name}</p>
-                              <p className="text-[10px] text-slate-400 font-medium">{m.role} Â· {m.shiftStartTime}â€“{m.shiftEndTime}</p>
+                              <p className="text-[10px] text-slate-400 font-medium">{m.role} · {m.shiftStartTime}–{m.shiftEndTime}</p>
                             </div>
                           </div>
                           <div className="flex items-center gap-3 text-[10px] font-bold">
@@ -2610,7 +2610,7 @@ export default function TeamPage() {
                                     key={day}
                                     type="button"
                                     onClick={() => handleCellClick(m.id, day)}
-                                    title={`${m.name} Â· ${calMonthName} ${day} Â· ${status}`}
+                                    title={`${m.name} · ${calMonthName} ${day} · ${status}`}
                                     className={cn(
                                       "h-8 w-full rounded-xl text-[10px] font-bold transition-all flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-brand-400/50",
                                       cellColor,
@@ -2660,7 +2660,7 @@ export default function TeamPage() {
                             <div>
                               <p className="text-xs font-bold text-slate-800 dark:text-white leading-tight">{leave.employeeName}</p>
                               <span className={`text-[9px] font-bold capitalize block mt-0.5 ${leave.leaveType === "sick" ? "text-rose-500" : "text-amber-500"}`}>
-                                {leave.leaveType} leave Â· {leave.startDate}{leave.startDate !== leave.endDate ? ` to ${leave.endDate}` : ""}
+                                {leave.leaveType} leave · {leave.startDate}{leave.startDate !== leave.endDate ? ` to ${leave.endDate}` : ""}
                               </span>
                             </div>
                           </div>
@@ -2723,7 +2723,7 @@ export default function TeamPage() {
                       <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Status</label>
                       <div className="grid grid-cols-2 gap-2">
                         {(["vacation","sick","present","off"] as const).map((t) => {
-                          const labels: Record<string, string> = { vacation: "â›± Holiday", sick: "âœš Leave", present: "âœ“ Present", off: "âœ– Week Off" };
+                          const labels: Record<string, string> = { vacation: "⛱ Holiday", sick: "✚ Leave", present: "✓ Present", off: "✖ Week Off" };
                           const active = leaveType === t;
                           const activeCls = t === "vacation" ? "border-amber-500 bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400" :
                             t === "sick" ? "border-rose-500 bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400" :

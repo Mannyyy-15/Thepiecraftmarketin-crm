@@ -134,7 +134,7 @@ export default function ClientDocumentsPage() {
       <div className="flex h-[80vh] items-center justify-center">
         <div className="flex flex-col items-center gap-4 text-slate-400">
           <RefreshCw className="h-8 w-8 animate-spin text-teal-500" />
-          <p className="text-sm font-semibold tracking-wide uppercase">Opening vault vault...</p>
+          <p className="text-sm font-semibold tracking-wide uppercase">Opening vault...</p>
         </div>
       </div>
     );

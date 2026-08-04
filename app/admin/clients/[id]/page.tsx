@@ -41,7 +41,7 @@ const STAGE_CONFIG: Record<string, { label: string; dot: string; pill: string }>
 };
 
 const INV_STATUS: Record<string, { label: string; pill: string }> = {
-  draft:   { label: "Draft",   pill: "bg-slate-100 dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700" },
+  draft:   { label: "Draft",   pill: "bg-slate-100 dark:bg-[#303030] text-slate-500 border-slate-200 dark:border-[#3f3f3f]" },
   sent:    { label: "Sent",    pill: "bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 border-blue-500/20" },
   paid:    { label: "Paid",    pill: "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 border-emerald-500/20" },
   overdue: { label: "Overdue", pill: "bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 border-rose-500/20" },
@@ -56,13 +56,13 @@ const PROJ_STATUS_COLOR: Record<string, string> = {
   cancelled: "bg-rose-100 dark:bg-rose-950/30 text-rose-700 dark:text-rose-400",
 };
 
-const INPUT  = "h-11 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white placeholder:text-slate-400 transition-all";
-const SELECT = "h-11 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white cursor-pointer transition-all";
+const INPUT  = "h-11 w-full rounded-xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white placeholder:text-slate-400 transition-all";
+const SELECT = "h-11 w-full rounded-xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white cursor-pointer transition-all";
 const LABEL  = "block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5";
 
 function BentoCard({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={cn("rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-950 p-5", className)}>
+    <div className={cn("rounded-2xl border border-slate-200/80 dark:border-[#303030]/80 bg-white dark:bg-[#1f1f1f] p-5", className)}>
       {children}
     </div>
   );
@@ -72,7 +72,7 @@ function SectionTitle({ icon: Icon, label, action }: { icon: React.ElementType; 
   return (
     <div className="flex items-center justify-between gap-3 mb-4">
       <div className="flex items-center gap-2">
-        <div className="h-6 w-6 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
+        <div className="h-6 w-6 rounded-lg bg-slate-100 dark:bg-[#303030] flex items-center justify-center shrink-0">
           <Icon className="h-3 w-3 text-slate-500" />
         </div>
         <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{label}</span>
@@ -270,12 +270,12 @@ export default function ClientDetailPage() {
                     <span className={cn("h-1.5 w-1.5 rounded-full mr-1", stage.dot)} />{stage.label}
                   </span>
                   {d.industry && (
-                    <span className="inline-flex items-center gap-1 text-[9px] font-bold text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">
+                    <span className="inline-flex items-center gap-1 text-[9px] font-bold text-slate-500 bg-slate-100 dark:bg-[#303030] px-2 py-0.5 rounded-full">
                       <Tag className="h-2.5 w-2.5" />{d.industry}
                     </span>
                   )}
                   {d.country && (
-                    <span className="inline-flex items-center gap-1 text-[9px] font-bold text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">
+                    <span className="inline-flex items-center gap-1 text-[9px] font-bold text-slate-500 bg-slate-100 dark:bg-[#303030] px-2 py-0.5 rounded-full">
                       <MapPin className="h-2.5 w-2.5" />{d.country}
                     </span>
                   )}
@@ -299,13 +299,13 @@ export default function ClientDetailPage() {
                 <Edit2 className="h-3.5 w-3.5 mr-1.5" />Edit Client
               </Button>
               <button onClick={handleDelete}
-                className="h-9 w-9 rounded-xl flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-all cursor-pointer border border-slate-200 dark:border-slate-800">
+                className="h-9 w-9 rounded-xl flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-all cursor-pointer border border-slate-200 dark:border-[#303030]">
                 <Trash2 className="h-4 w-4" />
               </button>
             </div>
           </div>
           {/* Account Lead & Date strip */}
-          <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center gap-6">
+          <div className="mt-4 pt-4 border-t border-slate-100 dark:border-[#303030] flex flex-wrap items-center gap-6">
             <div className="flex items-center gap-2">
               <Avatar name={client.owner?.name || "Unassigned"} size="xs" />
               <div>
@@ -330,7 +330,7 @@ export default function ClientDetailPage() {
 
         {/* ── Financial KPIs ──────────────────────────────────────────────── */}
         {[
-          { label: "Total Invoiced", value: `₹${totalInvoiced.toLocaleString()}`, sub: `${invs.length} invoice${invs.length !== 1 ? "s" : ""}`, icon: Receipt, color: "text-slate-800 dark:text-white", bg: "bg-white dark:bg-slate-950", accent: "bg-slate-100 dark:bg-slate-800" },
+          { label: "Total Invoiced", value: `₹${totalInvoiced.toLocaleString()}`, sub: `${invs.length} invoice${invs.length !== 1 ? "s" : ""}`, icon: Receipt, color: "text-slate-800 dark:text-white", bg: "bg-white dark:bg-[#1f1f1f]", accent: "bg-slate-100 dark:bg-[#303030]" },
           { label: "Total Paid",     value: `₹${totalPaid.toLocaleString()}`,     sub: `${invs.filter((i: any) => i.status === "paid").length} paid`, icon: BadgeCheck, color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-50/40 dark:bg-emerald-950/10", accent: "bg-emerald-100 dark:bg-emerald-900/20" },
           { label: "Outstanding",    value: `₹${outstanding.toLocaleString()}`,   sub: overdueInvs.length > 0 ? `${overdueInvs.length} overdue` : "All clear", icon: AlertCircle, color: outstanding > 0 ? "text-amber-600 dark:text-amber-400" : "text-slate-400", bg: "bg-amber-50/40 dark:bg-amber-950/10", accent: "bg-amber-100 dark:bg-amber-900/20" },
           { label: "Monthly MRR",    value: `₹${(client.totalMRR || 0).toLocaleString()}`, sub: "per month", icon: TrendingUp, color: "text-brand-600 dark:text-brand-400", bg: "bg-brand-50/40 dark:bg-brand-950/10", accent: "bg-brand-100 dark:bg-brand-900/20" },
@@ -370,8 +370,8 @@ export default function ClientDetailPage() {
                 return (
                   <button key={p.id}
                     onClick={() => router.push(`/admin/projects/${p.id}`)}
-                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-200/80 dark:border-slate-800/80 bg-slate-50/60 dark:bg-slate-900/30 hover:bg-brand-50/30 dark:hover:bg-brand-950/10 hover:border-brand-200 dark:hover:border-brand-800/40 transition-all text-left cursor-pointer group">
-                    <div className="h-9 w-9 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center shrink-0 group-hover:border-brand-300 transition-all">
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-200/80 dark:border-[#303030]/80 bg-slate-50/60 dark:bg-[#303030]/30 hover:bg-brand-50/30 dark:hover:bg-brand-950/10 hover:border-brand-200 dark:hover:border-brand-800/40 transition-all text-left cursor-pointer group">
+                    <div className="h-9 w-9 rounded-xl bg-white dark:bg-[#303030] border border-slate-200 dark:border-[#3f3f3f] flex items-center justify-center shrink-0 group-hover:border-brand-300 transition-all">
                       <PIcon className="h-4 w-4 text-slate-400" />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -381,7 +381,7 @@ export default function ClientDetailPage() {
                         {p.priority === "high" && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950/30 text-rose-500">High</span>}
                       </div>
                       <div className="mt-1.5 flex items-center gap-2">
-                        <div className="flex-1 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                        <div className="flex-1 h-1.5 bg-slate-200 dark:bg-[#3f3f3f] rounded-full overflow-hidden">
                           <div className="h-full bg-brand-500 rounded-full" style={{ width: `${progressPct}%` }} />
                         </div>
                         <span className="text-[10px] text-slate-400 font-bold shrink-0">{progressPct}%</span>
@@ -407,7 +407,7 @@ export default function ClientDetailPage() {
               <span className="text-xs font-semibold text-slate-500">Progress</span>
               <span className="text-xs font-extrabold text-brand-600 dark:text-brand-400">{client.progress}%</span>
             </div>
-            <div className="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+            <div className="h-2 bg-slate-100 dark:bg-[#303030] rounded-full overflow-hidden">
               <div className="h-full bg-brand-500 rounded-full transition-all duration-500" style={{ width: `${client.progress}%` }} />
             </div>
           </div>
@@ -417,10 +417,10 @@ export default function ClientDetailPage() {
             <div className="space-y-2">
               {checklist.map((item: any, idx: number) => (
                 <button key={item.id || idx} onClick={() => handleToggleCheck(idx)}
-                  className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-slate-200/80 dark:border-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-900/40 transition-colors cursor-pointer text-left">
+                  className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-slate-200/80 dark:border-[#303030]/80 hover:bg-slate-50 dark:hover:bg-[#303030]/40 transition-colors cursor-pointer text-left">
                   {item.checked
                     ? <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
-                    : <div className="h-4 w-4 rounded-full border-2 border-slate-300 dark:border-slate-600 shrink-0" />}
+                    : <div className="h-4 w-4 rounded-full border-2 border-slate-300 dark:border-[#3f3f3f] shrink-0" />}
                   <span className={cn("text-xs font-medium", item.checked ? "text-slate-400 line-through" : "text-slate-700 dark:text-slate-200")}>{item.text}</span>
                 </button>
               ))}
@@ -435,7 +435,7 @@ export default function ClientDetailPage() {
           {login?.hasLogin ? (
             <>
               {/* Email */}
-              <div className="rounded-xl border border-slate-200/80 dark:border-slate-800/80 p-3 mb-3">
+              <div className="rounded-xl border border-slate-200/80 dark:border-[#303030]/80 p-3 mb-3">
                 <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Login Email</p>
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate">{login.email}</span>
@@ -464,7 +464,7 @@ export default function ClientDetailPage() {
               </div>
               <label className={LABEL}>Login account</label>
               <select value={linkUserId} onChange={(e) => setLinkUserId(e.target.value)}
-                className="w-full h-10 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white">
+                className="w-full h-10 rounded-xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] px-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white">
                 <option value="">— Select —</option>
                 {(login?.allClientUsers || []).map((u: any) => (
                   <option key={u.id} value={u.id}>{u.email}</option>
@@ -477,9 +477,9 @@ export default function ClientDetailPage() {
           <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Set New Password</p>
           <div className="flex gap-2">
             <input type="password" maxLength={PASSWORD_MAX_LENGTH} value={newPass} onChange={(e) => { setNewPass(e.target.value); setPassResult(null); }} placeholder="New password"
-              className="flex-1 h-10 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white" />
+              className="flex-1 h-10 rounded-xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] px-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white" />
             <button onClick={genPassword} title="Generate"
-              className="shrink-0 h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-bold text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-950/20 cursor-pointer">
+              className="shrink-0 h-10 px-3 rounded-xl border border-slate-200 dark:border-[#303030] text-xs font-bold text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-950/20 cursor-pointer">
               <RefreshCw className="h-3.5 w-3.5" />
             </button>
           </div>
@@ -527,10 +527,10 @@ export default function ClientDetailPage() {
           {!invs.length ? (
             <EmptyState icon={<Receipt className="h-4 w-4" />} title="No invoices" description="No invoices raised for this client yet." />
           ) : (
-            <div className="rounded-xl border border-slate-200/80 dark:border-slate-800/80 overflow-hidden">
+            <div className="rounded-xl border border-slate-200/80 dark:border-[#303030]/80 overflow-hidden">
               <table className="w-full text-xs">
                 <thead>
-                  <tr className="border-b border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/30">
+                  <tr className="border-b border-slate-100 dark:border-[#303030] bg-slate-50/60 dark:bg-[#303030]/30">
                     <th className="text-left px-4 py-2.5 text-[9px] font-bold text-slate-400 uppercase tracking-wider">Invoice #</th>
                     <th className="text-right px-4 py-2.5 text-[9px] font-bold text-slate-400 uppercase tracking-wider">Amount</th>
                     <th className="text-left px-4 py-2.5 text-[9px] font-bold text-slate-400 uppercase tracking-wider hidden sm:table-cell">Project</th>
@@ -539,12 +539,12 @@ export default function ClientDetailPage() {
                     <th className="w-20 px-4 py-2.5" />
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
+                <tbody className="divide-y divide-slate-100 dark:divide-[#303030]/60">
                   {invs.map((inv: any) => {
                     const st = INV_STATUS[inv.status] || INV_STATUS.draft;
                     const isOverdue = inv.status !== "paid" && inv.dueDate && new Date(inv.dueDate) < new Date();
                     return (
-                      <tr key={inv.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                      <tr key={inv.id} className="hover:bg-slate-50 dark:hover:bg-[#303030]/40 transition-colors">
                         <td className="px-4 py-3 font-mono text-[11px] font-bold text-slate-600 dark:text-slate-300 whitespace-nowrap">{inv.invoiceNumber}</td>
                         <td className="px-4 py-3 text-right font-extrabold text-slate-900 dark:text-white">₹{(inv.amount || 0).toLocaleString()}</td>
                         <td className="px-4 py-3 text-slate-500 dark:text-slate-400 hidden sm:table-cell">{inv.projectName || <span className="italic text-slate-300 dark:text-slate-600">—</span>}</td>
@@ -595,7 +595,7 @@ export default function ClientDetailPage() {
               </div>
             )}
           </div>
-          <div className="pt-3 border-t border-slate-100 dark:border-slate-800">
+          <div className="pt-3 border-t border-slate-100 dark:border-[#303030]">
             <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-3">Account Lead</p>
             <div className="flex items-center gap-3">
               <Avatar name={client.owner?.name || "Unassigned"} size="md" />
@@ -606,7 +606,7 @@ export default function ClientDetailPage() {
             </div>
           </div>
           {d.services && (
-            <div className="pt-3 border-t border-slate-100 dark:border-slate-800">
+            <div className="pt-3 border-t border-slate-100 dark:border-[#303030]">
               <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Services</p>
               <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">{d.services}</p>
             </div>
@@ -619,14 +619,14 @@ export default function ClientDetailPage() {
       {editOpen && (
         <>
           <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40" onClick={() => setEditOpen(false)} />
-          <div className="fixed right-0 top-0 h-full w-full max-w-[540px] bg-white dark:bg-slate-950 z-50 shadow-2xl flex flex-col animate-[slide-in-right_280ms_cubic-bezier(0.16,1,0.3,1)]">
-            <div className="shrink-0 px-6 pt-5 pb-4 border-b border-slate-200 dark:border-slate-800">
+          <div className="fixed right-0 top-0 h-full w-full max-w-[540px] bg-white dark:bg-[#1f1f1f] z-50 shadow-2xl flex flex-col animate-[slide-in-right_280ms_cubic-bezier(0.16,1,0.3,1)]">
+            <div className="shrink-0 px-6 pt-5 pb-4 border-b border-slate-200 dark:border-[#303030]">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Edit Client</p>
                   <h2 className="text-base font-bold text-slate-900 dark:text-white mt-0.5">{client.name}</h2>
                 </div>
-                <button onClick={() => setEditOpen(false)} className="h-8 w-8 rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer">
+                <button onClick={() => setEditOpen(false)} className="h-8 w-8 rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#303030] transition-all cursor-pointer">
                   <X className="h-4 w-4" />
                 </button>
               </div>
@@ -665,7 +665,7 @@ export default function ClientDetailPage() {
                   </select>
                 </div>
               </div>
-              <div className="shrink-0 px-6 py-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-900/20 flex justify-end gap-3">
+              <div className="shrink-0 px-6 py-4 border-t border-slate-200 dark:border-[#303030] bg-slate-50/40 dark:bg-[#303030]/20 flex justify-end gap-3">
                 <Button type="button" variant="outline" size="sm" onClick={() => setEditOpen(false)}>Cancel</Button>
                 <Button type="submit" size="sm" disabled={editSaving || !editForm.name} className="bg-brand-600 text-white font-bold min-w-[120px] justify-center">
                   {editSaving ? "Saving…" : <><CheckCircle2 className="h-4 w-4 mr-1.5" />Save Changes</>}

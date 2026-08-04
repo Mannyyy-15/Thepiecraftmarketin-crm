@@ -467,7 +467,7 @@ export default function WebsiteDevPage() {
                       checked={isCompleted}
                       disabled
                       title="Task status is managed by an administrator"
-                      className="h-5 w-5 rounded-md border-2 border-slate-300 dark:border-slate-600 text-brand-500 focus:ring-brand-500 focus:ring-offset-0 cursor-not-allowed transition-all"
+                      className="h-5 w-5 rounded-md border-2 border-slate-300 dark:border-[#3f3f3f] text-brand-500 focus:ring-brand-500 focus:ring-offset-0 cursor-not-allowed transition-all"
                     />
                   </div>
                   <div className="min-w-0 flex-1">
@@ -489,7 +489,7 @@ export default function WebsiteDevPage() {
                         title="Task status is managed by an administrator"
                         className={cn(
                           "rounded-md border bg-transparent px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide focus:outline-none transition-colors cursor-pointer",
-                          isCompleted ? "border-emerald-200 text-emerald-600 dark:border-emerald-900 dark:text-emerald-400" : "border-slate-200 text-slate-600 dark:border-slate-700 dark:text-slate-300 hover:border-brand-300 dark:hover:border-brand-700"
+                          isCompleted ? "border-emerald-200 text-emerald-600 dark:border-emerald-900 dark:text-emerald-400" : "border-slate-200 text-slate-600 dark:border-[#3f3f3f] dark:text-slate-300 hover:border-brand-300 dark:hover:border-brand-700"
                         )}
                       >
                         <option value="todo">To Do</option>
@@ -508,7 +508,7 @@ export default function WebsiteDevPage() {
 
                   <button
                     disabled
-                    className="h-8 w-8 rounded-full bg-white dark:bg-[#303030] border border-slate-200 dark:border-slate-700 text-slate-400 flex items-center justify-center cursor-not-allowed transition-all shadow-sm opacity-40 shrink-0"
+                    className="h-8 w-8 rounded-full bg-white dark:bg-[#303030] border border-slate-200 dark:border-[#3f3f3f] text-slate-400 flex items-center justify-center cursor-not-allowed transition-all shadow-sm opacity-40 shrink-0"
                     title="Tickets are managed by an administrator"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
@@ -580,7 +580,7 @@ export default function WebsiteDevPage() {
                       <button
                         disabled
                         title="Domains are managed by an administrator"
-                        className="h-8 w-8 rounded-full bg-white dark:bg-[#303030] border border-slate-200 dark:border-slate-700 text-slate-400 flex items-center justify-center cursor-not-allowed transition-all shadow-sm opacity-40 shrink-0"
+                        className="h-8 w-8 rounded-full bg-white dark:bg-[#303030] border border-slate-200 dark:border-[#3f3f3f] text-slate-400 flex items-center justify-center cursor-not-allowed transition-all shadow-sm opacity-40 shrink-0"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>

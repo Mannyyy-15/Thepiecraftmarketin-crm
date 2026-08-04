@@ -243,7 +243,7 @@ export default function AdminMessagesPage() {
           <div
             key={contact.id}
             onClick={() => setActiveContact(contact)}
-            className="flex items-center gap-3 p-3 rounded-2xl cursor-pointer transition-all hover:bg-slate-50 dark:hover:bg-slate-900/50 active:scale-[0.98]"
+            className="flex items-center gap-3 p-3 rounded-2xl cursor-pointer transition-all hover:bg-slate-50 dark:hover:bg-[#303030]/50 active:scale-[0.98]"
           >
             <div className="relative shrink-0">
               <Avatar name={contact.clientName || contact.name} size="sm" />
@@ -254,7 +254,7 @@ export default function AdminMessagesPage() {
                 <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{contact.clientName || contact.name}</p>
               </div>
               <p className="text-[10px] text-slate-400 truncate mt-0.5">
-                {contact.role === "client" ? `${contact.industry} · ${contact.assignedTo}` : (contact.jobTitle || contact.role)}
+                {contact.role === "client" ? `${contact.industry} Â· ${contact.assignedTo}` : (contact.jobTitle || contact.role)}
               </p>
             </div>
           </div>
@@ -283,7 +283,7 @@ export default function AdminMessagesPage() {
                   <span className="ml-auto text-[9px] font-bold text-slate-400">{items.length}</span>
                 </div>
                 {items.map((contact) => (
-                  <div key={contact.id} onClick={() => addChatContact(contact)} className="flex items-center gap-3 p-3 rounded-2xl cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors active:scale-[0.98]">
+                  <div key={contact.id} onClick={() => addChatContact(contact)} className="flex items-center gap-3 p-3 rounded-2xl cursor-pointer hover:bg-slate-50 dark:hover:bg-[#303030]/50 transition-colors active:scale-[0.98]">
                     <div className="relative shrink-0">
                       <Avatar name={contact.clientName || contact.name} size="sm" />
                       <span className={`absolute -bottom-0.5 -right-0.5 ${statusDot(contact.status)}`} />
@@ -291,7 +291,7 @@ export default function AdminMessagesPage() {
                     <div className="min-w-0 flex-1">
                       <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{contact.clientName || contact.name}</p>
                       <p className="text-[10px] text-slate-400 truncate mt-0.5">
-                        {contact.role === "client" ? `${contact.industry} · ${contact.assignedTo}` : (contact.jobTitle || contact.email)}
+                        {contact.role === "client" ? `${contact.industry} Â· ${contact.assignedTo}` : (contact.jobTitle || contact.email)}
                       </p>
                     </div>
                   </div>
@@ -307,7 +307,7 @@ export default function AdminMessagesPage() {
         {activeContact ? (
           <>
             <div className="flex items-center gap-3 px-4 py-3 border-b border-slate-100 dark:border-[#303030]/80 shrink-0">
-              <button onClick={() => setActiveContact(null)} className="lg:hidden p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl cursor-pointer">
+              <button onClick={() => setActiveContact(null)} className="lg:hidden p-1 hover:bg-slate-100 dark:hover:bg-[#303030] rounded-xl cursor-pointer">
                 <ArrowLeft className="h-4 w-4" />
               </button>
               <div className="relative">
@@ -316,7 +316,7 @@ export default function AdminMessagesPage() {
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{activeContact.clientName || activeContact.name}</p>
-                <p className="text-[10px] text-slate-400 truncate">{activeContact.role === "client" ? `${activeContact.industry} · ${activeContact.email}` : activeContact.email}</p>
+                <p className="text-[10px] text-slate-400 truncate">{activeContact.role === "client" ? `${activeContact.industry} Â· ${activeContact.email}` : activeContact.email}</p>
               </div>
             </div>
             <CardContent className="flex-1 overflow-y-auto p-4 space-y-3">
@@ -365,7 +365,7 @@ export default function AdminMessagesPage() {
           <div className="absolute bottom-0 left-0 right-0 bg-white dark:bg-[#1f1f1f] rounded-t-2xl p-4 max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-bold text-slate-900 dark:text-white">New Conversation</h3>
-              <button onClick={() => setShowContactPicker(false)} className="h-8 w-8 rounded-2xl flex items-center justify-center text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer">
+              <button onClick={() => setShowContactPicker(false)} className="h-8 w-8 rounded-2xl flex items-center justify-center text-slate-400 hover:bg-slate-100 dark:hover:bg-[#303030] cursor-pointer">
                 <X className="h-4 w-4" />
               </button>
             </div>
@@ -389,12 +389,12 @@ export default function AdminMessagesPage() {
                   {isExpanded && (
                     <div className="space-y-0.5">
                       {items.map((contact) => (
-                        <div key={contact.id} onClick={() => addChatContact(contact)} className="flex items-center gap-3 p-3 rounded-2xl cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors active:scale-[0.98]">
+                        <div key={contact.id} onClick={() => addChatContact(contact)} className="flex items-center gap-3 p-3 rounded-2xl cursor-pointer hover:bg-slate-50 dark:hover:bg-[#303030]/50 transition-colors active:scale-[0.98]">
                           <Avatar name={contact.clientName || contact.name} size="sm" />
                           <div className="min-w-0 flex-1">
                             <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{contact.clientName || contact.name}</p>
                             <p className="text-[10px] text-slate-400 truncate mt-0.5">
-                              {contact.role === "client" ? `${contact.industry} · ${contact.assignedTo}` : (contact.jobTitle || contact.email)}
+                              {contact.role === "client" ? `${contact.industry} Â· ${contact.assignedTo}` : (contact.jobTitle || contact.email)}
                             </p>
                           </div>
                         </div>

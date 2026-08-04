@@ -2286,7 +2286,16 @@ export async function getOverviewPageData() {
 
     const [userRows, allProjects, taskRows, timesheetsRaw, attendance, tasks] = await Promise.all([
       db.select(publicUserFields).from(schema.users).where(eq(schema.users.id, userId)).limit(1),
-      db.select().from(schema.projects).where(eq(schema.projects.organizationId, context.organizationId)),
+      db.select({
+        id: schema.projects.id,
+        name: schema.projects.name,
+        status: schema.projects.status,
+        deadline: schema.projects.deadline,
+        client: schema.projects.clientName,
+        budget: schema.projects.budget,
+        leadId: schema.projects.leadId,
+        teamMemberIds: schema.projects.teamMemberIds,
+      }).from(schema.projects).where(eq(schema.projects.organizationId, context.organizationId)),
       db.select({ projectId: schema.tasks.projectId }).from(schema.tasks).where(eq(schema.tasks.userId, userId)).catch(() => [] as { projectId: number | null }[]),
       db.select().from(schema.timesheets).where(eq(schema.timesheets.userId, userId)).catch(() => []),
       db.select().from(schema.attendance).where(eq(schema.attendance.userId, userId)),

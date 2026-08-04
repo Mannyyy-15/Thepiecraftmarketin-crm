@@ -290,7 +290,7 @@ export default function EmployeeAttendancePage() {
       bgBorderClass = "bg-emerald-500/5 dark:bg-emerald-500/10 border-emerald-500/30 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400 hover:border-emerald-500/50 hover:bg-emerald-500/10";
       statusLabel = attRecord.punchInTime
         ? "Punched Present"
-        : `Present Â· Full Day (${formatDuration(shiftDurationMins(user?.shiftStartTime || "09:00 AM", user?.shiftEndTime || "05:00 PM"))})`;
+        : `Present · Full Day (${formatDuration(shiftDurationMins(user?.shiftStartTime || "09:00 AM", user?.shiftEndTime || "05:00 PM"))})`;
       indicatorColor = "bg-emerald-500";
     } else if (leaveRecord) {
       if (leaveRecord.status === "approved") {
@@ -384,15 +384,15 @@ export default function EmployeeAttendancePage() {
       return {
         label: "Punched Present",
         line: pout
-          ? `In ${fmt(pin)} Â· Out ${fmt(pout)} Â· ${hours!.toFixed(1)}h worked`
-          : `In ${fmt(pin)} Â· currently on shift`,
+          ? `In ${fmt(pin)} · Out ${fmt(pout)} · ${hours!.toFixed(1)}h worked`
+          : `In ${fmt(pin)} · currently on shift`,
         badge: "bg-emerald-500",
       };
     }
     if (selectedAtt.status === "present" || selectedAtt.status === "checked_in") {
       return {
-        label: "Present Â· Full Day",
-        line: `${shiftStart} â€“ ${shiftEnd} Â· ${formatDuration(shiftDurationMins(shiftStart, shiftEnd))} completed`,
+        label: "Present · Full Day",
+        line: `${shiftStart} – ${shiftEnd} · ${formatDuration(shiftDurationMins(shiftStart, shiftEnd))} completed`,
         badge: "bg-emerald-500",
       };
     }
@@ -593,10 +593,10 @@ export default function EmployeeAttendancePage() {
                     onChange={(e) => setReqLeaveType(e.target.value)}
                     className="w-full h-9 rounded-xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#303030] px-3 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/40 text-slate-700 dark:text-slate-300"
                   >
-                    <option value="sick">Sick Leave âœš</option>
-                    <option value="vacation">Vacation / Holiday â›±</option>
-                    <option value="casual">Casual Leave â˜•</option>
-                    <option value="other">Other / Special ðŸŒŸ</option>
+                    <option value="sick">Sick Leave ✚</option>
+                    <option value="vacation">Vacation / Holiday ⛱</option>
+                    <option value="casual">Casual Leave ☕</option>
+                    <option value="other">Other / Special 🌟</option>
                   </select>
                 </div>
 
@@ -668,7 +668,7 @@ export default function EmployeeAttendancePage() {
                     <div key={leave.id} className="flex justify-between items-center p-3 rounded-xl bg-white/70 dark:bg-[#1f1f1f]/50 border border-slate-200/60 dark:border-[#303030] text-[11px]">
                       <div className="truncate mr-2">
                         <span className="font-bold text-slate-800 dark:text-slate-200 capitalize">{leave.leaveType} Leave</span>
-                        <span className="block text-[9px] text-slate-500 dark:text-slate-500 font-medium mt-0.5">{leave.startDate} â†’ {leave.endDate}</span>
+                        <span className="block text-[9px] text-slate-500 dark:text-slate-500 font-medium mt-0.5">{leave.startDate} → {leave.endDate}</span>
                       </div>
                       <Badge 
                         variant={leave.status === "approved" ? "success" : leave.status === "rejected" ? "danger" : "warning"} 

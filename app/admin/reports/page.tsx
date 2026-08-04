@@ -273,7 +273,7 @@ export default function ReportsPage() {
               <div className="relative">
                 <button 
                   onClick={() => setAiResult(null)}
-                  className="absolute top-0 right-0 h-6 w-6 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center cursor-pointer"
+                  className="absolute top-0 right-0 h-6 w-6 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-[#303030] flex items-center justify-center cursor-pointer"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -324,8 +324,8 @@ export default function ReportsPage() {
       </Card>
 
       {/* Recent Reports Listing with Dynamic Interactive State */}
-      <Card className="overflow-hidden border border-slate-200 dark:border-slate-850">
-        <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 sm:p-5 border-b border-slate-200 dark:border-[#303030] bg-slate-50/50 dark:bg-slate-950/20">
+      <Card className="overflow-hidden border border-slate-200 dark:border-[#303030]">
+        <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 sm:p-5 border-b border-slate-200 dark:border-[#303030] bg-slate-50/50 dark:bg-[#1f1f1f]/20">
           <div>
             <CardTitle>Recent Reports</CardTitle>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Filter generated PDFs or run instant client-facing conversion performance charts.</p>
@@ -340,7 +340,7 @@ export default function ReportsPage() {
                   onClick={() => setTypeFilter(type)}
                   className={`px-3 py-1.5 rounded-xl transition-colors cursor-pointer ${
                     typeFilter === type
-                      ? "bg-white dark:bg-slate-850 text-indigo-650 dark:text-indigo-400 shadow-sm"
+                      ? "bg-white dark:bg-[#303030] text-indigo-650 dark:text-indigo-400 shadow-sm"
                       : "text-slate-500 hover:text-slate-800 dark:hover:text-white"
                   }`}
                 >
@@ -364,13 +364,13 @@ export default function ReportsPage() {
           </div>
         </CardHeader>
         
-        <div className="divide-y divide-slate-100 dark:divide-slate-800">
+        <div className="divide-y divide-slate-100 dark:divide-[#303030]">
           {filteredReports.map((r) => {
             const cat = r.name?.toLowerCase().includes("monthly") ? "Monthly" :
                         r.name?.toLowerCase().includes("quarterly") ? "Quarterly" :
                         r.name?.toLowerCase().includes("seo") || r.name?.toLowerCase().includes("audit") ? "Audit" : "Custom";
             return (
-              <div key={r.id} className="flex items-center gap-4 p-4 sm:p-5 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors duration-150 group">
+              <div key={r.id} className="flex items-center gap-4 p-4 sm:p-5 hover:bg-slate-50 dark:hover:bg-[#303030]/50 transition-colors duration-150 group">
                 <div className="h-10 w-10 rounded-2xl bg-brand-50 dark:bg-brand-500/10 text-brand-600 dark:text-brand-300 flex items-center justify-center shrink-0 shadow-sm">
                   <FileText className="h-5 w-5" />
                 </div>
@@ -392,7 +392,7 @@ export default function ReportsPage() {
                       <Button variant="outline" size="sm" onClick={() => setPreviewDoc({url: r.url, name: r.name})} className="border border-slate-200 dark:border-[#303030] text-slate-700 dark:text-slate-200 font-semibold text-xs">
                         <Eye className="h-3.5 w-3.5 mr-1" /> <span className="hidden sm:inline">Preview</span>
                       </Button>
-                      <a href={r.url} download={r.name} className="inline-flex items-center justify-center whitespace-nowrap rounded-md h-8 px-3 border border-slate-200 dark:border-[#303030] text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold text-xs transition-colors">
+                      <a href={r.url} download={r.name} className="inline-flex items-center justify-center whitespace-nowrap rounded-md h-8 px-3 border border-slate-200 dark:border-[#303030] text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#303030] font-semibold text-xs transition-colors">
                         <Download className="h-3.5 w-3.5 mr-1 text-emerald-500" /> <span className="hidden sm:inline">PDF</span>
                       </a>
                     </>
@@ -416,10 +416,10 @@ export default function ReportsPage() {
       </Card>
 
       {/* ========================================================================= */}
-      {/* 📁 MODAL: CREATE REPORT */}
+      {/* ðŸ“ MODAL: CREATE REPORT */}
       {/* ========================================================================= */}
       {showCreateModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/40 dark:bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-slate-950/40 dark:bg-[#1f1f1f]/70 backdrop-blur-md flex items-center justify-center p-4">
           <Card className="w-full max-w-md animate-scaleIn border border-indigo-500/25 shadow-2xl relative">
             <CardHeader className="py-4 border-b dark:border-[#303030] pr-12">
               <CardTitle className="text-sm font-bold flex items-center gap-2">

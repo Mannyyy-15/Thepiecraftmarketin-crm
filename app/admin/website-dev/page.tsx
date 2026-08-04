@@ -456,7 +456,7 @@ export default function WebsiteDevPage() {
               <Plus className="h-3.5 w-3.5 mr-1.5" /> Manage tasks
             </Button>
           </CardHeader>
-          <div className="divide-y divide-slate-100 dark:divide-slate-800/60 p-2 sm:p-4 bg-slate-50/50 dark:bg-[#1f1f1f]/20">
+          <div className="divide-y divide-slate-100 dark:divide-[#303030]/60 p-2 sm:p-4 bg-slate-50/50 dark:bg-[#1f1f1f]/20">
             {tasks.map((t) => {
               const isCompleted = t.status === "done";
               return (
@@ -475,7 +475,7 @@ export default function WebsiteDevPage() {
                       checked={isCompleted}
                       disabled
                       title="Manage task status from Projects"
-                      className="h-5 w-5 rounded-md border-2 border-slate-300 dark:border-slate-600 text-brand-500 focus:ring-brand-500 focus:ring-offset-0 cursor-pointer transition-all"
+                      className="h-5 w-5 rounded-md border-2 border-slate-300 dark:border-[#3f3f3f] text-brand-500 focus:ring-brand-500 focus:ring-offset-0 cursor-pointer transition-all"
                     />
                   </div>
                   <div className="min-w-0 flex-1">

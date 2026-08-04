@@ -404,7 +404,7 @@ export default function DocumentsPage() {
                 <Folder className="h-5 w-5" />
               </div>
               <p className="text-sm font-semibold text-slate-900 dark:text-white truncate pr-6">{f.name}</p>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 tabular-nums">{f.files} files â€¢ {f.size}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 tabular-nums">{f.files} files • {f.size}</p>
             </Card>
           ))}
         </div>
@@ -430,7 +430,7 @@ export default function DocumentsPage() {
             <Search className="pointer-events-none absolute inset-y-0 left-3 h-full w-4 text-slate-400" />
             <input
               type="search"
-              placeholder="Search files by name, client, ownerâ€¦"
+              placeholder="Search files by name, client, owner…"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="h-9 w-full rounded-2xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] pl-9 pr-3 text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white"
@@ -449,14 +449,14 @@ export default function DocumentsPage() {
                       </div>
                       {d.url ? (
                         <a href={d.url} target="_blank" rel="noopener noreferrer" className="font-semibold text-brand-600 hover:underline truncate max-w-[200px] sm:max-w-xs flex items-center gap-1">
-                          {d.name} <span className="text-[10px] opacity-70">(Link â†—)</span>
+                          {d.name} <span className="text-[10px] opacity-70">(Link ↗)</span>
                         </a>
                       ) : (
                         <span className="font-semibold text-slate-900 dark:text-white truncate max-w-[200px] sm:max-w-xs">{d.name}</span>
                       )}
                     </div>
                   </td>
-                  <td className="px-5 py-3.5 hidden md:table-cell text-slate-650 dark:text-slate-350 font-semibold text-xs">{d.clientName || "â€”"}</td>
+                  <td className="px-5 py-3.5 hidden md:table-cell text-slate-650 dark:text-slate-350 font-semibold text-xs">{d.clientName || "—"}</td>
                   <td className="px-5 py-3.5 hidden sm:table-cell">
                     <div className="flex items-center gap-2">
                       <Avatar name={d.ownerName} size="xs" />
@@ -549,7 +549,7 @@ export default function DocumentsPage() {
       )}
 
       {/* ========================================================================= */}
-      {/* ðŸ“¤ MODAL: UPLOAD FILE */}
+      {/* 📤 MODAL: UPLOAD FILE */}
       {/* ========================================================================= */}
       {showUploadModal && (
         <div className="fixed inset-0 z-50 bg-slate-950/40 dark:bg-[#1f1f1f]/70 backdrop-blur-md flex items-center justify-center p-4">

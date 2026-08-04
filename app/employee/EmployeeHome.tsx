@@ -226,7 +226,7 @@ export default function EmployeeHome({ initialProfile, initialAttendance }: Empl
     ? ((new Date(todayAttendance.punchOutTime).getTime() - new Date(todayAttendance.punchInTime).getTime()) / 3600000).toFixed(1)
     : null;
 
-  // â”€â”€â”€ Status colour helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── Status colour helpers ────────────────────────────────
   const statusRing = isPunchedIn
     ? "ring-1 ring-emerald-500/30 dark:ring-emerald-400/20"
     : isPunchedOut
@@ -257,10 +257,10 @@ export default function EmployeeHome({ initialProfile, initialAttendance }: Empl
         </h1>
       </div>
 
-      {/* â”€â”€ Main grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── Main grid ─────────────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-5 lg:min-h-[520px]">
 
-        {/* â”€â”€ LEFT: Clock card + swipe bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        {/* ── LEFT: Clock card + swipe bar ──────────────── */}
         <div className="lg:col-span-3 flex flex-col gap-4">
 
           {/* Clock Card */}
@@ -304,15 +304,15 @@ export default function EmployeeHome({ initialProfile, initialAttendance }: Empl
                 )}
               </div>
 
-              {/* â”€â”€ Digit display â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+              {/* ── Digit display ─────────────────────────── */}
               <ShiftTimerDigits attendance={todayAttendance} isLoading={isLoading} />
 
-              {/* Shift schedule pill â€” inside clock card */}
+              {/* Shift schedule pill — inside clock card */}
               <div className="flex items-center gap-2 flex-wrap justify-center">
                 <div className="flex items-center gap-2 bg-slate-800/70 dark:bg-[#303030]/50 border border-slate-700/40 rounded-xl px-3.5 py-1.5">
                   <Clock className="h-3 w-3 text-slate-400" />
                   <span className="text-[11px] font-semibold text-slate-300">
-                    {user?.shiftStartTime || "10:00 AM"} â€” {user?.shiftEndTime || "07:30 PM"}
+                    {user?.shiftStartTime || "10:00 AM"} — {user?.shiftEndTime || "07:30 PM"}
                   </span>
                 </div>
                 {isPunchedOut && totalHoursWorked && (
@@ -330,7 +330,7 @@ export default function EmployeeHome({ initialProfile, initialAttendance }: Empl
             <EmptyState
               icon={<MapPin className="h-6 w-6 text-amber-500" />}
               title="Office location not set up"
-              description="Your admin needs to configure the office location in Settings â†’ Office & Punch before you can punch in."
+              description="Your admin needs to configure the office location in Settings → Office & Punch before you can punch in."
               className="rounded-2xl border border-amber-200 bg-amber-50/50 dark:border-amber-900/40 dark:bg-amber-950/20 py-6"
             />
           )}
@@ -361,7 +361,7 @@ export default function EmployeeHome({ initialProfile, initialAttendance }: Empl
           </div>
         </div>
 
-        {/* â”€â”€ RIGHT: Activity log â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        {/* ── RIGHT: Activity log ────────────────────────── */}
         <div className="lg:col-span-2">
           <Card className="h-full rounded-[24px] border border-slate-200 dark:border-[#303030]/60 bg-white dark:bg-[#303030]/80 shadow-sm dark:shadow-none overflow-hidden">
             <CardContent className="p-5 lg:p-6 h-full flex flex-col gap-4">
@@ -456,7 +456,7 @@ export default function EmployeeHome({ initialProfile, initialAttendance }: Empl
                         }`}>
                           {todayAttendance?.punchInTime
                             ? new Date(todayAttendance.punchInTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true })
-                            : "â€” : â€”"}
+                            : "— : —"}
                         </span>
                       </div>
                     </div>
@@ -468,7 +468,7 @@ export default function EmployeeHome({ initialProfile, initialAttendance }: Empl
                         isPunchedIn ? "text-emerald-500 dark:text-emerald-400" : "text-slate-300 dark:text-slate-600"
                       }`}>
                         {isPunchedIn && <Timer className="h-3 w-3" />}
-                        <span>{isPunchedIn ? "In Progress" : "â†’"}</span>
+                        <span>{isPunchedIn ? "In Progress" : "→"}</span>
                       </div>
                       <div className={`flex-1 h-px ${todayAttendance?.punchInTime ? "bg-slate-200 dark:bg-[#3f3f3f]" : "bg-slate-100 dark:bg-[#303030]"}`} />
                     </div>
@@ -522,7 +522,7 @@ export default function EmployeeHome({ initialProfile, initialAttendance }: Empl
                         }`}>
                           {todayAttendance?.punchOutTime
                             ? new Date(todayAttendance.punchOutTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true })
-                            : "â€” : â€”"}
+                            : "— : —"}
                         </span>
                       </div>
                     </div>
@@ -552,7 +552,7 @@ export default function EmployeeHome({ initialProfile, initialAttendance }: Empl
         </div>
       </div>
 
-      {/* â”€â”€ Mobile Slide-to-Punch (fixed, above nav) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── Mobile Slide-to-Punch (fixed, above nav) ─────────── */}
       {!isPunchedOut && (
         <div className="lg:hidden fixed bottom-[7rem] left-4 right-4 z-50">
           <div className="rounded-full shadow-2xl">
