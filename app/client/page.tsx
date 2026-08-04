@@ -30,12 +30,19 @@ import { getCurrentUserCached } from "@/lib/currentUserClient";
 import { getClientDashboardData } from "@/app/actions/crm";
 import { getClientProjectStatusVariant, getProjectStatusLabel } from "@/lib/statusHelpers";
 import { useRefreshOnFocus } from "@/lib/use-refresh-on-focus";
+import { getCachedValue, setCachedValue } from "@/hooks/useActionCache";
+
+const CLIENT_DASHBOARD_CACHE_TTL_MS = 60_000;
+
+type ClientDashboardData = { projects: any[]; actionItems: any[]; upcomingMilestones: any[]; pendingInvoices: any[] };
 
 export default function ClientOverviewPage() {
   const [user, setUser] = useState<{ name?: string; email?: string } | null>(null);
-  const [dashboardData, setDashboardData] = useState<{ projects: any[]; actionItems: any[]; upcomingMilestones: any[]; pendingInvoices: any[] } | null>(null);
-  const [invoices, setInvoices] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [dashboardData, setDashboardData] = useState<ClientDashboardData | null>(
+    () => getCachedValue<ClientDashboardData>("client:dashboard", CLIENT_DASHBOARD_CACHE_TTL_MS)
+  );
+  const [invoices, setInvoices] = useState<any[]>(() => getCachedValue<ClientDashboardData>("client:dashboard", CLIENT_DASHBOARD_CACHE_TTL_MS)?.pendingInvoices ?? []);
+  const [loading, setLoading] = useState(() => getCachedValue("client:dashboard", CLIENT_DASHBOARD_CACHE_TTL_MS) === null);
 
   const load = async () => {
       const [u, dashRes] = await Promise.all([
@@ -46,6 +53,7 @@ export default function ClientOverviewPage() {
       if (dashRes.success && dashRes.data) {
         setDashboardData(dashRes.data);
         setInvoices(dashRes.data.pendingInvoices ?? []);
+        setCachedValue("client:dashboard", dashRes.data);
       }
       setLoading(false);
   };

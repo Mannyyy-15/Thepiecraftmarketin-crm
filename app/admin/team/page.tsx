@@ -7,11 +7,15 @@ import { createLoginLink, createUser, resetMemberPassword } from "@/app/actions/
 import { PASSWORD_MAX_LENGTH } from "@/lib/security/password";
 import { ShareLoginLinkDialog } from "@/components/ShareLoginLinkDialog";
 import { getTeamUsers, getAttendance, bulkUpdateAttendance, deleteUser, updateUserShiftSchedule, getUserTasks, createTask, toggleTaskStatus, deleteTask, getProjects, assignProjectLead, getPendingLeaves, approveLeave, rejectLeave, updateEmployeePermissions, getTeamPresence } from "@/app/actions/crm";
-import { EMPLOYEE_PERMISSIONS, parseEmployeePermissions, type EmployeePermission } from "@/lib/member-permissions";
+import { EMPLOYEE_PERMISSIONS, type EmployeePermission } from "@/lib/member-permissions";
+import { mapTeamMembers } from "@/lib/team-presence";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { getMemberStatusVariant, getMemberStatusLabel } from "@/lib/statusHelpers";
 import { MemberGridSkeleton, CalendarSkeleton, Skeleton, TaskListSkeleton } from "@/components/ui/Skeleton";
 import { useRememberedCount } from "@/hooks/useRememberedCount";
+import { getCachedValue, setCachedValue } from "@/hooks/useActionCache";
+
+const TEAM_CACHE_TTL_MS = 60_000;
 import {
   Mail,
   MoreHorizontal,
@@ -86,8 +90,11 @@ export default function TeamPage() {
   );
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Stateful members list loaded from the database
-  const [members, setMembers] = useState<any[]>([]);
+  // Stateful members list loaded from the database. Seeded synchronously from
+  // the persistent cache (warmed either by a previous visit or the app-open
+  // prefetcher) so a repeat visit paints real cards instantly instead of a
+  // skeleton, while loadTeamData below still refreshes it in the background.
+  const [members, setMembers] = useState<any[]>(() => getCachedValue("admin:team:members", TEAM_CACHE_TTL_MS) ?? []);
   const { skeletonCount: memberSkeletonCount, record: recordMemberCount } = useRememberedCount("admin:team", 3);
 
   // Invite member form toggle & input fields
@@ -130,7 +137,7 @@ export default function TeamPage() {
   const [attendanceOverrides, setAttendanceOverrides] = useState<Map<string, "present" | "half-day" | "vacation" | "sick" | "off">>(new Map());
   // Raw attendance records including real punchInTime / punchOutTime
   const [allAttendanceRecords, setAllAttendanceRecords] = useState<any[]>([]);
-  const [isTeamLoading, setIsTeamLoading] = useState(true);
+  const [isTeamLoading, setIsTeamLoading] = useState(() => getCachedValue("admin:team:members", TEAM_CACHE_TTL_MS) === null);
 
   const todayNumber = new Date().getDate();
 
@@ -141,7 +148,7 @@ export default function TeamPage() {
   const [startDayInput, setStartDayInput] = useState(String(todayNumber));
   const [endDayInput, setEndDayInput] = useState(String(todayNumber));
   const [leaveType, setLeaveType] = useState<"vacation" | "sick" | "present" | "off">("vacation");
-  const [pendingLeaves, setPendingLeaves] = useState<any[]>([]);
+  const [pendingLeaves, setPendingLeaves] = useState<any[]>(() => getCachedValue("admin:team:pendingLeaves", TEAM_CACHE_TTL_MS) ?? []);
 
   // Calendar click-outside deselect
   const calendarRef = useRef<HTMLDivElement>(null);
@@ -477,7 +484,12 @@ export default function TeamPage() {
   };
 
   const loadTeamData = useCallback(async (showLoader = false) => {
-    if (showLoader) setIsTeamLoading(true);
+    // Only actually show the skeleton if there's no cached data already on
+    // screen — showLoader=true on a cache-warm mount would otherwise flash
+    // the skeleton over real cards while this background refresh runs.
+    if (showLoader && getCachedValue("admin:team:members", TEAM_CACHE_TTL_MS) === null) {
+      setIsTeamLoading(true);
+    }
     try {
       const [usersRes, attendanceRes, leavesRes, presenceRes] = await Promise.all([
         getTeamUsers(),
@@ -487,36 +499,12 @@ export default function TeamPage() {
       ]);
 
       if (usersRes.success && usersRes.data) {
-        const presenceMap = new Map<number, { sessionActive: boolean; punchedIn: boolean }>(
-          presenceRes.success && presenceRes.data
-            ? presenceRes.data.map((p: any) => [p.userId, { sessionActive: p.sessionActive, punchedIn: p.punchedIn }])
-            : []
+        const mapped = mapTeamMembers(
+          usersRes.data,
+          presenceRes.success && presenceRes.data ? presenceRes.data : []
         );
-
-        const mapped = usersRes.data.map((u: any) => {
-          const pres = presenceMap.get(u.id);
-          const status = pres?.punchedIn
-            ? ("online" as const)
-            : pres?.sessionActive
-            ? ("away" as const)
-            : ("offline" as const);
-
-          return {
-            id: String(u.id),
-            name: u.name,
-            role: u.systemRole || (u.role === "admin" ? "Admin" : "Web Developer"),
-            email: u.email,
-            roleRaw: u.role,
-            permissions: parseEmployeePermissions(u.permissions),
-            lastLoginAt: u.lastLoginAt,
-            status,
-            workingDays: u.workingDays ? u.workingDays.split(",").map(Number) : [1, 2, 3, 4, 5],
-            shiftStartTime: u.shiftStartTime || "09:00 AM",
-            shiftEndTime: u.shiftEndTime || "05:00 PM",
-            activeShiftProfile: u.activeShiftProfile || "Standard Core Hours",
-          };
-        });
         setMembers(mapped);
+        setCachedValue("admin:team:members", mapped);
         recordMemberCount(mapped.length);
         const nonAdmins = mapped.filter((m: any) => m.roleRaw !== "admin");
         if (nonAdmins.length > 0 && !selectedEmp) {
@@ -550,6 +538,7 @@ export default function TeamPage() {
 
       if (leavesRes.success && leavesRes.data) {
         setPendingLeaves(leavesRes.data);
+        setCachedValue("admin:team:pendingLeaves", leavesRes.data);
       }
     } catch (err) {
       console.error("Error loading team data:", err);

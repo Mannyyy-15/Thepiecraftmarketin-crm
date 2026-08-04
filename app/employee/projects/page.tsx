@@ -19,6 +19,9 @@ import { ProjectBoardSkeleton } from "@/components/ui/Skeleton";
 import { useRefreshOnFocus } from "@/lib/use-refresh-on-focus";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { parseEmployeePermissions } from "@/lib/member-permissions";
+import { getCachedValue, setCachedValue } from "@/hooks/useActionCache";
+
+const EMPLOYEE_PROJECTS_CACHE_TTL_MS = 60_000;
 
 function parseDetails(raw: string | null | undefined) {
   try { return JSON.parse(raw || "{}"); } catch { return {}; }
@@ -37,29 +40,31 @@ function taskProgress(taskTotal: number, taskDone: number) {
 
 export default function EmployeeProjectsPage() {
   const { toast } = useToast();
-  const [projects, setProjects]   = useState<any[]>([]);
-  const [taskMap, setTaskMap]     = useState<Record<number, { total: number; done: number; tasks: any[] }>>({});
-  const [loading, setLoading]     = useState(true);
+  const [projects, setProjects]   = useState<any[]>(() => getCachedValue("employee:projects:list", EMPLOYEE_PROJECTS_CACHE_TTL_MS) ?? []);
+  const [taskMap, setTaskMap]     = useState<Record<number, { total: number; done: number; tasks: any[] }>>(() => getCachedValue("employee:projects:taskMap", EMPLOYEE_PROJECTS_CACHE_TTL_MS) ?? {});
+  const [loading, setLoading]     = useState(() => getCachedValue("employee:projects:list", EMPLOYEE_PROJECTS_CACHE_TTL_MS) === null);
   const [search, setSearch]       = useState("");
   const [view, setView]           = useState<"board" | "list">("board");
   const [expandedTasks, setExpandedTasks] = useState<Set<number>>(new Set());
   const [toggling, setToggling]   = useState<number | null>(null);
 
-  const [me, setMe]               = useState<any>(null);
-  const [myClients, setMyClients] = useState<any[]>([]);
+  const [me, setMe]               = useState<any>(() => getCachedValue("user_profile", EMPLOYEE_PROJECTS_CACHE_TTL_MS));
+  const [myClients, setMyClients] = useState<any[]>(() => getCachedValue("employee:projects:myClients", EMPLOYEE_PROJECTS_CACHE_TTL_MS) ?? []);
   const [addOpen, setAddOpen]     = useState(false);
   const [form, setForm]           = useState({ ...BLANK_PROJECT });
   const [submitting, setSubmitting] = useState(false);
   const f = (v: Partial<typeof BLANK_PROJECT>) => setForm(p => ({ ...p, ...v }));
 
   const load = async () => {
-    setLoading(true);
+    if (getCachedValue("employee:projects:list", EMPLOYEE_PROJECTS_CACHE_TTL_MS) === null) {
+      setLoading(true);
+    }
     try {
       const [pr, tk, pf, cl] = await Promise.all([getProjects(), getProjectTasksGrouped(), getFreshUserProfile(), getMyClients()]);
-      if (pr.success && pr.data) setProjects(pr.data);
-      if (tk.success && tk.data) setTaskMap(tk.data as any);
-      if (pf.success && pf.data) setMe(pf.data);
-      if (cl.success && cl.data) setMyClients(cl.data as any[]);
+      if (pr.success && pr.data) { setProjects(pr.data); setCachedValue("employee:projects:list", pr.data); }
+      if (tk.success && tk.data) { setTaskMap(tk.data as any); setCachedValue("employee:projects:taskMap", tk.data); }
+      if (pf.success && pf.data) { setMe(pf.data); setCachedValue("user_profile", pf.data); }
+      if (cl.success && cl.data) { setMyClients(cl.data as any[]); setCachedValue("employee:projects:myClients", cl.data); }
     } catch { /* silent */ }
     finally { setLoading(false); }
   };

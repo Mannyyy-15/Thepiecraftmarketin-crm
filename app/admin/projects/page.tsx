@@ -19,6 +19,9 @@ import { cn } from "@/components/ui/cn";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { CardGridSkeleton } from "@/components/ui/Skeleton";
+import { getCachedValue, setCachedValue } from "@/hooks/useActionCache";
+
+const PROJECTS_CACHE_TTL_MS = 60_000;
 import { createProject, updateProjectStatus, deleteProject, updateProject, getProjects, getTeamUsers, getProjectTasksGrouped, addProjectTask, deleteTask, toggleTaskStatus, getClientsEnriched } from "@/app/actions/crm";
 import { getDomainExpiry } from "@/app/actions/whois";
 import { getProjectStatusVariant, getProjectStatusLabel } from "@/lib/statusHelpers";
@@ -354,11 +357,11 @@ export default function ProjectsPage() {
   const { toast, confirmDialog } = useToast();
   const router = useRouter();
 
-  const [projects, setProjects]   = useState<any[]>([]);
-  const [roster, setRoster]       = useState<any[]>([]);
-  const [clients, setClients]     = useState<any[]>([]);
-  const [taskMap, setTaskMap]     = useState<Record<number, { total: number; done: number; tasks: any[] }>>({});
-  const [loading, setLoading]     = useState(true);
+  const [projects, setProjects]   = useState<any[]>(() => getCachedValue("admin:projects:list", PROJECTS_CACHE_TTL_MS) ?? []);
+  const [roster, setRoster]       = useState<any[]>(() => getCachedValue("admin:projects:roster", PROJECTS_CACHE_TTL_MS) ?? []);
+  const [clients, setClients]     = useState<any[]>(() => getCachedValue("admin:projects:clients", PROJECTS_CACHE_TTL_MS) ?? []);
+  const [taskMap, setTaskMap]     = useState<Record<number, { total: number; done: number; tasks: any[] }>>(() => getCachedValue("admin:projects:taskMap", PROJECTS_CACHE_TTL_MS) ?? {});
+  const [loading, setLoading]     = useState(() => getCachedValue("admin:projects:list", PROJECTS_CACHE_TTL_MS) === null);
   const [deleting, setDeleting]   = useState<number | null>(null);
 
   const [search, setSearch]             = useState("");
@@ -391,13 +394,19 @@ export default function ProjectsPage() {
   const [deletingTask, setDeletingTask]         = useState<number | null>(null);
 
   const load = async () => {
-    setLoading(true);
+    if (getCachedValue("admin:projects:list", PROJECTS_CACHE_TTL_MS) === null) {
+      setLoading(true);
+    }
     try {
       const [pr, tr, tk, cl] = await Promise.all([getProjects(), getTeamUsers(), getProjectTasksGrouped(), getClientsEnriched()]);
-      if (pr.success && pr.data) setProjects(pr.data);
-      if (tr.success && tr.data) setRoster(tr.data.filter((u: any) => u.role !== "client"));
-      if (tk.success && tk.data) setTaskMap(tk.data as any);
-      if (cl.success && cl.data) setClients(cl.data as any[]);
+      if (pr.success && pr.data) { setProjects(pr.data); setCachedValue("admin:projects:list", pr.data); }
+      if (tr.success && tr.data) {
+        const r = tr.data.filter((u: any) => u.role !== "client");
+        setRoster(r);
+        setCachedValue("admin:projects:roster", r);
+      }
+      if (tk.success && tk.data) { setTaskMap(tk.data as any); setCachedValue("admin:projects:taskMap", tk.data); }
+      if (cl.success && cl.data) { setClients(cl.data as any[]); setCachedValue("admin:projects:clients", cl.data); }
     } catch { /* silent */ }
     finally { setLoading(false); }
   };

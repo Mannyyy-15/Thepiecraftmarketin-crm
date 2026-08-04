@@ -16,6 +16,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { getInvoiceStatusVariant, getInvoiceStatusLabel } from "@/lib/statusHelpers";
 import { getClientInvoices, getClientPaymentLink } from "@/app/actions/crm";
+import { getCachedValue, setCachedValue } from "@/hooks/useActionCache";
+
+const CLIENT_INVOICES_CACHE_TTL_MS = 60_000;
 
 interface Invoice {
   id: number;
@@ -39,8 +42,8 @@ const fmtDate = (d: string | null) => d ? new Date(d).toLocaleDateString("en-US"
 
 export default function ClientInvoicesPage() {
   const { toast } = useToast();
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [invoices, setInvoices] = useState<Invoice[]>(() => getCachedValue("client:invoices:list", CLIENT_INVOICES_CACHE_TTL_MS) ?? []);
+  const [loading, setLoading] = useState(() => getCachedValue("client:invoices:list", CLIENT_INVOICES_CACHE_TTL_MS) === null);
   const [search, setSearch] = useState("");
   const [drawerInvoice, setDrawerInvoice] = useState<Invoice | null>(null);
   const [paying, setPaying] = useState(false);
@@ -48,7 +51,10 @@ export default function ClientInvoicesPage() {
   useEffect(() => {
     (async () => {
       const res = await getClientInvoices();
-      if (res.success && res.data) setInvoices(res.data as Invoice[]);
+      if (res.success && res.data) {
+        setInvoices(res.data as Invoice[]);
+        setCachedValue("client:invoices:list", res.data);
+      }
       setLoading(false);
     })();
   }, []);

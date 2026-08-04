@@ -13,6 +13,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import ClientSidebar from "@/components/ClientSidebar";
 import PortalTopNav from "@/components/PortalTopNav";
+import ClientPrefetch from "@/components/ClientPrefetch";
 
 const mainNavTabs = [
   { name: "Overview", href: "/client", icon: LayoutDashboard, exact: true },
@@ -32,6 +33,7 @@ export default function PortalLayout({
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
+      <ClientPrefetch />
       <ClientSidebar />
       <div className="flex flex-1 flex-col overflow-hidden relative">
         <PortalTopNav />

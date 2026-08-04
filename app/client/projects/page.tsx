@@ -20,18 +20,25 @@ import { cn } from "@/components/ui/cn";
 import { getProjects } from "@/app/actions/crm";
 import { getClientProjectStatusVariant, getProjectStatusLabel } from "@/lib/statusHelpers";
 import { useRefreshOnFocus } from "@/lib/use-refresh-on-focus";
+import { getCachedValue, setCachedValue } from "@/hooks/useActionCache";
+
+const CLIENT_PROJECTS_CACHE_TTL_MS = 60_000;
 
 type Filter = "all" | "active" | "review" | "completed";
 
 export default function ClientProjectsPage() {
-  const [projects, setProjects] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [projects, setProjects] = useState<any[]>(() => getCachedValue("client:projects:list", CLIENT_PROJECTS_CACHE_TTL_MS) ?? []);
+  const [loading, setLoading] = useState(() => getCachedValue("client:projects:list", CLIENT_PROJECTS_CACHE_TTL_MS) === null);
   const [filter, setFilter] = useState<Filter>("all");
   const [query, setQuery] = useState("");
 
   const load = async () => {
       const res = await getProjects();
-      if (res.success) setProjects(res.data ?? []);
+      if (res.success) {
+        const list = res.data ?? [];
+        setProjects(list);
+        setCachedValue("client:projects:list", list);
+      }
       setLoading(false);
   };
 

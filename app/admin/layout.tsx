@@ -28,6 +28,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import AdminSidebar from "@/components/AdminSidebar";
 import TopNav from "@/components/TopNav";
 import { useLocalNotifications } from "@/lib/useLocalNotifications";
+import AdminPrefetch from "@/components/AdminPrefetch";
 
 const drawerOptions = [
   { name: "Studio AI", href: "/admin/studio-ai", icon: Sparkles, desc: "AI Assistant" },
@@ -65,6 +66,7 @@ export default function DashboardLayout({
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
+      <AdminPrefetch />
       <AdminSidebar />
       <div className="flex flex-1 flex-col overflow-hidden relative">
         <TopNav />

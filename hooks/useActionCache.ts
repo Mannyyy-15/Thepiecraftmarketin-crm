@@ -47,6 +47,26 @@ export function clearPersistentCache() {
 }
 
 /**
+ * Low-level read/write for callers that manage their own fetch + transform
+ * pipeline (e.g. a page that combines several server actions into one
+ * derived shape) but still want to participate in the same persistent,
+ * cross-restart cache useActionCache uses. Prefer useActionCache directly
+ * when a page fetches+renders a single action's result as-is.
+ */
+export function getCachedValue<T>(key: string, ttlMs: number): T | null {
+  const entry = memoryCache.get(key) || getPersistentEntry<T>(key);
+  if (!entry) return null;
+  if (Date.now() - entry.timestamp >= ttlMs) return null;
+  return entry.data;
+}
+
+export function setCachedValue<T>(key: string, data: T) {
+  const entry = { data, timestamp: Date.now() };
+  memoryCache.set(key, entry);
+  setPersistentEntry(key, entry);
+}
+
+/**
  * Invalidates cached entries in memoryCache matching a key pattern or all if no pattern provided.
  */
 export function invalidateActionCache(keyPattern?: string) {

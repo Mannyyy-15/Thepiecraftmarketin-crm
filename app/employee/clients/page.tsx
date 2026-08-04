@@ -28,6 +28,9 @@ import { getClientStatusVariant, getClientStatusLabel } from "@/lib/statusHelper
 import { getMyClients, getFreshUserProfile, createClientAccount, getTeamUsers } from "@/app/actions/crm";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { parseEmployeePermissions } from "@/lib/member-permissions";
+import { getCachedValue, setCachedValue } from "@/hooks/useActionCache";
+
+const EMPLOYEE_CLIENTS_CACHE_TTL_MS = 60_000;
 
 const BLANK_CLIENT = {
   name: "", contactName: "", contactEmail: "", contactPhone: "",
@@ -52,9 +55,9 @@ function clientVisual(name: string, id: number) {
 export default function EmployeeClientsPage() {
   const { toast } = useToast();
 
-  const [allClients, setAllClients] = useState<any[]>([]);
-  const [me, setMe] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const [allClients, setAllClients] = useState<any[]>(() => getCachedValue("employee:clients:list", EMPLOYEE_CLIENTS_CACHE_TTL_MS) ?? []);
+  const [me, setMe] = useState<any>(() => getCachedValue("user_profile", EMPLOYEE_CLIENTS_CACHE_TTL_MS));
+  const [loading, setLoading] = useState(() => getCachedValue("employee:clients:list", EMPLOYEE_CLIENTS_CACHE_TTL_MS) === null);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [onlyMyAccounts, setOnlyMyAccounts] = useState(true);
@@ -70,11 +73,20 @@ export default function EmployeeClientsPage() {
   const f = (v: Partial<typeof BLANK_CLIENT>) => setForm(p => ({ ...p, ...v }));
 
   const load = async () => {
-    setLoading(true);
+    if (getCachedValue("employee:clients:list", EMPLOYEE_CLIENTS_CACHE_TTL_MS) === null) {
+      setLoading(true);
+    }
     try {
       const [cr, pr, tr] = await Promise.all([getMyClients(), getFreshUserProfile(), getTeamUsers()]);
-      if (cr.success) setAllClients((cr.data as any[]) || []);
-      if (pr.success && pr.data) setMe(pr.data);
+      if (cr.success) {
+        const list = (cr.data as any[]) || [];
+        setAllClients(list);
+        setCachedValue("employee:clients:list", list);
+      }
+      if (pr.success && pr.data) {
+        setMe(pr.data);
+        setCachedValue("user_profile", pr.data);
+      }
       if (tr.success && tr.data) setRoster(tr.data);
     } finally {
       setLoading(false);

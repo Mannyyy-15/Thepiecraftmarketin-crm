@@ -30,6 +30,9 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { CardGridSkeleton } from "@/components/ui/Skeleton";
 import { cn } from "@/components/ui/cn";
 import KpiCard from "@/components/KpiCard";
+import { getCachedValue, setCachedValue } from "@/hooks/useActionCache";
+
+const CLIENTS_CACHE_TTL_MS = 60_000;
 
 // ── Types ────────────────────────────────────────────────────────────────────
 interface DBClient {
@@ -104,12 +107,12 @@ export default function ClientsPage() {
 
   const [activeTab, setActiveTab] = useState<"directory" | "invoices">("directory");
   const [search, setSearch] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => getCachedValue("admin:clients:list", CLIENTS_CACHE_TTL_MS) === null);
 
-  const [clients, setClients]   = useState<DBClient[]>([]);
-  const [roster, setRoster]     = useState<TeamMember[]>([]);
-  const [projects, setProjects] = useState<any[]>([]);
-  const [invoices, setInvoices] = useState<InvoiceRow[]>([]);
+  const [clients, setClients]   = useState<DBClient[]>(() => getCachedValue("admin:clients:list", CLIENTS_CACHE_TTL_MS) ?? []);
+  const [roster, setRoster]     = useState<TeamMember[]>(() => getCachedValue("admin:clients:roster", CLIENTS_CACHE_TTL_MS) ?? []);
+  const [projects, setProjects] = useState<any[]>(() => getCachedValue("admin:clients:projects", CLIENTS_CACHE_TTL_MS) ?? []);
+  const [invoices, setInvoices] = useState<InvoiceRow[]>(() => getCachedValue("admin:clients:invoices", CLIENTS_CACHE_TTL_MS) ?? []);
 
   // invoice filters
   const [invSearch, setInvSearch]       = useState("");
@@ -149,19 +152,24 @@ export default function ClientsPage() {
   }, [searchParams]);
 
   const load = async () => {
-    setLoading(true);
+    // Only show the spinner if there's no cached list already on screen —
+    // this may be a background refresh of a cache-warm, already-painted page.
+    if (getCachedValue("admin:clients:list", CLIENTS_CACHE_TTL_MS) === null) {
+      setLoading(true);
+    }
     try {
       const [cr, tr, pr, ir] = await Promise.all([
         getClientsEnriched(), getTeamUsers(), getProjects(), getInvoices(),
       ]);
-      if (cr.success && cr.data) setClients(cr.data as DBClient[]);
+      if (cr.success && cr.data) { setClients(cr.data as DBClient[]); setCachedValue("admin:clients:list", cr.data); }
       if (tr.success && tr.data) {
         const r = tr.data.filter((u: any) => u.role !== "client");
         setRoster(r);
+        setCachedValue("admin:clients:roster", r);
         if (r.length > 0) setForm(p => ({ ...p, ownerId: r[0].id.toString() }));
       }
-      if (pr.success && pr.data) setProjects(pr.data);
-      if (ir.success && ir.data) setInvoices(ir.data as InvoiceRow[]);
+      if (pr.success && pr.data) { setProjects(pr.data); setCachedValue("admin:clients:projects", pr.data); }
+      if (ir.success && ir.data) { setInvoices(ir.data as InvoiceRow[]); setCachedValue("admin:clients:invoices", ir.data); }
     } catch { /* silent */ }
     finally { setLoading(false); }
   };

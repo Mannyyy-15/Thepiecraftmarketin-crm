@@ -25,6 +25,7 @@ import EmployeeSidebar from "@/components/EmployeeSidebar";
 import EmployeeTopNav from "@/components/EmployeeTopNav";
 import { getCurrentUserCached } from "@/lib/currentUserClient";
 import { useLocalNotifications } from "@/lib/useLocalNotifications";
+import EmployeePrefetch from "@/components/EmployeePrefetch";
 
 export default function DashboardLayout({
   children,
@@ -86,6 +87,7 @@ export default function DashboardLayout({
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
+      <EmployeePrefetch />
       {/* Sidebar — desktop only (lg+) */}
       <EmployeeSidebar />
 
@@ -246,7 +248,7 @@ export default function DashboardLayout({
                 <div className="w-10 h-1 bg-slate-200 dark:bg-[#303030] rounded-full mx-auto mt-3 mb-5" />
 
                 {/* Header */}
-                <div className="flex justify-between items-center px-5 pb-4 border-b border-slate-100 dark:border-slate-900/80">
+                <div className="flex justify-between items-center px-5 pb-4 border-b border-slate-100 dark:border-[#303030]/80">
                   <div>
                     <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 mb-0.5">Navigation</p>
                     <h3 className="text-sm font-black text-slate-800 dark:text-white">More Pages</h3>

@@ -23,6 +23,9 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Progress } from "@/components/ui/Progress";
 import { cn } from "@/components/ui/cn";
 import { getClientDocuments } from "@/app/actions/crm";
+import { getCachedValue, setCachedValue } from "@/hooks/useActionCache";
+
+const CLIENT_DOCUMENTS_CACHE_TTL_MS = 60_000;
 
 type DocType = "PDF" | "DOCX" | "XLSX" | "ZIP" | "FIG" | "PNG" | "CSV";
 
@@ -47,16 +50,19 @@ const colorForType: Record<string, string> = {
 };
 
 export default function ClientDocumentsPage() {
-  const [files, setFiles] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [files, setFiles] = useState<any[]>(() => getCachedValue("client:documents:list", CLIENT_DOCUMENTS_CACHE_TTL_MS) ?? []);
+  const [isLoading, setIsLoading] = useState(() => getCachedValue("client:documents:list", CLIENT_DOCUMENTS_CACHE_TTL_MS) === null);
   const [activeFolder, setActiveFolder] = useState<string | null>(null);
   const [query, setQuery] = useState("");
 
   const fetchFiles = async () => {
-    setIsLoading(true);
+    if (getCachedValue("client:documents:list", CLIENT_DOCUMENTS_CACHE_TTL_MS) === null) {
+      setIsLoading(true);
+    }
     const res = await getClientDocuments();
     if (res && res.success && res.data) {
       setFiles(res.data);
+      setCachedValue("client:documents:list", res.data);
     }
     setIsLoading(false);
   };
