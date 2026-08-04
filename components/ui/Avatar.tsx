@@ -69,8 +69,14 @@ function generateDiceBearUrl(name: string, role?: string) {
   return `https://api.dicebear.com/7.x/micah/svg?seed=${seed}&backgroundColor=${bgColors}`;
 }
 
+// Org admins default to the brand mark instead of a generated avatar until
+// they upload a real photo — role must be the literal "admin" account role,
+// not a job-title string like "Office Administrator" that happens to
+// contain "admin" (see generateDiceBearUrl's substring matching below).
+const DEFAULT_ADMIN_AVATAR = "/branding/thepiecraft-logo.png";
+
 export function Avatar({ name = "", src, size = "md", className, status, interactive, role }: AvatarProps) {
-  const finalSrc = src || generateDiceBearUrl(name, role);
+  const finalSrc = src || (role === "admin" ? DEFAULT_ADMIN_AVATAR : generateDiceBearUrl(name, role));
 
   return (
     <span className={cn(
