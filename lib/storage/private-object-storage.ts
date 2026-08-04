@@ -46,18 +46,24 @@ function getStorageConfiguration(): StorageConfiguration | null {
   };
 }
 
+/**
+ * Returns "clean" | "skipped" so callers can record the real scan outcome
+ * instead of always writing "clean" metadata, whether or not scanning
+ * actually happened.
+ */
 async function assertFileIsClean(
   data: Uint8Array,
   fileName: string,
-  mimeType: string
-) {
+  mimeType: string,
+  requireScan: boolean
+): Promise<"clean" | "skipped"> {
   const scannerUrl = process.env.FILE_SCANNER_URL;
   const scannerToken = process.env.FILE_SCANNER_TOKEN;
   if (!scannerUrl || !scannerToken) {
-    if (process.env.NODE_ENV === "production") {
+    if (process.env.NODE_ENV === "production" && requireScan) {
       throw new Error("Malware scanning is not configured.");
     }
-    return;
+    return "skipped";
   }
 
   const response = await fetch(scannerUrl, {
@@ -74,6 +80,7 @@ async function assertFileIsClean(
   if (!response.ok) throw new Error("The file scanner is unavailable.");
   const result = (await response.json()) as { clean?: boolean };
   if (result.clean !== true) throw new Error("The file did not pass security scanning.");
+  return "clean";
 }
 
 function safeExtension(fileName: string) {
@@ -87,6 +94,14 @@ export async function uploadPrivateFile(input: {
   data: Uint8Array;
   fileName: string;
   mimeType: string;
+  /**
+   * Documents and contracts always require a real malware scan in
+   * production (the default). Avatars pass false: they're small images
+   * from a fixed jpeg/png/webp allowlist, a lower-risk surface, and this
+   * lets photo upload work before a scanner is provisioned. Do not widen
+   * this default to other upload paths without a deliberate decision.
+   */
+  requireScan?: boolean;
 }) {
   const storage = getStorageConfiguration();
   if (!storage) throw new Error("Private object storage is not configured.");
@@ -101,7 +116,7 @@ export async function uploadPrivateFile(input: {
     throw new Error("Unsupported file type or size.");
   }
 
-  await assertFileIsClean(input.data, input.fileName, input.mimeType);
+  const scanStatus = await assertFileIsClean(input.data, input.fileName, input.mimeType, input.requireScan ?? true);
   const digest = crypto.createHash("sha256").update(input.data).digest("hex");
   const key =
     `organizations/${input.organizationId}/documents/` +
@@ -116,12 +131,12 @@ export async function uploadPrivateFile(input: {
       Metadata: {
         owner: String(input.ownerUserId),
         sha256: digest,
-        scan: "clean",
+        scan: scanStatus,
       },
       ServerSideEncryption: "AES256",
     })
   );
-  return { key, sha256: digest, size: input.data.byteLength };
+  return { key, sha256: digest, size: input.data.byteLength, scanStatus };
 }
 
 export async function createPrivateDownloadUrl(

@@ -899,6 +899,11 @@ export async function updateUserAvatar(formData: FormData) {
       data: buffer,
       fileName: file.name,
       mimeType: file.type,
+      // Avatars are small images from a fixed jpeg/png/webp allowlist — a
+      // lower-risk surface than arbitrary documents — so this path doesn't
+      // require a malware scanner to be configured. Document/contract
+      // uploads elsewhere keep the default (required in production).
+      requireScan: false,
     });
 
     const previousAvatars = await db
@@ -929,7 +934,7 @@ export async function updateUserAvatar(formData: FormData) {
       contentType: file.type,
       sizeBytes: uploadResult.size,
       checksumSha256: uploadResult.sha256,
-      scanStatus: "clean",
+      scanStatus: uploadResult.scanStatus === "clean" ? "clean" : "pending",
       visibility: "organization",
       entityType: "avatar",
       entityId: Number(session.id),
