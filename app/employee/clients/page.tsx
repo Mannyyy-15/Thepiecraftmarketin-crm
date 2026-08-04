@@ -7,13 +7,16 @@ import {
   Filter,
   Mail,
   Phone,
+  Plus,
   Search,
   Users,
   TrendingUp,
   Heart,
   CheckCircle,
+  CheckCircle2,
   AlertTriangle,
   Loader2,
+  X,
 } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -22,8 +25,18 @@ import { Avatar } from "@/components/ui/Avatar";
 import { Progress } from "@/components/ui/Progress";
 import KpiCard from "@/components/KpiCard";
 import { getClientStatusVariant, getClientStatusLabel } from "@/lib/statusHelpers";
-import { getMyClients, getFreshUserProfile } from "@/app/actions/crm";
+import { getMyClients, getFreshUserProfile, createClientAccount, getTeamUsers } from "@/app/actions/crm";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { parseEmployeePermissions } from "@/lib/member-permissions";
+
+const BLANK_CLIENT = {
+  name: "", contactName: "", contactEmail: "", contactPhone: "",
+  websiteUrl: "", industry: "", country: "", services: "",
+  loginEmail: "", loginPassword: "", ownerId: "",
+};
+const INPUT = "h-11 w-full rounded-2xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white placeholder:text-slate-400 transition-all";
+const SELECT = "h-11 w-full rounded-2xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white cursor-pointer transition-all";
+const LABEL = "block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5";
 
 // Deterministic avatar gradient + initials derived from the client name, so
 // real clients (which don't carry logoBg/initials) still render nicely.
@@ -50,20 +63,68 @@ export default function EmployeeClientsPage() {
   const [emailBody, setEmailBody] = useState("");
   const [emailSentMessage, setEmailSentMessage] = useState<string | null>(null);
 
-  useEffect(() => {
-    (async () => {
-      setLoading(true);
-      try {
-        const [cr, pr] = await Promise.all([getMyClients(), getFreshUserProfile()]);
-        if (cr.success) setAllClients((cr.data as any[]) || []);
-        if (pr.success && pr.data) setMe(pr.data);
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
+  const [roster, setRoster] = useState<any[]>([]);
+  const [addOpen, setAddOpen] = useState(false);
+  const [form, setForm] = useState({ ...BLANK_CLIENT });
+  const [submitting, setSubmitting] = useState(false);
+  const f = (v: Partial<typeof BLANK_CLIENT>) => setForm(p => ({ ...p, ...v }));
+
+  const load = async () => {
+    setLoading(true);
+    try {
+      const [cr, pr, tr] = await Promise.all([getMyClients(), getFreshUserProfile(), getTeamUsers()]);
+      if (cr.success) setAllClients((cr.data as any[]) || []);
+      if (pr.success && pr.data) setMe(pr.data);
+      if (tr.success && tr.data) setRoster(tr.data);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { load(); }, []);
 
   const myName = me?.name || "";
+  const myPermissions = useMemo(() => parseEmployeePermissions(me?.permissions), [me]);
+  const canManageClients = myPermissions.includes("manage_clients");
+
+  const openAddClient = () => {
+    setForm({ ...BLANK_CLIENT, ownerId: me?.id ? String(me.id) : "" });
+    setAddOpen(true);
+  };
+
+  const handleAddClient = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.name || !form.loginEmail || !form.loginPassword) {
+      toast("Brand Name, Login Email and Password are required.", "error"); return;
+    }
+    setSubmitting(true);
+    try {
+      const cfd = new FormData();
+      cfd.append("brandName", form.name.trim());
+      cfd.append("contactName", form.contactName);
+      cfd.append("contactEmail", form.contactEmail);
+      cfd.append("contactPhone", form.contactPhone);
+      cfd.append("websiteUrl", form.websiteUrl);
+      cfd.append("industry", form.industry);
+      cfd.append("country", form.country);
+      cfd.append("services", form.services);
+      cfd.append("loginEmail", form.loginEmail.trim().toLowerCase());
+      cfd.append("loginPassword", form.loginPassword);
+      cfd.append("accountManager", form.ownerId);
+      const cr = await createClientAccount(cfd);
+      if (cr.success) {
+        setAddOpen(false);
+        await load();
+        toast(`${form.name} onboarded. Ask an admin to generate their portal sign-in link.`, "success");
+      } else {
+        toast(cr.error || "Failed to create client record.", "error");
+      }
+    } catch (err: any) {
+      toast(err.message, "error");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   // Clients shown in the table (respecting the "only mine" + search filters)
   const filteredClients = useMemo(() => {
@@ -89,7 +150,7 @@ export default function EmployeeClientsPage() {
 
   const handleComposeEmail = (clientName: string) => {
     setComposeEmailTo(clientName);
-    setEmailSubject(`Strategy & Planning Alignment — ThePieCraft`);
+    setEmailSubject(`Strategy & Planning Alignment â€” ThePieCraft`);
     setEmailBody(`Hi team,\n\nI'd like to sync on our outstanding deliverables and map out our strategic focus for the upcoming quarter.\n\nBest,\n${myName}`);
   };
 
@@ -102,12 +163,21 @@ export default function EmployeeClientsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader eyebrow="Portfolio" title="My Clients" description="The accounts you manage and their health." />
-      {/* KPI Cards — your managed client portfolio */}
+      <PageHeader
+        eyebrow="Portfolio"
+        title="My Clients"
+        description="The accounts you manage and their health."
+        actions={canManageClients ? (
+          <Button size="sm" onClick={openAddClient} className="bg-brand-600 text-white">
+            <Plus className="h-3.5 w-3.5 mr-1" /> Add Client
+          </Button>
+        ) : undefined}
+      />
+      {/* KPI Cards â€” your managed client portfolio */}
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
         <KpiCard
           title="Portfolio MRR"
-          value={`₹${portfolioMRR.toLocaleString()}`}
+          value={`â‚¹${portfolioMRR.toLocaleString()}`}
           change={`${myClients.length} accounts`}
           changeType="neutral"
           accent="brand"
@@ -132,7 +202,7 @@ export default function EmployeeClientsPage() {
         <KpiCard
           title="Portfolio Health"
           value={`${avgHealth}%`}
-          change={avgHealth > 75 ? "Excellent" : avgHealth > 0 ? "Needs Review" : "—"}
+          change={avgHealth > 75 ? "Excellent" : avgHealth > 0 ? "Needs Review" : "â€”"}
           changeType={avgHealth > 75 ? "positive" : avgHealth > 0 ? "negative" : "neutral"}
           accent="portal"
           icon={<Heart className="h-5 w-5" />}
@@ -204,7 +274,7 @@ export default function EmployeeClientsPage() {
             <Search className="pointer-events-none absolute inset-y-0 left-3 h-full w-4 text-slate-400" />
             <input
               type="search"
-              placeholder="Search by name or industry…"
+              placeholder="Search by name or industryâ€¦"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="h-10 w-full rounded-xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] pl-9 pr-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500"
@@ -218,7 +288,7 @@ export default function EmployeeClientsPage() {
                 type="checkbox"
                 checked={onlyMyAccounts}
                 onChange={(e) => setOnlyMyAccounts(e.target.checked)}
-                className="rounded border-slate-300 dark:border-slate-700 text-brand-600 focus:ring-brand-500/40 h-4 w-4"
+                className="rounded border-slate-300 dark:border-[#3f3f3f] text-brand-600 focus:ring-brand-500/40 h-4 w-4"
               />
               Show Only My Managed Clients
             </label>
@@ -259,7 +329,7 @@ export default function EmployeeClientsPage() {
                     <div className="flex flex-col items-center justify-center gap-2">
                       <AlertTriangle className="h-8 w-8 text-slate-300 dark:text-slate-700" />
                       <p className="text-sm font-semibold">No clients to show.</p>
-                      <p className="text-xs">{onlyMyAccounts ? "You have no assigned accounts yet — turn off \"Only my accounts\" to see all." : "Try a different search."}</p>
+                      <p className="text-xs">{onlyMyAccounts ? "You have no assigned accounts yet â€” turn off \"Only my accounts\" to see all." : "Try a different search."}</p>
                     </div>
                   </td>
                 </tr>
@@ -282,8 +352,8 @@ export default function EmployeeClientsPage() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-5 py-3.5 hidden md:table-cell text-slate-600 dark:text-slate-300 font-medium capitalize">{(c.stage || "").replace(/_/g, " ") || "—"}</td>
-                    <td className="px-5 py-3.5 font-semibold text-slate-900 dark:text-white tabular-nums">₹{(c.totalMRR || 0).toLocaleString()}</td>
+                    <td className="px-5 py-3.5 hidden md:table-cell text-slate-600 dark:text-slate-300 font-medium capitalize">{(c.stage || "").replace(/_/g, " ") || "â€”"}</td>
+                    <td className="px-5 py-3.5 font-semibold text-slate-900 dark:text-white tabular-nums">â‚¹{(c.totalMRR || 0).toLocaleString()}</td>
                     <td className="px-5 py-3.5 hidden lg:table-cell">
                       <div className="flex items-center gap-2 min-w-[120px]">
                         <Progress value={c.health} size="sm" className="w-20" barClassName={c.health > 70 ? "bg-gradient-to-r from-emerald-500 to-emerald-600" : c.health > 40 ? "bg-gradient-to-r from-amber-500 to-amber-600" : "bg-gradient-to-r from-rose-500 to-rose-600"} />
@@ -340,13 +410,95 @@ export default function EmployeeClientsPage() {
         </div>
 
         <div className="flex items-center justify-between px-5 py-3 border-t border-slate-200 dark:border-[#303030] text-xs text-slate-500 dark:text-slate-400 font-medium">
-          <span>Showing 1–{filteredClients.length} of {filteredClients.length} clients</span>
+          <span>Showing 1â€“{filteredClients.length} of {filteredClients.length} clients</span>
           <div className="flex items-center gap-1">
             <Button variant="outline" size="sm" disabled>Previous</Button>
             <Button variant="outline" size="sm" disabled>Next</Button>
           </div>
         </div>
       </Card>
+
+      {/* Add Client Modal (only shown to employees granted "manage_clients") */}
+      {addOpen && canManageClients && (
+        <>
+          <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40" onClick={() => setAddOpen(false)} />
+          <div className="fixed right-0 top-0 h-full w-full max-w-[540px] bg-white dark:bg-[#1f1f1f] z-50 shadow-2xl flex flex-col animate-[slide-in-right_280ms_cubic-bezier(0.16,1,0.3,1)]">
+            <div className="shrink-0 px-6 pt-5 pb-4 border-b border-slate-200 dark:border-[#303030]">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">New Client</p>
+                  <h2 className="text-base font-bold text-slate-900 dark:text-white mt-0.5">Onboard a Client</h2>
+                </div>
+                <button onClick={() => setAddOpen(false)} className="h-8 w-8 rounded-2xl flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#303030] transition-all cursor-pointer">
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+
+            <form onSubmit={handleAddClient} className="flex-1 flex flex-col overflow-hidden">
+              <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+                <div>
+                  <label className={LABEL}>Brand / Company Name *</label>
+                  <input required value={form.name} onChange={e => f({ name: e.target.value })} placeholder="e.g. Client company" className={INPUT} />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className={LABEL}>Industry / Niche</label>
+                    <input value={form.industry} onChange={e => f({ industry: e.target.value })} placeholder="e.g. E-Commerce, SaaS" className={INPUT} />
+                  </div>
+                  <div>
+                    <label className={LABEL}>Country</label>
+                    <input value={form.country} onChange={e => f({ country: e.target.value })} placeholder="e.g. India, UAE" className={INPUT} />
+                  </div>
+                </div>
+                <div>
+                  <label className={LABEL}>Website URL</label>
+                  <input value={form.websiteUrl} onChange={e => f({ websiteUrl: e.target.value })} placeholder="example.com" className={INPUT} />
+                </div>
+                <div>
+                  <label className={LABEL}>Contact Name</label>
+                  <input value={form.contactName} onChange={e => f({ contactName: e.target.value })} placeholder="e.g. Pepper Potts" className={INPUT} />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className={LABEL}>Contact Email</label>
+                    <input type="email" value={form.contactEmail} onChange={e => f({ contactEmail: e.target.value, loginEmail: form.loginEmail || e.target.value })} placeholder="contact@company.com" className={INPUT} />
+                  </div>
+                  <div>
+                    <label className={LABEL}>Phone / WhatsApp</label>
+                    <input type="tel" value={form.contactPhone} onChange={e => f({ contactPhone: e.target.value })} placeholder="+91 98765 43210" className={INPUT} />
+                  </div>
+                </div>
+                <div>
+                  <label className={LABEL}>Assign Lead</label>
+                  <select value={form.ownerId} onChange={e => f({ ownerId: e.target.value })} className={SELECT}>
+                    {roster.map((u: any) => <option key={u.id} value={u.id}>{u.name} ({u.role})</option>)}
+                  </select>
+                </div>
+                <div className="p-4 rounded-[20px] bg-brand-500/5 border border-brand-500/10 space-y-2">
+                  <p className="text-xs font-bold text-slate-800 dark:text-white">Client Portal Login</p>
+                  <p className="text-[11px] text-slate-500 leading-relaxed">Sets the client&apos;s initial sign-in credentials. An admin can generate a fresh one-time link later if needed.</p>
+                </div>
+                <div>
+                  <label className={LABEL}>Portal Email *</label>
+                  <input type="email" required value={form.loginEmail} onChange={e => f({ loginEmail: e.target.value })} placeholder="client@example.com" className={INPUT} />
+                </div>
+                <div>
+                  <label className={LABEL}>Temporary Password *</label>
+                  <input type="password" required value={form.loginPassword} onChange={e => f({ loginPassword: e.target.value })} placeholder="••••••••" className={INPUT} />
+                </div>
+              </div>
+              <div className="shrink-0 px-6 py-4 border-t border-slate-200 dark:border-[#303030] bg-slate-50/40 dark:bg-[#1f1f1f]/20 flex items-center justify-end gap-2">
+                <Button type="button" variant="outline" size="sm" onClick={() => setAddOpen(false)}>Cancel</Button>
+                <Button type="submit" size="sm" disabled={submitting || !form.name || !form.loginEmail || !form.loginPassword}
+                  className="bg-brand-600 text-white font-bold active:scale-95 min-w-[140px] justify-center">
+                  {submitting ? "Onboarding…" : <><CheckCircle2 className="h-4 w-4 mr-1.5" /> Onboard Client</>}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </>
+      )}
     </div>
   );
 }

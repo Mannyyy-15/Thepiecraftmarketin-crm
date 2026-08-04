@@ -10,6 +10,7 @@ import {
   revokeOtherDeviceSessions,
 } from "@/app/actions/security";
 import { getAuditLogs } from "@/app/actions/crm";
+import { getCurrentUserCached } from "@/lib/currentUserClient";
 
 type DeviceSession = {
   sessionId: string;
@@ -23,6 +24,7 @@ type DeviceSession = {
 export default function SecurityCenter() {
   const [sessions, setSessions] = useState<DeviceSession[]>([]);
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [secret, setSecret] = useState("");
   const [enrollmentUri, setEnrollmentUri] = useState("");
   const [code, setCode] = useState("");
@@ -37,8 +39,13 @@ export default function SecurityCenter() {
 
   useEffect(() => {
     void refreshSessions();
-    getAuditLogs().then((res) => {
-      if (res.success && res.data) setAuditLogs(res.data);
+    getCurrentUserCached().then((user) => {
+      if (user?.role === "admin") {
+        setIsAdmin(true);
+        getAuditLogs().then((res) => {
+          if (res.success && res.data) setAuditLogs(res.data);
+        });
+      }
     });
   }, []);
 
@@ -144,7 +151,7 @@ export default function SecurityCenter() {
         </div>
       </section>
 
-      {/* Security Audit Trail & Activity Log */}
+      {/* Security Audit Trail & Activity Log — admin-only, org-wide activity */}
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-[#303030] dark:bg-[#303030]">
         <div className="flex items-center gap-2">
           <History className="h-5 w-5 text-brand-600" />
@@ -152,25 +159,29 @@ export default function SecurityCenter() {
         </div>
         <p className="mt-1 text-xs text-slate-500">Every security, permission, and system modification logged with full actor tracking.</p>
 
-        <div className="mt-4 divide-y divide-slate-100 dark:divide-[#303030]/80 max-h-96 overflow-y-auto">
-          {auditLogs.map((log) => (
-            <div key={log.id} className="py-3 flex items-start justify-between gap-4 text-xs">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="font-bold text-slate-900 dark:text-white">{log.action}</span>
-                  <span className="rounded-full bg-brand-50 text-brand-700 dark:bg-brand-950/30 dark:text-brand-300 px-2 py-0.5 text-[10px] font-semibold">
-                    {log.entityType}
-                  </span>
+        {isAdmin ? (
+          <div className="mt-4 divide-y divide-slate-100 dark:divide-[#303030]/80 max-h-96 overflow-y-auto">
+            {auditLogs.map((log) => (
+              <div key={log.id} className="py-3 flex items-start justify-between gap-4 text-xs">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-slate-900 dark:text-white">{log.action}</span>
+                    <span className="rounded-full bg-brand-50 text-brand-700 dark:bg-brand-950/30 dark:text-brand-300 px-2 py-0.5 text-[10px] font-semibold">
+                      {log.entityType}
+                    </span>
+                  </div>
+                  <p className="text-slate-500 mt-0.5">By {log.actorName || "System"} ({log.actorEmail || "system@crm"})</p>
                 </div>
-                <p className="text-slate-500 mt-0.5">By {log.actorName || "System"} ({log.actorEmail || "system@crm"})</p>
+                <span className="text-[10px] text-slate-400 shrink-0">
+                  {new Date(log.createdAt).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                </span>
               </div>
-              <span className="text-[10px] text-slate-400 shrink-0">
-                {new Date(log.createdAt).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
-              </span>
-            </div>
-          ))}
-          {!auditLogs.length && <p className="py-4 text-xs text-slate-400">No security audit events recorded yet.</p>}
-        </div>
+            ))}
+            {!auditLogs.length && <p className="py-4 text-xs text-slate-400">No security audit events recorded yet.</p>}
+          </div>
+        ) : (
+          <p className="mt-4 py-4 text-xs text-slate-400">Only organization admins can view the audit trail.</p>
+        )}
       </section>
     </main>
   );

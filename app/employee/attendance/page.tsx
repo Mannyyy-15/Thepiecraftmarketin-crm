@@ -17,6 +17,7 @@ import {
   requestLeave,
 } from "@/app/actions/crm";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { useActionCache } from "@/hooks/useActionCache";
 
 function parseShiftTime(t: string) {
   const [time, period] = t.trim().split(/\s+/);
@@ -39,12 +40,17 @@ function formatDuration(mins: number) {
 export default function EmployeeAttendancePage() {
   const { toast, confirmDialog } = useToast();
 
-  const [user, setUser] = useState<any>(null);
+  // Seeds instantly from the persistent cache on repeat visits (no skeleton
+  // flash); the bespoke 30s visibility-aware poll below keeps it fresh —
+  // this only fixes the "always blank on first mount" gap, not the polling.
+  const cached = useActionCache("employee:getAttendancePageData", getAttendancePageData, { ttlMs: 30_000 });
+
+  const [user, setUser] = useState<any>(cached.data?.user ?? null);
 
   // --- Attendance & Leave States ---
-  const [isAttendanceLoading, setIsAttendanceLoading] = useState(true);
-  const [myAttendanceList, setMyAttendanceList] = useState<any[]>([]);
-  const [myLeaves, setMyLeaves] = useState<any[]>([]);
+  const [isAttendanceLoading, setIsAttendanceLoading] = useState(!cached.data);
+  const [myAttendanceList, setMyAttendanceList] = useState<any[]>(cached.data?.attendance ?? []);
+  const [myLeaves, setMyLeaves] = useState<any[]>(cached.data?.leaves ?? []);
   const [reqLeaveType, setReqLeaveType] = useState("sick");
   const [reqStartDate, setReqStartDate] = useState("");
   const [reqEndDate, setReqEndDate] = useState("");
@@ -75,18 +81,27 @@ export default function EmployeeAttendancePage() {
   const loadDashboardData = async (showLoader = false) => {
     if (showLoader) setIsAttendanceLoading(true);
     try {
-      const res = await getAttendancePageData();
-      if (res.success && res.data) {
-        if (res.data.user) setUser(res.data.user);
-        setMyLeaves(res.data.leaves);
-        setMyAttendanceList(res.data.attendance);
-      }
+      await cached.refresh(showLoader);
     } catch (err) {
       console.error("Error loading attendance data:", err);
     } finally {
       setIsAttendanceLoading(false);
     }
   };
+
+  // Mirror the cache's data into local state whenever it changes (initial
+  // seed, background revalidation, or an explicit refresh() call below).
+  useEffect(() => {
+    if (!cached.data) return;
+    if (cached.data.user) setUser(cached.data.user);
+    setMyLeaves(cached.data.leaves);
+    setMyAttendanceList(cached.data.attendance);
+  }, [cached.data]);
+
+  // Once the hook's own initial fetch settles, drop the skeleton.
+  useEffect(() => {
+    if (!cached.isLoading) setIsAttendanceLoading(false);
+  }, [cached.isLoading]);
 
   useEffect(() => {
     let timeout: ReturnType<typeof setTimeout> | undefined;
@@ -105,7 +120,9 @@ export default function EmployeeAttendancePage() {
       if (document.visibilityState === "visible") void poll(false);
     };
 
-    void poll(true);
+    // useActionCache already performs the initial fetch (instant from cache,
+    // or a fresh request if none exists) — just schedule the recurring poll.
+    timeout = setTimeout(poll, 30_000);
     document.addEventListener("visibilitychange", handleVisibilityChange);
     return () => {
       stopped = true;
@@ -262,7 +279,7 @@ export default function EmployeeAttendancePage() {
       statusType = "week-off";
       bgBorderClass = "bg-slate-50/50 dark:bg-[#303030]/40 border-slate-100 dark:border-[#303030]/80 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-[#303030]/50";
       statusLabel = "Off Duty";
-      indicatorColor = "bg-slate-300 dark:bg-slate-700";
+      indicatorColor = "bg-slate-300 dark:bg-[#3f3f3f]";
     } else if (attRecord?.status === "half-day") {
       statusType = "half-day";
       bgBorderClass = "bg-orange-500/5 dark:bg-orange-500/10 border-orange-500/30 dark:border-orange-500/20 text-orange-600 dark:text-orange-400 hover:border-orange-500/50 hover:bg-orange-500/10";
@@ -273,7 +290,7 @@ export default function EmployeeAttendancePage() {
       bgBorderClass = "bg-emerald-500/5 dark:bg-emerald-500/10 border-emerald-500/30 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400 hover:border-emerald-500/50 hover:bg-emerald-500/10";
       statusLabel = attRecord.punchInTime
         ? "Punched Present"
-        : `Present · Full Day (${formatDuration(shiftDurationMins(user?.shiftStartTime || "09:00 AM", user?.shiftEndTime || "05:00 PM"))})`;
+        : `Present Â· Full Day (${formatDuration(shiftDurationMins(user?.shiftStartTime || "09:00 AM", user?.shiftEndTime || "05:00 PM"))})`;
       indicatorColor = "bg-emerald-500";
     } else if (leaveRecord) {
       if (leaveRecord.status === "approved") {
@@ -302,7 +319,7 @@ export default function EmployeeAttendancePage() {
         statusType = "week-off";
         bgBorderClass = "bg-slate-50/50 dark:bg-[#303030]/40 border-slate-100 dark:border-[#303030]/80 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-[#303030]/50";
         statusLabel = "Off Duty (Week Off)";
-        indicatorColor = "bg-slate-300 dark:bg-slate-700";
+        indicatorColor = "bg-slate-300 dark:bg-[#3f3f3f]";
       }
     } else { // Past date
       if (isWorkDay) {
@@ -314,7 +331,7 @@ export default function EmployeeAttendancePage() {
         statusType = "week-off";
         bgBorderClass = "bg-slate-50/50 dark:bg-[#303030]/40 border-slate-100 dark:border-[#303030]/80 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-[#303030]/50";
         statusLabel = "Off Duty (Week Off)";
-        indicatorColor = "bg-slate-300 dark:bg-slate-700";
+        indicatorColor = "bg-slate-300 dark:bg-[#3f3f3f]";
       }
     }
 
@@ -354,7 +371,7 @@ export default function EmployeeAttendancePage() {
       return { label: "Sick Leave", line: "Reported sick", badge: "bg-rose-500" };
     }
     if (selectedAtt.status === "off_duty") {
-      return { label: "Off Duty", line: "Scheduled week off", badge: "bg-slate-300 dark:bg-slate-600" };
+      return { label: "Off Duty", line: "Scheduled week off", badge: "bg-slate-300 dark:bg-[#3f3f3f]" };
     }
     if (selectedAtt.status === "half-day") {
       return { label: "Half Day Shift", line: "Half-day work", badge: "bg-orange-500" };
@@ -367,15 +384,15 @@ export default function EmployeeAttendancePage() {
       return {
         label: "Punched Present",
         line: pout
-          ? `In ${fmt(pin)} · Out ${fmt(pout)} · ${hours!.toFixed(1)}h worked`
-          : `In ${fmt(pin)} · currently on shift`,
+          ? `In ${fmt(pin)} Â· Out ${fmt(pout)} Â· ${hours!.toFixed(1)}h worked`
+          : `In ${fmt(pin)} Â· currently on shift`,
         badge: "bg-emerald-500",
       };
     }
     if (selectedAtt.status === "present" || selectedAtt.status === "checked_in") {
       return {
-        label: "Present · Full Day",
-        line: `${shiftStart} – ${shiftEnd} · ${formatDuration(shiftDurationMins(shiftStart, shiftEnd))} completed`,
+        label: "Present Â· Full Day",
+        line: `${shiftStart} â€“ ${shiftEnd} Â· ${formatDuration(shiftDurationMins(shiftStart, shiftEnd))} completed`,
         badge: "bg-emerald-500",
       };
     }
@@ -522,7 +539,7 @@ export default function EmployeeAttendancePage() {
               <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-amber-400" /> Leave Pending</span>
               <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-amber-500" /> Approved Leave</span>
               <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-indigo-500" /> Holiday</span>
-              <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-slate-400 dark:bg-slate-600" /> Week Off</span>
+              <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-slate-400 dark:bg-[#3f3f3f]" /> Week Off</span>
             </CardContent>
           </Card>
         </div>
@@ -576,10 +593,10 @@ export default function EmployeeAttendancePage() {
                     onChange={(e) => setReqLeaveType(e.target.value)}
                     className="w-full h-9 rounded-xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#303030] px-3 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/40 text-slate-700 dark:text-slate-300"
                   >
-                    <option value="sick">Sick Leave ✚</option>
-                    <option value="vacation">Vacation / Holiday ⛱</option>
-                    <option value="casual">Casual Leave ☕</option>
-                    <option value="other">Other / Special 🌟</option>
+                    <option value="sick">Sick Leave âœš</option>
+                    <option value="vacation">Vacation / Holiday â›±</option>
+                    <option value="casual">Casual Leave â˜•</option>
+                    <option value="other">Other / Special ðŸŒŸ</option>
                   </select>
                 </div>
 
@@ -651,7 +668,7 @@ export default function EmployeeAttendancePage() {
                     <div key={leave.id} className="flex justify-between items-center p-3 rounded-xl bg-white/70 dark:bg-[#1f1f1f]/50 border border-slate-200/60 dark:border-[#303030] text-[11px]">
                       <div className="truncate mr-2">
                         <span className="font-bold text-slate-800 dark:text-slate-200 capitalize">{leave.leaveType} Leave</span>
-                        <span className="block text-[9px] text-slate-500 dark:text-slate-500 font-medium mt-0.5">{leave.startDate} → {leave.endDate}</span>
+                        <span className="block text-[9px] text-slate-500 dark:text-slate-500 font-medium mt-0.5">{leave.startDate} â†’ {leave.endDate}</span>
                       </div>
                       <Badge 
                         variant={leave.status === "approved" ? "success" : leave.status === "rejected" ? "danger" : "warning"} 

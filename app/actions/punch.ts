@@ -50,6 +50,13 @@ async function getPunchOrganizationContext(userId: number, requireAdmin = false)
 // ---------------------------------------------------------------------------
 
 /**
+ * @deprecated Not called from any page — the live punch flow is `punchIn`/
+ * `punchOut` in app/actions/crm.ts, which validate via lib/geofence.ts
+ * instead. Kept as-is (not deleted/restructured) because
+ * tests/tenancy-policy.test.mjs asserts against this file's exact org-scoping
+ * source text. Do not wire new UI to this function — use crm.ts's punchIn/
+ * punchOut instead.
+ *
  * Validates the employee is:
  *   1. Authenticated (session cookie)
  *   2. Connected to the authorised office Wi-Fi (IP match)
@@ -192,6 +199,7 @@ export async function processPunchAction(
 
 // ---------------------------------------------------------------------------
 // Helper — fetch locations list for the UI dropdown
+// @deprecated Not called from any page — see processPunchAction note above.
 // ---------------------------------------------------------------------------
 
 export async function getLocations() {

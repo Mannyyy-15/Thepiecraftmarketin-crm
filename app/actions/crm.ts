@@ -1147,17 +1147,25 @@ export async function claimExpense(formData: FormData) {
 export async function updateExpenseStatus(expenseId: number, status: "approved" | "rejected") {
   try {
     const session = await getAuthSession();
-    if (!session || session.role !== "admin") {
-      return { success: false, error: "Unauthorized." };
+    if (!session || !db) return { success: false, error: "Unauthorized." };
+    if (!await hasEmployeePermission(session, "manage_expenses")) {
+      return { success: false, error: "Permission denied." };
     }
+    const context = session.role === "admin"
+      ? await getAdminOrganizationContext(session)
+      : await getOrganizationContext(session);
+    if (!context) return { success: false, error: "No active organization membership." };
 
-    if (!db) return { success: false, error: "Database not connected." };
+    const expense = await db.select().from(schema.expenses).where(eq(schema.expenses.id, expenseId)).limit(1);
+    if (expense.length === 0) return { success: false, error: "Expense not found." };
+    if (!(await isActiveOrganizationUser(context.organizationId, expense[0].userId, ["admin", "employee"]))) {
+      return { success: false, error: "Expense not found." };
+    }
 
     await db.update(schema.expenses)
       .set({ status })
       .where(eq(schema.expenses.id, expenseId));
 
-    const expense = await db.select().from(schema.expenses).where(eq(schema.expenses.id, expenseId)).limit(1);
     if (expense.length > 0) {
       await createNotification(expense[0].userId, "expense_" + status,
         status === "approved" ? "Expense Approved" : "Expense Returned",
@@ -2987,6 +2995,7 @@ export async function updateMyProfile(data: { name?: string; email?: string; pho
 
     revalidatePath("/employee/profile");
     revalidatePath("/admin/team");
+    revalidatePath("/client/profile");
     return { success: true };
   } catch (error: any) {
     console.error("updateMyProfile Error:", error);
@@ -3390,15 +3399,13 @@ export async function getMyClients() {
     const uid = Number(session.id);
     const context = await getOrganizationContext(session);
     if (!context) return { success: false, data: [] };
-    const scopedProjectsResult = await getProjects();
-    const projectList = scopedProjectsResult.data || [];
-    const scopedClientIds = Array.from(new Set(projectList.map((project: any) => project.clientId).filter(Number.isInteger))) as number[];
-    const [clientList, userList] = await Promise.all([
-      session.role === "admin"
-        ? db.select().from(schema.clients).where(eq(schema.clients.organizationId, context.organizationId))
-        : scopedClientIds.length
-          ? db.select().from(schema.clients).where(and(eq(schema.clients.organizationId, context.organizationId), inArray(schema.clients.id, scopedClientIds)))
-          : [],
+    // Every org client — and every org project for computing each client's
+    // true MRR/project count — is visible here, not just what this employee
+    // is assigned to. The `isMine` flag below (not row-filtering) is what
+    // distinguishes "my accounts" for the UI's toggle.
+    const [clientList, projectList, userList] = await Promise.all([
+      db.select().from(schema.clients).where(eq(schema.clients.organizationId, context.organizationId)),
+      db.select().from(schema.projects).where(eq(schema.projects.organizationId, context.organizationId)),
       db.select({ id: schema.users.id, name: schema.users.name })
         .from(schema.organizationMemberships)
         .innerJoin(schema.users, eq(schema.users.id, schema.organizationMemberships.userId))

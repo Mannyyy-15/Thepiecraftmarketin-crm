@@ -14,6 +14,8 @@ import {
   X,
   LogOut,
   ShieldCheck,
+  User,
+  Code2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/components/ui/cn";
@@ -29,7 +31,9 @@ const navigation = [
   { name: "Invoices", href: "/client/invoices", icon: CircleDollarSign },
   { name: "Messages", href: "/client/messages", icon: MessageSquareText },
   { name: "Files", href: "/client/documents", icon: Files },
+  { name: "Website Dev", href: "/client/website-dev", icon: Code2 },
   { name: "Security", href: "/client/security", icon: ShieldCheck },
+  { name: "Profile", href: "/client/profile", icon: User },
 ];
 
 function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
@@ -133,7 +137,11 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
       </nav>
 
       <div className="border-t border-slate-200 dark:border-[#303030] p-3 flex items-center justify-between gap-2">
-        <div className="flex flex-1 items-center gap-3 rounded-xl p-2 min-w-0">
+        <Link
+          href="/client/profile"
+          onClick={onNavigate}
+          className="flex flex-1 items-center gap-3 rounded-xl p-2 hover:bg-slate-50 dark:hover:bg-[#303030] transition-colors cursor-pointer min-w-0"
+        >
           <Avatar name={user?.name || "Client"} src={user?.avatarUrl || undefined} size="sm" />
           <div className="flex flex-col min-w-0">
             <span className="text-sm font-medium text-slate-900 dark:text-white truncate">
@@ -143,7 +151,7 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
               {user?.email || "client@thepiecraft.com"}
             </span>
           </div>
-        </div>
+        </Link>
         <button
           onClick={() => setShowLogoutModal(true)}
           className="icon-button text-slate-500 hover:text-rose-600 hover:bg-rose-50 dark:text-slate-300 dark:hover:bg-rose-950/20 transition-all cursor-pointer"

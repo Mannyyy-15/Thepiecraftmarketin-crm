@@ -20,7 +20,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Avatar } from "@/components/ui/Avatar";
 import { getCurrentUserCached } from "@/lib/currentUserClient";
-import { getMyNotifications, markAllNotificationsRead, markNotificationRead, dismissNotification } from "@/app/actions/crm";
+import { getMyNotifications, markAllNotificationsRead, markNotificationRead, dismissNotification, sendMessage, getClientMessagingContacts } from "@/app/actions/crm";
 import NotificationPanel from "@/components/NotificationPanel";
 
 interface SearchItem {
@@ -144,6 +144,9 @@ export default function PortalTopNav({ onMenuClick }: { onMenuClick?: () => void
     { title: "Documents", category: "Page", url: "/client/documents", details: "Open your private files and deliverables" },
     { title: "Messages", category: "Page", url: "/client/messages", details: "Contact your agency team" },
     { title: "Reports", category: "Page", url: "/client/reports", details: "Review shared performance reports" },
+    { title: "Website Dev", category: "Page", url: "/client/website-dev", details: "Domain, uptime, and site health status" },
+    { title: "Security", category: "Page", url: "/client/security", details: "MFA and device sessions" },
+    { title: "Profile", category: "Page", url: "/client/profile", details: "Update your photo and contact details" },
   ];
 
   const filteredSearch = searchItems.filter(
@@ -153,26 +156,70 @@ export default function PortalTopNav({ onMenuClick }: { onMenuClick?: () => void
       item.details.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const [submittingQuickAction, setSubmittingQuickAction] = useState(false);
+
+  // Resolves the client's agency contact (an active admin) and delivers a real
+  // message to them — there is no separate "project request" or "asset intake"
+  // entity in the schema, so these quick actions route into the same messaging
+  // system as "Send Account Message", just pre-formatted per intent.
+  const sendToAgency = async (text: string) => {
+    const contacts = await getClientMessagingContacts();
+    const target = contacts.success ? contacts.data?.[0] : null;
+    if (!target) {
+      addToast("No agency contact is available right now. Try again shortly.", "info");
+      return false;
+    }
+    const res = await sendMessage(target.id, text);
+    if (!res.success) {
+      addToast(res.error || "Could not send your request.", "info");
+      return false;
+    }
+    return true;
+  };
+
   // Submission handles
-  const handleRequestProject = (e: React.FormEvent) => {
+  const handleRequestProject = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!qProjName) return;
-    setActiveModal(null);
-    router.push("/client/projects");
+    setSubmittingQuickAction(true);
+    const text = `New project request: "${qProjName}"${qProjDesc ? `\n\n${qProjDesc}` : ""}`;
+    const ok = await sendToAgency(text);
+    setSubmittingQuickAction(false);
+    if (ok) {
+      addToast("Project request sent to your account team.", "success");
+      setQProjName(""); setQProjDesc("");
+      setActiveModal(null);
+      router.push("/client/messages");
+    }
   };
 
-  const handleQuickMessage = (e: React.FormEvent) => {
+  const handleQuickMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!qMsgText) return;
-    setActiveModal(null);
-    router.push("/client/messages");
+    setSubmittingQuickAction(true);
+    const ok = await sendToAgency(qMsgText);
+    setSubmittingQuickAction(false);
+    if (ok) {
+      addToast("Message sent to your account team.", "success");
+      setQMsgText("");
+      setActiveModal(null);
+      router.push("/client/messages");
+    }
   };
 
-  const handleQuickUpload = (e: React.FormEvent) => {
+  const handleQuickUpload = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!qDocName) return;
-    setActiveModal(null);
-    router.push("/client/documents");
+    setSubmittingQuickAction(true);
+    const text = `I have a file to share: "${qDocName}". Please send me an upload link or let me know how to deliver it.`;
+    const ok = await sendToAgency(text);
+    setSubmittingQuickAction(false);
+    if (ok) {
+      addToast("Your account team has been notified — they'll follow up on how to receive the file.", "success");
+      setQDocName("");
+      setActiveModal(null);
+      router.push("/client/messages");
+    }
   };
 
   return (
@@ -424,8 +471,9 @@ export default function PortalTopNav({ onMenuClick }: { onMenuClick?: () => void
                   className="w-full h-20 rounded-xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] p-3 text-xs focus:ring-2 focus:ring-indigo-500/40 text-slate-800 dark:text-white resize-none"
                 />
               </div>
-              <button type="submit" className="w-full h-10 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-md">
-                Submit Campaign Proposal
+              <p className="text-[10px] text-slate-400">This sends a message to your account team — they&apos;ll follow up to scope the project.</p>
+              <button type="submit" disabled={submittingQuickAction} className="w-full h-10 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white text-xs font-bold rounded-xl shadow-md">
+                {submittingQuickAction ? "Sending…" : "Submit Campaign Proposal"}
               </button>
             </form>
           </div>
@@ -455,8 +503,8 @@ export default function PortalTopNav({ onMenuClick }: { onMenuClick?: () => void
                   className="w-full h-24 rounded-xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] p-3 text-xs focus:ring-2 focus:ring-indigo-500/40 text-slate-800 dark:text-white resize-none"
                 />
               </div>
-              <button type="submit" className="w-full h-10 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-md">
-                Send Account Message
+              <button type="submit" disabled={submittingQuickAction} className="w-full h-10 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white text-xs font-bold rounded-xl shadow-md">
+                {submittingQuickAction ? "Sending…" : "Send Account Message"}
               </button>
             </form>
           </div>
@@ -487,8 +535,9 @@ export default function PortalTopNav({ onMenuClick }: { onMenuClick?: () => void
                   className="w-full h-10 rounded-xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] px-3 text-xs focus:ring-2 focus:ring-indigo-500/40 text-slate-800 dark:text-white"
                 />
               </div>
-              <button type="submit" className="w-full h-10 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-md">
-                Publish Document
+              <p className="text-[10px] text-slate-400">This notifies your account team you have a file to share — they&apos;ll send you a secure upload link.</p>
+              <button type="submit" disabled={submittingQuickAction} className="w-full h-10 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white text-xs font-bold rounded-xl shadow-md">
+                {submittingQuickAction ? "Sending…" : "Notify Account Team"}
               </button>
             </form>
           </div>

@@ -3,24 +3,33 @@
 import {
   Calendar, Code2, Loader2, Megaphone, Search,
   CheckSquare, Square, LayoutGrid, List, ChevronDown,
-  Target, ExternalLink, Globe, CheckCircle2,
+  Target, ExternalLink, Globe, CheckCircle2, Plus, X,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
 import { Progress } from "@/components/ui/Progress";
 import { cn } from "@/components/ui/cn";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { getProjects, getProjectTasksGrouped, toggleTaskStatus } from "@/app/actions/crm";
+import { getProjects, getProjectTasksGrouped, toggleTaskStatus, createProject, getMyClients, getFreshUserProfile } from "@/app/actions/crm";
 import { getProjectStatusVariant, getProjectStatusLabel } from "@/lib/statusHelpers";
 import { useToast } from "@/providers/ToastProvider";
 import { ProjectBoardSkeleton } from "@/components/ui/Skeleton";
 import { useRefreshOnFocus } from "@/lib/use-refresh-on-focus";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { parseEmployeePermissions } from "@/lib/member-permissions";
 
 function parseDetails(raw: string | null | undefined) {
   try { return JSON.parse(raw || "{}"); } catch { return {}; }
 }
+
+const BLANK_PROJECT = {
+  name: "", clientId: "", projectType: "web_dev", deadline: "", budget: "", monthlyFee: "",
+};
+const INPUT = "h-11 w-full rounded-2xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white placeholder:text-slate-400 transition-all";
+const SELECT = "h-11 w-full rounded-2xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white cursor-pointer transition-all";
+const LABEL = "block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5";
 
 function taskProgress(taskTotal: number, taskDone: number) {
   return taskTotal > 0 ? Math.round((taskDone / taskTotal) * 100) : null;
@@ -36,18 +45,62 @@ export default function EmployeeProjectsPage() {
   const [expandedTasks, setExpandedTasks] = useState<Set<number>>(new Set());
   const [toggling, setToggling]   = useState<number | null>(null);
 
+  const [me, setMe]               = useState<any>(null);
+  const [myClients, setMyClients] = useState<any[]>([]);
+  const [addOpen, setAddOpen]     = useState(false);
+  const [form, setForm]           = useState({ ...BLANK_PROJECT });
+  const [submitting, setSubmitting] = useState(false);
+  const f = (v: Partial<typeof BLANK_PROJECT>) => setForm(p => ({ ...p, ...v }));
+
   const load = async () => {
     setLoading(true);
     try {
-      const [pr, tk] = await Promise.all([getProjects(), getProjectTasksGrouped()]);
+      const [pr, tk, pf, cl] = await Promise.all([getProjects(), getProjectTasksGrouped(), getFreshUserProfile(), getMyClients()]);
       if (pr.success && pr.data) setProjects(pr.data);
       if (tk.success && tk.data) setTaskMap(tk.data as any);
+      if (pf.success && pf.data) setMe(pf.data);
+      if (cl.success && cl.data) setMyClients(cl.data as any[]);
     } catch { /* silent */ }
     finally { setLoading(false); }
   };
 
   useEffect(() => { load(); }, []);
   useRefreshOnFocus(load);
+
+  const myPermissions = useMemo(() => parseEmployeePermissions(me?.permissions), [me]);
+  const canManageProjects = myPermissions.includes("manage_projects");
+
+  const openAddProject = () => {
+    setForm({ ...BLANK_PROJECT });
+    setAddOpen(true);
+  };
+
+  const handleAddProject = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.name.trim()) { toast("Project name is required.", "error"); return; }
+    setSubmitting(true);
+    try {
+      const fd = new FormData();
+      fd.append("name", form.name.trim());
+      fd.append("clientId", form.clientId);
+      fd.append("projectType", form.projectType);
+      fd.append("deadline", form.deadline);
+      fd.append("budget", form.budget || "0");
+      fd.append("monthlyFee", form.monthlyFee || "0");
+      const res = await createProject(fd);
+      if (res.success) {
+        setAddOpen(false);
+        await load();
+        toast(`${form.name} created.`, "success");
+      } else {
+        toast(res.error || "Failed to create project.", "error");
+      }
+    } catch (err: any) {
+      toast(err.message, "error");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const handleToggleTask = async (taskId: number, currentDone: boolean) => {
     setToggling(taskId);
@@ -75,7 +128,16 @@ export default function EmployeeProjectsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader eyebrow="Work" title="Projects" description="Track project progress and deliverables." />
+      <PageHeader
+        eyebrow="Work"
+        title="Projects"
+        description="Track project progress and deliverables."
+        actions={canManageProjects ? (
+          <Button size="sm" onClick={openAddProject} className="bg-brand-600 text-white">
+            <Plus className="h-3.5 w-3.5 mr-1" /> Add Project
+          </Button>
+        ) : undefined}
+      />
       {/* Controls */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 justify-between">
         <div className="relative w-full sm:w-72">
@@ -144,7 +206,7 @@ export default function EmployeeProjectsPage() {
                   )}
                 </div>
 
-                <Link href={"/employee/projects/${p.id}"} className="block text-sm font-bold text-slate-900 dark:text-white truncate hover:text-brand-600 hover:underline transition-colors">{p.name}</Link>
+                <Link href={`/employee/projects/${p.id}`} className="block text-sm font-bold text-slate-900 dark:text-white truncate hover:text-brand-600 hover:underline transition-colors">{p.name}</Link>
                 <p className="text-xs text-slate-400 mt-0.5 truncate">{p.clientName || "Unknown client"}</p>
 
                 <div className="mt-3 pt-3 border-t border-slate-100 dark:border-[#303030] grid grid-cols-2 gap-2 text-xs">
@@ -283,7 +345,7 @@ export default function EmployeeProjectsPage() {
                             {isMeta ? <Megaphone className="h-3.5 w-3.5 text-indigo-500" /> : <Code2 className="h-3.5 w-3.5 text-emerald-500" />}
                           </div>
                           <div className="min-w-0">
-                            <Link href={"/employee/projects/${p.id}"} className="font-semibold text-slate-900 dark:text-white truncate hover:text-brand-600 hover:underline transition-colors">{p.name}</Link>
+                            <Link href={`/employee/projects/${p.id}`} className="font-semibold text-slate-900 dark:text-white truncate hover:text-brand-600 hover:underline transition-colors">{p.name}</Link>
                             <div className="text-xs text-slate-400 truncate">{p.clientName || "—"}</div>
                           </div>
                         </div>
@@ -325,6 +387,69 @@ export default function EmployeeProjectsPage() {
             </table>
           </div>
         </div>
+      )}
+
+      {/* Add Project Modal (only shown to employees granted "manage_projects") */}
+      {addOpen && canManageProjects && (
+        <>
+          <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40" onClick={() => setAddOpen(false)} />
+          <div className="fixed right-0 top-0 h-full w-full max-w-[480px] bg-white dark:bg-[#1f1f1f] z-50 shadow-2xl flex flex-col animate-[slide-in-right_280ms_cubic-bezier(0.16,1,0.3,1)]">
+            <div className="shrink-0 px-6 pt-5 pb-4 border-b border-slate-200 dark:border-[#303030]">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">New Project</p>
+                  <h2 className="text-base font-bold text-slate-900 dark:text-white mt-0.5">Create a Project</h2>
+                </div>
+                <button onClick={() => setAddOpen(false)} className="h-8 w-8 rounded-2xl flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#303030] transition-all cursor-pointer">
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+
+            <form onSubmit={handleAddProject} className="flex-1 flex flex-col overflow-hidden">
+              <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
+                <div>
+                  <label className={LABEL}>Project Name *</label>
+                  <input required value={form.name} onChange={e => f({ name: e.target.value })} placeholder="e.g. Q3 Website Revamp" className={INPUT} />
+                </div>
+                <div>
+                  <label className={LABEL}>Client</label>
+                  <select value={form.clientId} onChange={e => f({ clientId: e.target.value })} className={SELECT}>
+                    <option value="__agency__">Internal / No client</option>
+                    {myClients.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className={LABEL}>Project Type</label>
+                  <select value={form.projectType} onChange={e => f({ projectType: e.target.value })} className={SELECT}>
+                    <option value="web_dev">Web Dev</option>
+                    <option value="meta_ads">Meta Ads</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className={LABEL}>Deadline</label>
+                    <input type="date" value={form.deadline} onChange={e => f({ deadline: e.target.value })} className={INPUT} />
+                  </div>
+                  <div>
+                    <label className={LABEL}>{form.projectType === "meta_ads" ? "Monthly Fee" : "Budget"}</label>
+                    <input type="number" min={0} value={form.projectType === "meta_ads" ? form.monthlyFee : form.budget}
+                      onChange={e => f(form.projectType === "meta_ads" ? { monthlyFee: e.target.value } : { budget: e.target.value })}
+                      placeholder="0" className={INPUT} />
+                  </div>
+                </div>
+              </div>
+              <div className="shrink-0 px-6 py-4 border-t border-slate-200 dark:border-[#303030] bg-slate-50/40 dark:bg-[#1f1f1f]/20 flex items-center justify-end gap-2">
+                <Button type="button" variant="outline" size="sm" onClick={() => setAddOpen(false)}>Cancel</Button>
+                <Button type="submit" size="sm" disabled={submitting || !form.name.trim()}
+                  className="bg-brand-600 text-white font-bold active:scale-95 min-w-[120px] justify-center">
+                  {submitting ? "Creating…" : <><CheckCircle2 className="h-4 w-4 mr-1.5" /> Create</>}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </>
       )}
     </div>
   );
