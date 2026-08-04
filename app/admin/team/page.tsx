@@ -1261,109 +1261,15 @@ export default function TeamPage() {
                 </Card>
 
                 {selectedEmpData.roleRaw === "employee" && (
-                  <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-[#303030] dark:bg-[#1f1f1f]">
-                    <div className="flex flex-col gap-4 border-b border-slate-200 px-5 py-5 dark:border-[#303030] sm:flex-row sm:items-start sm:justify-between sm:px-6">
-                      <div className="flex min-w-0 items-start gap-3">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-950/40 dark:text-brand-300">
-                          <ShieldCheck className="h-5 w-5" aria-hidden="true" />
-                        </div>
-                        <div className="min-w-0">
-                          <h3 className="text-base font-semibold text-slate-950 dark:text-white">Account access</h3>
-                          <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-300">
-                            Resend app access or replace the employee&apos;s password without recreating their account.
-                          </p>
-                        </div>
-                      </div>
-                      <Button
-                        type="button"
-                        size="sm"
-                        disabled={Boolean(accessLinkUserId)}
-                        onClick={() => void handleGenerateAccessLink(selectedEmpData)}
-                        className="w-full sm:w-auto"
-                      >
-                        {accessLinkUserId === selectedEmpData.id ? (
-                          <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-                        ) : (
-                          <Link2 className="h-4 w-4" aria-hidden="true" />
-                        )}
-                        Generate fresh link
-                      </Button>
-                    </div>
-
-                    <div className="grid gap-0 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
-                      <div className="border-b border-slate-200 px-5 py-5 dark:border-[#303030] sm:px-6 lg:border-b-0 lg:border-r">
-                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Login email</p>
-                        <a
-                          href={`mailto:${selectedEmpData.email}`}
-                          className="mt-2 block truncate text-sm font-medium text-slate-950 hover:text-brand-600 dark:text-white dark:hover:text-brand-300"
-                          title={selectedEmpData.email}
-                        >
-                          {selectedEmpData.email}
-                        </a>
-                        <p className="mt-3 text-xs leading-5 text-slate-500 dark:text-slate-400">
-                          Passwords are encrypted with one-way hashing, so the saved password cannot be displayed.
-                        </p>
-                      </div>
-
-                      <div className="px-5 py-5 sm:px-6">
-                        <label htmlFor={`access-password-${selectedEmpData.id}`} className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                          Set a new password
-                        </label>
-                        <div className="mt-2 flex flex-col gap-2 sm:flex-row">
-                          <div className="relative min-w-0 flex-1">
-                            <KeyRound className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" aria-hidden="true" />
-                            <input
-                              id={`access-password-${selectedEmpData.id}`}
-                              type={showAccessPassword ? "text" : "password"}
-                              maxLength={PASSWORD_MAX_LENGTH}
-                              autoComplete="new-password"
-                              value={accessPassword}
-                              onChange={(event) => setAccessPassword(event.target.value)}
-                              placeholder="Enter any non-empty password"
-                              className="field-control min-h-11 pl-10 pr-11"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => setShowAccessPassword((visible) => !visible)}
-                              className="absolute right-1 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-md text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-[#38383f] dark:hover:text-white"
-                              aria-label={showAccessPassword ? "Hide new password" : "Show new password"}
-                            >
-                              {showAccessPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                            </button>
-                          </div>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            disabled={!accessPassword || Boolean(passwordResetUserId)}
-                            onClick={() => void handleResetMemberPassword(selectedEmpData)}
-                            className="w-full sm:w-auto"
-                          >
-                            {passwordResetUserId === selectedEmpData.id ? (
-                              <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-                            ) : (
-                              <RefreshCw className="h-4 w-4" aria-hidden="true" />
-                            )}
-                            Change password
-                          </Button>
-                        </div>
-                        <p className="mt-3 text-xs leading-5 text-slate-500 dark:text-slate-400">
-                          Changing it signs this employee out everywhere and revokes unused access links. Generate a fresh link afterward if needed.
-                        </p>
-                      </div>
-                    </div>
-                  </section>
-                )}
-
-                {selectedEmpData.roleRaw === "employee" && (
                   <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 dark:border-[#303030] dark:bg-[#1f1f1f] sm:p-6">
                     <div className="flex items-center justify-between gap-3 border-b border-slate-100 pb-4 dark:border-[#303030]">
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-950/40 dark:text-brand-300">
-                          <Settings className="h-5 w-5" />
+                          <ShieldCheck className="h-5 w-5" aria-hidden="true" />
                         </div>
                         <div className="min-w-0">
                           <h3 className="text-base font-semibold text-slate-950 dark:text-white">Account access and Permission</h3>
-                          <p className="text-xs text-slate-500 dark:text-slate-400">Grant specific management capabilities to this employee.</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">Manage login access and grant specific capabilities to this employee.</p>
                         </div>
                       </div>
                       <Button
@@ -1376,50 +1282,142 @@ export default function TeamPage() {
                         {showEditPermissions ? "Done" : <><Edit2 className="h-3.5 w-3.5" /> Edit</>}
                       </Button>
                     </div>
+
                     {showEditPermissions ? (
-                      <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-                        {EMPLOYEE_PERMISSIONS.map((perm) => {
-                          const isChecked = selectedEmpData.permissions?.includes(perm);
-                          return (
-                            <label key={perm} className="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-100 p-3 hover:bg-slate-50 dark:border-[#2a2a30] dark:hover:bg-[#25252b]">
-                              <input
-                                type="checkbox"
-                                checked={!!isChecked}
-                                onChange={(e) => {
-                                  const current = selectedEmpData.permissions || [];
-                                  const next = e.target.checked
-                                    ? Array.from(new Set([...current, perm]))
-                                    : current.filter((p: string) => p !== perm);
-                                  // Optimistic: flip the checkbox instantly, then persist in the
-                                  // background and roll back only if the save actually fails.
-                                  setMembers(prev => prev.map(m => m.id === selectedEmpData.id ? { ...m, permissions: next } : m));
-                                  updateEmployeePermissions(Number(selectedEmpData.id), next as any).then((res) => {
-                                    if (res.success) {
-                                      toast("Permissions updated successfully.", "success");
-                                    } else {
-                                      setMembers(prev => prev.map(m => m.id === selectedEmpData.id ? { ...m, permissions: current } : m));
-                                      toast(res.error || "Failed to update permissions", "error");
-                                    }
-                                  });
-                                }}
-                                className="mt-0.5 h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
-                              />
-                              <div>
-                                <p className="text-xs font-semibold text-slate-900 dark:text-white capitalize">{perm.replace("_", " ")}</p>
-                                <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                                  {perm === "manage_clients" && "Create & edit client accounts"}
-                                  {perm === "manage_projects" && "Create & edit projects"}
-                                  {perm === "manage_tasks" && "Create & assign tasks beyond own"}
-                                  {perm === "manage_invoices" && "Create & manage client invoices"}
-                                  {perm === "manage_expenses" && "Approve & edit expense claims"}
-                                </p>
-                              </div>
+                      <div className="mt-4 space-y-6">
+                        {/* Access / password controls */}
+                        <div className="rounded-xl border border-slate-200 dark:border-[#303030]">
+                          <div className="flex flex-col gap-3 border-b border-slate-200 px-4 py-4 dark:border-[#303030] sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Login email</p>
+                              <a
+                                href={`mailto:${selectedEmpData.email}`}
+                                className="mt-1 block truncate text-sm font-medium text-slate-950 hover:text-brand-600 dark:text-white dark:hover:text-brand-300"
+                                title={selectedEmpData.email}
+                              >
+                                {selectedEmpData.email}
+                              </a>
+                            </div>
+                            <Button
+                              type="button"
+                              size="sm"
+                              disabled={Boolean(accessLinkUserId)}
+                              onClick={() => void handleGenerateAccessLink(selectedEmpData)}
+                              className="w-full sm:w-auto"
+                            >
+                              {accessLinkUserId === selectedEmpData.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                              ) : (
+                                <Link2 className="h-4 w-4" aria-hidden="true" />
+                              )}
+                              Generate fresh link
+                            </Button>
+                          </div>
+                          <div className="px-4 py-4">
+                            <label htmlFor={`access-password-${selectedEmpData.id}`} className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                              Set a new password
                             </label>
-                          );
-                        })}
+                            <div className="mt-2 flex flex-col gap-2 sm:flex-row">
+                              <div className="relative min-w-0 flex-1">
+                                <KeyRound className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" aria-hidden="true" />
+                                <input
+                                  id={`access-password-${selectedEmpData.id}`}
+                                  type={showAccessPassword ? "text" : "password"}
+                                  maxLength={PASSWORD_MAX_LENGTH}
+                                  autoComplete="new-password"
+                                  value={accessPassword}
+                                  onChange={(event) => setAccessPassword(event.target.value)}
+                                  placeholder="Enter any non-empty password"
+                                  className="field-control min-h-11 pl-10 pr-11"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => setShowAccessPassword((visible) => !visible)}
+                                  className="absolute right-1 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-md text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-[#38383f] dark:hover:text-white"
+                                  aria-label={showAccessPassword ? "Hide new password" : "Show new password"}
+                                >
+                                  {showAccessPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                </button>
+                              </div>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                disabled={!accessPassword || Boolean(passwordResetUserId)}
+                                onClick={() => void handleResetMemberPassword(selectedEmpData)}
+                                className="w-full sm:w-auto"
+                              >
+                                {passwordResetUserId === selectedEmpData.id ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                                ) : (
+                                  <RefreshCw className="h-4 w-4" aria-hidden="true" />
+                                )}
+                                Change password
+                              </Button>
+                            </div>
+                            <p className="mt-3 text-xs leading-5 text-slate-500 dark:text-slate-400">
+                              Passwords are encrypted with one-way hashing and cannot be displayed. Changing it signs this employee out everywhere and revokes unused access links — generate a fresh link afterward if needed.
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Permission checkboxes */}
+                        <div>
+                          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-3">Permissions</p>
+                          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                            {EMPLOYEE_PERMISSIONS.map((perm) => {
+                              const isChecked = selectedEmpData.permissions?.includes(perm);
+                              return (
+                                <label key={perm} className="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-100 p-3 hover:bg-slate-50 dark:border-[#2a2a30] dark:hover:bg-[#25252b]">
+                                  <input
+                                    type="checkbox"
+                                    checked={!!isChecked}
+                                    onChange={(e) => {
+                                      const current = selectedEmpData.permissions || [];
+                                      const next = e.target.checked
+                                        ? Array.from(new Set([...current, perm]))
+                                        : current.filter((p: string) => p !== perm);
+                                      // Optimistic: flip the checkbox instantly, then persist in the
+                                      // background and roll back only if the save actually fails.
+                                      setMembers(prev => prev.map(m => m.id === selectedEmpData.id ? { ...m, permissions: next } : m));
+                                      updateEmployeePermissions(Number(selectedEmpData.id), next as any).then((res) => {
+                                        if (res.success) {
+                                          toast("Permissions updated successfully.", "success");
+                                        } else {
+                                          setMembers(prev => prev.map(m => m.id === selectedEmpData.id ? { ...m, permissions: current } : m));
+                                          toast(res.error || "Failed to update permissions", "error");
+                                        }
+                                      });
+                                    }}
+                                    className="mt-0.5 h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
+                                  />
+                                  <div>
+                                    <p className="text-xs font-semibold text-slate-900 dark:text-white capitalize">{perm.replace("_", " ")}</p>
+                                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                                      {perm === "manage_clients" && "Create & edit client accounts"}
+                                      {perm === "manage_projects" && "Create & edit projects"}
+                                      {perm === "manage_tasks" && "Create & assign tasks beyond own"}
+                                      {perm === "manage_invoices" && "Create & manage client invoices"}
+                                      {perm === "manage_expenses" && "Approve & edit expense claims"}
+                                    </p>
+                                  </div>
+                                </label>
+                              );
+                            })}
+                          </div>
+                        </div>
                       </div>
                     ) : (
-                      <div className="mt-4">
+                      <div className="mt-4 space-y-3">
+                        <div>
+                          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Login email</p>
+                          <a
+                            href={`mailto:${selectedEmpData.email}`}
+                            className="mt-1 block truncate text-sm font-medium text-slate-950 hover:text-brand-600 dark:text-white dark:hover:text-brand-300"
+                            title={selectedEmpData.email}
+                          >
+                            {selectedEmpData.email}
+                          </a>
+                        </div>
                         {selectedEmpData.permissions?.length ? (
                           <div className="flex flex-wrap gap-1.5">
                             {selectedEmpData.permissions.map((perm: string) => (
@@ -1994,16 +1992,16 @@ export default function TeamPage() {
                         </div>
                       ) : (
                         <div className="flex flex-col">
-                          <div className="border-b border-slate-800 bg-slate-950/40 p-4 sm:p-6">
+                          <div className="border-b border-slate-100 dark:border-[#303030] bg-slate-50/50 dark:bg-[#1f1f1f]/30 p-4 sm:p-6">
                             <div className="mb-3 flex items-center justify-between gap-3">
                               <div>
-                                <p className="text-sm font-semibold text-white">Project lead ownership</p>
-                                <p className="mt-0.5 text-xs text-slate-400">Assign this employee as the accountable lead. Existing task owners stay unchanged.</p>
+                                <p className="text-sm font-semibold text-slate-800 dark:text-white">Project lead ownership</p>
+                                <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">Assign this employee as the accountable lead. Existing task owners stay unchanged.</p>
                               </div>
                               <Badge variant="neutral">{allProjects.filter((project: any) => String(project.leadId) === selectedEmployeeDetailId).length} led</Badge>
                             </div>
                             <div className="flex flex-col gap-2 sm:flex-row">
-                              <select value={projectToAssign} onChange={e => setProjectToAssign(e.target.value)} className="h-11 min-w-0 flex-1 rounded-xl border border-slate-800 bg-slate-950 px-3 text-base text-white focus:outline-none focus:ring-2 focus:ring-brand-500/40 sm:text-sm">
+                              <select value={projectToAssign} onChange={e => setProjectToAssign(e.target.value)} className="h-11 min-w-0 flex-1 rounded-xl border border-slate-300 dark:border-[#38383f] bg-white dark:bg-[#1f1f1f] px-3 text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500/40">
                                 <option value="">Choose a project</option>
                                 {allProjects.filter((project: any) => String(project.leadId) !== selectedEmployeeDetailId).map((project: any) => (
                                   <option key={project.id} value={project.id}>{project.name}{project.clientName ? ` — ${project.clientName}` : " — Internal"}</option>
@@ -2016,7 +2014,7 @@ export default function TeamPage() {
                             {allProjects.some((project: any) => String(project.leadId) === selectedEmployeeDetailId) && (
                               <div className="mt-3 flex flex-wrap gap-2">
                                 {allProjects.filter((project: any) => String(project.leadId) === selectedEmployeeDetailId).map((project: any) => (
-                                  <button key={project.id} type="button" onClick={() => handleUnassignProject(project.id)} className="inline-flex max-w-full items-center gap-1.5 rounded-lg border border-slate-800 bg-slate-900 px-2.5 py-1.5 text-xs text-slate-300 hover:border-rose-500/40 hover:text-rose-300" title="Remove lead assignment">
+                                  <button key={project.id} type="button" onClick={() => handleUnassignProject(project.id)} className="inline-flex max-w-full items-center gap-1.5 rounded-lg border border-slate-200 dark:border-[#38383f] bg-white dark:bg-[#303030] px-2.5 py-1.5 text-xs text-slate-600 dark:text-slate-300 hover:border-rose-300 dark:hover:border-rose-500/40 hover:text-rose-600 dark:hover:text-rose-300" title="Remove lead assignment">
                                     <Briefcase className="h-3 w-3 shrink-0" /><span className="truncate">{project.name}</span><X className="h-3 w-3 shrink-0" />
                                   </button>
                                 ))}
@@ -2044,7 +2042,7 @@ export default function TeamPage() {
                                 maxLength={4000}
                                 rows={2}
                                 placeholder="Context or acceptance notes (optional)"
-                                className="w-full resize-none rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2.5 text-base text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500/40 xl:max-w-sm sm:text-sm"
+                                className="w-full resize-none rounded-xl border border-slate-300 dark:border-[#38383f] bg-white dark:bg-[#1f1f1f] px-3.5 py-2.5 text-sm text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500/40 xl:max-w-sm"
                               />
                               
                               <div className="flex flex-wrap sm:flex-nowrap items-center gap-3 w-full xl:w-auto mt-3 xl:mt-0">
