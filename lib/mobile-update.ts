@@ -1,14 +1,14 @@
 export const androidRelease = {
-  versionCode: 10,
-  versionName: "1.5.3",
+  versionCode: 11,
+  versionName: "1.5.4",
   minimumVersionCode: 1,
-  apkUrl: "https://github.com/Mannyyy-15/Thepiecraftmarketin-crm/releases/download/android-v1.5.3/ThePieCraft-CRM-v1.5.3.apk",
-  sha256: "1E0DAD59104E0568E671D86AEFCA70C9F90D27E76866E496CEFBB39A5867909A",
-  title: "PieCraft CRM v1.5.3 Update Available",
+  apkUrl: "https://github.com/Mannyyy-15/Thepiecraftmarketin-crm/releases/download/android-v1.5.4/ThePieCraft-CRM-v1.5.4.apk",
+  sha256: "F65D9299F7480B97D11E817EBD07648980DA8B7BC1E3EFE9AE79435C0E12947D",
+  title: "PieCraft CRM v1.5.4 Update Available",
   notes: [
-    "Employee and client pages now share the admin design language — same colors, spacing, borders, and page headers across the whole app.",
-    "Sidebars and top bars are unified on all three sides for a consistent look in dark mode.",
-    "Updates now install directly inside the app — no browser, no manual APK download.",
+    "Real push notifications now work — punch-in/out, leave requests, and other activity alerts arrive even when the app is closed.",
+    "Fixed garbled text (dashes, rupee signs, bullets) showing up across the app.",
+    "Team page: permissions are now hidden until you tap Edit, and grant instantly instead of waiting on the server.",
   ],
 } as const;
 
