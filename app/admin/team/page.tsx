@@ -6,7 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { createLoginLink, createUser, resetMemberPassword } from "@/app/actions/auth";
 import { PASSWORD_MAX_LENGTH } from "@/lib/security/password";
 import { ShareLoginLinkDialog } from "@/components/ShareLoginLinkDialog";
-import { getTeamUsers, getAttendance, bulkUpdateAttendance, deleteUser, updateUserRole, updateUserShiftSchedule, getUserTasks, createTask, toggleTaskStatus, deleteTask, getProjects, assignProjectLead, getPendingLeaves, approveLeave, rejectLeave, updateEmployeePermissions, getTeamPresence } from "@/app/actions/crm";
+import { getTeamUsers, getAttendance, bulkUpdateAttendance, deleteUser, updateUserShiftSchedule, getUserTasks, createTask, toggleTaskStatus, deleteTask, getProjects, assignProjectLead, getPendingLeaves, approveLeave, rejectLeave, updateEmployeePermissions, getTeamPresence } from "@/app/actions/crm";
 import { EMPLOYEE_PERMISSIONS, parseEmployeePermissions, type EmployeePermission } from "@/lib/member-permissions";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { getMemberStatusVariant, getMemberStatusLabel } from "@/lib/statusHelpers";
@@ -118,16 +118,13 @@ export default function TeamPage() {
   const [inviteShiftEndTime, setInviteShiftEndTime] = useState("05:00 PM");
   const [inviteActiveShiftProfile, setInviteActiveShiftProfile] = useState("Standard Core Hours");
 
-  // Inline role editing state
-  const [editingMemberId, setEditingMemberId] = useState<string | null>(null);
-  const [editRoleValue, setEditRoleValue] = useState("");
-
   // Customizable Work Schedule States!
   const [workingDays, setWorkingDays] = useState<number[]>([1, 2, 3, 4, 5]); // Default: Mon to Fri (1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri)
   const [shiftStartTime, setShiftStartTime] = useState("09:00 AM");
   const [shiftEndTime, setShiftEndTime] = useState("05:00 PM");
   const [activeShiftProfile, setActiveShiftProfile] = useState("Standard Core Hours");
   const [showEditSchedule, setShowEditSchedule] = useState(false);
+  const [showEditPermissions, setShowEditPermissions] = useState(false);
 
   // Attendance Overrides state from database
   const [attendanceOverrides, setAttendanceOverrides] = useState<Map<string, "present" | "half-day" | "vacation" | "sick" | "off">>(new Map());
@@ -471,7 +468,7 @@ export default function TeamPage() {
       case "scheduled":
         return compact
           ? { bg: "bg-slate-100 dark:bg-[#303030] text-slate-400 dark:text-slate-500", symbol: "·" }
-          : { bg: "bg-white dark:bg-[#1f1f1f]/40 hover:bg-slate-50 dark:hover:bg-[#303030]/60 text-slate-500 dark:text-slate-400", border: "border-slate-200 dark:border-[#303030] hover:border-indigo-400/40", label: "Scheduled", symbol: "·" };
+          : { bg: "bg-white dark:bg-[#1f1f1f]/40 hover:bg-slate-50 dark:hover:bg-[#303030]/60 text-slate-500 dark:text-slate-400", border: "border-slate-200 dark:border-[#303030] hover:border-brand-400/40", label: "Scheduled", symbol: "·" };
       default: // off
         return compact
           ? { bg: "bg-slate-100 dark:bg-[#303030] text-slate-400 dark:text-slate-500", symbol: "-" }
@@ -588,6 +585,7 @@ export default function TeamPage() {
   useEffect(() => {
     setAccessPassword("");
     setShowAccessPassword(false);
+    setShowEditPermissions(false);
   }, [selectedEmployeeDetailId]);
 
   // Invite handler
@@ -717,23 +715,6 @@ export default function TeamPage() {
       } catch (err: any) {
         toast(`Error: ${err.message}`, "error");
       }
-    }
-  };
-
-  // Role update handler
-  const handleSaveRole = async (id: string) => {
-    try {
-      const targetRole = editRoleValue === "Admin" ? "admin" : "employee";
-      const result = await updateUserRole(parseInt(id), targetRole, editRoleValue);
-      if (result.success) {
-        toast("System role updated successfully.", "success");
-        setEditingMemberId(null);
-        loadTeamData();
-      } else {
-        toast(`Failed to update role: ${result.error}`, "error");
-      }
-    } catch (err: any) {
-      toast(`Error: ${err.message}`, "error");
     }
   };
 
@@ -949,7 +930,7 @@ export default function TeamPage() {
             <Card id="team-member-invite-form" className="mb-20 overflow-hidden rounded-2xl border border-slate-200 shadow-none dark:border-[#303030] md:mb-0">
               <CardHeader className="items-start px-5 py-5 sm:px-6">
                 <div className="flex min-w-0 items-start gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-300">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-950/40 dark:text-brand-300">
                     <UserPlus className="h-5 w-5" aria-hidden="true" />
                   </div>
                   <div className="min-w-0">
@@ -1096,7 +1077,7 @@ export default function TeamPage() {
                           }}
                           className={`min-h-11 rounded-lg border px-1 text-xs font-semibold transition-colors ${
                             inviteWorkingDays.includes(idx)
-                              ? "border-blue-600 bg-blue-600 text-white"
+                              ? "border-brand-600 bg-brand-600 text-white"
                               : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50 dark:border-[#38383f] dark:bg-[#28282d] dark:text-slate-300 dark:hover:bg-[#38383f]"
                           }`}
                         >
@@ -1155,7 +1136,7 @@ export default function TeamPage() {
 
           {/* KPI stats */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <KpiCard title="Active Team Size" value={`${members.filter(m => m.roleRaw !== "admin").length}`} change="+1" changeType="positive" accent="brand" icon={<Users className="h-5 w-5" />} />
+            <KpiCard title="Active Team Size" value={`${members.filter(m => m.roleRaw !== "admin").length}`} accent="brand" icon={<Users className="h-5 w-5" />} />
             <KpiCard title="System Role Types" value={`${new Set(members.filter(m => m.roleRaw !== "admin").map(m => m.role)).size}`} change="Designated" changeType="positive" accent="emerald" icon={<Settings className="h-5 w-5" />} />
             <KpiCard title="Punched In Now" value={`${members.filter((t) => t.roleRaw !== "admin" && t.status === "online").length}`} accent="emerald" icon={<Activity className="h-5 w-5" />} />
             <KpiCard title="Leave Today" value={`${members.filter(t => { const s = t.roleRaw !== "admin" && attendanceOverrides.get(`${t.id}-22`); return s === "vacation" || s === "sick"; }).length}`} accent="rose" />
@@ -1178,7 +1159,7 @@ export default function TeamPage() {
               return (
                 <div className="p-8 text-center bg-white dark:bg-[#1f1f1f] border border-slate-200 dark:border-[#303030] rounded-[20px]">
                   <p className="text-slate-500 font-semibold">Employee profile not loaded.</p>
-                  <Button onClick={() => setSelectedEmployeeDetailId(null)} className="mt-4 bg-indigo-600 text-white hover:bg-indigo-700">
+                  <Button onClick={() => setSelectedEmployeeDetailId(null)} className="mt-4 bg-brand-600 text-white hover:bg-brand-700">
                     Back to Directory
                   </Button>
                 </div>
@@ -1190,7 +1171,7 @@ export default function TeamPage() {
                 <div>
                   <button
                     onClick={() => setSelectedEmployeeDetailId(null)}
-                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-slate-350 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all cursor-pointer bg-slate-50 dark:bg-[#1f1f1f] border border-slate-200 dark:border-[#303030] px-3.5 py-2 rounded-2xl"
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-slate-350 hover:text-brand-600 dark:hover:text-brand-400 transition-all cursor-pointer bg-slate-50 dark:bg-[#1f1f1f] border border-slate-200 dark:border-[#303030] px-3.5 py-2 rounded-2xl"
                   >
                     <ArrowLeft className="h-3.5 w-3.5" />
                     <span>Back to Directory</span>
@@ -1198,7 +1179,7 @@ export default function TeamPage() {
                 </div>
 
                 {/* Meta Header Card */}
-                <Card className="border border-indigo-500/20 bg-indigo-50/5 dark:bg-indigo-500/5 backdrop-blur-md">
+                <Card className="border border-brand-500/20 bg-brand-50/5 dark:bg-brand-500/5 backdrop-blur-md">
                   <CardContent className="p-6">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                       <div className="flex items-center gap-4">
@@ -1210,7 +1191,7 @@ export default function TeamPage() {
                               {getMemberStatusLabel(selectedEmpData.status)}
                             </Badge>
                           </div>
-                          <p className="text-xs font-semibold text-brand-600 dark:text-indigo-400 mt-1">{selectedEmpData.role}</p>
+                          <p className="text-xs font-semibold text-brand-600 dark:text-brand-400 mt-1">{selectedEmpData.role}</p>
                           <div className="flex items-center gap-2 mt-2 text-xs text-slate-500 dark:text-slate-400">
                             <Mail className="h-3.5 w-3.5 shrink-0 text-slate-500 dark:text-slate-400" />
                             <a href={`mailto:${selectedEmpData.email}`} className="hover:underline">{selectedEmpData.email}</a>
@@ -1251,24 +1232,24 @@ export default function TeamPage() {
                               <input type="text" value={activeShiftProfile} onChange={e => setActiveShiftProfile(e.target.value)} className="h-9 w-full rounded-2xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] px-2 text-xs" />
                             </div>
                             <div className="flex gap-2 pt-1">
-                              <Button type="submit" className="h-8 flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs">Save</Button>
+                              <Button type="submit" className="h-8 flex-1 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs">Save</Button>
                               <Button type="button" onClick={() => setShowEditSchedule(false)} className="h-8 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs">Cancel</Button>
                             </div>
                           </form>
                         </div>
                       ) : (
                         <>
-                          <div onClick={() => setShowEditSchedule(true)} className="border border-slate-300 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] px-4 py-2.5 rounded-2xl text-left min-w-[140px] relative group cursor-pointer hover:border-indigo-400 transition-colors">
-                            <button className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity text-indigo-600"><Edit2 className="h-3.5 w-3.5" /></button>
+                          <div onClick={() => setShowEditSchedule(true)} className="border border-slate-300 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] px-4 py-2.5 rounded-2xl text-left min-w-[140px] relative group cursor-pointer hover:border-brand-400 transition-colors">
+                            <button className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity text-brand-600"><Edit2 className="h-3.5 w-3.5" /></button>
                             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">Shift Hours</p>
                             <p className="text-xs font-extrabold text-slate-800 dark:text-white mt-1.5 leading-none">
                               {selectedEmpData.shiftStartTime} - {selectedEmpData.shiftEndTime}
                             </p>
                           </div>
-                          <div onClick={() => setShowEditSchedule(true)} className="border border-slate-300 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] px-4 py-2.5 rounded-2xl text-left min-w-[140px] relative group cursor-pointer hover:border-indigo-400 transition-colors">
-                            <button className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity text-indigo-600"><Edit2 className="h-3.5 w-3.5" /></button>
+                          <div onClick={() => setShowEditSchedule(true)} className="border border-slate-300 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] px-4 py-2.5 rounded-2xl text-left min-w-[140px] relative group cursor-pointer hover:border-brand-400 transition-colors">
+                            <button className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity text-brand-600"><Edit2 className="h-3.5 w-3.5" /></button>
                             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">Active Profile</p>
-                            <p className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 mt-1.5 leading-none truncate max-w-[150px]" title={selectedEmpData.activeShiftProfile}>
+                            <p className="text-[11px] font-bold text-brand-600 dark:text-brand-400 mt-1.5 leading-none truncate max-w-[150px]" title={selectedEmpData.activeShiftProfile}>
                               {selectedEmpData.activeShiftProfile}
                             </p>
                           </div>
@@ -1283,7 +1264,7 @@ export default function TeamPage() {
                   <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-[#303030] dark:bg-[#1f1f1f]">
                     <div className="flex flex-col gap-4 border-b border-slate-200 px-5 py-5 dark:border-[#303030] sm:flex-row sm:items-start sm:justify-between sm:px-6">
                       <div className="flex min-w-0 items-start gap-3">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-300">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-950/40 dark:text-brand-300">
                           <ShieldCheck className="h-5 w-5" aria-hidden="true" />
                         </div>
                         <div className="min-w-0">
@@ -1314,7 +1295,7 @@ export default function TeamPage() {
                         <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Login email</p>
                         <a
                           href={`mailto:${selectedEmpData.email}`}
-                          className="mt-2 block truncate text-sm font-medium text-slate-950 hover:text-blue-600 dark:text-white dark:hover:text-blue-300"
+                          className="mt-2 block truncate text-sm font-medium text-slate-950 hover:text-brand-600 dark:text-white dark:hover:text-brand-300"
                           title={selectedEmpData.email}
                         >
                           {selectedEmpData.email}
@@ -1375,52 +1356,83 @@ export default function TeamPage() {
 
                 {selectedEmpData.roleRaw === "employee" && (
                   <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 dark:border-[#303030] dark:bg-[#1f1f1f] sm:p-6">
-                    <div className="flex items-center gap-3 border-b border-slate-100 pb-4 dark:border-[#303030]">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-300">
-                        <Settings className="h-5 w-5" />
+                    <div className="flex items-center justify-between gap-3 border-b border-slate-100 pb-4 dark:border-[#303030]">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-950/40 dark:text-brand-300">
+                          <Settings className="h-5 w-5" />
+                        </div>
+                        <div className="min-w-0">
+                          <h3 className="text-base font-semibold text-slate-950 dark:text-white">Account access and Permission</h3>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">Grant specific management capabilities to this employee.</p>
+                        </div>
                       </div>
-                      <div>
-                        <h3 className="text-base font-semibold text-slate-950 dark:text-white">Permissions</h3>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">Grant specific management capabilities to this employee.</p>
-                      </div>
+                      <Button
+                        type="button"
+                        variant={showEditPermissions ? "ghost" : "outline"}
+                        size="sm"
+                        onClick={() => setShowEditPermissions(v => !v)}
+                        className="shrink-0"
+                      >
+                        {showEditPermissions ? "Done" : <><Edit2 className="h-3.5 w-3.5" /> Edit</>}
+                      </Button>
                     </div>
-                    <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-                      {EMPLOYEE_PERMISSIONS.map((perm) => {
-                        const isChecked = selectedEmpData.permissions?.includes(perm);
-                        return (
-                          <label key={perm} className="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-100 p-3 hover:bg-slate-50 dark:border-[#2a2a30] dark:hover:bg-[#25252b]">
-                            <input
-                              type="checkbox"
-                              checked={!!isChecked}
-                              onChange={async (e) => {
-                                const current = selectedEmpData.permissions || [];
-                                const next = e.target.checked
-                                  ? Array.from(new Set([...current, perm]))
-                                  : current.filter((p: string) => p !== perm);
-                                const res = await updateEmployeePermissions(Number(selectedEmpData.id), next as any);
-                                if (res.success) {
-                                  toast("Permissions updated successfully.", "success");
+                    {showEditPermissions ? (
+                      <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        {EMPLOYEE_PERMISSIONS.map((perm) => {
+                          const isChecked = selectedEmpData.permissions?.includes(perm);
+                          return (
+                            <label key={perm} className="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-100 p-3 hover:bg-slate-50 dark:border-[#2a2a30] dark:hover:bg-[#25252b]">
+                              <input
+                                type="checkbox"
+                                checked={!!isChecked}
+                                onChange={(e) => {
+                                  const current = selectedEmpData.permissions || [];
+                                  const next = e.target.checked
+                                    ? Array.from(new Set([...current, perm]))
+                                    : current.filter((p: string) => p !== perm);
+                                  // Optimistic: flip the checkbox instantly, then persist in the
+                                  // background and roll back only if the save actually fails.
                                   setMembers(prev => prev.map(m => m.id === selectedEmpData.id ? { ...m, permissions: next } : m));
-                                } else {
-                                  toast(res.error || "Failed to update permissions", "error");
-                                }
-                              }}
-                              className="mt-0.5 h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
-                            />
-                            <div>
-                              <p className="text-xs font-semibold text-slate-900 dark:text-white capitalize">{perm.replace("_", " ")}</p>
-                              <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                                {perm === "manage_clients" && "Create & edit client accounts"}
-                                {perm === "manage_projects" && "Create & edit projects"}
-                                {perm === "manage_tasks" && "Create & assign tasks beyond own"}
-                                {perm === "manage_invoices" && "Create & manage client invoices"}
-                                {perm === "manage_expenses" && "Approve & edit expense claims"}
-                              </p>
-                            </div>
-                          </label>
-                        );
-                      })}
-                    </div>
+                                  updateEmployeePermissions(Number(selectedEmpData.id), next as any).then((res) => {
+                                    if (res.success) {
+                                      toast("Permissions updated successfully.", "success");
+                                    } else {
+                                      setMembers(prev => prev.map(m => m.id === selectedEmpData.id ? { ...m, permissions: current } : m));
+                                      toast(res.error || "Failed to update permissions", "error");
+                                    }
+                                  });
+                                }}
+                                className="mt-0.5 h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
+                              />
+                              <div>
+                                <p className="text-xs font-semibold text-slate-900 dark:text-white capitalize">{perm.replace("_", " ")}</p>
+                                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                                  {perm === "manage_clients" && "Create & edit client accounts"}
+                                  {perm === "manage_projects" && "Create & edit projects"}
+                                  {perm === "manage_tasks" && "Create & assign tasks beyond own"}
+                                  {perm === "manage_invoices" && "Create & manage client invoices"}
+                                  {perm === "manage_expenses" && "Approve & edit expense claims"}
+                                </p>
+                              </div>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div className="mt-4">
+                        {selectedEmpData.permissions?.length ? (
+                          <div className="flex flex-wrap gap-1.5">
+                            {selectedEmpData.permissions.map((perm: string) => (
+                              <span key={perm} className="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-brand-50 text-brand-700 dark:bg-brand-950/30 dark:text-brand-300 capitalize">
+                                {perm.replace("_", " ")}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-xs text-slate-400 italic">No extra permissions granted. Click Edit to add some.</p>
+                        )}
+                      </div>
+                    )}
                   </section>
                 )}
 
@@ -1462,7 +1474,7 @@ export default function TeamPage() {
                               {isPunchedIn ? "Time Elapsed — Live" : isPunchedOut ? "Total Shift Hours" : "Today's Working Hours"}
                             </span>
                             {isPunchedIn && (
-                              <span className="text-[10px] text-emerald-400 font-semibold mt-1 block animate-pulse">â— Currently Active</span>
+                              <span className="text-[10px] text-emerald-400 font-semibold mt-1 block animate-pulse">● Currently Active</span>
                             )}
                             {!todayRec?.punchInTime && (
                               <span className="text-[10px] text-slate-500 font-semibold mt-1 block">Not started today</span>
@@ -1582,7 +1594,7 @@ export default function TeamPage() {
                           </div>
                           <div>
                             <CardTitle className="flex items-center gap-2 text-base">
-                              <CalendarIcon className="h-5 w-5 text-indigo-500" /> {calMonthName} {calYear} Monthly Attendance
+                              <CalendarIcon className="h-5 w-5 text-brand-500" /> {calMonthName} {calYear} Monthly Attendance
                             </CardTitle>
                           </div>
                         </div>
@@ -1636,14 +1648,14 @@ export default function TeamPage() {
                                 "aspect-square w-full rounded-[20px] border p-1 sm:p-2 flex flex-col items-center sm:items-start transition-all duration-200 cursor-pointer hover:scale-[1.02] active:scale-98 relative group/cell overflow-hidden",
                                 style.bg,
                                 style.border,
-                                isSelectedForTask && "ring-2 ring-indigo-500 border-indigo-500 scale-[1.02] shadow-[0_0_12px_rgba(99,102,241,0.3)] z-10",
-                                isInRange && !isSelectedForTask && "ring-2 ring-indigo-500/70 dark:ring-indigo-500/60 bg-indigo-500/20 dark:bg-indigo-500/30 scale-[1.02] z-10 shadow-[0_0_12px_rgba(99,102,241,0.15)]"
+                                isSelectedForTask && "ring-2 ring-brand-500 border-brand-500 scale-[1.02] shadow-[0_0_12px_rgba(59,130,246,0.3)] z-10",
+                                isInRange && !isSelectedForTask && "ring-2 ring-brand-500/70 dark:ring-brand-500/60 bg-brand-500/20 dark:bg-brand-500/30 scale-[1.02] z-10 shadow-[0_0_12px_rgba(59,130,246,0.15)]"
                               )}
                             >
                               <div className="flex justify-between items-start w-full">
                                 <span className="text-[10px] sm:text-[11px] font-bold leading-none">{day}</span>
                                 {taskCount > 0 && (
-                                  <span className="hidden sm:inline-flex items-center gap-0.5 px-1 py-0.5 rounded bg-indigo-500/25 dark:bg-indigo-500/35 text-indigo-700 dark:text-indigo-300 text-[8.5px] font-extrabold shadow-sm shrink-0">
+                                  <span className="hidden sm:inline-flex items-center gap-0.5 px-1 py-0.5 rounded bg-brand-500/25 dark:bg-brand-500/35 text-brand-700 dark:text-brand-300 text-[8.5px] font-extrabold shadow-sm shrink-0">
                                     {taskCount}T
                                   </span>
                                 )}
@@ -1656,7 +1668,7 @@ export default function TeamPage() {
                                     return (
                                       <div
                                         key={t.id}
-                                        className="text-[8px] font-bold truncate w-full px-1 py-0.5 rounded bg-indigo-500/10 dark:bg-indigo-500/20 text-indigo-800 dark:text-indigo-250 border border-indigo-200/25"
+                                        className="text-[8px] font-bold truncate w-full px-1 py-0.5 rounded bg-brand-500/10 dark:bg-brand-500/20 text-brand-800 dark:text-brand-200 border border-brand-200/25"
                                         title={t.title}
                                       >
                                         {linkedProj ? `[${linkedProj.name.slice(0, 5)}] ` : ""}{t.title}
@@ -1664,7 +1676,7 @@ export default function TeamPage() {
                                     );
                                   })}
                                   {tasksForDay.length > 2 && (
-                                    <div className="text-[7.5px] font-extrabold text-indigo-600 dark:text-indigo-400 pl-1 leading-none">
+                                    <div className="text-[7.5px] font-extrabold text-brand-600 dark:text-brand-400 pl-1 leading-none">
                                       +{tasksForDay.length - 2} more
                                     </div>
                                   )}
@@ -1712,7 +1724,7 @@ export default function TeamPage() {
                             <button
                               type="button"
                               onClick={() => setNewTaskDueDate("")}
-                              className="text-[11px] font-extrabold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-all cursor-pointer flex items-center gap-0.5 bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-150 dark:border-indigo-900/50 px-2.5 py-0.5 rounded-full shrink-0"
+                              className="text-[11px] font-extrabold text-brand-600 dark:text-brand-400 hover:text-brand-800 dark:hover:text-brand-300 transition-all cursor-pointer flex items-center gap-0.5 bg-brand-50 dark:bg-brand-950/40 border border-brand-200 dark:border-brand-900/50 px-2.5 py-0.5 rounded-full shrink-0"
                             >
                               <X className="h-3 w-3" /> Clear Selection
                             </button>
@@ -1728,8 +1740,8 @@ export default function TeamPage() {
 
                             return (
                               <div className="space-y-4">
-                                <div className="p-2.5 bg-indigo-500/10 border border-indigo-500/20 rounded-2xl text-center shadow-sm">
-                                  <p className="text-xs font-bold text-indigo-600 dark:text-indigo-400">
+                                <div className="p-2.5 bg-brand-500/10 border border-brand-500/20 rounded-2xl text-center shadow-sm">
+                                  <p className="text-xs font-bold text-brand-600 dark:text-brand-400">
                                     📅 Selected Date: {calMonthName} {selectedSingleDay}, {calYear}
                                   </p>
                                 </div>
@@ -1790,7 +1802,7 @@ export default function TeamPage() {
                                   <Button
                                     type="button"
                                     onClick={() => handleSingleDateStatusSave(selectedSingleDay, selectedSingleDateStatus)}
-                                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold flex items-center justify-center gap-1.5 py-2.5 shadow-md text-xs rounded-2xl transition-all hover:shadow-lg"
+                                    className="w-full bg-brand-600 hover:bg-brand-700 text-white font-semibold flex items-center justify-center gap-1.5 py-2.5 shadow-md text-xs rounded-2xl transition-all hover:shadow-lg"
                                   >
                                     Save Leave Status
                                   </Button>
@@ -1919,7 +1931,7 @@ export default function TeamPage() {
 
                               <Button
                                 type="submit"
-                                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold flex items-center justify-center gap-1.5 py-2.5 shadow-md shadow-brand-500/10 text-xs rounded-2xl"
+                                className="w-full bg-brand-600 hover:bg-brand-700 text-white font-semibold flex items-center justify-center gap-1.5 py-2.5 shadow-md shadow-brand-500/10 text-xs rounded-2xl"
                               >
                                 <Plus className="h-4 w-4" /> Apply Leave Log
                               </Button>
@@ -2317,7 +2329,7 @@ export default function TeamPage() {
                       }
                     }}
                     className={`overflow-hidden hover:shadow-glow transition-all relative group ${
-                      isNonAdmin ? "cursor-pointer hover:border-indigo-500/50" : ""
+                      isNonAdmin ? "cursor-pointer hover:border-brand-500/50" : ""
                     }`}
                   >
                     
@@ -2343,43 +2355,9 @@ export default function TeamPage() {
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0 flex-1">
                           <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{m.name}</p>
-                          
-                          {/* Interactive Role Assignment */}
-                          {editingMemberId === m.id ? (
-                            <div className="flex gap-1 mt-1" onClick={(e) => e.stopPropagation()}>
-                              <select
-                                value={editRoleValue}
-                                onChange={(e) => setEditRoleValue(e.target.value)}
-                                className="h-7 w-full rounded-xl border border-slate-200 bg-white dark:bg-[#1f1f1f] text-slate-800 dark:text-white px-2 text-[10px] focus:outline-none"
-                              >
-                                <option value="Web Developer">Web Developer</option>
-                                <option value="Graphic Designer">Graphic Designer</option>
-                                <option value="Video Editor">Video Editor</option>
-                                <option value="Digital Marketing">Digital Marketing</option>
-                                <option value="Admin">Admin</option>
-                              </select>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleSaveRole(m.id);
-                                }}
-                                className="h-7 w-7 bg-emerald-500 text-white rounded-xl flex items-center justify-center shrink-0 cursor-pointer"
-                              >
-                                <Check className="h-3.5 w-3.5" />
-                              </button>
-                            </div>
-                          ) : (
-                            <div className="flex items-center gap-1.5 mt-0.5 group/role cursor-pointer" onClick={(e) => {
-                              e.stopPropagation();
-                              setEditingMemberId(m.id);
-                              setEditRoleValue(m.role);
-                            }}>
-                              <span className="text-xs text-slate-500 dark:text-slate-400 truncate leading-tight group-hover/role:text-brand-600">
-                                {m.role}
-                              </span>
-                              <Edit2 className="h-2.5 w-2.5 text-slate-350 opacity-0 group-hover/role:opacity-100" />
-                            </div>
-                          )}
+                          <p className="text-xs text-slate-500 dark:text-slate-400 truncate leading-tight mt-0.5">
+                            {m.role}
+                          </p>
                         </div>
                         <Badge variant={getMemberStatusVariant(m.status)} dot>{getMemberStatusLabel(m.status)}</Badge>
                       </div>
