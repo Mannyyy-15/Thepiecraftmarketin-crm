@@ -25,6 +25,7 @@ import { Avatar } from "@/components/ui/Avatar";
 import { LogoutConfirmModal } from "@/components/ui/LogoutConfirmModal";
 import { logout } from "@/app/actions/auth";
 import { clearCurrentUserCache, getCurrentUserCached } from "@/lib/currentUserClient";
+import { clearPersistentCache } from "@/hooks/useActionCache";
 import { getMyNotifications, markAllNotificationsRead, markNotificationRead, dismissNotification } from "@/app/actions/crm";
 import type { Notification } from "@/lib/schema";
 import NotificationPanel from "@/components/NotificationPanel";
@@ -170,6 +171,7 @@ export default function EmployeeTopNav() {
       const res = await logout();
       if (res.success) {
         clearCurrentUserCache();
+        clearPersistentCache();
         router.push("/login");
       }
     } catch {

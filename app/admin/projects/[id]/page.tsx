@@ -19,10 +19,11 @@ import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ProjectDetailSkeleton } from "@/components/ui/Skeleton";
+import { useRememberedCount } from "@/hooks/useRememberedCount";
 import { cn } from "@/components/ui/cn";
 import { KanbanBoard } from "@/components/ui/KanbanBoard";
 
-// ── helpers ──────────────────────────────────────────────────────────────────
+// â”€â”€ helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function parseDetails(raw: string | null | undefined) {
   try { return JSON.parse(raw || "{}"); } catch { return {}; }
 }
@@ -38,17 +39,17 @@ const STATUS_CONFIG: Record<string, { label: string; dot: string; pill: string }
 const PRIORITY_PILL: Record<string, string> = {
   high:   "bg-rose-100 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 border-rose-300 dark:border-rose-800",
   medium: "bg-amber-100 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 border-amber-300 dark:border-amber-800",
-  low:    "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700",
+  low:    "bg-slate-100 dark:bg-[#303030] text-slate-500 dark:text-slate-400 border-slate-200 dark:border-[#3f3f3f]",
 };
 
 const TASK_PRIORITY_PILL: Record<string, string> = {
   high:   "bg-rose-50 text-rose-500 border-rose-200 dark:bg-rose-950/20 dark:border-rose-800/40",
   medium: "bg-amber-50 text-amber-500 border-amber-200 dark:bg-amber-950/20 dark:border-amber-800/40",
-  low:    "bg-slate-50 text-slate-400 border-slate-200 dark:bg-slate-800/40 dark:border-slate-700",
+  low:    "bg-slate-50 text-slate-400 border-slate-200 dark:bg-[#303030]/40 dark:border-[#3f3f3f]",
 };
 
 const INV_STATUS: Record<string, { label: string; pill: string }> = {
-  draft:   { label: "Draft",   pill: "bg-slate-100 dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700" },
+  draft:   { label: "Draft",   pill: "bg-slate-100 dark:bg-[#303030] text-slate-500 border-slate-200 dark:border-[#3f3f3f]" },
   sent:    { label: "Sent",    pill: "bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 border-blue-500/20" },
   paid:    { label: "Paid",    pill: "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 border-emerald-500/20" },
   overdue: { label: "Overdue", pill: "bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 border-rose-500/20" },
@@ -57,13 +58,13 @@ const INV_STATUS: Record<string, { label: string; pill: string }> = {
 const PROJ_TYPE_ICON: Record<string, React.ElementType> = { meta_ads: Megaphone, web_dev: Code2, other: Zap };
 const PROJ_TYPE_LABEL: Record<string, string> = { meta_ads: "Meta Ads", web_dev: "Web Development", other: "Other" };
 
-const INPUT  = "h-11 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white placeholder:text-slate-400 transition-all";
-const SELECT = "h-11 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white cursor-pointer transition-all";
+const INPUT  = "h-11 w-full rounded-xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white placeholder:text-slate-400 transition-all";
+const SELECT = "h-11 w-full rounded-xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] px-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white cursor-pointer transition-all";
 const LABEL  = "block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5";
 
 function BentoCard({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={cn("rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-950 p-5", className)}>
+    <div className={cn("rounded-2xl border border-slate-200/80 dark:border-[#303030]/80 bg-white dark:bg-[#1f1f1f] p-5", className)}>
       {children}
     </div>
   );
@@ -73,7 +74,7 @@ function SectionTitle({ icon: Icon, label, action }: { icon: React.ElementType; 
   return (
     <div className="flex items-center justify-between gap-3 mb-4">
       <div className="flex items-center gap-2">
-        <div className="h-6 w-6 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
+        <div className="h-6 w-6 rounded-lg bg-slate-100 dark:bg-[#303030] flex items-center justify-center shrink-0">
           <Icon className="h-3 w-3 text-slate-500" />
         </div>
         <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{label}</span>
@@ -83,7 +84,7 @@ function SectionTitle({ icon: Icon, label, action }: { icon: React.ElementType; 
   );
 }
 
-// ── Page ─────────────────────────────────────────────────────────────────────
+// â”€â”€ Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export default function ProjectDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
@@ -94,6 +95,7 @@ export default function ProjectDetailPage() {
   const [loading, setLoading]           = useState(true);
   const [toggling, setToggling]         = useState<number | null>(null);
   const [assigningLead, setAssigningLead] = useState(false);
+  const { skeletonCount: taskSkeletonCount, record: recordTaskCount } = useRememberedCount(`admin:project:${id}:tasks`, 3);
 
   // task add state
   const [newTask, setNewTask]         = useState("");
@@ -121,7 +123,8 @@ export default function ProjectDetailPage() {
         setProject(pr.data);
         const p = pr.data as any;
         setNewAssignee(p.leadId ? String(p.leadId) : "");
-        
+        recordTaskCount(Array.isArray(p.tasks) ? p.tasks.length : 0);
+
         // Fetch Github Commits
         if (p.projectType === "web_dev") {
           let sd: any = {};
@@ -152,7 +155,7 @@ export default function ProjectDetailPage() {
 
   useEffect(() => { load(); }, [load]);
 
-  // ── derived ──────────────────────────────────────────────────────────────
+  // â”€â”€ derived â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const isAgency = !project?.clientId && project?.clientName === "Internal Agency Project";
   const sd       = parseDetails(project?.serviceDetails);
   const status   = STATUS_CONFIG[project?.status] || STATUS_CONFIG.planning;
@@ -168,8 +171,8 @@ export default function ProjectDetailPage() {
     return Math.ceil((new Date(project.deadline).getTime() - Date.now()) / 86400000);
   })();
 
-  const fee = project?.monthlyFee ? `₹${project.monthlyFee.toLocaleString()}/mo`
-    : project?.budget ? `₹${project.budget.toLocaleString()}` : null;
+  const fee = project?.monthlyFee ? `â‚¹${project.monthlyFee.toLocaleString()}/mo`
+    : project?.budget ? `â‚¹${project.budget.toLocaleString()}` : null;
 
   const workloadByUser: Record<number, { total: number; done: number }> = tasks.reduce((acc: any, t: any) => {
     if (!t.userId) return acc;
@@ -194,7 +197,7 @@ export default function ProjectDetailPage() {
     }))
     .sort((a: any, b: any) => b.workload.total - a.workload.total);
 
-  // ── handlers ─────────────────────────────────────────────────────────────
+  // â”€â”€ handlers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const handleAssignLead = async (userId: number) => {
     if (!project || assigningLead) return;
     setAssigningLead(true);
@@ -301,7 +304,7 @@ export default function ProjectDetailPage() {
 
   const printDocument = () => {
     if (!project) return;
-    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${project.name} — Proposal</title>
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${project.name} â€” Proposal</title>
 <style>body{font-family:'Inter',sans-serif;max-width:800px;margin:40px auto;color:#0f172a;line-height:1.6}
 h1{font-size:2rem;font-weight:800;margin:0}h2{font-size:1rem;font-weight:700;color:#64748b;border-bottom:2px solid #e2e8f0;padding-bottom:8px;margin-top:32px}
 .pill{display:inline-block;padding:2px 10px;border-radius:99px;font-size:11px;font-weight:700;background:#ede9fe;color:#7c3aed}
@@ -313,7 +316,7 @@ td{padding:10px 12px;border-bottom:1px solid #f1f5f9;font-size:13px}tr:last-chil
 .kpi-card .value{font-size:1.5rem;font-weight:800;color:#0f172a;margin-top:4px}
 @media print{body{margin:20px}}</style></head><body>
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:32px">
-  <div><h1>${project.name}</h1><p style="color:#64748b;margin:4px 0 0">${project.clientName || ""} · ${PROJ_TYPE_LABEL[project.projectType] || "Project"}</p></div>
+  <div><h1>${project.name}</h1><p style="color:#64748b;margin:4px 0 0">${project.clientName || ""} Â· ${PROJ_TYPE_LABEL[project.projectType] || "Project"}</p></div>
   <span class="pill">${STATUS_CONFIG[project.status]?.label || project.status}</span>
 </div>
 <h2>Project Overview</h2>
@@ -321,26 +324,26 @@ td{padding:10px 12px;border-bottom:1px solid #f1f5f9;font-size:13px}tr:last-chil
 <tr><td>Type</td><td>${PROJ_TYPE_LABEL[project.projectType] || "Other"}</td></tr>
 <tr><td>Status</td><td>${STATUS_CONFIG[project.status]?.label || project.status}</td></tr>
 <tr><td>Priority</td><td>${project.priority || "Medium"}</td></tr>
-<tr><td>Start Date</td><td>${project.startDate || "—"}</td></tr>
-<tr><td>Deadline</td><td>${project.deadline || "—"}</td></tr>
-<tr><td>Contract Duration</td><td>${project.contractDuration ? `${project.contractDuration} months` : "—"}</td></tr>
+<tr><td>Start Date</td><td>${project.startDate || "â€”"}</td></tr>
+<tr><td>Deadline</td><td>${project.deadline || "â€”"}</td></tr>
+<tr><td>Contract Duration</td><td>${project.contractDuration ? `${project.contractDuration} months` : "â€”"}</td></tr>
 ${project.clientContactName ? `<tr><td>Client Contact</td><td>${project.clientContactName}</td></tr>` : ""}
 </table>
 <h2>Financials</h2>
 <div class="kpi">
-${project.monthlyFee ? `<div class="kpi-card"><div class="label">Monthly Retainer</div><div class="value">₹${project.monthlyFee.toLocaleString()}</div></div>` : ""}
-${project.budget ? `<div class="kpi-card"><div class="label">Project Budget</div><div class="value">₹${project.budget.toLocaleString()}</div></div>` : ""}
-${project.adSpendBudget ? `<div class="kpi-card"><div class="label">Ad Spend Budget</div><div class="value">₹${project.adSpendBudget.toLocaleString()}/mo</div></div>` : ""}
+${project.monthlyFee ? `<div class="kpi-card"><div class="label">Monthly Retainer</div><div class="value">â‚¹${project.monthlyFee.toLocaleString()}</div></div>` : ""}
+${project.budget ? `<div class="kpi-card"><div class="label">Project Budget</div><div class="value">â‚¹${project.budget.toLocaleString()}</div></div>` : ""}
+${project.adSpendBudget ? `<div class="kpi-card"><div class="label">Ad Spend Budget</div><div class="value">â‚¹${project.adSpendBudget.toLocaleString()}/mo</div></div>` : ""}
 </div>
 ${tasks.length ? `<h2>Project Tasks (${tasksDone}/${tasks.length} completed)</h2>
 <table><tr><th>#</th><th>Task</th><th>Priority</th><th>Status</th></tr>
-${tasks.map((t: any, i: number) => `<tr><td>${i + 1}</td><td>${t.title}</td><td>${t.priority || "medium"}</td><td>${t.done === 1 ? "✓ Done" : "Pending"}</td></tr>`).join("")}
+${tasks.map((t: any, i: number) => `<tr><td>${i + 1}</td><td>${t.title}</td><td>${t.priority || "medium"}</td><td>${t.done === 1 ? "âœ“ Done" : "Pending"}</td></tr>`).join("")}
 </table>` : ""}
 ${sd && Object.keys(sd).length ? `<h2>Service Details</h2>
 <table><tr><th>Key</th><th>Value</th></tr>
 ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join("")}
 </table>` : ""}
-<p style="margin-top:40px;color:#94a3b8;font-size:12px">Generated by ThePieCraft CRM · ${new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}</p>
+<p style="margin-top:40px;color:#94a3b8;font-size:12px">Generated by ThePieCraft CRM Â· ${new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}</p>
 </body></html>`;
     const win = window.open("", "_blank");
     if (!win) { toast("Allow popups to download PDF.", "error"); return; }
@@ -349,8 +352,8 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
     setTimeout(() => { win.focus(); win.print(); }, 600);
   };
 
-  // ── render ────────────────────────────────────────────────────────────────
-  if (loading) return <ProjectDetailSkeleton />;
+  // â”€â”€ render â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  if (loading) return <ProjectDetailSkeleton taskCount={taskSkeletonCount} />;
 
   if (!project) return (
     <div className="flex flex-col items-center justify-center h-64 gap-3">
@@ -364,7 +367,7 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
   return (
     <div className="space-y-5 pb-12">
 
-      {/* ── Breadcrumb nav ────────────────────────────────────────────────── */}
+      {/* â”€â”€ Breadcrumb nav â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <div className="flex items-center gap-2 flex-wrap">
         <button onClick={() => router.back()}
           className="flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors cursor-pointer">
@@ -388,11 +391,11 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
         <span className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate max-w-[200px]">{project.name}</span>
       </div>
 
-      {/* ── BENTO GRID ────────────────────────────────────────────────────── */}
+      {/* â”€â”€ BENTO GRID â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
 
-        {/* ── Header card (full width) ─────────────────────────────────────── */}
-        <BentoCard className="lg:col-span-12 bg-slate-50 dark:bg-slate-900/40">
+        {/* â”€â”€ Header card (full width) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        <BentoCard className="lg:col-span-12 bg-slate-50 dark:bg-[#303030]/40">
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div className="flex items-start gap-4">
               <div className="h-14 w-14 rounded-2xl bg-brand-500 flex items-center justify-center shrink-0 shadow-sm">
@@ -427,14 +430,14 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
                 <Edit2 className="h-3.5 w-3.5 mr-1.5" />Edit
               </Button>
               <button onClick={handleDelete}
-                className="h-9 w-9 rounded-xl flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-all cursor-pointer border border-slate-200 dark:border-slate-800">
+                className="h-9 w-9 rounded-xl flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-all cursor-pointer border border-slate-200 dark:border-[#303030]">
                 <Trash2 className="h-4 w-4" />
               </button>
             </div>
           </div>
 
           {/* Info strip */}
-          <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center gap-6">
+          <div className="mt-4 pt-4 border-t border-slate-100 dark:border-[#303030] flex flex-wrap items-center gap-6">
             {project.lead && (
               <div className="flex items-center gap-2">
                 <Avatar name={project.lead.name} size="xs" />
@@ -472,12 +475,12 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
           </div>
         </BentoCard>
 
-        {/* ── KPI mini cards ───────────────────────────────────────────────── */}
+        {/* â”€â”€ KPI mini cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         {([
           {
             label: "Budget / Fee",
-            value: fee || "—",
-            sub: project.billingModel?.replace(/_/g, " ") || "—",
+            value: fee || "â€”",
+            sub: project.billingModel?.replace(/_/g, " ") || "â€”",
             icon: DollarSign,
             color: "text-slate-800 dark:text-white",
             bg: "",
@@ -492,7 +495,7 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
           },
           {
             label: "Days Remaining",
-            value: daysLeft !== null ? (daysLeft < 0 ? "Overdue" : `${daysLeft}d`) : "—",
+            value: daysLeft !== null ? (daysLeft < 0 ? "Overdue" : `${daysLeft}d`) : "â€”",
             sub: project.deadline || "No deadline set",
             icon: CalendarDays,
             color: daysLeft !== null && daysLeft < 7 ? "text-rose-500" : "text-slate-800 dark:text-white",
@@ -500,7 +503,7 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
           },
           {
             label: "Ad Spend Budget",
-            value: project.adSpendBudget ? `₹${project.adSpendBudget.toLocaleString()}/mo` : "—",
+            value: project.adSpendBudget ? `â‚¹${project.adSpendBudget.toLocaleString()}/mo` : "â€”",
             sub: "monthly media budget",
             icon: Target,
             color: "text-brand-600 dark:text-brand-400",
@@ -514,14 +517,14 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
                 <p className={cn("text-2xl font-extrabold mt-1 leading-none", kpi.color)}>{kpi.value}</p>
                 <p className="text-[10px] text-slate-400 mt-1 capitalize truncate">{kpi.sub}</p>
               </div>
-              <div className="h-9 w-9 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
+              <div className="h-9 w-9 rounded-xl bg-slate-100 dark:bg-[#303030] flex items-center justify-center shrink-0">
                 <kpi.icon className="h-4 w-4 text-slate-500 dark:text-slate-400" />
               </div>
             </div>
           </BentoCard>
         ))}
 
-        {/* ── Team & Workload ──────────────────────────────────────────────── */}
+        {/* â”€â”€ Team & Workload â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         <BentoCard className="lg:col-span-4">
           <SectionTitle
             icon={Users}
@@ -536,7 +539,7 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
 
           {/* Lead highlight */}
           {project.lead ? (
-            <div className="mb-4 flex flex-col gap-3 px-3.5 py-3 rounded-xl bg-slate-50 border border-slate-200 dark:bg-slate-900/40 dark:border-slate-800">
+            <div className="mb-4 flex flex-col gap-3 px-3.5 py-3 rounded-xl bg-slate-50 border border-slate-200 dark:bg-[#303030]/40 dark:border-[#303030]">
               <div className="flex items-center gap-3">
                 <div className="relative shrink-0">
                   <Avatar name={project.lead.name} size="sm" />
@@ -560,7 +563,7 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
                       <span className="text-[9px] text-slate-500 dark:text-slate-400">{wl.done}/{wl.total} tasks</span>
                       <span className="text-[9px] font-bold text-brand-600 dark:text-brand-400">{pct}%</span>
                     </div>
-                    <div className="h-1 w-full bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+                    <div className="h-1 w-full bg-slate-200 dark:bg-[#303030] rounded-full overflow-hidden">
                       <div className="h-full bg-brand-500 rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
                     </div>
                   </div>
@@ -568,8 +571,8 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
               })()}
             </div>
           ) : (
-            <div className="mb-4 flex items-center gap-3 px-3.5 py-3 rounded-xl border border-dashed border-slate-200 dark:border-slate-800">
-              <div className="h-8 w-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
+            <div className="mb-4 flex items-center gap-3 px-3.5 py-3 rounded-xl border border-dashed border-slate-200 dark:border-[#303030]">
+              <div className="h-8 w-8 rounded-lg bg-slate-100 dark:bg-[#303030] flex items-center justify-center shrink-0">
                 <Crown className="h-3.5 w-3.5 text-slate-400" />
               </div>
               <p className="text-xs text-slate-400">No project lead assigned</p>
@@ -590,7 +593,7 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
                   ? Math.round(member.workload.done / member.workload.total * 100) : 0;
                 return (
                   <div key={member.id}
-                    className="group flex items-center gap-3 px-3 py-2.5 rounded-xl border border-slate-100 dark:border-slate-800/60 hover:border-slate-200 dark:hover:border-slate-700 bg-white dark:bg-slate-950 transition-all">
+                    className="group flex items-center gap-3 px-3 py-2.5 rounded-xl border border-slate-100 dark:border-[#303030]/60 hover:border-slate-200 dark:hover:border-slate-700 bg-white dark:bg-[#1f1f1f] transition-all">
                     <Avatar name={member.name} size="xs" className="shrink-0" />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5 mb-0.5">
@@ -603,7 +606,7 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
                             <span className="text-[9px] text-slate-400">{member.workload.done}/{member.workload.total} tasks</span>
                             <span className="text-[9px] font-bold text-brand-600 dark:text-brand-400">{pct}%</span>
                           </div>
-                          <div className="h-1 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                          <div className="h-1 w-full bg-slate-100 dark:bg-[#303030] rounded-full overflow-hidden">
                             <div className="h-full bg-brand-500 rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
                           </div>
                         </>
@@ -629,7 +632,7 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
           )}
         </BentoCard>
 
-        {/* ── Task Management ──────────────────────────────────────────────── */}
+        {/* â”€â”€ Task Management â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         <BentoCard className="lg:col-span-8">
           <SectionTitle icon={ListTodo} label={`Tasks (${tasksDone}/${tasks.length})`} />
 
@@ -640,7 +643,7 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
                 <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Overall progress</span>
                 <span className="text-xs font-extrabold text-brand-600 dark:text-brand-400">{tasksPct}%</span>
               </div>
-              <div className="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+              <div className="h-2 bg-slate-100 dark:bg-[#303030] rounded-full overflow-hidden">
                 <div className="h-full bg-brand-500 rounded-full transition-all duration-500" style={{ width: `${tasksPct}%` }} />
               </div>
             </div>
@@ -652,7 +655,7 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
               value={newTask}
               onChange={e => setNewTask(e.target.value)}
               onKeyDown={e => e.key === "Enter" && handleAddTask()}
-              placeholder="New task title… (press Enter to add)"
+              placeholder="New task titleâ€¦ (press Enter to add)"
               className={cn(INPUT, "h-9 text-xs")}
             />
             <div className="flex gap-2">
@@ -701,10 +704,10 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
           )}
         </BentoCard>
 
-        {/* ── Project Details ──────────────────────────────────────────────── */}
+        {/* â”€â”€ Project Details â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         <BentoCard className="lg:col-span-4">
           <SectionTitle icon={SlidersHorizontal} label="Project Details" />
-          <div className="divide-y divide-slate-100 dark:divide-slate-800/60">
+          <div className="divide-y divide-slate-100 dark:divide-[#303030]/60">
             {[
               { label: "Billing Model",       value: project.billingModel?.replace(/_/g, " ") },
               { label: "Contract Duration",   value: project.contractDuration ? `${project.contractDuration} months` : null },
@@ -719,7 +722,7 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
           </div>
 
           {Object.keys(sd).length > 0 && (
-            <div className="pt-3 mt-1 border-t border-slate-100 dark:border-slate-800">
+            <div className="pt-3 mt-1 border-t border-slate-100 dark:border-[#303030]">
               <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-3">
                 {project.projectType === "meta_ads" ? "Ads Setup" : "Dev Stack"}
               </p>
@@ -735,7 +738,7 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
           )}
 
           {(project.contractLink || (project.projectType === "web_dev" && sd.oldWebsiteUrl)) && (
-            <div className="pt-3 mt-1 border-t border-slate-100 dark:border-slate-800 space-y-2">
+            <div className="pt-3 mt-1 border-t border-slate-100 dark:border-[#303030] space-y-2">
               {project.contractLink && (
                 <a href={project.contractLink} target="_blank" rel="noreferrer"
                   className="flex items-center gap-2 text-xs font-bold text-brand-600 dark:text-brand-400 hover:underline">
@@ -753,20 +756,20 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
           )}
         </BentoCard>
 
-        {/* ── Client Contact ───────────────────────────────────────────────── */}
+        {/* â”€â”€ Client Contact â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         {!isAgency && (
           <BentoCard className="lg:col-span-4">
           <SectionTitle icon={Users} label="Client Contact" />
           <div className="space-y-4">
             {project.client && (
               <button onClick={() => router.push(`/admin/clients/${project.client.id}`)}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/30 border border-slate-200/80 dark:border-slate-800/80 hover:border-brand-300 dark:hover:border-brand-700 transition-all cursor-pointer text-left">
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-[#303030]/30 border border-slate-200/80 dark:border-[#303030]/80 hover:border-brand-300 dark:hover:border-brand-700 transition-all cursor-pointer text-left">
                 <div className="h-9 w-9 rounded-xl bg-brand-500 flex items-center justify-center text-xs font-extrabold text-white shrink-0">
                   {(project.clientName || "?").substring(0, 2).toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-bold text-slate-800 dark:text-white truncate">{project.clientName}</p>
-                  <p className="text-[10px] text-slate-400">View full client →</p>
+                  <p className="text-[10px] text-slate-400">View full client â†’</p>
                 </div>
                 <ChevronRight className="h-3.5 w-3.5 text-slate-300 dark:text-slate-600 shrink-0" />
               </button>
@@ -793,7 +796,7 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
         </BentoCard>
         )}
 
-        {/* ── GitHub Commits (if Web Dev & has repoLink) ───────────────────── */}
+        {/* â”€â”€ GitHub Commits (if Web Dev & has repoLink) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         {project.projectType === "web_dev" && sd.repoLink && (
           <BentoCard className="lg:col-span-8">
             <SectionTitle icon={GitCommit} label="Recent GitHub Commits" />
@@ -812,7 +815,7 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {commits.map((c, idx) => (
-                    <div key={c.sha || idx} className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 p-3">
+                    <div key={c.sha || idx} className="rounded-xl border border-slate-200 dark:border-[#303030] bg-slate-50 dark:bg-[#303030] p-3">
                       <div className="flex items-center gap-2 mb-2">
                         {c.author?.avatar_url ? (
                           <img src={c.author.avatar_url} alt={c.author?.login} className="h-5 w-5 rounded-full" />
@@ -827,7 +830,7 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
                         </p>
                       </div>
                       <p className="text-xs text-slate-700 dark:text-slate-300 font-medium truncate">
-                        {c.commit?.message?.split("\n")[0] || "—"}
+                        {c.commit?.message?.split("\n")[0] || "â€”"}
                       </p>
                       <p className="text-[9px] text-slate-400 mt-1">
                         {c.commit?.author?.date ? new Date(c.commit.author.date).toLocaleString("en-GB", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) : ""}
@@ -840,7 +843,7 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
           </BentoCard>
         )}
 
-        {/* ── Invoice History (full width) ─────────────────────────────────── */}
+        {/* â”€â”€ Invoice History (full width) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         {!isAgency && (
           <BentoCard className="lg:col-span-12">
           <SectionTitle icon={Receipt} label={`Invoice History (${invs.length})`} />
@@ -851,10 +854,10 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
               description="No invoices linked to this project yet."
             />
           ) : (
-            <div className="rounded-xl border border-slate-200/80 dark:border-slate-800/80 overflow-hidden">
+            <div className="rounded-xl border border-slate-200/80 dark:border-[#303030]/80 overflow-hidden">
               <table className="w-full text-xs">
                 <thead>
-                  <tr className="border-b border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/30">
+                  <tr className="border-b border-slate-100 dark:border-[#303030] bg-slate-50/60 dark:bg-[#303030]/30">
                     <th className="text-left px-4 py-2.5 text-[9px] font-bold text-slate-400 uppercase tracking-wider">Invoice #</th>
                     <th className="text-right px-4 py-2.5 text-[9px] font-bold text-slate-400 uppercase tracking-wider">Amount</th>
                     <th className="text-left px-4 py-2.5 text-[9px] font-bold text-slate-400 uppercase tracking-wider">Due / Paid Date</th>
@@ -862,12 +865,12 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
                     <th className="w-24 px-4 py-2.5" />
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
+                <tbody className="divide-y divide-slate-100 dark:divide-[#303030]/60">
                   {invs.map((inv: any) => {
                     const st = INV_STATUS[inv.status] || INV_STATUS.draft;
                     const isOverdue = inv.status !== "paid" && inv.dueDate && new Date(inv.dueDate) < new Date();
                     return (
-                      <tr key={inv.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                      <tr key={inv.id} className="hover:bg-slate-50 dark:hover:bg-[#303030]/40 transition-colors">
                         <td className="px-4 py-3 font-mono text-[11px] font-bold text-slate-600 dark:text-slate-300">{inv.invoiceNumber}</td>
                         <td className="px-4 py-3 text-right font-extrabold text-slate-900 dark:text-white">${(inv.amount || 0).toLocaleString()}</td>
                         <td className="px-4 py-3 text-slate-500 whitespace-nowrap">
@@ -875,7 +878,7 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
                             ? <span className="text-emerald-600 font-semibold">Paid {inv.paidDate}</span>
                             : inv.dueDate
                               ? <span className={cn(isOverdue && "text-rose-500 font-bold")}>{inv.dueDate}</span>
-                              : "—"}
+                              : "â€”"}
                         </td>
                         <td className="px-4 py-3">
                           <span className={cn("text-[9px] font-bold px-2 py-0.5 rounded border", st.pill)}>{st.label}</span>
@@ -900,20 +903,20 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
 
       </div>{/* /grid */}
 
-      {/* ── EDIT DRAWER ─────────────────────────────────────────────────────── */}
+      {/* â”€â”€ EDIT DRAWER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {editOpen && (
         <>
           <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40" onClick={() => setEditOpen(false)} />
-          <div className="fixed right-0 top-0 h-full w-full max-w-[540px] bg-white dark:bg-slate-950 z-50 shadow-2xl flex flex-col">
+          <div className="fixed right-0 top-0 h-full w-full max-w-[540px] bg-white dark:bg-[#1f1f1f] z-50 shadow-2xl flex flex-col">
 
-            <div className="shrink-0 px-6 pt-5 pb-4 border-b border-slate-200 dark:border-slate-800">
+            <div className="shrink-0 px-6 pt-5 pb-4 border-b border-slate-200 dark:border-[#303030]">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Edit Project</p>
                   <h2 className="text-base font-bold text-slate-900 dark:text-white mt-0.5 truncate max-w-[360px]">{project.name}</h2>
                 </div>
                 <button onClick={() => setEditOpen(false)}
-                  className="h-8 w-8 rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer shrink-0">
+                  className="h-8 w-8 rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#303030] transition-all cursor-pointer shrink-0">
                   <X className="h-4 w-4" />
                 </button>
               </div>
@@ -924,7 +927,7 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
 
                 {/* Core */}
                 <section>
-                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-3 pb-1 border-b border-slate-100 dark:border-slate-800">Core Info</p>
+                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-3 pb-1 border-b border-slate-100 dark:border-[#303030]">Core Info</p>
                   <div className="space-y-3">
                     <div>
                       <label className={LABEL}>Project Name *</label>
@@ -963,7 +966,7 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
                           return (
                             <button key={u.id} type="button"
                               onClick={() => ef({ teamMemberIds: checked ? (editForm.teamMemberIds || []).filter((id: number) => id !== u.id) : [...(editForm.teamMemberIds || []), u.id] })}
-                              className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-all cursor-pointer ${checked ? "bg-brand-500 border-brand-500 text-white" : "border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-brand-400"}`}
+                              className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-all cursor-pointer ${checked ? "bg-brand-500 border-brand-500 text-white" : "border-slate-200 dark:border-[#3f3f3f] text-slate-600 dark:text-slate-300 hover:border-brand-400"}`}
                             >{u.name}</button>
                           );
                         })}
@@ -974,7 +977,7 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
 
                 {/* Timeline */}
                 <section>
-                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-3 pb-1 border-b border-slate-100 dark:border-slate-800">Timeline</p>
+                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-3 pb-1 border-b border-slate-100 dark:border-[#303030]">Timeline</p>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className={LABEL}>Start Date</label>
@@ -989,7 +992,7 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
 
                 {/* Financials */}
                 <section>
-                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-3 pb-1 border-b border-slate-100 dark:border-slate-800">Financials</p>
+                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-3 pb-1 border-b border-slate-100 dark:border-[#303030]">Financials</p>
                   <div className="space-y-3">
                     <div>
                       <label className={LABEL}>Billing Model</label>
@@ -1025,7 +1028,7 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
 
                 {/* Client contact */}
                 <section>
-                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-3 pb-1 border-b border-slate-100 dark:border-slate-800">Client Contact</p>
+                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-3 pb-1 border-b border-slate-100 dark:border-[#303030]">Client Contact</p>
                   <div className="space-y-3">
                     <div>
                       <label className={LABEL}>Contact Name</label>
@@ -1044,11 +1047,11 @@ ${Object.entries(sd).filter(([, v]) => v).map(([k, v]) => `<tr><td>${k}</td><td>
 
               </div>
 
-              <div className="shrink-0 px-6 py-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-900/20 flex items-center justify-end gap-3">
+              <div className="shrink-0 px-6 py-4 border-t border-slate-200 dark:border-[#303030] bg-slate-50/40 dark:bg-[#303030]/20 flex items-center justify-end gap-3">
                 <Button type="button" variant="outline" size="sm" onClick={() => setEditOpen(false)}>Cancel</Button>
                 <Button type="submit" size="sm" disabled={editSaving}
                   className="bg-brand-600 text-white font-bold min-w-[130px] justify-center">
-                  {editSaving ? "Saving…" : <><CheckCircle2 className="h-4 w-4 mr-1.5" />Save Changes</>}
+                  {editSaving ? "Savingâ€¦" : <><CheckCircle2 className="h-4 w-4 mr-1.5" />Save Changes</>}
                 </Button>
               </div>
             </form>

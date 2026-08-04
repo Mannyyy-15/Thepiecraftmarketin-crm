@@ -21,6 +21,7 @@ import {
   Eye
 } from "lucide-react";
 import { DocumentsPageSkeleton } from "@/components/ui/Skeleton";
+import { useRememberedCount } from "@/hooks/useRememberedCount";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
@@ -58,6 +59,7 @@ export default function DocumentsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [customFolders, setCustomFolders] = useState<string[]>([]);
+  const { skeletonCount: fileRowCount, record: recordFileRowCount } = useRememberedCount("admin:documents:files", 3);
 
   // Modals & form state
   const [showFolderModal, setShowFolderModal] = useState(false);
@@ -100,6 +102,7 @@ export default function DocumentsPage() {
     const res = await getDocuments();
     if (res && res.success && res.data) {
       setFiles(res.data);
+      recordFileRowCount(res.data.length);
     }
     const clientsRes = await getClients();
     if (clientsRes.success && clientsRes.data) {
@@ -343,7 +346,7 @@ export default function DocumentsPage() {
     return fName.includes(q) || fClient.includes(q) || fOwner.includes(q) || fType.includes(q);
   });
 
-  if (isLoading) return <DocumentsPageSkeleton />;
+  if (isLoading) return <DocumentsPageSkeleton fileRowCount={fileRowCount} />;
 
   return (
     <div className="space-y-6">
@@ -352,7 +355,7 @@ export default function DocumentsPage() {
         title="Documents"
         actions={
           <div className="flex gap-2">
-            <Button variant="outline" size="md" onClick={() => setShowFolderModal(true)} className="border border-slate-200 dark:border-[#303030] text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-900 font-semibold text-xs">
+            <Button variant="outline" size="md" onClick={() => setShowFolderModal(true)} className="border border-slate-200 dark:border-[#303030] text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-[#303030] font-semibold text-xs">
               <Plus className="h-4 w-4 mr-1 text-indigo-500" />
               New Folder
             </Button>
@@ -376,7 +379,7 @@ export default function DocumentsPage() {
                     e.stopPropagation();
                     setOpenFolderDropdownId(openFolderDropdownId === f.name ? null : f.name);
                   }}
-                  className={`p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:hover:text-slate-200 dark:hover:bg-slate-800 transition-all ${openFolderDropdownId === f.name ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
+                  className={`p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:hover:text-slate-200 dark:hover:bg-[#303030] transition-all ${openFolderDropdownId === f.name ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
                 >
                   <MoreHorizontal className="h-4 w-4" />
                 </button>
@@ -401,19 +404,19 @@ export default function DocumentsPage() {
                 <Folder className="h-5 w-5" />
               </div>
               <p className="text-sm font-semibold text-slate-900 dark:text-white truncate pr-6">{f.name}</p>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 tabular-nums">{f.files} files • {f.size}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 tabular-nums">{f.files} files â€¢ {f.size}</p>
             </Card>
           ))}
         </div>
       </div>
 
       {/* Main Files Table Card */}
-      <Card className="border border-slate-200 dark:border-slate-850">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 sm:p-5 border-b border-slate-200 dark:border-[#303030] bg-slate-50/50 dark:bg-slate-950/20">
+      <Card className="border border-slate-200 dark:border-[#303030]">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 sm:p-5 border-b border-slate-200 dark:border-[#303030] bg-slate-50/50 dark:bg-[#1f1f1f]/20">
           <div className="flex items-center gap-3">
             {activeFolder && (
               <Button variant="outline" size="sm" onClick={() => setActiveFolder(null)} className="h-8 px-2">
-                ← Back
+                â† Back
               </Button>
             )}
             <div>
@@ -427,7 +430,7 @@ export default function DocumentsPage() {
             <Search className="pointer-events-none absolute inset-y-0 left-3 h-full w-4 text-slate-400" />
             <input
               type="search"
-              placeholder="Search files by name, client, owner…"
+              placeholder="Search files by name, client, ownerâ€¦"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="h-9 w-full rounded-2xl border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] pl-9 pr-3 text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/40 text-slate-800 dark:text-white"
@@ -436,9 +439,9 @@ export default function DocumentsPage() {
         </div>
         <div className="w-full">
           <table className="w-full text-sm">
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+            <tbody className="divide-y divide-slate-100 dark:divide-[#303030]">
               {filteredFiles.map((d) => (
-                <tr key={d.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-900/40 group">
+                <tr key={d.id} className="hover:bg-slate-50/60 dark:hover:bg-[#303030]/40 group">
                   <td className="px-5 py-3.5">
                     <div className="flex items-center gap-3">
                       <div className={`h-9 w-9 rounded-2xl flex items-center justify-center shrink-0 ${typeColor[d.type] ?? "bg-slate-100 dark:bg-[#303030] text-slate-500"}`}>
@@ -446,14 +449,14 @@ export default function DocumentsPage() {
                       </div>
                       {d.url ? (
                         <a href={d.url} target="_blank" rel="noopener noreferrer" className="font-semibold text-brand-600 hover:underline truncate max-w-[200px] sm:max-w-xs flex items-center gap-1">
-                          {d.name} <span className="text-[10px] opacity-70">(Link ↗)</span>
+                          {d.name} <span className="text-[10px] opacity-70">(Link â†—)</span>
                         </a>
                       ) : (
                         <span className="font-semibold text-slate-900 dark:text-white truncate max-w-[200px] sm:max-w-xs">{d.name}</span>
                       )}
                     </div>
                   </td>
-                  <td className="px-5 py-3.5 hidden md:table-cell text-slate-650 dark:text-slate-350 font-semibold text-xs">{d.clientName || "—"}</td>
+                  <td className="px-5 py-3.5 hidden md:table-cell text-slate-650 dark:text-slate-350 font-semibold text-xs">{d.clientName || "â€”"}</td>
                   <td className="px-5 py-3.5 hidden sm:table-cell">
                     <div className="flex items-center gap-2">
                       <Avatar name={d.ownerName} size="xs" />
@@ -469,7 +472,7 @@ export default function DocumentsPage() {
                       <button 
                         aria-label="More Options" 
                         onClick={() => setOpenDropdownId(openDropdownId === d.id ? null : d.id)}
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#303030] cursor-pointer"
                       >
                         <MoreHorizontal className="h-4 w-4" />
                       </button>
@@ -477,12 +480,12 @@ export default function DocumentsPage() {
                     {openDropdownId === d.id && (
                       <div className="absolute right-10 top-10 mt-1 w-32 bg-white dark:bg-[#1f1f1f] border border-slate-200 dark:border-[#303030] rounded-2xl shadow-xl z-50 py-1 flex flex-col animate-scaleIn">
                         {d.url && (
-                          <button onClick={() => { setPreviewDoc({url: d.url, name: d.name}); setOpenDropdownId(null); }} className="flex items-center gap-2 px-3 py-2 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 w-full text-left transition-colors">
+                          <button onClick={() => { setPreviewDoc({url: d.url, name: d.name}); setOpenDropdownId(null); }} className="flex items-center gap-2 px-3 py-2 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#303030] w-full text-left transition-colors">
                             <Eye className="h-3.5 w-3.5" /> Preview
                           </button>
                         )}
                         {d.url && (
-                          <a href={d.url} download={d.name} className="flex items-center gap-2 px-3 py-2 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 w-full text-left transition-colors" onClick={() => setOpenDropdownId(null)}>
+                          <a href={d.url} download={d.name} className="flex items-center gap-2 px-3 py-2 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#303030] w-full text-left transition-colors" onClick={() => setOpenDropdownId(null)}>
                             <Download className="h-3.5 w-3.5" /> Download
                           </a>
                         )}
@@ -508,10 +511,10 @@ export default function DocumentsPage() {
       </Card>
 
       {/* ========================================================================= */}
-      {/* 📁 MODAL: NEW FOLDER */}
+      {/* ðŸ“ MODAL: NEW FOLDER */}
       {/* ========================================================================= */}
       {showFolderModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/40 dark:bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-slate-950/40 dark:bg-[#1f1f1f]/70 backdrop-blur-md flex items-center justify-center p-4">
           <Card className="w-full max-w-md animate-scaleIn border border-indigo-500/25 shadow-2xl">
             <CardHeader className="py-4 border-b dark:border-[#303030]">
               <div className="flex justify-between items-center">
@@ -546,10 +549,10 @@ export default function DocumentsPage() {
       )}
 
       {/* ========================================================================= */}
-      {/* 📤 MODAL: UPLOAD FILE */}
+      {/* ðŸ“¤ MODAL: UPLOAD FILE */}
       {/* ========================================================================= */}
       {showUploadModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/40 dark:bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-slate-950/40 dark:bg-[#1f1f1f]/70 backdrop-blur-md flex items-center justify-center p-4">
           <Card className="w-full max-w-md animate-scaleIn border border-indigo-500/25 shadow-2xl">
             <CardHeader className="py-4 border-b dark:border-[#303030]">
               <div className="flex justify-between items-center">
@@ -615,7 +618,7 @@ export default function DocumentsPage() {
       )}
 
       {/* ========================================================================= */}
-      {/* 📝 MODAL: DRAFT PROPOSAL / SOW WITH SIGNATURE DRAWING PAD */}
+      {/* ðŸ“ MODAL: DRAFT PROPOSAL / SOW WITH SIGNATURE DRAWING PAD */}
       {/* ========================================================================= */}
 
       {/* ========================================================================= */}

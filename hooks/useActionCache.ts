@@ -38,7 +38,7 @@ export function clearPersistentCache() {
     const keysToRemove: string[] = [];
     for (let i = 0; i < window.localStorage.length; i++) {
       const k = window.localStorage.key(i);
-      if (k?.startsWith("crm.cache.")) keysToRemove.push(k);
+      if (k?.startsWith("crm.cache.") || k?.startsWith("crm.count.")) keysToRemove.push(k);
     }
     keysToRemove.forEach((k) => window.localStorage.removeItem(k));
   } catch {

@@ -8,6 +8,7 @@ import {
   CircleDollarSign,
   Globe,
   MoreHorizontal,
+  Target,
   Users,
 } from "lucide-react";
 import {
@@ -31,9 +32,10 @@ import { Avatar, AvatarGroup } from "@/components/ui/Avatar";
 import { Progress } from "@/components/ui/Progress";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { ActivityFeedSkeleton } from "@/components/ui/Skeleton";
+import { ActivityFeedSkeleton, TableRowsSkeleton } from "@/components/ui/Skeleton";
 import { getActivityFeed, getAdminDashboardData } from "@/app/actions/crm";
 import { getProjectStatusVariant, getProjectStatusLabel } from "@/lib/statusHelpers";
+import { useRememberedCount } from "@/hooks/useRememberedCount";
 
 const channelColors = ["#3b82f6", "#14B8A6", "#F59E0B", "#F43F5E"];
 
@@ -50,6 +52,7 @@ export default function DashboardPage() {
     revenueData: any[];
     channelData: any[];
   } | null>(null);
+  const { skeletonCount: projectRowCount, record: recordProjectRowCount } = useRememberedCount("admin:dashboard:projects", 3);
 
   useEffect(() => {
     getActivityFeed(10)
@@ -59,6 +62,7 @@ export default function DashboardPage() {
     getAdminDashboardData().then(res => {
       if (res.success) {
         setDashboardData(res.data);
+        recordProjectRowCount(res.data?.recentProjects?.length ?? 0);
       }
     });
   }, []);
@@ -262,6 +266,17 @@ export default function DashboardPage() {
               View all <ArrowRight className="h-3.5 w-3.5" />
             </Button>
           </CardHeader>
+          {dashboardData === null ? (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <tbody className="divide-y divide-[#f0f0f2] dark:divide-[#303030]">
+                  <TableRowsSkeleton rows={projectRowCount} cols={5} />
+                </tbody>
+              </table>
+            </div>
+          ) : dashboardData.recentProjects.length === 0 ? (
+            <EmptyState icon={<Target className="h-5 w-5" />} title="No projects yet" description="Create your first project to see it here." />
+          ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="text-xs uppercase tracking-wider text-[#8888a0] dark:text-[#9999a8] bg-[#f7f7f9] dark:bg-[#1f1f1f]">
@@ -313,6 +328,7 @@ export default function DashboardPage() {
               </tbody>
             </table>
           </div>
+          )}
         </Card>
 
         <Card>

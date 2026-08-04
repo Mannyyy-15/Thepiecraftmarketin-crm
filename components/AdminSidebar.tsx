@@ -32,6 +32,7 @@ import { Avatar } from "@/components/ui/Avatar";
 import { LogoutConfirmModal } from "@/components/ui/LogoutConfirmModal";
 import { logout } from "@/app/actions/auth";
 import { clearCurrentUserCache, getCurrentUserCached } from "@/lib/currentUserClient";
+import { clearPersistentCache } from "@/hooks/useActionCache";
 
 const navigationSections = [
   {
@@ -100,6 +101,7 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
     const res = await logout();
     if (res.success) {
       clearCurrentUserCache();
+      clearPersistentCache();
       router.push("/login");
     }
     setIsLoggingOut(false);
@@ -173,7 +175,7 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
         <Link
           href="/admin/settings"
           onClick={onNavigate}
-          className="flex flex-1 items-center gap-3 rounded-xl p-2 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors cursor-pointer min-w-0"
+          className="flex flex-1 items-center gap-3 rounded-xl p-2 hover:bg-slate-50 dark:hover:bg-[#303030] transition-colors cursor-pointer min-w-0"
         >
           <Avatar name={user?.name || "Admin"} role={user?.role} src={user?.avatarUrl} status="online" size="sm" />
           <div className="flex flex-col min-w-0">
@@ -244,7 +246,7 @@ export default function AdminSidebar({
               <div className="relative h-full">
                 <button
                   onClick={onClose}
-                  className="icon-button absolute top-4 right-4 z-10 text-slate-500 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                  className="icon-button absolute top-4 right-4 z-10 text-slate-500 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#303030] cursor-pointer"
                   aria-label="Close menu"
                 >
                   <X className="h-5 w-5" />

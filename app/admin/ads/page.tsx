@@ -21,6 +21,7 @@ import {
   Zap,
 } from "lucide-react";
 import { AdsPageSkeleton } from "@/components/ui/Skeleton";
+import { EmptyState } from "@/components/ui/EmptyState";
 import {
   Bar,
   BarChart,
@@ -460,6 +461,9 @@ export default function AdsPage() {
             <TrendingUp className="h-3.5 w-3.5 mr-1.5" /> {sortByRoas ? "Reset Sort" : "Sort by ROAS"}
           </Button>
         </CardHeader>
+        {processedCampaigns.length === 0 ? (
+          <EmptyState icon={<Target className="h-5 w-5" />} title="No campaigns yet" description="Create your first campaign to see it here." />
+        ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="text-[10px] uppercase tracking-widest font-extrabold text-slate-400 bg-slate-100/50 dark:bg-[#1f1f1f]/80">
@@ -537,6 +541,7 @@ export default function AdsPage() {
             </tbody>
           </table>
         </div>
+        )}
       </Card>
     </motion.div>
   );

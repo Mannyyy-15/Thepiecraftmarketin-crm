@@ -32,6 +32,7 @@ import { useEffect, useState } from "react";
 import { Avatar } from "@/components/ui/Avatar";
 import { logout } from "@/app/actions/auth";
 import { clearCurrentUserCache, getCurrentUserCached } from "@/lib/currentUserClient";
+import { clearPersistentCache } from "@/hooks/useActionCache";
 import { LogoutConfirmModal } from "@/components/ui/LogoutConfirmModal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { getMyNotifications, markAllNotificationsRead, markNotificationRead, dismissNotification, getGlobalSearchData, quickAddClient, quickAddProject, quickAddTimesheet, quickAddExpense } from "@/app/actions/crm";
@@ -143,6 +144,7 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
     const res = await logout();
     if (res.success) {
       clearCurrentUserCache();
+      clearPersistentCache();
       router.push("/login");
     }
     setIsLoggingOut(false);
@@ -185,7 +187,7 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
             _time: formatNotifTime(n.createdAt),
           })));
         }
-      } catch { /* silent — server not ready yet */ }
+      } catch { /* silent â€” server not ready yet */ }
     };
     const poll = async () => {
       if (stopped || running || document.visibilityState !== "visible") return;
@@ -253,9 +255,9 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
 
   // Search Engine Database Feed
   const searchItems: SearchItem[] = [
-    ...searchData.clients.map((c) => ({ title: c.name, category: "Client" as const, url: `/admin/clients/${c.id}`, details: `${c.industry || "Client"} • ID #${c.id}` })),
-    ...searchData.projects.map((p) => ({ title: p.name, category: "Project" as const, url: `/admin/projects/${p.id}`, details: `${(p.projectType || 'standard').replace('_', ' ').toUpperCase()} • Budget: ₹${(p.budget || 0).toLocaleString()}` })),
-    ...searchData.users.map((u) => ({ title: u.name, category: "Team" as const, url: `/admin/team?member=${u.id}`, details: `${u.systemRole || u.role || 'Member'} • ${u.email}` })),
+    ...searchData.clients.map((c) => ({ title: c.name, category: "Client" as const, url: `/admin/clients/${c.id}`, details: `${c.industry || "Client"} â€¢ ID #${c.id}` })),
+    ...searchData.projects.map((p) => ({ title: p.name, category: "Project" as const, url: `/admin/projects/${p.id}`, details: `${(p.projectType || 'standard').replace('_', ' ').toUpperCase()} â€¢ Budget: â‚¹${(p.budget || 0).toLocaleString()}` })),
+    ...searchData.users.map((u) => ({ title: u.name, category: "Team" as const, url: `/admin/team?member=${u.id}`, details: `${u.systemRole || u.role || 'Member'} â€¢ ${u.email}` })),
     { title: "Team & Roster Attendance Tracker", category: "Page", url: "/admin/team", details: "View shifts, log leaves & customize work days" },
     { title: "Onboarding Funnel Board", category: "Page", url: "/admin/clients", details: "Kanban pipeline, checklists & custom clients" },
     { title: "Meta Ads Campaign Manager", category: "Page", url: "/admin/ads", details: "Track campaigns, ROAS, budgets & live charts" },
@@ -314,7 +316,7 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
     if (!qExpenseAmount) return;
     const res = await quickAddExpense(Number(qExpenseAmount), qExpenseDesc || "Quick expense");
     if (res.success) {
-      addToast(`Expense claim for ₹${qExpenseAmount} submitted successfully.`);
+      addToast(`Expense claim for â‚¹${qExpenseAmount} submitted successfully.`);
       setQExpenseAmount("");
       setQExpenseDesc("");
       setActiveModal(null);
@@ -330,14 +332,14 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
         <button
           type="button"
           onClick={onMenuClick}
-          className="lg:hidden -ml-2 inline-flex h-9 w-9 items-center justify-center rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+          className="lg:hidden -ml-2 inline-flex h-9 w-9 items-center justify-center rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#303030] cursor-pointer"
           aria-label="Open menu"
         >
           <Menu className="h-5 w-5" />
         </button>
       )}
 
-      {/* Company name — visible on mobile, replaces breadcrumb on desktop */}
+      {/* Company name â€” visible on mobile, replaces breadcrumb on desktop */}
       <div className="flex items-center gap-2">
         <span className="font-bold text-slate-900 dark:text-white text-sm tracking-tight">ThePieCraft</span>
       </div>
@@ -353,7 +355,7 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
         >
           <Search className="pointer-events-none absolute inset-y-0 left-3 h-full w-4 text-slate-400 group-hover:text-brand-500 transition-colors" />
           <div className="h-9 w-full rounded-xl border border-[#e8e8ed] dark:border-[#303030] bg-[#f7f7f9] dark:bg-[#303030] pl-9 pr-12 text-sm text-[#8888a0] dark:text-[#5a5a68] flex items-center select-none">
-            Search clients, projects, settings…
+            Search clients, projects, settingsâ€¦
           </div>
           <kbd className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center gap-0.5 rounded-md border border-slate-200 dark:border-[#38383f] bg-white dark:bg-[#303030] px-1.5 py-0.5 text-[10px] font-medium text-slate-500 dark:text-[#9999a8]">
             <Command className="h-2.5 w-2.5" />K
@@ -478,7 +480,7 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
           }}
         />
 
-        {/* Profile avatar + dropdown — visible on all screen sizes */}
+        {/* Profile avatar + dropdown â€” visible on all screen sizes */}
         <div className="relative ml-1">
           <button
             type="button"
@@ -518,11 +520,11 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
       </header>
 
       {/* ========================================================================= */}
-      {/* 🔍 SEARCH PALETTE / COMMAND DIALOG OVERLAY */}
+      {/* ðŸ” SEARCH PALETTE / COMMAND DIALOG OVERLAY */}
       {/* ========================================================================= */}
       {showSearchModal && (
         <div 
-          className="fixed inset-0 z-50 bg-slate-950/40 dark:bg-slate-950/70 backdrop-blur-md flex items-start justify-center pt-[10vh] px-4 animate-fadeIn"
+          className="fixed inset-0 z-50 bg-slate-950/40 dark:bg-[#1f1f1f]/70 backdrop-blur-md flex items-start justify-center pt-[10vh] px-4 animate-fadeIn"
           onClick={() => setShowSearchModal(false)}
         >
           <div
@@ -597,12 +599,12 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
       )}
 
       {/* ========================================================================= */}
-      {/* 🎁 FLOATING QUICK ACTION MODALS OVERLAYS */}
+      {/* ðŸŽ FLOATING QUICK ACTION MODALS OVERLAYS */}
       {/* ========================================================================= */}
       
       {/* 1. Client Onboard Modal */}
       {activeModal === "client" && (
-        <div className="fixed inset-0 z-50 bg-slate-950/40 dark:bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-slate-950/40 dark:bg-[#1f1f1f]/70 backdrop-blur-md flex items-center justify-center p-4">
           <Card className="w-full max-w-md animate-scaleIn border border-brand-500/20 shadow-2xl">
             <CardHeader className="py-4 border-b dark:border-[#303030]">
               <div className="flex justify-between items-center">
@@ -652,7 +654,7 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
 
       {/* 2. Create Project Modal */}
       {activeModal === "project" && (
-        <div className="fixed inset-0 z-50 bg-slate-950/40 dark:bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-slate-950/40 dark:bg-[#1f1f1f]/70 backdrop-blur-md flex items-center justify-center p-4">
           <Card className="w-full max-w-md animate-scaleIn border border-brand-500/20 shadow-2xl">
             <CardHeader className="py-4 border-b dark:border-[#303030]">
               <div className="flex justify-between items-center">
@@ -717,7 +719,7 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
 
       {/* 4. Log Billable Hours Modal */}
       {activeModal === "hours" && (
-        <div className="fixed inset-0 z-50 bg-slate-950/40 dark:bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-slate-950/40 dark:bg-[#1f1f1f]/70 backdrop-blur-md flex items-center justify-center p-4">
           <Card className="w-full max-w-md animate-scaleIn border border-brand-500/20 shadow-2xl">
             <CardHeader className="py-4 border-b dark:border-[#303030]">
               <div className="flex justify-between items-center">
@@ -762,7 +764,7 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
 
       {/* 5. Submit Expense Claim Modal */}
       {activeModal === "expense" && (
-        <div className="fixed inset-0 z-50 bg-slate-950/40 dark:bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-slate-950/40 dark:bg-[#1f1f1f]/70 backdrop-blur-md flex items-center justify-center p-4">
           <Card className="w-full max-w-md animate-scaleIn border border-brand-500/20 shadow-2xl">
             <CardHeader className="py-4 border-b dark:border-[#303030]">
               <div className="flex justify-between items-center">
@@ -809,7 +811,7 @@ export default function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
       )}
 
       {/* ========================================================================= */}
-      {/* 🚀 GLOWING TOASTS NOTIFICATION MESSAGING CONTAINER */}
+      {/* ðŸš€ GLOWING TOASTS NOTIFICATION MESSAGING CONTAINER */}
       {/* ========================================================================= */}
       <div className="fixed bottom-5 right-5 z-55 flex flex-col gap-2.5 max-w-sm w-full pointer-events-none">
         {toasts.map((t) => (

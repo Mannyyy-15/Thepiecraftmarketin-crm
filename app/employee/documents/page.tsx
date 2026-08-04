@@ -13,6 +13,7 @@ import {
   Upload,
 } from "lucide-react";
 import { DocumentsPageSkeleton } from "@/components/ui/Skeleton";
+import { useRememberedCount } from "@/hooks/useRememberedCount";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
@@ -40,12 +41,14 @@ export default function DocumentsPage() {
   const [files, setFiles] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const { skeletonCount: fileRowCount, record: recordFileRowCount } = useRememberedCount("employee:documents:files", 3);
 
   const fetchData = async () => {
     setIsLoading(true);
     const res = await getDocuments();
     if (res && res.success && res.data) {
       setFiles(res.data);
+      recordFileRowCount(res.data.length);
     }
     setIsLoading(false);
   };
@@ -112,7 +115,7 @@ export default function DocumentsPage() {
     return fName.includes(q) || fClient.includes(q) || fOwner.includes(q) || fType.includes(q);
   });
 
-  if (isLoading) return <DocumentsPageSkeleton />;
+  if (isLoading) return <DocumentsPageSkeleton fileRowCount={fileRowCount} />;
 
   return (
     <div className="space-y-6">

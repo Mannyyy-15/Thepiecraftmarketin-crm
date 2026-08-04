@@ -11,6 +11,7 @@ import { EMPLOYEE_PERMISSIONS, parseEmployeePermissions, type EmployeePermission
 import { EmptyState } from "@/components/ui/EmptyState";
 import { getMemberStatusVariant, getMemberStatusLabel } from "@/lib/statusHelpers";
 import { MemberGridSkeleton, CalendarSkeleton, Skeleton, TaskListSkeleton } from "@/components/ui/Skeleton";
+import { useRememberedCount } from "@/hooks/useRememberedCount";
 import {
   Mail,
   MoreHorizontal,
@@ -87,6 +88,7 @@ export default function TeamPage() {
 
   // Stateful members list loaded from the database
   const [members, setMembers] = useState<any[]>([]);
+  const { skeletonCount: memberSkeletonCount, record: recordMemberCount } = useRememberedCount("admin:team", 3);
 
   // Invite member form toggle & input fields
   const [showInviteForm, setShowInviteForm] = useState(searchParams.get("invite") === "1");
@@ -518,6 +520,7 @@ export default function TeamPage() {
           };
         });
         setMembers(mapped);
+        recordMemberCount(mapped.length);
         const nonAdmins = mapped.filter((m: any) => m.roleRaw !== "admin");
         if (nonAdmins.length > 0 && !selectedEmp) {
           setSelectedEmp(nonAdmins[0].id);
@@ -2250,7 +2253,7 @@ export default function TeamPage() {
           <div className="space-y-6">
             <Skeleton className="h-10 w-full max-w-md rounded-2xl" />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {Array.from({ length: 8 }).map((_, i) => (
+              {Array.from({ length: memberSkeletonCount }).map((_, i) => (
                 <div key={i} className="rounded-[20px] border border-slate-200 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] overflow-hidden">
                   <div className="relative">
                     <Skeleton className="h-16 w-full rounded-none" />
@@ -2294,6 +2297,13 @@ export default function TeamPage() {
             </div>
 
             {/* Roster Grid */}
+            {filteredTeam.length === 0 ? (
+              <EmptyState
+                icon={<Users className="h-5 w-5" />}
+                title={searchQuery ? "No matching team members" : "No team members yet"}
+                description={searchQuery ? "Try a different search term." : "Invite your first employee to see them here."}
+              />
+            ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {filteredTeam.map((m) => {
                 const isNonAdmin = m.roleRaw !== "admin";
@@ -2407,6 +2417,7 @@ export default function TeamPage() {
                 );
               })}
             </div>
+            )}
           </div>
         )
       ) : isTeamLoading ? (

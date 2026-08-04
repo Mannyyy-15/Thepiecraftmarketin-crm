@@ -15,6 +15,7 @@ import {
   CheckCircle2, XCircle, Coins, DollarSign
 } from "lucide-react";
 import { FinancePageSkeleton } from "@/components/ui/Skeleton";
+import { useRememberedCount } from "@/hooks/useRememberedCount";
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer 
 } from "recharts";
@@ -23,12 +24,14 @@ export default function FinanceDashboard() {
   const [data, setData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isActioning, setIsActioning] = useState(false);
+  const { skeletonCount: arRowCount, record: recordArRowCount } = useRememberedCount("admin:finance:invoices", 3);
 
   const fetchData = async () => {
     setIsLoading(true);
     const res = await getFinanceDashboardData();
     if (res && res.success && res.data) {
       setData(res.data);
+      recordArRowCount(res.data?.invoices?.length ?? 0);
     }
     setIsLoading(false);
   };
@@ -51,7 +54,7 @@ export default function FinanceDashboard() {
     setIsActioning(false);
   };
 
-  if (isLoading) return <FinancePageSkeleton />;
+  if (isLoading) return <FinancePageSkeleton arRowCount={arRowCount} />;
 
   const dRevenue = data?.revenue ?? 0;
   const dPending = data?.pendingAR ?? 0;
@@ -82,7 +85,7 @@ export default function FinanceDashboard() {
             <div className="flex justify-between items-start">
               <div>
                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Total Revenue</p>
-                <h3 className="text-3xl font-black text-slate-900 dark:text-white">₹{dRevenue.toLocaleString()}</h3>
+                <h3 className="text-3xl font-black text-slate-900 dark:text-white">â‚¹{dRevenue.toLocaleString()}</h3>
               </div>
               <div className="h-10 w-10 bg-emerald-500/20 rounded-2xl flex items-center justify-center text-emerald-600 dark:text-emerald-400">
                 <Wallet className="h-5 w-5" />
@@ -96,7 +99,7 @@ export default function FinanceDashboard() {
             <div className="flex justify-between items-start">
               <div>
                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Pending Cash (A/R)</p>
-                <h3 className="text-3xl font-black text-slate-900 dark:text-white">₹{dPending.toLocaleString()}</h3>
+                <h3 className="text-3xl font-black text-slate-900 dark:text-white">â‚¹{dPending.toLocaleString()}</h3>
               </div>
               <div className="h-10 w-10 bg-indigo-500/20 rounded-2xl flex items-center justify-center text-indigo-600 dark:text-indigo-400">
                 <FileText className="h-5 w-5" />
@@ -110,7 +113,7 @@ export default function FinanceDashboard() {
             <div className="flex justify-between items-start">
               <div>
                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Approved Costs</p>
-                <h3 className="text-3xl font-black text-slate-900 dark:text-white">₹{dCosts.toLocaleString()}</h3>
+                <h3 className="text-3xl font-black text-slate-900 dark:text-white">â‚¹{dCosts.toLocaleString()}</h3>
               </div>
               <div className="h-10 w-10 bg-rose-500/20 rounded-2xl flex items-center justify-center text-rose-600 dark:text-rose-400">
                 <TrendingDown className="h-5 w-5" />
@@ -124,7 +127,7 @@ export default function FinanceDashboard() {
             <div className="flex justify-between items-start">
               <div>
                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Net Margin</p>
-                <h3 className="text-3xl font-black text-slate-900 dark:text-white">₹{dMargin.toLocaleString()}</h3>
+                <h3 className="text-3xl font-black text-slate-900 dark:text-white">â‚¹{dMargin.toLocaleString()}</h3>
               </div>
               <div className="h-10 w-10 bg-blue-500/20 rounded-2xl flex items-center justify-center text-blue-600 dark:text-blue-400">
                 <TrendingUp className="h-5 w-5" />
@@ -171,7 +174,7 @@ export default function FinanceDashboard() {
                       axisLine={false} 
                       tickLine={false} 
                       tick={{ fill: '#64748b', fontSize: 12 }}
-                      tickFormatter={(value) => `₹${value/1000}k`}
+                      tickFormatter={(value) => `â‚¹${value/1000}k`}
                     />
                     <Tooltip 
                       contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', borderRadius: '12px', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
@@ -209,11 +212,11 @@ export default function FinanceDashboard() {
                     </thead>
                     <tbody className="text-sm">
                       {data.invoices.map((inv: any) => (
-                        <tr key={inv.id} className="border-b border-slate-100 dark:border-[#303030]/50 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                        <tr key={inv.id} className="border-b border-slate-100 dark:border-[#303030]/50 hover:bg-slate-50 dark:hover:bg-[#303030]/50 transition-colors">
                           <td className="py-3 px-2 font-semibold text-slate-900 dark:text-white">{inv.invoiceNumber}</td>
-                          <td className="py-3 px-2 text-slate-600 dark:text-slate-300">{inv.clientName || "—"}</td>
-                          <td className="py-3 px-2 text-slate-500 hidden sm:table-cell">{inv.dueDate || "—"}</td>
-                          <td className="py-3 px-2 text-right font-bold">₹{inv.amount.toLocaleString()}</td>
+                          <td className="py-3 px-2 text-slate-600 dark:text-slate-300">{inv.clientName || "â€”"}</td>
+                          <td className="py-3 px-2 text-slate-500 hidden sm:table-cell">{inv.dueDate || "â€”"}</td>
+                          <td className="py-3 px-2 text-right font-bold">â‚¹{inv.amount.toLocaleString()}</td>
                           <td className="py-3 px-2 text-right">
                             <select
                               value={inv.status}
@@ -254,7 +257,7 @@ export default function FinanceDashboard() {
         <div className="space-y-6">
           <Card className="border-slate-200 dark:border-[#303030] shadow-soft bg-white/50 dark:bg-[#1f1f1f]/50 backdrop-blur-xl relative overflow-hidden">
             {isActioning && (
-              <div className="absolute inset-0 z-10 bg-white/50 dark:bg-slate-950/50 backdrop-blur-sm flex items-center justify-center">
+              <div className="absolute inset-0 z-10 bg-white/50 dark:bg-[#1f1f1f]/50 backdrop-blur-sm flex items-center justify-center">
                 <Loader2 className="h-6 w-6 animate-spin text-indigo-500" />
               </div>
             )}
@@ -267,7 +270,7 @@ export default function FinanceDashboard() {
               <CardDescription>Approve contractor expenses and timesheets.</CardDescription>
             </CardHeader>
             <CardContent className="p-0">
-              <div className="divide-y divide-slate-100 dark:divide-slate-800/80">
+              <div className="divide-y divide-slate-100 dark:divide-[#303030]/80">
                 {/* EXPENSES */}
                 <div className="p-4 bg-slate-50/30 dark:bg-[#1f1f1f]/20">
                   <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Pending Expenses</h4>
@@ -308,7 +311,7 @@ export default function FinanceDashboard() {
                           <div className="flex justify-between items-start mb-2">
                             <div>
                               <p className="text-xs font-bold text-slate-900 dark:text-white">{ts.userName}</p>
-                              <p className="text-[10px] text-slate-500 mt-0.5">{ts.durationMinutes / 60} hours • {ts.date}</p>
+                              <p className="text-[10px] text-slate-500 mt-0.5">{ts.durationMinutes / 60} hours â€¢ {ts.date}</p>
                             </div>
                             <span className="text-sm font-black text-slate-600 dark:text-slate-300">~${ts.cost}</span>
                           </div>

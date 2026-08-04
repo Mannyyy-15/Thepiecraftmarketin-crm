@@ -25,6 +25,7 @@ import { Avatar } from "@/components/ui/Avatar";
 import { LogoutConfirmModal } from "@/components/ui/LogoutConfirmModal";
 import { logout } from "@/app/actions/auth";
 import { clearCurrentUserCache, getCurrentUserCached } from "@/lib/currentUserClient";
+import { clearPersistentCache } from "@/hooks/useActionCache";
 
 const navigation = [
   { name: "Home", href: "/employee", icon: Home },
@@ -68,6 +69,7 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
     const res = await logout();
     if (res.success) {
       clearCurrentUserCache();
+      clearPersistentCache();
       router.push("/login");
     }
     setIsLoggingOut(false);

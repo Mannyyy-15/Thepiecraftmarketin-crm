@@ -23,6 +23,7 @@ import {
   GaugeCircle
 } from "lucide-react";
 import { WebsiteDevPageSkeleton, Skeleton } from "@/components/ui/Skeleton";
+import { useRememberedCount } from "@/hooks/useRememberedCount";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
@@ -58,6 +59,8 @@ export default function WebsiteDevPage() {
   const [loading, setLoading] = useState(true);
   const [tasks, setTasks] = useState<WebsiteTask[]>([]);
   const [sitesList, setSitesList] = useState<any[]>([]);
+  const { skeletonCount: siteSkeletonCount, record: recordSiteCount } = useRememberedCount("client:webdev:sites", 2);
+  const { skeletonCount: taskSkeletonCount, record: recordTaskCount } = useRememberedCount("client:webdev:tasks", 3);
 
   // GitHub commits
   // GitHub commits & Site Inspector
@@ -125,10 +128,14 @@ export default function WebsiteDevPage() {
 
         setSitesList(mappedDomains);
         setTasks(mappedTasks);
+        recordSiteCount(mappedDomains.length);
+        recordTaskCount(mappedTasks.length);
       } else {
         // No web-dev data yet - show empty states rather than fake data.
         setSitesList([]);
         setTasks([]);
+        recordSiteCount(0);
+        recordTaskCount(0);
       }
       setLoading(false);
     })();
@@ -146,7 +153,7 @@ export default function WebsiteDevPage() {
     ? Math.round(knownResponse.reduce((acc, s) => acc + s.response, 0) / knownResponse.length)
     : null;
 
-  if (loading) return <WebsiteDevPageSkeleton />;
+  if (loading) return <WebsiteDevPageSkeleton siteCount={siteSkeletonCount} taskCount={taskSkeletonCount} />;
 
   return (
     <motion.div 

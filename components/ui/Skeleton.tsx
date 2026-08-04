@@ -229,14 +229,14 @@ export function TaskListSkeleton({ count = 4 }: { count?: number }) {
 
 // ─── Ads page full skeleton ──────────────────────────────────────────────────
 
-export function AdsPageSkeleton() {
+export function AdsPageSkeleton({ campaignCount = 6 }: { campaignCount?: number }) {
   return (
     <div className="space-y-6 pb-12">
       <PageHeaderSkeleton />
       <KpiCardsSkeleton count={4} />
       {/* Campaign tiles */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        {Array.from({ length: 6 }).map((_, i) => (
+        {Array.from({ length: campaignCount }).map((_, i) => (
           <div key={i} className="rounded-[20px] border border-slate-200/80 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] p-5 space-y-4">
             <div className="flex items-start justify-between gap-3">
               <div className="space-y-2 flex-1">
@@ -283,7 +283,11 @@ export function AdsPageSkeleton() {
 
 // ─── Website Dev page full skeleton ─────────────────────────────────────────
 
-export function WebsiteDevPageSkeleton() {
+export function WebsiteDevPageSkeleton({
+  siteCount = 4,
+  commitCount = 8,
+  taskCount = 5,
+}: { siteCount?: number; commitCount?: number; taskCount?: number } = {}) {
   return (
     <div className="space-y-6 pb-12">
       <PageHeaderSkeleton />
@@ -309,14 +313,14 @@ export function WebsiteDevPageSkeleton() {
             <Skeleton className="h-5 w-36" />
             <Skeleton className="h-8 w-24 rounded-2xl" />
           </div>
-          <TaskListSkeleton count={5} />
+          <TaskListSkeleton count={taskCount} />
         </div>
         <div className="rounded-[20px] border border-slate-200/80 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] p-5 space-y-3">
           <div className="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-[#303030]">
             <Skeleton className="h-5 w-32" />
             <Skeleton className="h-8 w-8 rounded-2xl" />
           </div>
-          {Array.from({ length: 4 }).map((_, i) => (
+          {Array.from({ length: siteCount }).map((_, i) => (
             <div key={i} className="rounded-2xl border border-slate-200 dark:border-[#303030] p-4 space-y-2">
               <div className="flex justify-between items-center">
                 <Skeleton className="h-4 w-32" />
@@ -334,7 +338,7 @@ export function WebsiteDevPageSkeleton() {
           <Skeleton className="h-8 w-36 rounded-2xl" />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
-          {Array.from({ length: 8 }).map((_, i) => (
+          {Array.from({ length: commitCount }).map((_, i) => (
             <div key={i} className="rounded-2xl border border-slate-200 dark:border-[#303030] bg-slate-50 dark:bg-[#1f1f1f]/60 p-3 space-y-2">
               <div className="flex items-center gap-2">
                 <Skeleton className="h-7 w-7 rounded-full shrink-0" />
@@ -356,7 +360,10 @@ export function WebsiteDevPageSkeleton() {
 
 // ─── Client detail page full skeleton ────────────────────────────────────────
 
-export function ClientDetailSkeleton() {
+export function ClientDetailSkeleton({
+  taskCount = 4,
+  activityCount = 4,
+}: { taskCount?: number; activityCount?: number } = {}) {
   return (
     <div className="space-y-5 pb-12">
       {/* Back nav */}
@@ -399,13 +406,13 @@ export function ClientDetailSkeleton() {
         <div className="lg:col-span-2 space-y-4">
           <div className="rounded-[20px] border border-slate-200/80 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] p-5 space-y-3">
             <Skeleton className="h-5 w-32" />
-            <TaskListSkeleton count={4} />
+            <TaskListSkeleton count={taskCount} />
           </div>
         </div>
         <div className="space-y-4">
           <div className="rounded-[20px] border border-slate-200/80 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] p-5 space-y-3">
             <Skeleton className="h-5 w-28" />
-            <ActivityFeedSkeleton count={4} />
+            <ActivityFeedSkeleton count={activityCount} />
           </div>
         </div>
       </div>
@@ -415,7 +422,10 @@ export function ClientDetailSkeleton() {
 
 // ─── Project detail page full skeleton ───────────────────────────────────────
 
-export function ProjectDetailSkeleton() {
+export function ProjectDetailSkeleton({
+  taskCount = 5,
+  activityCount = 5,
+}: { taskCount?: number; activityCount?: number } = {}) {
   return (
     <div className="space-y-5 pb-12">
       {/* Back nav */}
@@ -468,12 +478,12 @@ export function ProjectDetailSkeleton() {
             <Skeleton className="h-5 w-32" />
             <Skeleton className="h-8 w-24 rounded-2xl" />
           </div>
-          <TaskListSkeleton count={5} />
+          <TaskListSkeleton count={taskCount} />
         </div>
         <div className="space-y-4">
           <div className="rounded-[20px] border border-slate-200/80 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] p-5 space-y-3">
             <Skeleton className="h-5 w-28" />
-            <ActivityFeedSkeleton count={5} />
+            <ActivityFeedSkeleton count={activityCount} />
           </div>
         </div>
       </div>
@@ -483,7 +493,7 @@ export function ProjectDetailSkeleton() {
 
 // ─── Employee project board skeleton ─────────────────────────────────────────
 
-export function ProjectBoardSkeleton() {
+export function ProjectBoardSkeleton({ count = 6 }: { count?: number } = {}) {
   return (
     <div className="space-y-6">
       {/* Controls bar */}
@@ -493,7 +503,7 @@ export function ProjectBoardSkeleton() {
       </div>
       {/* Project cards grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        {Array.from({ length: 6 }).map((_, i) => (
+        {Array.from({ length: count }).map((_, i) => (
           <div
             key={i}
             className="rounded-[20px] border border-slate-200/80 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] p-5 space-y-4"
@@ -534,7 +544,7 @@ export function ProjectBoardSkeleton() {
 
 // ─── Finance page full skeleton ──────────────────────────────────────────────
 
-export function FinancePageSkeleton() {
+export function FinancePageSkeleton({ arRowCount = 5 }: { arRowCount?: number } = {}) {
   return (
     <div className="space-y-6 pb-12">
       <PageHeaderSkeleton />
@@ -547,7 +557,7 @@ export function FinancePageSkeleton() {
         </div>
         <div className="rounded-[20px] border border-slate-200/80 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] p-5 space-y-3">
           <Skeleton className="h-5 w-32" />
-          {Array.from({ length: 5 }).map((_, i) => (
+          {Array.from({ length: arRowCount }).map((_, i) => (
             <div key={i} className="flex items-center justify-between gap-3 py-1.5">
               <Skeleton className="h-9 w-9 rounded-2xl shrink-0" />
               <div className="flex-1 space-y-1.5">
@@ -579,7 +589,10 @@ export function FinancePageSkeleton() {
 
 // ─── Documents page full skeleton ────────────────────────────────────────────
 
-export function DocumentsPageSkeleton() {
+export function DocumentsPageSkeleton({
+  folderCount = 4,
+  fileRowCount = 6,
+}: { folderCount?: number; fileRowCount?: number } = {}) {
   return (
     <div className="space-y-6 pb-12">
       <PageHeaderSkeleton />
@@ -587,7 +600,7 @@ export function DocumentsPageSkeleton() {
       <div>
         <Skeleton className="h-4 w-20 mb-3" />
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-          {Array.from({ length: 4 }).map((_, i) => (
+          {Array.from({ length: folderCount }).map((_, i) => (
             <div key={i} className="rounded-[20px] border border-slate-200/80 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] p-4 space-y-3">
               <Skeleton className="h-10 w-10 rounded-2xl" />
               <Skeleton className="h-4 w-24" />
@@ -606,7 +619,7 @@ export function DocumentsPageSkeleton() {
           </div>
         </div>
         <table className="w-full">
-          <tbody><TableRowsSkeleton rows={6} cols={5} /></tbody>
+          <tbody><TableRowsSkeleton rows={fileRowCount} cols={5} /></tbody>
         </table>
       </div>
     </div>
