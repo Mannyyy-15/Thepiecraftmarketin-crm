@@ -59,6 +59,11 @@ export default function NativeUpdatePrompt() {
 
       const data = (await response.json()) as UpdateManifest;
       if (data.versionCode > currentVersion) {
+        const snoozedVersionCode = Number(window.localStorage.getItem("thepiecraft.native-update.snoozed-version") || 0);
+        if (data.versionCode > snoozedVersionCode) {
+          window.localStorage.removeItem(SNOOZE_KEY);
+        }
+
         const snoozedUntil = Number(window.localStorage.getItem(SNOOZE_KEY) || 0);
         if (Date.now() < snoozedUntil && currentVersion >= data.minimumVersionCode) return;
         setManifest(data);
