@@ -62,6 +62,31 @@ export default function NativeUpdatePrompt() {
         const snoozedUntil = Number(window.localStorage.getItem(SNOOZE_KEY) || 0);
         if (Date.now() < snoozedUntil && currentVersion >= data.minimumVersionCode) return;
         setManifest(data);
+
+        // Schedule native Android system notification
+        if (Capacitor.isNativePlatform()) {
+          try {
+            const { LocalNotifications } = await import("@capacitor/local-notifications");
+            const notifKey = `update_notified_${data.versionCode}`;
+            if (!localStorage.getItem(notifKey)) {
+              localStorage.setItem(notifKey, "1");
+              await LocalNotifications.schedule({
+                notifications: [
+                  {
+                    id: 990000 + data.versionCode,
+                    title: `🚀 PieCraft CRM Update Available (v${data.versionName})`,
+                    body: `${data.title || "A new update is ready!"} Tap to update your app now.`,
+                    extra: { action: "open_update", versionCode: data.versionCode },
+                    channelId: "thepiecraft-crm",
+                    schedule: { at: new Date(Date.now() + 500) },
+                  },
+                ],
+              });
+            }
+          } catch (notifErr) {
+            console.error("Failed to post native update notification:", notifErr);
+          }
+        }
       } else {
         setManifest(null);
       }
@@ -99,8 +124,18 @@ export default function NativeUpdatePrompt() {
   useEffect(() => {
     void checkForUpdate();
 
+    let notifHandle: PluginListenerHandle | undefined;
     let appStateListener: { remove: () => Promise<void> } | undefined;
+
     if (Capacitor.isNativePlatform()) {
+      import("@capacitor/local-notifications").then(({ LocalNotifications }) => {
+        LocalNotifications.addListener("localNotificationActionPerformed", (action) => {
+          if (action.notification?.extra?.action === "open_update") {
+            void checkForUpdate();
+          }
+        }).then((h) => { notifHandle = h; });
+      }).catch(() => {});
+
       void App.addListener("appStateChange", ({ isActive }) => {
         if (isActive) void checkForUpdate();
       }).then((listener) => {
@@ -109,6 +144,7 @@ export default function NativeUpdatePrompt() {
     }
 
     return () => {
+      void notifHandle?.remove();
       void appStateListener?.remove();
     };
   }, [checkForUpdate]);

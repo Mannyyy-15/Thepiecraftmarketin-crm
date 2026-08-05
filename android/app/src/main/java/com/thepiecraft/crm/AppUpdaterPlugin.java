@@ -192,9 +192,12 @@ public class AppUpdaterPlugin extends Plugin {
     private boolean isAllowedHttpsUrl(String value) {
         try {
             URI uri = URI.create(value);
-            return "https".equalsIgnoreCase(uri.getScheme()) &&
-                uri.getHost() != null &&
-                ALLOWED_HOSTS.contains(uri.getHost().toLowerCase(Locale.US));
+            if (!"https".equalsIgnoreCase(uri.getScheme()) || uri.getHost() == null) return false;
+            String host = uri.getHost().toLowerCase(Locale.US);
+            return ALLOWED_HOSTS.contains(host) ||
+                host.endsWith(".githubusercontent.com") ||
+                host.endsWith(".vercel.app") ||
+                host.endsWith(".thepiecraftmarketing.com");
         } catch (Exception ignored) {
             return false;
         }
