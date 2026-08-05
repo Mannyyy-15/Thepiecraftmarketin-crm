@@ -67,9 +67,28 @@ export default function NativeUpdatePrompt() {
         if (Capacitor.isNativePlatform()) {
           try {
             const { LocalNotifications } = await import("@capacitor/local-notifications");
+            
+            // Ensure high-priority channel exists
+            try {
+              await LocalNotifications.createChannel({
+                id: "thepiecraft-crm",
+                name: "ThePieCraft CRM",
+                description: "CRM updates, tasks, and attendance notifications",
+                importance: 5,
+                visibility: 1,
+                vibration: true,
+              });
+            } catch {
+              /* ignore */
+            }
+
             const notifKey = `update_notified_${data.versionCode}`;
             if (!localStorage.getItem(notifKey)) {
               localStorage.setItem(notifKey, "1");
+              const perm = await LocalNotifications.checkPermissions();
+              if (perm.display !== "granted") {
+                await LocalNotifications.requestPermissions();
+              }
               await LocalNotifications.schedule({
                 notifications: [
                   {
