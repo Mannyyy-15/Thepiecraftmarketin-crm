@@ -12,6 +12,7 @@ import {
   TrendingUp,
   Timer,
   MapPin,
+  Loader2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/Card";
@@ -62,25 +63,24 @@ function ShiftTimerDigits({ attendance, isLoading }: { attendance: any; isLoadin
         <div key={item.label} className="flex items-center gap-2 sm:gap-3 lg:gap-4">
           {i > 0 && (
             <span className={`text-2xl sm:text-3xl lg:text-4xl font-black select-none mb-4 transition-opacity ${
-              isLoading ? "text-slate-700" : isLive ? "text-emerald-500/60 animate-pulse" : "text-slate-600/50"
+              isLoading ? "text-slate-300 dark:text-slate-700" : isLive ? "text-emerald-500 animate-pulse" : "text-slate-400 dark:text-slate-600"
             }`}>:</span>
           )}
           <div className="flex flex-col items-center gap-1.5">
             <div className={`
               relative rounded-2xl text-center font-mono font-black tabular-nums select-none
               px-3 py-3 sm:px-5 sm:py-4 lg:px-6 lg:py-5
-              min-w-[52px] sm:min-w-[80px] lg:min-w-[104px]
+              min-w-[56px] sm:min-w-[84px] lg:min-w-[104px]
               text-3xl sm:text-5xl lg:text-6xl
-              border shadow-inner transition-all duration-300
-              bg-slate-900/80 dark:bg-[#222226]
-              border-slate-700/50 dark:border-[#303030]/60
-              ${isLoading ? "text-slate-700 animate-pulse" : "text-white"}
-              ${!isLoading && isLive && item.label === "SEC" ? "text-emerald-300" : ""}
+              border transition-all duration-200
+              bg-slate-50 dark:bg-[#26262a]
+              border-slate-200 dark:border-[#38383e]
+              ${isLoading ? "text-slate-300 dark:text-slate-700 animate-pulse" : "text-slate-900 dark:text-white"}
+              ${!isLoading && isLive && item.label === "SEC" ? "text-emerald-600 dark:text-emerald-400" : ""}
             `}>
               {item.val.toString().padStart(2, "0")}
-              <span className="absolute inset-x-0 top-0 h-px bg-white/[0.04] rounded-t-2xl" />
             </div>
-            <span className="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-widest text-slate-500">
+            <span className="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-widest text-slate-400 dark:text-slate-500">
               {item.label}
             </span>
           </div>
@@ -271,42 +271,41 @@ export default function EmployeeHome({ initialProfile, initialAttendance }: Empl
         <div className="lg:col-span-3 flex flex-col gap-4">
 
           {/* Clock Card */}
-          <Card className={`flex-1 overflow-hidden relative rounded-[28px] border-0 shadow-2xl ${statusRing}
-            bg-gradient-to-b
-            from-slate-800 to-slate-950
-            dark:from-[#1c1c20] dark:to-[#101012]
-            shadow-slate-400/20 dark:shadow-black/60`}
-          >
-            {/* Live status glow bar at top */}
+          <Card className="flex-1 overflow-hidden relative rounded-[24px] border border-slate-200/80 dark:border-[#303030] bg-white dark:bg-[#1f1f1f] shadow-sm">
+            {/* Live status bar at top */}
             {isPunchedIn && (
-              <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-emerald-400/80 to-transparent" />
+              <div className="absolute top-0 inset-x-0 h-1 bg-emerald-500" />
             )}
             {isPunchedOut && (
-              <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-slate-400/40 to-transparent" />
+              <div className="absolute top-0 inset-x-0 h-1 bg-slate-300 dark:bg-slate-700" />
             )}
 
-            {/* Ambient radial glow */}
-            <div className={`absolute inset-0 pointer-events-none transition-opacity duration-700 ${
-              isPunchedIn
-                ? "bg-[radial-gradient(ellipse_60%_40%_at_50%_0%,rgba(16,185,129,0.08),transparent)]"
-                : "bg-[radial-gradient(ellipse_60%_40%_at_50%_0%,rgba(99,102,241,0.07),transparent)]"
-            }`} />
-
-            <CardContent className="h-full p-6 sm:p-8 lg:p-10 flex flex-col items-center justify-center gap-6 sm:gap-8">
+            <CardContent className="h-full p-6 sm:p-8 lg:p-10 flex flex-col items-center justify-center gap-6">
 
               {/* Status row */}
               <div className="flex flex-col items-center gap-1">
                 {isLoading ? (
                   <Skeleton className="h-2.5 w-28" />
                 ) : (
-                  <span className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-slate-400">
+                  <span className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">
                     {isPunchedIn ? "Time Elapsed" : isPunchedOut ? "Total Shift Hours" : "Working Hours"}
                   </span>
                 )}
                 {!isLoading && isPunchedIn && (
-                  <span className="flex items-center gap-1.5 text-[10px] font-bold text-emerald-400">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                    Live
+                  <span className="flex items-center gap-1.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 rounded-full border border-emerald-200 dark:border-emerald-800/40 mt-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    Punched In — Live
+                  </span>
+                )}
+                {!isLoading && isNotPunchedYet && (
+                  <span className="flex items-center gap-1.5 text-[10px] font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-[#2a2a2e] px-2.5 py-1 rounded-full border border-slate-200 dark:border-[#38383e] mt-1">
+                    Not Punched In Yet
+                  </span>
+                )}
+                {!isLoading && isPunchedOut && (
+                  <span className="flex items-center gap-1.5 text-[10px] font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-[#2a2a2e] px-2.5 py-1 rounded-full border border-slate-200 dark:border-[#38383e] mt-1">
+                    <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+                    Shift Completed
                   </span>
                 )}
               </div>
@@ -316,16 +315,57 @@ export default function EmployeeHome({ initialProfile, initialAttendance }: Empl
 
               {/* Shift schedule pill — inside clock card */}
               <div className="flex items-center gap-2 flex-wrap justify-center">
-                <div className="flex items-center gap-2 bg-slate-800/70 dark:bg-[#303030]/50 border border-slate-700/40 rounded-xl px-3.5 py-1.5">
-                  <Clock className="h-3 w-3 text-slate-400" />
-                  <span className="text-[11px] font-semibold text-slate-300">
+                <div className="flex items-center gap-2 bg-slate-50 dark:bg-[#26262a] border border-slate-200 dark:border-[#38383e] rounded-xl px-3.5 py-1.5">
+                  <Clock className="h-3.5 w-3.5 text-slate-400" />
+                  <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">
                     {user?.shiftStartTime || "10:00 AM"} — {user?.shiftEndTime || "07:30 PM"}
                   </span>
                 </div>
                 {isPunchedOut && totalHoursWorked && (
-                  <div className="flex items-center gap-2 bg-emerald-900/30 border border-emerald-700/30 rounded-xl px-3.5 py-1.5">
-                    <TrendingUp className="h-3 w-3 text-emerald-400" />
-                    <span className="text-[11px] font-bold text-emerald-400">{totalHoursWorked}h logged</span>
+                  <div className="flex items-center gap-2 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/40 rounded-xl px-3.5 py-1.5">
+                    <TrendingUp className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                    <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300">{totalHoursWorked}h logged</span>
+                  </div>
+                )}
+              </div>
+
+              {/* ── 1-Tap Quick Action Buttons ── */}
+              <div className="w-full max-w-sm pt-2">
+                {isNotPunchedYet && (
+                  <button
+                    disabled={isPunching || isLoading}
+                    onClick={handlePunchInAction}
+                    className="w-full h-12 rounded-2xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-md shadow-emerald-500/20 transition-all cursor-pointer disabled:opacity-50"
+                  >
+                    {isPunching ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <>
+                        <LogIn className="h-4 w-4" /> Punch In Now
+                      </>
+                    )}
+                  </button>
+                )}
+
+                {isPunchedIn && (
+                  <button
+                    disabled={isPunching || isLoading}
+                    onClick={handlePunchOutAction}
+                    className="w-full h-12 rounded-2xl bg-rose-600 hover:bg-rose-700 active:scale-95 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-md shadow-rose-500/20 transition-all cursor-pointer disabled:opacity-50"
+                  >
+                    {isPunching ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <>
+                        <LogOut className="h-4 w-4" /> Punch Out Now
+                      </>
+                    )}
+                  </button>
+                )}
+
+                {isPunchedOut && (
+                  <div className="h-12 rounded-2xl bg-slate-100 dark:bg-[#26262a] border border-slate-200 dark:border-[#38383e] text-slate-500 dark:text-slate-400 font-bold text-xs flex items-center justify-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-500" /> Shift Completed Today
                   </div>
                 )}
               </div>
