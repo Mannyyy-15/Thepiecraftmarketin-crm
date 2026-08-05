@@ -241,7 +241,7 @@ export default function EmployeeHome({ initialProfile, initialAttendance }: Empl
     : "ring-1 ring-brand-500/20 dark:ring-brand-400/10";
 
   return (
-    <div className="space-y-5 relative pb-52 lg:pb-0">
+    <div className="space-y-5 relative pb-24 lg:pb-0">
 
       {/* Toast banner */}
       {attMessage && (
@@ -325,47 +325,6 @@ export default function EmployeeHome({ initialProfile, initialAttendance }: Empl
                   <div className="flex items-center gap-2 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/40 rounded-xl px-3.5 py-1.5">
                     <TrendingUp className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
                     <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300">{totalHoursWorked}h logged</span>
-                  </div>
-                )}
-              </div>
-
-              {/* ── 1-Tap Quick Action Buttons ── */}
-              <div className="w-full max-w-sm pt-2">
-                {isNotPunchedYet && (
-                  <button
-                    disabled={isPunching || isLoading}
-                    onClick={handlePunchInAction}
-                    className="w-full h-12 rounded-2xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-md shadow-emerald-500/20 transition-all cursor-pointer disabled:opacity-50"
-                  >
-                    {isPunching ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <>
-                        <LogIn className="h-4 w-4" /> Punch In Now
-                      </>
-                    )}
-                  </button>
-                )}
-
-                {isPunchedIn && (
-                  <button
-                    disabled={isPunching || isLoading}
-                    onClick={handlePunchOutAction}
-                    className="w-full h-12 rounded-2xl bg-rose-600 hover:bg-rose-700 active:scale-95 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-md shadow-rose-500/20 transition-all cursor-pointer disabled:opacity-50"
-                  >
-                    {isPunching ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <>
-                        <LogOut className="h-4 w-4" /> Punch Out Now
-                      </>
-                    )}
-                  </button>
-                )}
-
-                {isPunchedOut && (
-                  <div className="h-12 rounded-2xl bg-slate-100 dark:bg-[#26262a] border border-slate-200 dark:border-[#38383e] text-slate-500 dark:text-slate-400 font-bold text-xs flex items-center justify-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-emerald-500" /> Shift Completed Today
                   </div>
                 )}
               </div>
@@ -524,8 +483,6 @@ export default function EmployeeHome({ initialProfile, initialAttendance }: Empl
                     <div className={`rounded-2xl p-4 border transition-all ${
                       todayAttendance?.punchOutTime
                         ? "bg-rose-50/60 dark:bg-rose-950/25 border-rose-200/70 dark:border-rose-800/30"
-                        : isPunchedIn
-                        ? "bg-amber-50/50 dark:bg-amber-950/15 border-amber-200/40 dark:border-amber-800/20"
                         : "bg-slate-50 dark:bg-[#303030]/30 border-slate-100 dark:border-[#3f3f3f]/20"
                     }`}>
                       <div className="flex items-center justify-between gap-3">
@@ -533,32 +490,20 @@ export default function EmployeeHome({ initialProfile, initialAttendance }: Empl
                           <div className={`h-9 w-9 rounded-xl flex items-center justify-center shrink-0 ${
                             todayAttendance?.punchOutTime
                               ? "bg-rose-100 dark:bg-rose-900/40"
-                              : isPunchedIn
-                              ? "bg-amber-100 dark:bg-amber-900/25"
                               : "bg-slate-100 dark:bg-[#3f3f3f]/40"
                           }`}>
                             <LogOut className={`h-4 w-4 ${
                               todayAttendance?.punchOutTime
                                 ? "text-rose-500 dark:text-rose-400"
-                                : isPunchedIn
-                                ? "text-amber-500 dark:text-amber-400"
                                 : "text-slate-400 dark:text-slate-500"
                             }`} />
                           </div>
                           <div>
                             <p className="text-sm font-bold text-slate-800 dark:text-slate-100">Punch Out</p>
-                            <p className={`text-[11px] font-medium mt-0.5 ${
-                              todayAttendance?.punchOutTime
-                                ? "text-rose-500 dark:text-rose-400"
-                                : isPunchedIn
-                                ? "text-amber-500 dark:text-amber-400 animate-pulse"
-                                : "text-slate-400 dark:text-slate-500"
-                            }`}>
+                            <p className="text-[11px] font-medium mt-0.5 text-slate-400 dark:text-slate-500">
                               {todayAttendance?.punchOutTime
                                 ? "Shift ended"
-                                : isPunchedIn
-                                ? "Pending check-out"
-                                : "Not checked out"}
+                                : "Not checked out yet"}
                             </p>
                           </div>
                         </div>

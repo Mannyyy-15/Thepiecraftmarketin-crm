@@ -1,15 +1,15 @@
 export const androidRelease = {
-  versionCode: 12,
-  versionName: "1.6.0",
+  versionCode: 13,
+  versionName: "1.6.1",
   minimumVersionCode: 1,
-  apkUrl: "https://github.com/Mannyyy-15/Thepiecraftmarketin-crm/releases/download/v1.6.0/ThePieCraft-CRM-App-Debug.apk",
-  sha256: "B6F17E4D71E0261F81AF1C1CBF34A145B35931AB238D3196952150B5BDBE2D02",
-  title: "PieCraft CRM v1.6.0 Update Available",
+  apkUrl: "https://github.com/Mannyyy-15/Thepiecraftmarketin-crm/releases/download/v1.6.1/ThePieCraft-CRM-App-Debug.apk",
+  sha256: "2016142CC9B00389CB6FA43BC8D46E5B04B34AE4BE12C308902D18B8EB82A359",
+  title: "PieCraft CRM v1.6.1 Update Available",
   notes: [
-    "Clean dark launch screen — native splash screen icon removed.",
-    "Smart conditional client onboarding (Meta Ads, Web Dev, Agency Retainer).",
-    "Studio AI now queries live CRM database context (clients, invoices, unpaid balances).",
-    "Automated invoice billing sync and performance improvements.",
+    "Removed redundant punch in/out buttons — simplified to slide-to-punch control.",
+    "Cleaned up Today Activity timeline & status labels.",
+    "Eliminated extra bottom scroll space on employee home.",
+    "Android native notification & in-app update trigger active.",
   ],
 } as const;
 
