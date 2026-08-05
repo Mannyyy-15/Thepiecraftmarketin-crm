@@ -21,7 +21,7 @@
 
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">#080D1E</item>
-        <item name="windowSplashScreenAnimatedIcon">@null</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_transparent</item>
         <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>
     </style>
 </resources>
