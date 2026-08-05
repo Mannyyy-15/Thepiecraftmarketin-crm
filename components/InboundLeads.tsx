@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/components/ui/cn";
 import { getSheetLeads, type SheetLead, type SheetLeadsSegment } from "@/app/actions/sheetLeads";
+import { importSheetLeadToCrm } from "@/app/actions/crm";
 import { Skeleton } from "@/components/ui/Skeleton";
 
 function timeAgo(ts: string): string {
@@ -99,6 +100,20 @@ function LeadRow({ lead, segmentKey }: { lead: SheetLead; segmentKey?: string })
             {timeAgo(lead.timestamp)}
           </span>
         )}
+
+        <button
+          onClick={async (e) => {
+            e.stopPropagation();
+            const res = await importSheetLeadToCrm({ name: lead.name, email: lead.email, phone: lead.phone, segmentLabel: lead.segmentLabel, extra: lead.extra });
+            if (res.success) {
+              alert("Lead imported to CRM pipeline!");
+            }
+          }}
+          className="shrink-0 h-7 px-2.5 rounded-lg bg-brand-500/10 hover:bg-brand-500/20 text-brand-600 dark:text-brand-400 text-[10px] font-bold flex items-center gap-1 transition-all cursor-pointer"
+        >
+          <Sparkles className="h-3 w-3" />
+          Import to CRM
+        </button>
 
         {/* Expand chevron */}
         {extras.length > 0 && (

@@ -5549,3 +5549,36 @@ export async function updateDocumentApprovalStatus(docId: number, approvalStatus
     return { success: false, error: error.message };
   }
 }
+
+export async function importSheetLeadToCrm(sheetLead: { name: string; email?: string; phone?: string; segmentLabel?: string; extra?: any }) {
+  try {
+    const session = await getAuthSession();
+    if (!session || session.role !== "admin") return { success: false, error: "Admin access required." };
+    if (!db) return { success: false, error: "Database not connected." };
+    const context = await getAdminOrganizationContext(session);
+    if (!context) return { success: false, error: "No active organization membership." };
+
+    const name = sheetLead.name || sheetLead.email?.split("@")[0] || "Inquiry Lead";
+    const source = "website"; // Google Sheets Inbound Lead
+    const service = "web_dev";
+
+    const [inserted] = await db.insert(schema.leads).values({
+      organizationId: context.organizationId,
+      name,
+      contactName: name,
+      contactEmail: sheetLead.email || "",
+      contactPhone: sheetLead.phone || "",
+      source,
+      service,
+      stage: "new",
+      estimatedValue: 0,
+      notes: `Imported from Google Sheet (${sheetLead.segmentLabel || "Inquiry"}). ${JSON.stringify(sheetLead.extra || {})}`,
+    });
+
+    revalidatePath("/admin/leads");
+    return { success: true, leadId: inserted.insertId };
+  } catch (error: any) {
+    console.error("importSheetLeadToCrm Error:", error);
+    return { success: false, error: error.message };
+  }
+}

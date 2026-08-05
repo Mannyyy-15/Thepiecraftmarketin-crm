@@ -44,10 +44,7 @@ const navigationSections = [
   {
     label: "CRM",
     items: [
-      { name: "Accounts", href: "/admin/accounts", icon: Building2 },
-      { name: "Contacts", href: "/admin/contacts", icon: Contact2 },
       { name: "Leads", href: "/admin/leads", icon: Target },
-      { name: "Deals", href: "/admin/deals", icon: BadgeDollarSign },
       { name: "Clients", href: "/admin/clients", icon: Briefcase },
     ],
   },
