@@ -36,8 +36,11 @@ public class AppUpdaterPlugin extends Plugin {
     private static final long MAX_APK_BYTES = 100L * 1024L * 1024L;
     private static final Set<String> ALLOWED_HOSTS = new HashSet<>(Arrays.asList(
         "github.com",
+        "raw.githubusercontent.com",
         "objects.githubusercontent.com",
-        "release-assets.githubusercontent.com"
+        "release-assets.githubusercontent.com",
+        "crm.thepiecraftmarketing.com",
+        "thepiecraft-crm.vercel.app"
     ));
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
