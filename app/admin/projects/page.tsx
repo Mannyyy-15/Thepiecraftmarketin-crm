@@ -20,6 +20,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { CardGridSkeleton } from "@/components/ui/Skeleton";
 import { getCachedValue, setCachedValue } from "@/hooks/useActionCache";
+import { AddProjectDrawer } from "@/components/projects/AddProjectDrawer";
 
 const PROJECTS_CACHE_TTL_MS = 60_000;
 import { createProject, updateProjectStatus, deleteProject, updateProject, getProjects, getTeamUsers, getProjectTasksGrouped, addProjectTask, deleteTask, toggleTaskStatus, getClientsEnriched } from "@/app/actions/crm";
@@ -367,9 +368,12 @@ export default function ProjectsPage() {
   const [search, setSearch]             = useState("");
   const [serviceTab, setServiceTab]     = useState<"all" | "meta_ads" | "web_dev" | "agency">("all");
 
-  // New project drawer
+  // New project drawer (redesigned — see components/projects/AddProjectDrawer)
+  const [addOpen, setAddOpen] = useState(false);
+
+  // Edit drawer (legacy inline form, reused for editing only)
   const [drawerOpen, setDrawerOpen]   = useState(false);
-  const [drawerStep, setDrawerStep]   = useState(0);
+  const [drawerStep, setDrawerStep]   = useState(1);
   const [projectType, setProjectType] = useState<"meta_ads" | "web_dev" | "agency">("meta_ads");
   const [formTab, setFormTab]         = useState(0);
   const [form, setForm]               = useState({ ...BLANK });
@@ -440,12 +444,6 @@ export default function ProjectsPage() {
     }
   };
 
-  const openDrawer = () => {
-    setForm({ ...BLANK });
-    setDrawerStep(0);
-    setFormTab(0);
-    setDrawerOpen(true);
-  };
   const closeDrawer = () => setDrawerOpen(false);
 
   const openEdit = (p: any) => {
@@ -686,7 +684,7 @@ export default function ProjectsPage() {
         eyebrow="Operations"
         title="Projects"
         actions={
-          <Button onClick={openDrawer} className="bg-brand-600 hover:bg-brand-700 text-white font-bold shadow-glow">
+          <Button onClick={() => setAddOpen(true)} className="bg-brand-600 hover:bg-brand-700 text-white font-bold shadow-glow">
             <Plus className="h-4 w-4 mr-1" /> New Project
           </Button>
         }
@@ -732,7 +730,7 @@ export default function ProjectsPage() {
         </div>
       ) : projects.length === 0 ? (
         <EmptyState icon={<Target className="h-5 w-5" />} title="No projects yet" description="Create your first project to get started."
-          action={<Button onClick={openDrawer} size="sm" className="bg-brand-600 text-white"><Plus className="h-3.5 w-3.5 mr-1" /> New Project</Button>} />
+          action={<Button onClick={() => setAddOpen(true)} size="sm" className="bg-brand-600 text-white"><Plus className="h-3.5 w-3.5 mr-1" /> New Project</Button>} />
       ) : !hasResults ? (
         <EmptyState icon={<Search className="h-5 w-5" />} title="No matching projects" description="Try a different search or status filter." />
       ) : (
@@ -1127,43 +1125,33 @@ export default function ProjectsPage() {
       )}
 
       {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-          EDIT PROJECT DRAWER
+          EDIT PROJECT DRAWER (creation now handled by AddProjectDrawer, mounted below)
       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
 
 
       {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-          DRAWER — New Project
+          DRAWER — Legacy edit form (Add now uses AddProjectDrawer)
       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+      <AddProjectDrawer open={addOpen} onClose={() => setAddOpen(false)} onCreated={load} />
+
       {drawerOpen && (
         <>
           <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40" onClick={closeDrawer} />
 
           <div className="fixed right-0 top-0 h-full w-full max-w-[560px] bg-white dark:bg-[#1f1f1f] z-50 shadow-2xl flex flex-col animate-[slide-in-right_280ms_cubic-bezier(0.16,1,0.3,1)]">
 
-            {/* Panel header */}
+            {/* Panel header (edit-only; creation now uses AddProjectDrawer) */}
             <div className="shrink-0 px-6 pt-5 pb-4 border-b border-slate-200 dark:border-[#303030]">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0">
-                  {drawerStep === 1 && (
-                    <button type="button" onClick={() => { setDrawerStep(0); setFormTab(0); }}
-                      className="shrink-0 h-8 w-8 rounded-2xl flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#303030] transition-all cursor-pointer" aria-label="Back">
-                      <ChevronLeft className="h-4 w-4" />
-                    </button>
-                  )}
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      {drawerStep === 1 ? (
-                        <span className={cn("inline-flex items-center gap-1.5 text-[9px] font-bold px-2 py-0.5 rounded-full border", typeCfg.badgeBg)}>
-                          <typeCfg.Icon className="h-2.5 w-2.5" />
-                          {typeCfg.label}
-                        </span>
-                      ) : (
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">New Project</span>
-                      )}
+                      <span className={cn("inline-flex items-center gap-1.5 text-[9px] font-bold px-2 py-0.5 rounded-full border", typeCfg.badgeBg)}>
+                        <typeCfg.Icon className="h-2.5 w-2.5" />
+                        {typeCfg.label}
+                      </span>
                     </div>
-                    <h2 className="text-base font-bold text-slate-900 dark:text-white leading-tight">
-                      {drawerStep === 0 ? "Choose a service type" : "Project details"}
-                    </h2>
+                    <h2 className="text-base font-bold text-slate-900 dark:text-white leading-tight">Project details</h2>
                   </div>
                 </div>
                 <button onClick={closeDrawer} aria-label="Close"
@@ -1173,42 +1161,6 @@ export default function ProjectsPage() {
               </div>
             </div>
 
-            {/* Step 0 — service type selection */}
-            {drawerStep === 0 && (
-              <div className="flex-1 overflow-y-auto p-6 space-y-3">
-                <p className="text-xs text-slate-500 dark:text-slate-400 mb-6 leading-relaxed">
-                  Each service type has a tailored form — only the fields that matter for how you run that engagement.
-                </p>
-                {(["meta_ads", "web_dev", "agency"] as const).map(t => {
-                  const cfg = TYPES[t];
-                  const TIcon = cfg.Icon;
-                  return (
-                    <button key={t} type="button"
-                      onClick={() => { setProjectType(t); setForm(p => ({ ...p, status: cfg.statuses[0] })); setDrawerStep(1); setFormTab(0); }}
-                      className="w-full flex items-start gap-4 p-5 border-2 border-slate-200 dark:border-[#303030] hover:border-brand-500 dark:hover:border-brand-500 rounded-[20px] cursor-pointer text-left transition-all group bg-white dark:bg-[#303030]/50 hover:bg-brand-500/[0.02]"
-                    >
-                      <div className={cn("h-12 w-12 rounded-[20px] flex items-center justify-center bg-gradient-to-br text-white shadow-sm shrink-0 mt-0.5", cfg.accent)}>
-                        <TIcon className="h-5 w-5" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-1">
-                          <h3 className="text-sm font-bold text-slate-900 dark:text-white">{cfg.label}</h3>
-                          <ChevronRight className="h-4 w-4 text-slate-400 group-hover:text-brand-500 transition-colors shrink-0 ml-2" />
-                        </div>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">{cfg.description}</p>
-                        <div className="mt-3 flex flex-wrap gap-1.5">
-                          {cfg.features.map(feat => (
-                            <span key={feat} className="text-[9px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-[#303030] text-slate-500 dark:text-slate-400">{feat}</span>
-                          ))}
-                        </div>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-
-            {/* Step 1 — form wizard */}
             {drawerStep === 1 && (
               <form onSubmit={handleSubmit} className="flex-1 flex flex-col overflow-hidden">
 

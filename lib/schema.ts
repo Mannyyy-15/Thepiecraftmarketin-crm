@@ -57,7 +57,7 @@ export const projects = mysqlTable("projects", {
   accountId: int("account_id").references(() => accounts.id, { onDelete: "set null" }),
   dealId: int("deal_id").references(() => deals.id, { onDelete: "set null" }),
   clientName: varchar("client_name", { length: 255 }),
-  projectType: varchar("project_type", { length: 50 }).notNull().default("other"), // 'meta_ads' | 'web_dev' | 'other'
+  projectType: varchar("project_type", { length: 50 }).notNull().default("other"), // 'meta_ads' | 'web_dev' | 'agency' | 'other'
   budget: int("budget").notNull().default(0), // total budget (web dev) or monthly fee (meta ads)
   monthlyFee: int("monthly_fee").default(0),
   adSpendBudget: int("ad_spend_budget").default(0),

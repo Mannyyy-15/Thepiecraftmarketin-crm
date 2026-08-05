@@ -19,7 +19,7 @@ export const DialogContent = React.forwardRef<
       ref={ref}
       className={cn(
         "fixed left-1/2 top-1/2 z-[999] w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2",
-        "rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-700 dark:bg-[#1f1f1f]",
+        "rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-[#3f3f3f] dark:bg-[#1f1f1f]",
         "focus:outline-none data-[state=open]:animate-pop",
         className
       )}
@@ -27,7 +27,7 @@ export const DialogContent = React.forwardRef<
     >
       {children}
       {!hideClose && (
-        <DialogPrimitive.Close className="icon-button absolute right-3 top-3 text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white">
+        <DialogPrimitive.Close className="icon-button absolute right-3 top-3 text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-[#303030] dark:hover:text-white">
           <X className="h-5 w-5" aria-hidden="true" />
           <span className="sr-only">Close dialog</span>
         </DialogPrimitive.Close>

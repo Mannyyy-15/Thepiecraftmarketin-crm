@@ -230,7 +230,7 @@ export default function EmployeeMessagesPage() {
       <div className="px-4 pt-4 pb-2 flex items-center gap-2">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
-          <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search or start new chat" className="w-full h-10 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#303030] pl-9 pr-4 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500/40" />
+          <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search or start new chat" className="w-full h-10 rounded-xl border border-slate-200 dark:border-[#3f3f3f] bg-slate-50 dark:bg-[#303030] pl-9 pr-4 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500/40" />
         </div>
         <button onClick={() => { setShowContactPicker(true); setPickerSearch(""); }} className="h-10 w-10 rounded-xl bg-brand-500 text-white flex items-center justify-center hover:bg-brand-600 transition-colors shrink-0 cursor-pointer" title="New conversation">
           <Plus className="h-4 w-4" />
@@ -317,7 +317,7 @@ export default function EmployeeMessagesPage() {
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{activeContact.clientName || activeContact.name}</p>
-                <p className="text-[10px] text-slate-400 truncate">{activeContact.role === "client" ? `${activeContact.industry} · ${activeContact.email}` : activeContact.email}</p>
+                <p className="text-[10px] text-slate-400 truncate">{activeContact.role === "client" ? `${activeContact.industry} Â· ${activeContact.email}` : activeContact.email}</p>
               </div>
             </div>
             <CardContent className="flex-1 overflow-y-auto p-4 space-y-3">
@@ -339,7 +339,7 @@ export default function EmployeeMessagesPage() {
             </CardContent>
             <div className="border-t border-slate-100 dark:border-[#303030]/80 p-4 shrink-0">
               <form onSubmit={(e) => { e.preventDefault(); handleSend(); }} className="flex gap-2">
-                <input type="text" value={newMsg} onChange={(e) => setNewMsg(e.target.value)} placeholder="Type a message..." className="flex-1 h-11 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#303030] px-4 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40" />
+                <input type="text" value={newMsg} onChange={(e) => setNewMsg(e.target.value)} placeholder="Type a message..." className="flex-1 h-11 rounded-xl border border-slate-200 dark:border-[#3f3f3f] bg-slate-50 dark:bg-[#303030] px-4 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40" />
                 <button type="submit" className="h-11 w-11 rounded-xl bg-brand-500 text-white flex items-center justify-center hover:bg-brand-600 transition-colors cursor-pointer disabled:opacity-50" disabled={!newMsg.trim()}>
                   <Send className="h-4 w-4" />
                 </button>
@@ -372,7 +372,7 @@ export default function EmployeeMessagesPage() {
             </div>
             <div className="relative mb-3">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
-              <input type="text" value={pickerSearch} onChange={(e) => setPickerSearch(e.target.value)} placeholder="Search contacts..." className="w-full h-10 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#303030] pl-9 pr-4 text-xs focus:outline-none" />
+              <input type="text" value={pickerSearch} onChange={(e) => setPickerSearch(e.target.value)} placeholder="Search contacts..." className="w-full h-10 rounded-xl border border-slate-200 dark:border-[#3f3f3f] bg-slate-50 dark:bg-[#303030] pl-9 pr-4 text-xs focus:outline-none" />
             </div>
 
             {([["admins", "Admin", pickerFiltered.admins], ["employees", "Team", pickerFiltered.employees], ["clients", "Clients", pickerFiltered.clients]] as const).map(([key, label, items]) => {

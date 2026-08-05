@@ -243,7 +243,7 @@ function revalidateClientSurfaces() {
 }
 
 function revalidateProjectSurfaces() {
-  ["/admin", "/admin/projects", "/admin/team", "/employee", "/employee/overview", "/employee/projects", "/employee/tasks", "/client", "/client/projects"].forEach(path => revalidatePath(path));
+  ["/admin", "/admin/projects", "/admin/team", "/admin/ads", "/admin/website-dev", "/employee", "/employee/overview", "/employee/projects", "/employee/tasks", "/employee/ads", "/employee/website-dev", "/client", "/client/projects"].forEach(path => revalidatePath(path));
 }
 
 function revalidateInvoiceSurfaces() {
@@ -348,6 +348,46 @@ export async function onboardClient(formData: FormData) {
     return { success: true };
   } catch (error: any) {
     console.error("onboardClient Error:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+// Lightweight client-brand creation for inline "+ New Client" affordances (e.g. Add Project
+// flow) — no portal login. Use createClientAccount/onboardClient when a portal login is needed.
+export async function createClientBrand(formData: FormData) {
+  try {
+    const session = await getAuthSession();
+    if (!session || !db) return { success: false, error: "Unauthorized." };
+    if (!await hasEmployeePermission(session, "manage_clients")) return { success: false, error: "Permission denied." };
+    const context = session.role === "admin"
+      ? await getAdminOrganizationContext(session)
+      : await getOrganizationContext(session);
+    if (!context) return { success: false, error: "No active organization membership." };
+
+    const brandName = (formData.get("brandName") as string || "").trim();
+    const contactName = (formData.get("contactName") as string || "").trim();
+    const contactPhone = (formData.get("contactPhone") as string || "").trim();
+    if (!brandName) return { success: false, error: "Brand name is required." };
+
+    const [result] = await db.insert(schema.clients).values({
+      name: brandName,
+      ownerId: null,
+      organizationId: context.organizationId,
+      stage: "contract_signed",
+      progress: 0,
+      checklist: JSON.stringify([
+        { id: 1, text: "NDA & Agreement Signed", checked: false },
+        { id: 2, text: "Brand Assets Collected", checked: false },
+        { id: 3, text: "Discovery Session Scheduled", checked: false },
+        { id: 4, text: "Slack & Portal Setup", checked: false }
+      ]),
+      details: JSON.stringify({ contactName, contactPhone }),
+    });
+
+    revalidateClientSurfaces();
+    return { success: true, clientId: (result as any).insertId };
+  } catch (error: any) {
+    console.error("createClientBrand Error:", error);
     return { success: false, error: error.message };
   }
 }
@@ -875,6 +915,9 @@ export async function createProject(formData: FormData) {
     const accessGranted = (formData.get("accessGranted") as string) === "true" ? 1 : 0;
     const contractLink = formData.get("contractLink") as string;
     const teamMemberIds = safeJsonArrayOfIds(formData.get("teamMemberIds"));
+    // Meta Ads starter-campaign fields (used when projectType is meta_ads, or agency flavored as meta_ads)
+    const metaCampaignName = (formData.get("metaCampaignName") as string || "").trim();
+    const metaCampaignStatus = (formData.get("metaCampaignStatus") as string || "").trim();
 
     if (!name) return { success: false, error: "Project name is required." };
 
@@ -899,33 +942,54 @@ export async function createProject(formData: FormData) {
       }
     }
 
-    await db.insert(schema.projects).values({
-      name: name.trim(),
-      clientId,
-      organizationId: context.organizationId,
-      clientName: resolvedClientName || clientName?.trim() || null,
-      projectType,
-      budget,
-      monthlyFee,
-      adSpendBudget,
-      startDate: startDate?.trim() || null,
-      deadline,
-      status,
-      priority,
-      billingModel,
-      serviceDetails,
-      billingCycleStart: billingCycleStart?.trim() || null,
-      contractDuration: contractDuration || 0,
-      clientContactName: clientContactName?.trim() || null,
-      clientContactPhone: clientContactPhone?.trim() || null,
-      accessGranted,
-      contractLink: contractLink?.trim() || null,
-      leadId,
-      teamMemberIds,
+    let parsedServiceDetails: any = {};
+    try { parsedServiceDetails = JSON.parse(serviceDetails); } catch { /* keep {} */ }
+    const isMetaFlavored = projectType === "meta_ads" || (projectType === "agency" && parsedServiceDetails?.agencyFlavor === "meta_ads");
+
+    let projectId = 0;
+    await db.transaction(async (tx) => {
+      await tx.insert(schema.projects).values({
+        name: name.trim(),
+        clientId,
+        organizationId: context.organizationId,
+        clientName: resolvedClientName || clientName?.trim() || null,
+        projectType,
+        budget,
+        monthlyFee,
+        adSpendBudget,
+        startDate: startDate?.trim() || null,
+        deadline,
+        status,
+        priority,
+        billingModel,
+        serviceDetails,
+        billingCycleStart: billingCycleStart?.trim() || null,
+        contractDuration: contractDuration || 0,
+        clientContactName: clientContactName?.trim() || null,
+        clientContactPhone: clientContactPhone?.trim() || null,
+        accessGranted,
+        contractLink: contractLink?.trim() || null,
+        leadId,
+        teamMemberIds,
+      });
+      const [created] = await tx.select({ id: schema.projects.id }).from(schema.projects)
+        .where(and(eq(schema.projects.organizationId, context.organizationId), eq(schema.projects.name, name.trim())))
+        .orderBy(desc(schema.projects.createdAt)).limit(1);
+      if (!created) throw new Error("Project creation could not be confirmed.");
+      projectId = created.id;
+
+      if (isMetaFlavored) {
+        await tx.insert(schema.metaCampaigns).values({
+          projectId,
+          name: metaCampaignName || `${name.trim()} — Launch Campaign`,
+          platform: "Meta Ads",
+          status: metaCampaignStatus || "draft",
+        });
+      }
     });
 
     revalidateProjectSurfaces();
-    return { success: true };
+    return { success: true, projectId };
   } catch (error: any) {
     console.error("createProject Error:", error);
     return { success: false, error: error.message };
