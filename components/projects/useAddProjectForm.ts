@@ -98,11 +98,11 @@ export const BLANK_ADD_PROJECT_FORM: AddProjectFormState = {
   metaCampaignStatus: "draft",
 
   websiteType: "landing_page",
-  platform: "Next.js",
+  platform: "",
   setupType: "new",
   domain: "",
   domainExpiry: "",
-  hostingProvider: "Hostinger",
+  hostingProvider: "",
   hostingExpiry: "",
   repoLink: "",
   cmsNeeded: false,

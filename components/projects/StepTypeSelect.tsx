@@ -115,7 +115,32 @@ export function StepTypeSelect({
           </div>
 
           {form.clientMode === "existing" ? (
-            <select value={form.clientId} onChange={e => f({ clientId: e.target.value })} className={SELECT}>
+            <select
+              value={form.clientId}
+              onChange={e => {
+                const id = e.target.value;
+                const c = clients.find(cl => String(cl.id) === id);
+                let patch: Partial<AddProjectFormState> = { clientId: id };
+                if (c) {
+                  let d: any = {};
+                  try { d = JSON.parse(c.details || "{}"); } catch {}
+                  patch = {
+                    ...patch,
+                    domain: d.domain || d.websiteUrl || form.domain,
+                    oldWebsiteUrl: d.cmsAccessUrl || d.websiteUrl || form.oldWebsiteUrl,
+                    platform: d.techStack || form.platform,
+                    hostingProvider: d.hostingProvider || form.hostingProvider,
+                    adAccountId: d.adAccountId || form.adAccountId,
+                    businessManagerId: d.businessManagerId || form.businessManagerId,
+                    monthlyFee: d.monthlyFee || form.monthlyFee,
+                    clientContactPhone: d.contactPhone || form.clientContactPhone,
+                    clientContactName: d.contactName || form.clientContactName,
+                  };
+                }
+                f(patch);
+              }}
+              className={SELECT}
+            >
               <option value="">Select a client…</option>
               {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>

@@ -36,7 +36,7 @@ export default function SettingsPage() {
     agencyEmail: "", agencyPhone: "", agencyWebsite: "", agencyAddress: "", gstNumber: "",
     invoiceTaxPercent: 0, invoicePaymentTerms: "", invoiceNotes: "", bankDetails: "",
     razorpayKeyId: "", razorpayKeySecret: "",
-    smtpHost: "", smtpPort: "465", smtpUser: "", smtpPass: "", smtpFrom: "",
+    smtpHost: "", smtpPort: "", smtpUser: "", smtpPass: "", smtpFrom: "",
   });
   const set = (patch: any) => setS((p: any) => ({ ...p, ...patch }));
 

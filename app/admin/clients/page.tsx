@@ -54,6 +54,10 @@ interface InvoiceRow {
 const BLANK_CLIENT = {
   name: "", contactName: "", contactEmail: "", contactPhone: "",
   websiteUrl: "", industry: "", country: "", services: "",
+  primaryService: "web_dev",
+  adAccountId: "", businessManagerId: "", instagram: "", targetCpl: "", targetRoas: "",
+  domain: "", techStack: "", hostingProvider: "", domainExpiry: "", cmsAccessUrl: "",
+  monthlyFee: "", contractDuration: "",
   loginEmail: "", loginPassword: "", ownerId: "",
 };
 const BLANK_INVOICE = {
@@ -716,12 +720,78 @@ export default function ClientsPage() {
 
                 {drawerStep === 0 && (
                   <>
-                    <SectionHeader icon={Building2} label="Company" />
+                    <SectionHeader icon={Building2} label="Company & Service Type" />
                     <div className="space-y-4">
                       <div>
                         <label className={LABEL}>Brand / Company Name *</label>
                         <input required value={form.name} onChange={e => f({ name: e.target.value })} placeholder="e.g. Client company" className={INPUT} />
                       </div>
+                      <div>
+                        <label className={LABEL}>Primary Service Type *</label>
+                        <select value={form.primaryService || "web_dev"} onChange={e => f({ primaryService: e.target.value, services: e.target.value })} className={SELECT}>
+                          <option value="web_dev">Website Development</option>
+                          <option value="meta_ads">Meta Ads / Performance Marketing</option>
+                          <option value="retainer">Full Agency Retainer</option>
+                          <option value="other">Other / Custom</option>
+                        </select>
+                      </div>
+
+                      {form.primaryService === "meta_ads" && (
+                        <div className="space-y-3 p-4 rounded-2xl bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-200/50 dark:border-indigo-800/40">
+                          <p className="text-xs font-bold text-indigo-900 dark:text-indigo-300 flex items-center gap-1.5">
+                            <Megaphone className="h-3.5 w-3.5 text-indigo-500" /> Meta Ads Account Setup
+                          </p>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className={LABEL}>Ad Account ID</label>
+                              <input value={form.adAccountId} onChange={e => f({ adAccountId: e.target.value })} placeholder="act_123456789" className={INPUT} />
+                            </div>
+                            <div>
+                              <label className={LABEL}>Business Manager ID</label>
+                              <input value={form.businessManagerId} onChange={e => f({ businessManagerId: e.target.value })} placeholder="123456789" className={INPUT} />
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className={LABEL}>Instagram Handle / Page</label>
+                              <input value={form.instagram} onChange={e => f({ instagram: e.target.value })} placeholder="@brandname" className={INPUT} />
+                            </div>
+                            <div>
+                              <label className={LABEL}>Target CPL / ROAS</label>
+                              <input value={form.targetCpl} onChange={e => f({ targetCpl: e.target.value })} placeholder="e.g. ₹300 CPL / 4x ROAS" className={INPUT} />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {form.primaryService === "web_dev" && (
+                        <div className="space-y-3 p-4 rounded-2xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200/50 dark:border-emerald-800/40">
+                          <p className="text-xs font-bold text-emerald-900 dark:text-emerald-300 flex items-center gap-1.5">
+                            <Code2 className="h-3.5 w-3.5 text-emerald-500" /> Website & Hosting Setup
+                          </p>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className={LABEL}>Domain Name</label>
+                              <input value={form.domain || form.websiteUrl} onChange={e => f({ domain: e.target.value, websiteUrl: e.target.value })} placeholder="clientdomain.com" className={INPUT} />
+                            </div>
+                            <div>
+                              <label className={LABEL}>Tech Stack / CMS</label>
+                              <input value={form.techStack} onChange={e => f({ techStack: e.target.value })} placeholder="Next.js, WordPress, Shopify" className={INPUT} />
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className={LABEL}>Hosting Provider</label>
+                              <input value={form.hostingProvider} onChange={e => f({ hostingProvider: e.target.value })} placeholder="Hostinger, Vercel, AWS" className={INPUT} />
+                            </div>
+                            <div>
+                              <label className={LABEL}>CMS Login / Access Link</label>
+                              <input value={form.cmsAccessUrl} onChange={e => f({ cmsAccessUrl: e.target.value })} placeholder="https://domain.com/wp-admin" className={INPUT} />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
                       <div className="grid grid-cols-2 gap-3">
                         <div>
                           <label className={LABEL}>Industry / Niche</label>
@@ -732,13 +802,15 @@ export default function ClientsPage() {
                           <input value={form.country} onChange={e => f({ country: e.target.value })} placeholder="e.g. India, UAE" className={INPUT} />
                         </div>
                       </div>
-                      <div>
-                        <label className={LABEL}>Website URL</label>
-                        <input type="text" value={form.websiteUrl} onChange={e => f({ websiteUrl: e.target.value })} placeholder="example.com" className={INPUT} />
-                      </div>
-                      <div>
-                        <label className={LABEL}>Services Using</label>
-                        <input value={form.services} onChange={e => f({ services: e.target.value })} placeholder="Meta Ads, Web Dev, Branding…" className={INPUT} />
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className={LABEL}>Monthly Retainer Fee (₹)</label>
+                          <input type="number" min="0" value={form.monthlyFee} onChange={e => f({ monthlyFee: e.target.value })} placeholder="50000" className={INPUT} />
+                        </div>
+                        <div>
+                          <label className={LABEL}>Contract Duration (Months)</label>
+                          <input type="number" min="1" value={form.contractDuration} onChange={e => f({ contractDuration: e.target.value })} placeholder="12" className={INPUT} />
+                        </div>
                       </div>
                     </div>
                   </>
