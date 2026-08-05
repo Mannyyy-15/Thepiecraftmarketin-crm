@@ -141,10 +141,39 @@ export async function sendChatMessage(message: string, chatId?: number): Promise
 
     await db.insert(schema.aiChatMessages).values({ chatId: cid, role: "user", content: text });
 
+    // Live CRM Context Injection
+    let liveCrmData = "";
+    try {
+      const clients = await db.select().from(schema.clients).limit(40);
+      const invoices = await db.select().from(schema.invoices).limit(60);
+
+      const clientSummaries = clients.map(c => {
+        let details: any = {};
+        try { details = JSON.parse(c.details || "{}"); } catch {}
+        const clientInvoices = invoices.filter(i => i.clientId === c.id);
+        const unpaidInvoices = clientInvoices.filter(i => i.status === "sent" || i.status === "overdue" || i.status === "draft");
+        const unpaidTotal = unpaidInvoices.reduce((s, i) => s + (i.totalAmount || i.amount || 0), 0);
+        const paidTotal = clientInvoices.filter(i => i.status === "paid").reduce((s, i) => s + (i.totalAmount || i.amount || 0), 0);
+        return `• Client: ${c.name} | Stage: ${c.stage} | Contact: ${details.contactName || c.name} (${details.contactPhone || details.contactEmail || "N/A"}) | Unpaid Balance: ₹${unpaidTotal.toLocaleString()} (${unpaidInvoices.length} pending invoice/s) | Total Paid: ₹${paidTotal.toLocaleString()}`;
+      }).join("\n");
+
+      const invoiceSummaries = invoices.map(i => {
+        const client = clients.find(c => c.id === i.clientId);
+        return `• Invoice #${i.invoiceNumber} | Client: ${client?.name || "Client #" + i.clientId} | Amount: ₹${(i.totalAmount || i.amount).toLocaleString()} | Status: ${i.status} | Due: ${i.dueDate || "N/A"}`;
+      }).join("\n");
+
+      const totalUnpaid = invoices.filter(i => i.status === "sent" || i.status === "overdue").reduce((s, i) => s + (i.totalAmount || i.amount), 0);
+      const totalPaid = invoices.filter(i => i.status === "paid").reduce((s, i) => s + (i.totalAmount || i.amount), 0);
+
+      liveCrmData = `\n\nCURRENT LIVE AGENCY CRM DATA (REAL-TIME SNAPSHOT):\n- Total Active Clients: ${clients.length}\n- Total Collected Revenue: ₹${totalPaid.toLocaleString()}\n- Total Outstanding Unpaid Revenue: ₹${totalUnpaid.toLocaleString()}\n\nCLIENTS & UNPAID BALANCES:\n${clientSummaries || "No clients onboarded yet."}\n\nINVOICES:\n${invoiceSummaries || "No invoices created yet."}`;
+    } catch {}
+
+    const dynamicSystemPrompt = AGENCY_SYSTEM_PROMPT + liveCrmData;
+
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({
       model: process.env.GEMINI_MODEL || "gemini-2.5-flash",
-      systemInstruction: AGENCY_SYSTEM_PROMPT,
+      systemInstruction: dynamicSystemPrompt,
       generationConfig: { temperature: 0.7 },
     });
     // Gemini history must start with a "user" turn; our stored history already does.
