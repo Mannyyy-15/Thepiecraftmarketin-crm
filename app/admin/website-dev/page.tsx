@@ -35,6 +35,7 @@ import { Avatar } from "@/components/ui/Avatar";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { getWebDevDashboardData, syncWebHealthMetrics } from "@/app/actions/crm";
+import { useActionCache } from "@/hooks/useActionCache";
 import { cn } from "@/components/ui/cn";
 
 const priorityVariant = {
@@ -113,51 +114,48 @@ export default function WebsiteDevPage() {
   const [sResponse, setSResponse] = useState(150);
   const [sStatus, setSStatus] = useState<"operational" | "degraded" | "outage">("operational");
 
+  const { data: cachedDashboard, isLoading: actionCacheLoading } = useActionCache<any>("admin:website_dev", getWebDevDashboardData);
+
   useEffect(() => {
-    (async () => {
-      const res = await getWebDevDashboardData();
-      if (res.success && res.data && (res.data.projects.length > 0 || res.data.tasks.length > 0)) {
-        // Map DB projects to frontend "domains/sites"
-        const mappedDomains = res.data.projects.map((p: any) => {
-          let sd: any = {};
-          try { sd = JSON.parse(p.serviceDetails || "{}"); } catch(e) {}
-          return {
-            id: p.id,
-            name: p.name,
-            url: sd.domain || "",
-            client: p.clientName || "Unknown Client",
-            status: sd.status || (Number.isFinite(Number(sd.uptime)) ? "operational" : "unconfigured"),
-            uptime: Number.isFinite(Number(sd.uptime)) ? Number(sd.uptime) : null,
-            response: Number.isFinite(Number(sd.response)) ? Number(sd.response) : null,
-            lastChecked: null,
-            githubRepo: String(sd.repoLink || "").replace(/^https?:\/\/github\.com\//, "").replace(/\.git\/?$/, ""),
-            isLive: sd.isLive === true,
-            domainExpiry: sd.domainExpiry || "Not Set",
-          };
-        });
+    const dataObj = cachedDashboard?.data || cachedDashboard;
+    if (dataObj && (Array.isArray(dataObj.projects) || Array.isArray(dataObj.tasks))) {
+      const mappedDomains = (dataObj.projects || []).map((p: any) => {
+        let sd: any = {};
+        try { sd = JSON.parse(p.serviceDetails || "{}"); } catch(e) {}
+        return {
+          id: p.id,
+          name: p.name,
+          url: sd.domain || "",
+          client: p.clientName || "Unknown Client",
+          status: sd.status || (Number.isFinite(Number(sd.uptime)) ? "operational" : "unconfigured"),
+          uptime: Number.isFinite(Number(sd.uptime)) ? Number(sd.uptime) : null,
+          response: Number.isFinite(Number(sd.response)) ? Number(sd.response) : null,
+          lastChecked: null,
+          githubRepo: String(sd.repoLink || "").replace(/^https?:\/\/github\.com\//, "").replace(/\.git\/?$/, ""),
+          isLive: sd.isLive === true,
+          domainExpiry: sd.domainExpiry || "Not Set",
+        };
+      });
 
-        const mappedTasks: WebsiteTask[] = res.data.tasks.map((t: any) => ({
-          id: String(t.id),
-          title: t.title,
-          repo: "",
-          status: (t.done || t.status === "done") ? "done"
-            : t.status === "in-progress" || t.status === "in_progress" ? "in-progress"
-            : t.status === "in-review" ? "in-review"
-            : "todo",
-          priority: ["low", "medium", "high", "critical"].includes(t.priority) ? t.priority : "medium",
-          assignee: "Lead Dev",
-        }));
+      const mappedTasks: WebsiteTask[] = (dataObj.tasks || []).map((t: any) => ({
+        id: String(t.id),
+        title: t.title,
+        repo: "",
+        status: (t.done || t.status === "done") ? "done"
+          : t.status === "in-progress" || t.status === "in_progress" ? "in-progress"
+          : t.status === "in-review" ? "in-review"
+          : "todo",
+        priority: ["low", "medium", "high", "critical"].includes(t.priority) ? t.priority : "medium",
+        assignee: "Lead Dev",
+      }));
 
-        setSitesList(mappedDomains);
-        setTasks(mappedTasks);
-      } else {
-        // No web-dev data yet - show empty states rather than fake data.
-        setSitesList([]);
-        setTasks([]);
-      }
+      setSitesList(mappedDomains);
+      setTasks(mappedTasks);
       setLoading(false);
-    })();
-  }, []);
+    } else if (!actionCacheLoading) {
+      setLoading(false);
+    }
+  }, [cachedDashboard, actionCacheLoading]);
 
   // Live calculated metrics
   const totalSites = sitesList.length;

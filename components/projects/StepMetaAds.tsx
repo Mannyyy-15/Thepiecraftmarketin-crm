@@ -22,6 +22,20 @@ export function StepMetaAds({ form, f }: { form: AddProjectFormState; f: (patch:
       <div>
         <SectionHeader icon={Target} label="Campaign Setup" />
         <div className="space-y-4">
+          <div>
+            <label className={LABEL}>Setup Type</label>
+            <div className="grid grid-cols-2 gap-3">
+              <button type="button" onClick={() => f({ setupType: "new" })}
+                className={`h-11 rounded-2xl border text-sm font-bold cursor-pointer ${form.setupType === "new" ? "border-brand-500 bg-brand-500/5 text-brand-600 dark:text-brand-400" : "border-slate-200 dark:border-[#303030] text-slate-600 dark:text-slate-300"}`}>
+                New Campaign
+              </button>
+              <button type="button" onClick={() => f({ setupType: "existing" })}
+                className={`h-11 rounded-2xl border text-sm font-bold cursor-pointer ${form.setupType === "existing" ? "border-brand-500 bg-brand-500/5 text-brand-600 dark:text-brand-400" : "border-slate-200 dark:border-[#303030] text-slate-600 dark:text-slate-300"}`}>
+                Ongoing Account
+              </button>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className={LABEL}>Ad Account ID</label>

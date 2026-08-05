@@ -105,42 +105,62 @@ export function StepWebDev({ form, f }: { form: AddProjectFormState; f: (patch: 
         </div>
       </div>
 
-      <div>
-        <SectionHeader icon={Boxes} label="Scope" />
-        <div className="space-y-3">
-          <ToggleRow label="CMS Needed" checked={form.cmsNeeded} onChange={v => f({ cmsNeeded: v })} />
-          <ToggleRow label="Admin Panel Needed" checked={form.adminPanelNeeded} onChange={v => f({ adminPanelNeeded: v })} />
-          <ToggleRow label="Database Needed" checked={form.dbNeeded} onChange={v => f({ dbNeeded: v })} />
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className={LABEL}>Number of Pages</label>
-              <input type="number" min={0} value={form.numPages} onChange={e => f({ numPages: e.target.value })} placeholder="e.g. 8" className={INPUT} />
+      {form.setupType === "new" ? (
+        <div>
+          <SectionHeader icon={Boxes} label="New Build Scope & Timeline" />
+          <div className="space-y-3">
+            <ToggleRow label="CMS Needed" checked={form.cmsNeeded} onChange={v => f({ cmsNeeded: v })} />
+            <ToggleRow label="Admin Panel Needed" checked={form.adminPanelNeeded} onChange={v => f({ adminPanelNeeded: v })} />
+            <ToggleRow label="Database Needed" checked={form.dbNeeded} onChange={v => f({ dbNeeded: v })} />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className={LABEL}>Number of Pages</label>
+                <input type="number" min={0} value={form.numPages} onChange={e => f({ numPages: e.target.value })} placeholder="e.g. 8" className={INPUT} />
+              </div>
+              <div>
+                <label className={LABEL}>Target Launch Date / Deadline</label>
+                <input type="date" value={form.launchDate || form.deadline} onChange={e => f({ launchDate: e.target.value, deadline: e.target.value })} className={INPUT} />
+              </div>
             </div>
             <div>
-              <label className={LABEL}>Target Launch Date</label>
-              <input type="date" value={form.launchDate} onChange={e => f({ launchDate: e.target.value })} className={INPUT} />
+              <label className={LABEL}>Integrations</label>
+              <input value={form.integrations} onChange={e => f({ integrations: e.target.value })} placeholder="e.g. Stripe, Mailchimp, Zapier" className={INPUT} />
             </div>
-          </div>
-          <div>
-            <label className={LABEL}>Integrations</label>
-            <input value={form.integrations} onChange={e => f({ integrations: e.target.value })} placeholder="e.g. Stripe, Mailchimp, Zapier" className={INPUT} />
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className={LABEL}>Brand Assets</label>
+                <input value={form.brandAssets} onChange={e => f({ brandAssets: e.target.value })} placeholder="Drive/Figma link" className={INPUT} />
+              </div>
+              <div>
+                <label className={LABEL}>Content Assets</label>
+                <input value={form.contentAssets} onChange={e => f({ contentAssets: e.target.value })} placeholder="Drive/Docs link" className={INPUT} />
+              </div>
+            </div>
             <div>
-              <label className={LABEL}>Brand Assets</label>
-              <input value={form.brandAssets} onChange={e => f({ brandAssets: e.target.value })} placeholder="Drive/Figma link" className={INPUT} />
+              <label className={LABEL}>Reference Links</label>
+              <input value={form.referenceLinks} onChange={e => f({ referenceLinks: e.target.value })} placeholder="Sites they like, inspiration links" className={INPUT} />
             </div>
-            <div>
-              <label className={LABEL}>Content Assets</label>
-              <input value={form.contentAssets} onChange={e => f({ contentAssets: e.target.value })} placeholder="Drive/Docs link" className={INPUT} />
-            </div>
-          </div>
-          <div>
-            <label className={LABEL}>Reference Links</label>
-            <input value={form.referenceLinks} onChange={e => f({ referenceLinks: e.target.value })} placeholder="Sites they like, inspiration links" className={INPUT} />
           </div>
         </div>
-      </div>
+      ) : (
+        <div>
+          <SectionHeader icon={Boxes} label="Existing Site Maintenance & Access" />
+          <div className="space-y-3">
+            <div>
+              <label className={LABEL}>CMS / Admin Login Link or Credentials</label>
+              <input value={form.oldWebsiteUrl} onChange={e => f({ oldWebsiteUrl: e.target.value })} placeholder="https://site.com/wp-admin or Vault link" className={INPUT} />
+            </div>
+            <div>
+              <label className={LABEL}>Integrations & Plugins to Maintain</label>
+              <input value={form.integrations} onChange={e => f({ integrations: e.target.value })} placeholder="e.g. WooCommerce, Google Analytics, Custom APIs" className={INPUT} />
+            </div>
+            <div>
+              <label className={LABEL}>Maintenance Notes / Known Issues</label>
+              <textarea value={form.notes} onChange={e => f({ notes: e.target.value })} placeholder="Security updates, speed optimization, ongoing bug fixes..." rows={3} className={INPUT} />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -113,7 +113,14 @@ export default function EmployeeHome({ initialProfile, initialAttendance }: Empl
   }, [cachedProfile]);
 
   useEffect(() => {
-    if (cachedAttendance) setTodayAttendance(cachedAttendance);
+    if (cachedAttendance) {
+      const todayStr = new Date().toLocaleDateString("en-CA");
+      if (cachedAttendance.date && cachedAttendance.date !== todayStr) {
+        setTodayAttendance(null);
+      } else {
+        setTodayAttendance(cachedAttendance);
+      }
+    }
   }, [cachedAttendance]);
 
   const isLoading = attendanceLoading && !initialAttendance;

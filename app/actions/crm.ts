@@ -3,7 +3,7 @@
 import { db } from "@/lib/db";
 import { randomUUID } from "crypto";
 import * as schema from "@/lib/schema";
-import { eq, and, or, inArray, desc, gte, gt, asc, isNotNull, isNull, like, notInArray, sql } from "drizzle-orm";
+import { eq, and, or, inArray, desc, gte, gt, lt, asc, isNotNull, isNull, like, notInArray, sql } from "drizzle-orm";
 import { getCurrentUser } from "./auth";
 import { validateGeofence } from "@/lib/geofence";
 import { sendEmail } from "@/lib/mailer";
@@ -1362,6 +1362,68 @@ export async function bulkUpdateAttendance(userId: number, date: string, status:
   }
 }
 
+async function autoCloseStaleAttendanceRecords(userId: number, todayStr: string) {
+  if (!db) return;
+  try {
+    const unclosed = await db.select()
+      .from(schema.attendance)
+      .where(and(
+        eq(schema.attendance.userId, userId),
+        lt(schema.attendance.date, todayStr),
+        isNull(schema.attendance.punchOutTime)
+      ));
+
+    if (unclosed.length === 0) return;
+
+    const userRow = await db.select({ shiftEndTime: schema.users.shiftEndTime })
+      .from(schema.users)
+      .where(eq(schema.users.id, userId))
+      .limit(1);
+
+    const shiftEndTimeStr = userRow[0]?.shiftEndTime || "06:00 PM";
+
+    for (const record of unclosed) {
+      if (!record.punchInTime) continue;
+
+      const punchInDate = new Date(record.punchInTime);
+      let autoPunchOutDate: Date;
+
+      const dateParts = record.date.split("-").map(Number);
+      if (dateParts.length === 3) {
+        let hours = 18;
+        let minutes = 0;
+        const timeMatch = shiftEndTimeStr.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
+        if (timeMatch) {
+          hours = parseInt(timeMatch[1], 10);
+          minutes = parseInt(timeMatch[2], 10);
+          const ampm = timeMatch[3]?.toUpperCase();
+          if (ampm === "PM" && hours < 12) hours += 12;
+          if (ampm === "AM" && hours === 12) hours = 0;
+        }
+        autoPunchOutDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2], hours, minutes, 0);
+        if (autoPunchOutDate <= punchInDate) {
+          autoPunchOutDate = new Date(punchInDate.getTime() + 8 * 60 * 60 * 1000);
+        }
+      } else {
+        autoPunchOutDate = new Date(punchInDate.getTime() + 8 * 60 * 60 * 1000);
+      }
+
+      const durationMs = autoPunchOutDate.getTime() - punchInDate.getTime();
+      const durationHours = durationMs / (1000 * 60 * 60);
+      const finalStatus = durationHours < 7 ? "half-day" : "present";
+
+      await db.update(schema.attendance)
+        .set({
+          punchOutTime: autoPunchOutDate,
+          status: finalStatus,
+        })
+        .where(eq(schema.attendance.id, record.id));
+    }
+  } catch (e) {
+    console.error("autoCloseStaleAttendanceRecords error:", e);
+  }
+}
+
 // Get today's attendance status for logged-in user
 export async function getTodayAttendance() {
   try {
@@ -1372,6 +1434,10 @@ export async function getTodayAttendance() {
     if (!context) return { success: false, error: "No active organization membership." };
 
     const todayStr = todayInOrgTimezone(context.timezone); // YYYY-MM-DD in org local time
+
+    // Auto-close any unclosed shifts from previous calendar days
+    await autoCloseStaleAttendanceRecords(session.id as number, todayStr);
+
     const record = await db.select()
       .from(schema.attendance)
       .where(and(
