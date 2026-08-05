@@ -5527,3 +5527,25 @@ export async function sendInvoiceReminder(invoiceId: number) {
     return { success: false, error: error?.message || "Failed to send invoice reminder" };
   }
 }
+
+export async function updateDocumentApprovalStatus(docId: number, approvalStatus: string, revisionNotes?: string) {
+  try {
+    const session = await getAuthSession();
+    if (!session) return { success: false, error: "Unauthorized" };
+    if (!db) return { success: false, error: "Database unavailable" };
+
+    await db.update(schema.documents)
+      .set({
+        approvalStatus,
+        revisionNotes: revisionNotes?.trim() || null,
+        reviewedAt: new Date(),
+      })
+      .where(eq(schema.documents.id, docId));
+
+    revalidatePath("/admin/documents");
+    revalidatePath("/client/documents");
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}

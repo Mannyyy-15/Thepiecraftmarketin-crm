@@ -801,12 +801,20 @@ export default function ProjectsPage() {
                         </div>
                       </div>
 
-                      {/* Key figures: retainer + manager */}
+                      {/* Key figures: retainer + profit */}
                       <div className="mt-3.5 flex items-center justify-between gap-2">
                         <div>
                           <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Retainer</p>
                           <p className="text-sm font-extrabold text-slate-800 dark:text-white mt-0.5">{p.monthlyFee ? `₹${Number(p.monthlyFee).toLocaleString()}/mo` : "—"}</p>
                         </div>
+                        {Number(p.monthlyFee) > 0 && (
+                          <div className="text-right">
+                            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Est. Profit</p>
+                            <Badge variant={((Number(p.monthlyFee || 0) - ((tp?.total || 0) * 1250)) >= 0) ? "success" : "danger"} className="text-[10px] font-bold mt-0.5">
+                              ₹{(Number(p.monthlyFee || 0) - ((tp?.total || 0) * 1250)).toLocaleString()} ({Math.round(((Number(p.monthlyFee || 0) - ((tp?.total || 0) * 1250)) / Number(p.monthlyFee || 1)) * 100)}%)
+                            </Badge>
+                          </div>
+                        )}
                         {lead ? (
                           <div className="flex items-center gap-1.5">
                             <Avatar name={lead.name} size="xs" />
@@ -929,12 +937,20 @@ export default function ProjectsPage() {
                         </div>
                       )}
 
-                      {/* Key figures: budget + lead dev */}
+                      {/* Key figures: budget + profit + lead dev */}
                       <div className="mt-4 flex items-center justify-between gap-2">
                         <div>
                           <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Budget</p>
                           <p className="text-sm font-extrabold text-slate-800 dark:text-white mt-0.5">{Number(p.budget) > 0 ? `₹${Number(p.budget).toLocaleString()}` : "—"}</p>
                         </div>
+                        {Number(p.budget) > 0 && (
+                          <div className="text-right">
+                            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Est. Profit</p>
+                            <Badge variant={((Number(p.budget || 0) - ((tp?.total || 0) * 1250)) >= 0) ? "success" : "danger"} className="text-[10px] font-bold mt-0.5">
+                              ₹{(Number(p.budget || 0) - ((tp?.total || 0) * 1250)).toLocaleString()} ({Math.round(((Number(p.budget || 0) - ((tp?.total || 0) * 1250)) / Number(p.budget || 1)) * 100)}%)
+                            </Badge>
+                          </div>
+                        )}
                         {lead ? (
                           <div className="flex items-center gap-1.5">
                             <Avatar name={lead.name} size="xs" />

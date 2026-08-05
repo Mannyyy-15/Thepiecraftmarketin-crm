@@ -22,7 +22,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Progress } from "@/components/ui/Progress";
 import { cn } from "@/components/ui/cn";
-import { getClientDocuments } from "@/app/actions/crm";
+import { getClientDocuments, updateDocumentApprovalStatus } from "@/app/actions/crm";
 import { getCachedValue, setCachedValue } from "@/hooks/useActionCache";
 
 const CLIENT_DOCUMENTS_CACHE_TTL_MS = 60_000;
@@ -256,7 +256,7 @@ export default function ClientDocumentsPage() {
               <tr>
                 <th className="px-5 py-3 text-left font-semibold">Name</th>
                 <th className="px-5 py-3 text-left font-semibold hidden md:table-cell">Folder</th>
-                <th className="px-5 py-3 text-left font-semibold hidden sm:table-cell">Shared by</th>
+                <th className="px-5 py-3 text-left font-semibold hidden sm:table-cell">Status</th>
                 <th className="px-5 py-3 text-left font-semibold hidden sm:table-cell">Updated</th>
                 <th className="px-5 py-3 text-left font-semibold">Size</th>
                 <th className="px-5 py-3" />
@@ -272,6 +272,7 @@ export default function ClientDocumentsPage() {
               ) : (
                 filtered.map((d) => {
                   const catLabel = folderCategories.find(c => c.name === d.folder)?.label || d.folder;
+                  const status = d.approvalStatus || "approved";
                   return (
                     <tr key={d.id} className="hover:bg-slate-50/60 dark:hover:bg-[#303030]/40 transition-colors">
                       <td className="px-5 py-3.5">
@@ -296,13 +297,32 @@ export default function ClientDocumentsPage() {
                       <td className="px-5 py-3.5 hidden md:table-cell">
                         <Badge variant="portal">{catLabel}</Badge>
                       </td>
-                      <td className="px-5 py-3.5 hidden sm:table-cell text-slate-600 dark:text-slate-300 font-medium text-xs">{d.ownerName || "Admin"}</td>
+                      <td className="px-5 py-3.5 hidden sm:table-cell text-xs">
+                        {status === "approved" ? (
+                          <Badge variant="success">Approved</Badge>
+                        ) : status === "changes_requested" ? (
+                          <Badge variant="danger">Changes Requested</Badge>
+                        ) : (
+                          <Badge variant="warning">Pending Review</Badge>
+                        )}
+                      </td>
                       <td className="px-5 py-3.5 hidden sm:table-cell text-slate-500 dark:text-slate-400 text-xs">
                         {d.createdAt ? new Date(d.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "Today"}
                       </td>
                       <td className="px-5 py-3.5 tabular-nums text-slate-600 dark:text-slate-300 font-semibold text-xs">{d.size}</td>
                       <td className="px-5 py-3.5 text-right">
-                        <div className="inline-flex items-center gap-1">
+                        <div className="inline-flex items-center gap-1.5">
+                          {status !== "approved" && (
+                            <button
+                              onClick={async () => {
+                                await updateDocumentApprovalStatus(d.id, "approved");
+                                fetchFiles();
+                              }}
+                              className="px-2.5 py-1 text-[10px] font-bold rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-400 transition-colors"
+                            >
+                              Approve
+                            </button>
+                          )}
                           <button
                             onClick={() => d.url && window.open(d.url, "_blank", "noopener,noreferrer")}
                             aria-label={d.url ? `Open ${d.name}` : `${d.name} is not available for download`}
@@ -311,12 +331,6 @@ export default function ClientDocumentsPage() {
                             className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:text-portal-600 dark:hover:text-portal-300 hover:bg-portal-50 dark:hover:bg-portal-500/10 cursor-pointer disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:bg-transparent disabled:hover:text-slate-400"
                           >
                             <Download className="h-4 w-4" />
-                          </button>
-                          <button
-                            aria-label="More"
-                            className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#303030] cursor-pointer"
-                          >
-                            <MoreHorizontal className="h-4 w-4" />
                           </button>
                         </div>
                       </td>

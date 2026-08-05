@@ -23,6 +23,8 @@ export const users = mysqlTable("users", {
   shiftStartTime: varchar("shift_start_time", { length: 255 }).notNull().default("09:00 AM"),
   shiftEndTime: varchar("shift_end_time", { length: 255 }).notNull().default("05:00 PM"),
   activeShiftProfile: varchar("active_shift_profile", { length: 255 }).notNull().default("Standard Core Hours"),
+  hourlyCostRate: int("hourly_cost_rate").notNull().default(500),
+  billableRate: int("billable_rate").notNull().default(1500),
   avatarUrl: varchar("avatar_url", { length: 500 }),
   permissions: text("permissions").notNull().default("[]"),
   lastLoginAt: timestamp("last_login_at"),
@@ -184,6 +186,10 @@ export const invoices = mysqlTable("invoices", {
   status: varchar("status", { length: 20 }).notNull().default("draft"), // draft | sent | paid | overdue
   dueDate: varchar("due_date", { length: 255 }),
   paidDate: varchar("paid_date", { length: 255 }),
+  gstin: varchar("gstin", { length: 20 }),
+  taxRate: int("tax_rate").notNull().default(18),
+  taxAmount: int("tax_amount").notNull().default(0),
+  totalAmount: int("total_amount").notNull().default(0),
   notes: text("notes"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 }, (table) => ({
@@ -220,6 +226,9 @@ export const documents = mysqlTable("documents", {
   folder: varchar("folder", { length: 255 }).notNull().default("Client Briefs"), // 'Brand Assets' | 'Client Briefs' | 'Contracts' | 'Reports'
   ownerName: varchar("owner_name", { length: 255 }).notNull().default("Admin"),
   url: varchar("url", { length: 500 }),
+  approvalStatus: varchar("approval_status", { length: 50 }).notNull().default("approved"), // 'pending_review' | 'approved' | 'changes_requested'
+  revisionNotes: text("revision_notes"),
+  reviewedAt: timestamp("reviewed_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 }, (table) => ({
   organizationCreatedIndex: index("documents_org_created_idx").on(table.organizationId, table.createdAt),
