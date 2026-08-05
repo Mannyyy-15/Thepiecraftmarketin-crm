@@ -28,6 +28,7 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { getCampaignStatusVariant } from "@/lib/statusHelpers";
 import { getMetaCampaigns, getClients } from "@/app/actions/crm";
+import { useActionCache } from "@/hooks/useActionCache";
 import { PageHeader } from "@/components/ui/PageHeader";
 
 export default function AdsPage() {
@@ -35,22 +36,26 @@ export default function AdsPage() {
   const [clientMap, setClientMap] = useState<Record<number, string>>({});
   const [loading, setLoading] = useState(true);
 
+  const { data: cachedCampaigns, isLoading: campaignsLoading } = useActionCache<any>("employee:meta_ads", getMetaCampaigns);
+  const { data: cachedClients } = useActionCache<any>("employee:clients:list", getClients);
+
   useEffect(() => {
-    (async () => {
-      setLoading(true);
-      try {
-        const [cr, clr] = await Promise.all([getMetaCampaigns(), getClients()]);
-        if (cr.success && cr.data) setCampaigns(cr.data as any[]);
-        if (clr.success && clr.data) {
-          const m: Record<number, string> = {};
-          (clr.data as any[]).forEach(c => { m[c.id] = c.name; });
-          setClientMap(m);
-        }
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
+    if (cachedClients?.success && Array.isArray(cachedClients.data)) {
+      const m: Record<number, string> = {};
+      cachedClients.data.forEach((c: any) => { m[c.id] = c.name; });
+      setClientMap(m);
+    }
+  }, [cachedClients]);
+
+  useEffect(() => {
+    const campaignData = cachedCampaigns?.data || (Array.isArray(cachedCampaigns) ? cachedCampaigns : null);
+    if (Array.isArray(campaignData)) {
+      setCampaigns(campaignData);
+      setLoading(false);
+    } else if (!campaignsLoading) {
+      setLoading(false);
+    }
+  }, [cachedCampaigns, campaignsLoading]);
 
   // Derive KPIs + chart data from real campaigns.
   const totals = useMemo(() => {

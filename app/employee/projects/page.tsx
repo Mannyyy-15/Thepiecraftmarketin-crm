@@ -160,6 +160,9 @@ export default function EmployeeProjectsPage() {
                     <Badge variant={getProjectStatusVariant(p.status)} className="text-[9px] font-bold uppercase tracking-wide px-2 py-0.5">
                       {getProjectStatusLabel(p.status)}
                     </Badge>
+                    <Badge variant={(d.setupType === "new" || d.setupType === "new_build" || d.setupType === "new_campaign") ? "info" : "neutral"} className="text-[9px] font-bold uppercase tracking-wide px-2 py-0.5">
+                      {isMeta ? ((d.setupType === "new" || d.setupType === "new_campaign") ? "New Launch" : "Ongoing Ads") : ((d.setupType === "new" || d.setupType === "new_build") ? "New Build" : "Maintenance")}
+                    </Badge>
                   </div>
                   {total > 0 && (
                     <span className="shrink-0 text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-slate-50 dark:bg-[#303030] border border-slate-200 dark:border-[#303030] text-slate-500">
@@ -168,7 +171,21 @@ export default function EmployeeProjectsPage() {
                   )}
                 </div>
 
-                <Link href={`/employee/projects/${p.id}`} className="block text-sm font-bold text-slate-900 dark:text-white truncate hover:text-brand-600 hover:underline transition-colors">{p.name}</Link>
+                <div className="flex items-center justify-between gap-2">
+                  <Link href={`/employee/projects/${p.id}`} className="block text-sm font-bold text-slate-900 dark:text-white truncate hover:text-brand-600 hover:underline transition-colors">{p.name}</Link>
+                  {p.clientContactPhone && (
+                    <a
+                      href={`https://wa.me/${p.clientContactPhone.replace(/[^0-9]/g, "")}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title={`WhatsApp ${p.clientContactName || p.clientName}`}
+                      className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1 shrink-0"
+                    >
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      WhatsApp
+                    </a>
+                  )}
+                </div>
                 <p className="text-xs text-slate-400 mt-0.5 truncate">{p.clientName || "Unknown client"}</p>
 
                 <div className="mt-3 pt-3 border-t border-slate-100 dark:border-[#303030] grid grid-cols-2 gap-2 text-xs">

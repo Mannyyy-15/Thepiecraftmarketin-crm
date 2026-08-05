@@ -761,8 +761,28 @@ export default function ProjectsPage() {
                             <Megaphone className="h-4 w-4 text-indigo-500" />
                           </div>
                           <div className="min-w-0">
-                            <h3 className="text-sm font-bold text-slate-900 dark:text-white truncate">{p.name}</h3>
-                            <p className="text-[11px] text-slate-400 truncate">{p.clientName || "Unknown client"}</p>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <h3 className="text-sm font-bold text-slate-900 dark:text-white truncate">{p.name}</h3>
+                              <Badge variant={(d.setupType === "new" || d.setupType === "new_campaign") ? "info" : "neutral"} className="text-[9px] uppercase font-bold tracking-wider">
+                                {(d.setupType === "new" || d.setupType === "new_campaign") ? "New Launch" : "Ongoing Ads"}
+                              </Badge>
+                            </div>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <p className="text-[11px] text-slate-400 truncate">{p.clientName || "Unknown client"}</p>
+                              {p.clientContactPhone && (
+                                <a
+                                  href={`https://wa.me/${p.clientContactPhone.replace(/[^0-9]/g, "")}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  onClick={e => e.stopPropagation()}
+                                  title={`WhatsApp ${p.clientContactName || p.clientName}`}
+                                  className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1 shrink-0"
+                                >
+                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                  WhatsApp
+                                </a>
+                              )}
+                            </div>
                           </div>
                         </div>
                         <div className="flex items-center gap-0.5 shrink-0 opacity-60 group-hover:opacity-100 transition-opacity">
@@ -837,8 +857,28 @@ export default function ProjectsPage() {
                             <Code2 className="h-4 w-4 text-emerald-500" />
                           </div>
                           <div className="min-w-0">
-                            <h3 className="text-sm font-bold text-slate-900 dark:text-white truncate">{p.name}</h3>
-                            <p className="text-[11px] text-slate-400 truncate">{p.clientName || "Unknown client"}</p>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <h3 className="text-sm font-bold text-slate-900 dark:text-white truncate">{p.name}</h3>
+                              <Badge variant={(d.setupType === "new" || d.setupType === "new_build") ? "info" : "neutral"} className="text-[9px] uppercase font-bold tracking-wider">
+                                {(d.setupType === "new" || d.setupType === "new_build") ? "New Build" : "Maintenance"}
+                              </Badge>
+                            </div>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <p className="text-[11px] text-slate-400 truncate">{p.clientName || "Unknown client"}</p>
+                              {p.clientContactPhone && (
+                                <a
+                                  href={`https://wa.me/${p.clientContactPhone.replace(/[^0-9]/g, "")}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  onClick={e => e.stopPropagation()}
+                                  title={`WhatsApp ${p.clientContactName || p.clientName}`}
+                                  className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1 shrink-0"
+                                >
+                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                  WhatsApp
+                                </a>
+                              )}
+                            </div>
                           </div>
                         </div>
                         <div className="flex items-center gap-0.5 shrink-0 opacity-60 group-hover:opacity-100 transition-opacity">

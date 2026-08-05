@@ -48,6 +48,7 @@ import {
   triggerMetaAPISync,
   getClients
 } from "@/app/actions/crm";
+import { useActionCache } from "@/hooks/useActionCache";
 import { cn } from "@/components/ui/cn";
 
 export default function AdsPage() {
@@ -70,31 +71,27 @@ export default function AdsPage() {
   const [roas, setRoas] = useState(0);
   const [status, setStatus] = useState<"active" | "paused" | "draft">("draft");
 
-  const loadData = async () => {
-    const clientsRes = await getClients();
-    if (clientsRes.success && clientsRes.data) {
-      setClientsList(clientsRes.data);
-      if (clientsRes.data.length > 0) {
-        setClient(clientsRes.data[0].name);
-      }
-    }
-
-    const res = await getMetaCampaigns();
-    if (res.success && res.data && res.data.length > 0) {
-      setCampaigns(res.data);
-    } else {
-      // No real campaigns yet — show an empty table
-      setCampaigns([]);
-    }
-  };
+  const { data: cachedCampaigns, isLoading: campaignsCacheLoading, refresh: refreshCampaigns } = useActionCache<any>("admin:meta_ads", getMetaCampaigns);
+  const { data: cachedClients } = useActionCache<any>("admin:clients:list", getClients);
 
   useEffect(() => {
-    (async () => {
-      setLoading(true);
-      await loadData();
+    if (cachedClients?.success && Array.isArray(cachedClients.data)) {
+      setClientsList(cachedClients.data);
+      if (cachedClients.data.length > 0 && !client) {
+        setClient(cachedClients.data[0].name);
+      }
+    }
+  }, [cachedClients]);
+
+  useEffect(() => {
+    const campaignData = cachedCampaigns?.data || (Array.isArray(cachedCampaigns) ? cachedCampaigns : null);
+    if (Array.isArray(campaignData)) {
+      setCampaigns(campaignData);
       setLoading(false);
-    })();
-  }, []);
+    } else if (!campaignsCacheLoading) {
+      setLoading(false);
+    }
+  }, [cachedCampaigns, campaignsCacheLoading]);
 
   // Previously this seeded demo campaigns into the DB; now it simply returns the
   // current real campaigns (no fake data is ever written).
