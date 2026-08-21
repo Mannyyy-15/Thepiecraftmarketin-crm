@@ -72,6 +72,18 @@ export default function LoginPage() {
         setLoading(false);
       }
     } catch (err: any) {
+      const errMsg = String(err?.message || err || "");
+      if (errMsg.includes("Server Action") || errMsg.includes("was not found") || errMsg.includes("failed-to-find-server-action")) {
+        setToast({ 
+          type: "error", 
+          message: "Application was updated on the server. Refreshing page..." 
+        });
+        setTimeout(() => {
+          window.location.reload();
+        }, 800);
+        return;
+      }
+
       setToast({ 
         type: "error", 
         message: err.message || "An unexpected system error occurred." 
