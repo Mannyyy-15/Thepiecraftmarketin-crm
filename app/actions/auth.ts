@@ -198,9 +198,14 @@ export async function login(state: any, formData: FormData) {
       return { success: false, error: "Please enter both email and password." };
     }
 
-    if (!db || !getSessionSecret()) {
-      console.error("[Auth] Login unavailable because a required service is not configured.");
-      return { success: false, error: "Login is temporarily unavailable." };
+    if (!db) {
+      console.error("[Auth] Login unavailable: DATABASE_URL is not configured.");
+      return { success: false, error: "Login failed: Database URL is missing or not configured in environment." };
+    }
+
+    if (!getSessionSecret()) {
+      console.error("[Auth] Login unavailable: JWT_SECRET is missing or under 32 characters.");
+      return { success: false, error: "Login failed: JWT_SECRET must be configured (at least 32 characters)." };
     }
 
     const rateLimit = await checkDistributedRateLimit(
@@ -215,9 +220,16 @@ export async function login(state: any, formData: FormData) {
       };
     }
 
-    // Find user in database
+    // Find user in database with explicit column selection for maximum DB stability
     const existingUsers = await db
-      .select()
+      .select({
+        id: schema.users.id,
+        name: schema.users.name,
+        email: schema.users.email,
+        password: schema.users.password,
+        role: schema.users.role,
+        avatarUrl: schema.users.avatarUrl,
+      })
       .from(schema.users)
       .where(eq(schema.users.email, email))
       .limit(1);

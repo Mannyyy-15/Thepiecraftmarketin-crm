@@ -16,7 +16,11 @@ export interface SessionPayload extends JWTPayload {
 }
 
 export function getSessionSecret(): Uint8Array | null {
-  const secret = process.env.JWT_SECRET;
+  const secret =
+    process.env.JWT_SECRET ||
+    (process.env.NODE_ENV !== "production"
+      ? "thepiecraft_development_jwt_secret_32_bytes_long_key_2026"
+      : null);
   if (!secret || new TextEncoder().encode(secret).byteLength < 32) {
     return null;
   }
