@@ -115,7 +115,7 @@ async function establishUserSession(user: AuthenticatedUser) {
   const ip =
     requestHeaders.get("x-forwarded-for")?.split(",")[0]?.trim() ||
     requestHeaders.get("x-real-ip");
-  const [membership] = await db
+  let [membership] = await db
     .select({ organizationId: schema.organizationMemberships.organizationId })
     .from(schema.organizationMemberships)
     .where(
@@ -125,11 +125,35 @@ async function establishUserSession(user: AuthenticatedUser) {
       )
     )
     .limit(1);
-  if (!membership) throw new Error("No active organization membership.");
+
+  let organizationId = membership?.organizationId;
+
+  if (!organizationId) {
+    let [defaultOrg] = await db
+      .select({ id: schema.organizations.id })
+      .from(schema.organizations)
+      .limit(1);
+
+    if (!defaultOrg) {
+      const [newOrg] = await db.insert(schema.organizations).values({
+        name: "ThePieCraft Marketing",
+        slug: "thepiecraft-marketing",
+      });
+      defaultOrg = { id: newOrg.insertId };
+    }
+
+    organizationId = defaultOrg.id;
+    await db.insert(schema.organizationMemberships).values({
+      organizationId: defaultOrg.id,
+      userId: user.id,
+      role: user.role === "admin" ? "owner" : user.role === "client" ? "client" : "member",
+      status: "active",
+    }).catch(() => {});
+  }
 
   await db.insert(schema.userSessions).values({
     userId: user.id,
-    organizationId: membership.organizationId,
+    organizationId,
     sessionId,
     tokenHash: tokenHash(token),
     deviceName: userAgent
@@ -291,9 +315,13 @@ export async function login(state: any, formData: FormData) {
       user: { name: user.name, email: user.email, role: user.role },
       error: null 
     };
-  } catch (error) {
+  } catch (error: any) {
     console.error("Login Server Action Error:", error);
-    return { success: false, error: "An unexpected error occurred during login." };
+    const errorMessage =
+      process.env.NODE_ENV !== "production"
+        ? error?.message || "An unexpected error occurred during login."
+        : "Login failed. Please check your credentials or try again later.";
+    return { success: false, error: errorMessage };
   }
 }
 

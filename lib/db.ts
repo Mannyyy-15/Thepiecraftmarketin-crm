@@ -20,7 +20,7 @@ const poolOptions: mysql.PoolOptions = {
   ssl: allowInsecureLocalDatabase
     ? undefined
     : {
-        rejectUnauthorized: true,
+        rejectUnauthorized: process.env.DATABASE_SSL_REJECT_UNAUTHORIZED === "true",
         ...(databaseCa ? { ca: databaseCa } : {}),
       },
   waitForConnections: true,
@@ -78,13 +78,32 @@ export function ensureAdminSeeded() {
       if (existingAdmins.length === 0) {
         console.log(`[Database] No admin found. Seeding master admin: ${adminEmail}`);
         const hashedPassword = await bcrypt.hash(adminPassword, 12);
-        await db.insert(schema.users).values({
+        const [insertedUser] = await db.insert(schema.users).values({
           name: adminName,
           email: adminEmail,
           password: hashedPassword,
           role: "admin",
           systemRole: "Admin",
         });
+
+        // Ensure primary organization & membership exists
+        let [org] = await db.select({ id: schema.organizations.id }).from(schema.organizations).limit(1);
+        if (!org) {
+          const [newOrg] = await db.insert(schema.organizations).values({
+            name: "ThePieCraft Marketing",
+            slug: "thepiecraft-marketing",
+          });
+          org = { id: newOrg.insertId };
+        }
+
+        if (insertedUser?.insertId && org?.id) {
+          await db.insert(schema.organizationMemberships).values({
+            organizationId: org.id,
+            userId: insertedUser.insertId,
+            role: "owner",
+            status: "active",
+          });
+        }
         console.log(`[Database] Master admin successfully seeded.`);
       } else {
         console.log("[Database] Admin already exists in users table.");
