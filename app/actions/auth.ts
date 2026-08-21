@@ -317,11 +317,10 @@ export async function login(state: any, formData: FormData) {
     };
   } catch (error: any) {
     console.error("Login Server Action Error:", error);
-    const errorMessage =
-      process.env.NODE_ENV !== "production"
-        ? error?.message || "An unexpected error occurred during login."
-        : "Login failed. Please check your credentials or try again later.";
-    return { success: false, error: errorMessage };
+    return {
+      success: false,
+      error: error?.message || "An unexpected error occurred during login.",
+    };
   }
 }
 
