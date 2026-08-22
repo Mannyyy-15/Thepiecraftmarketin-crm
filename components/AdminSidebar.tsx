@@ -5,20 +5,26 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import {
   LayoutDashboard,
-  Store,
-  Flame,
-  Receipt,
-  WalletCards,
-  ShieldCheck,
-  UtensilsCrossed,
+  Building2,
+  Briefcase,
+  Contact2,
+  BadgeDollarSign,
+  FolderKanban,
+  BarChart3,
+  Target,
+  Code2,
+  UsersRound,
   FilePieChart,
+  Receipt,
+  Files,
   Settings,
+  Sparkles,
+  WalletCards,
   X,
   LogOut,
-  Sparkles,
-  Building,
-  UserCheck,
-  Truck,
+  Workflow,
+  PlugZap,
+  ShieldCheck,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/components/ui/cn";
@@ -27,66 +33,54 @@ import { LogoutConfirmModal } from "@/components/ui/LogoutConfirmModal";
 import { logout } from "@/app/actions/auth";
 import { clearCurrentUserCache, getCurrentUserCached } from "@/lib/currentUserClient";
 import { clearPersistentCache } from "@/hooks/useActionCache";
-import { useFranchise } from "@/lib/franchise-context";
 
-const superAdminNav = [
+const navigationSections = [
   {
-    label: "HQ COMMAND",
+    label: "Home",
     items: [
-      { name: "HQ Overview", href: "/admin", icon: LayoutDashboard },
-      { name: "Franchise Hubs", href: "/admin/outlets", icon: Store },
-      { name: "Central Supply Chain", href: "/admin/supply-chain", icon: Truck },
-      { name: "Master Menu & Recipes", href: "/admin/menu", icon: UtensilsCrossed },
+      { name: "Overview", href: "/admin", icon: LayoutDashboard },
     ],
   },
   {
-    label: "FINANCE & AUDIT",
+    label: "CRM",
     items: [
-      { name: "Royalties & Invoices", href: "/admin/royalties", icon: WalletCards },
-      { name: "Sales & Shift Audit", href: "/admin/sales", icon: Receipt },
-      { name: "Meat Yield Benchmarks", href: "/admin/yield", icon: Flame },
-      { name: "FSSAI & Hygiene", href: "/admin/compliance", icon: ShieldCheck },
-      { name: "Audit Trail", href: "/admin/audit", icon: FilePieChart },
+      { name: "Leads", href: "/admin/leads", icon: Target },
+      { name: "Clients", href: "/admin/clients", icon: Briefcase },
     ],
   },
   {
-    label: "SYSTEM",
+    label: "Delivery",
     items: [
-      { name: "HQ Settings", href: "/admin/settings", icon: Settings },
-    ],
-  },
-];
-
-const franchiseNav = [
-  {
-    label: "STORE TERMINAL",
-    items: [
-      { name: "Store Overview", href: "/admin", icon: LayoutDashboard },
-      { name: "Counter POS Terminal", href: "/pos", icon: Flame },
+      { name: "Team", href: "/admin/team", icon: UsersRound },
+      { name: "Projects", href: "/admin/projects", icon: FolderKanban },
+      { name: "Meta Ads", href: "/admin/ads", icon: BarChart3 },
+      { name: "Website Dev", href: "/admin/website-dev", icon: Code2 },
+      { name: "Agency Ops", href: "/admin/agency-operations", icon: Workflow },
     ],
   },
   {
-    label: "OPERATIONS",
+    label: "Business",
     items: [
-      { name: "Shifts & Cash Drawer", href: "/admin/sales", icon: Receipt },
-      { name: "Spit Meat Yield", href: "/admin/yield", icon: Flame },
-      { name: "Menu & 86 List", href: "/admin/menu", icon: UtensilsCrossed },
-      { name: "FSSAI & Hygiene Logs", href: "/admin/compliance", icon: ShieldCheck },
+      { name: "Finance", href: "/admin/finance", icon: WalletCards },
+      { name: "Invoices", href: "/admin/invoices", icon: Receipt },
+      { name: "Documents", href: "/admin/documents", icon: Files },
+      { name: "Reports", href: "/admin/reports", icon: FilePieChart },
+      { name: "Integrations", href: "/admin/integrations", icon: PlugZap },
     ],
   },
   {
-    label: "FINANCE",
+    label: "System",
     items: [
-      { name: "Store Royalty Statements", href: "/admin/royalties", icon: WalletCards },
-      { name: "Store Settings", href: "/admin/settings", icon: Settings },
+      { name: "Studio AI", href: "/admin/studio-ai", icon: Sparkles },
+      { name: "Settings", href: "/admin/settings", icon: Settings },
+      { name: "Security", href: "/admin/security", icon: ShieldCheck },
     ],
   },
-];
+] as const;
 
 function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { role, activeOutlet, selectedOutletId } = useFranchise();
   const [user, setUser] = useState<{ name: string; email: string; role: string; avatarUrl?: string } | null>(null);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -112,102 +106,94 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
 
   return (
     <div className="flex h-full w-full flex-col bg-white dark:bg-[#1f1f1f] lg:rounded-[20px] dark:border dark:border-[#303030] shadow-[0_2px_16px_rgba(0,0,0,0.07)] dark:shadow-none overflow-hidden">
-      {/* Brand Header */}
       <div className="flex h-16 shrink-0 items-center justify-between px-5 border-b border-[#f0f0f2] dark:border-[#303030]">
-        <Link href="/admin" className="flex items-center gap-3" onClick={onNavigate}>
-          <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 via-orange-600 to-amber-700 flex items-center justify-center shadow-[0_0_20px_rgba(245,158,11,0.35)]">
-            <Flame className="w-5 h-5 text-white animate-pulse" />
+        <Link href="/admin" className="flex items-center gap-2.5" onClick={onNavigate}>
+          <div className="relative w-9 h-9 rounded-xl bg-brand-hero flex items-center justify-center shadow-glow">
+            <span className="text-white font-bold text-lg">P</span>
           </div>
           <div className="flex flex-col leading-none">
-            <span className="text-sm font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-1.5">
-              Irani Koyla
-              <span className="text-[10px] bg-amber-500/20 text-amber-400 font-bold px-1.5 py-0.5 rounded border border-amber-500/30">
-                OS
-              </span>
+            <span className="text-sm font-bold text-slate-900 dark:text-white tracking-tight">
+              ThePieCraft
             </span>
-            <span className="text-[10px] font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-widest mt-0.5">
-              Franchise Network
+            <span className="text-[10px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-widest mt-0.5">
+              Agency OS
             </span>
           </div>
         </Link>
       </div>
 
-      {/* Navigation Sections */}
-      <nav className="flex flex-1 flex-col overflow-y-auto px-3 py-3" aria-label="FranchiseOS workspace">
-        {(role === "SUPER_ADMIN" ? superAdminNav : franchiseNav).map((section, sectionIndex) => (
+      <nav className="flex flex-1 flex-col overflow-y-auto px-3 py-4" aria-label="Admin workspace">
+        {navigationSections.map((section, sectionIndex) => (
           <div key={section.label} className={sectionIndex === 0 ? "" : "mt-4"}>
-            <p className="mb-1.5 px-3 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">
+            <p className="mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-widest text-slate-500">
               {section.label}
             </p>
             <ul role="list" className="flex flex-col gap-y-0.5">
               {section.items.map((item) => {
-                const isActive =
-                  item.href === "/admin"
-                    ? pathname === "/admin"
-                    : pathname.startsWith(item.href);
-                return (
-                  <li key={item.name}>
-                    <Link
-                      href={item.href}
-                      onClick={onNavigate}
-                      aria-current={isActive ? "page" : undefined}
-                      className={cn(
-                        "group relative flex min-h-10 items-center gap-x-3 rounded-xl px-3 py-2 text-sm font-medium transition-all cursor-pointer",
-                        isActive
-                          ? "bg-amber-500/15 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400 font-bold shadow-sm"
-                          : "text-[#4b4b5a] dark:text-zinc-400 hover:text-[#111114] dark:hover:text-white hover:bg-[#f7f7f9] dark:hover:bg-[#303030]"
-                      )}
-                    >
-                      {isActive && (
-                        <span className="absolute left-0 top-1.5 bottom-1.5 w-1 rounded-r bg-amber-500" />
-                      )}
-                      <item.icon
-                        className={cn(
-                          "h-[18px] w-[18px] shrink-0 transition-colors",
-                          isActive
-                            ? "text-amber-600 dark:text-amber-400"
-                            : "text-slate-400 dark:text-zinc-500 group-hover:text-slate-700 dark:group-hover:text-white"
-                        )}
-                      />
-                      <span className="truncate">{item.name}</span>
-                    </Link>
-                  </li>
-                );
+            const isActive =
+              item.href === "/admin"
+                ? pathname === "/admin"
+                : pathname.startsWith(item.href);
+            return (
+              <li key={item.name}>
+                <Link
+                  href={item.href}
+                  onClick={onNavigate}
+                  aria-current={isActive ? "page" : undefined}
+                  className={cn(
+                    "group relative flex min-h-11 items-center gap-x-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all cursor-pointer",
+                    isActive
+                      ? "bg-[#eff6ff] dark:bg-blue-500/15 text-blue-700 dark:text-white"
+                      : "text-[#4b4b5a] dark:text-[#9999a8] hover:text-[#111114] dark:hover:text-white hover:bg-[#f7f7f9] dark:hover:bg-[#303030]"
+                  )}
+                >
+                  {isActive && (
+                    <span className="absolute left-0 top-1.5 bottom-1.5 w-0.5 rounded-r bg-blue-600 dark:bg-blue-400" />
+                  )}
+                  <item.icon
+                    className={cn(
+                      "h-[18px] w-[18px] shrink-0 transition-colors",
+                      isActive
+                        ? "text-blue-600 dark:text-blue-300"
+                        : "text-slate-400 dark:text-[#5a5a68] group-hover:text-slate-700 dark:group-hover:text-white"
+                    )}
+                  />
+                  {item.name}
+                </Link>
+              </li>
+            );
               })}
             </ul>
           </div>
         ))}
       </nav>
 
-      {/* Footer Profile & Status */}
-      <div className="border-t border-[#f0f0f2] dark:border-[#303030] p-3 flex items-center justify-between gap-2 bg-slate-50/50 dark:bg-[#161618]">
+      <div className="border-t border-[#f0f0f2] dark:border-[#303030] p-3 flex items-center justify-between gap-2">
         <Link
           href="/admin/settings"
           onClick={onNavigate}
-          className="flex flex-1 items-center gap-2.5 rounded-xl p-1.5 hover:bg-slate-100 dark:hover:bg-[#1f1f1f] transition-colors cursor-pointer min-w-0"
+          className="flex flex-1 items-center gap-3 rounded-xl p-2 hover:bg-slate-50 dark:hover:bg-[#303030] transition-colors cursor-pointer min-w-0"
         >
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white font-bold text-xs shrink-0">
-            {role === "SUPER_ADMIN" ? "HQ" : "FO"}
-          </div>
+          <Avatar name={user?.name || "Admin"} role={user?.role} src={user?.avatarUrl} status="online" size="sm" />
           <div className="flex flex-col min-w-0">
-            <span className="text-xs font-bold text-slate-900 dark:text-white truncate leading-tight">
-              {role === "SUPER_ADMIN" ? "admin" : activeOutlet?.ownerName || "partner"}
+            <span className="text-sm font-medium text-slate-900 dark:text-white truncate">
+              {user?.name || "Agency Admin"}
             </span>
-            <span className="text-[10px] text-slate-500 dark:text-zinc-400 truncate leading-tight mt-0.5">
-              {role === "SUPER_ADMIN" ? "admin@iranikoyla.com" : activeOutlet?.ownerEmail || "partner.bandra@iranikoyla.com"}
+            <span className="text-xs text-slate-500 dark:text-slate-400 truncate">
+              {user?.email || "admin@thepiecraft.com"}
             </span>
-            <span className="text-[9px] font-mono text-amber-500/70 uppercase tracking-wider mt-0.5">
-              v1.0.0 [BUILD 1]
+            <span className="inline-block mt-1 text-[9px] font-extrabold text-brand-600 dark:text-brand-400 bg-brand-500/10 px-2 py-0.5 rounded-full w-fit uppercase tracking-wider">
+              v1.5.0 (Build 7)
             </span>
           </div>
         </Link>
         <button
           onClick={() => setShowLogoutModal(true)}
-          className="p-2 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-950/20 transition-all cursor-pointer"
+          className="icon-button text-rose-600 hover:bg-rose-50 dark:text-rose-300 dark:hover:bg-rose-950/20 transition-all cursor-pointer"
           aria-label="Log out"
-          title="Sign Out"
+          title="Log Out"
         >
-          <LogOut className="h-4 w-4" />
+          <LogOut className="h-4.5 w-4.5" />
         </button>
       </div>
 
@@ -231,7 +217,7 @@ export default function AdminSidebar({
   return (
     <>
       {/* Desktop */}
-      <aside className="hidden lg:flex lg:w-[17.5rem] lg:shrink-0 lg:pl-4 lg:py-4 lg:pr-0">
+      <aside className="hidden lg:flex lg:w-[18rem] lg:shrink-0 lg:pl-4 lg:py-4 lg:pr-0">
         <SidebarBody />
       </aside>
 

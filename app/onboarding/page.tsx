@@ -7,87 +7,87 @@ import { Check, ArrowRight, ChevronRight } from "lucide-react";
 
 const slides = [
   {
-    badge: "Franchise OS",
-    title: "Welcome to\nIrani Koyla OS",
+    badge: "Agency OS",
+    title: "Welcome to\nThePieCraft CRM",
     subtitle:
-      "One operating system for your entire Shawarma Franchise network. Manage outlets, meat yield, shifts, and royalties — no more scattered tools.",
+      "One operating system for your entire marketing agency. Manage clients, projects, team, and finances — no more scattered tools.",
     features: [
-      "Live Shawarma Spit meat yield & wastage tracking",
-      "Built specifically for restaurant franchise networks",
-      "Real-time outlet sales & shift reconciliation",
+      "Replace 5+ scattered tools with one platform",
+      "Built specifically for marketing agencies",
+      "Real-time team & project visibility",
     ],
     graphic: "pie",
     chips: [
-      { label: "4 Active Outlets", color: "#3A58E8", bg: "#1e3a5f" },
-      { label: "₹2.4L Daily Sales", color: "#14B8A6", bg: "#0d3d38" },
+      { label: "12 Active Clients", color: "#3A58E8", bg: "#1e3a5f" },
+      { label: "₹2.4L Revenue", color: "#14B8A6", bg: "#0d3d38" },
     ],
     accent: "#3A58E8",
   },
   {
-    badge: "Outlets & Spits",
-    title: "Outlets &\nSpit Yield",
+    badge: "Clients & Projects",
+    title: "Clients &\nProjects",
     subtitle:
-      "Onboard franchise outlets, track live spit weights, portion accuracy, and monitor kitchen efficiency from skewer load to final wrap.",
+      "Onboard client brands, track project pipelines, assign leads, and monitor progress from kickoff to launch — all in one place.",
     features: [
-      "Real-time skewer weight vs cooked yield %",
-      "Gram-accurate master recipe BOM standards",
-      "Live spit core temperature alerts (≥75°C)",
+      "Kanban pipeline with custom stages",
+      "Bento detail page per client & project",
+      "Auto-generated onboarding checklist",
     ],
     graphic: "clients",
     chips: [
-      { label: "Bandra Flagship ✓", color: "#14B8A6", bg: "#0d3d38" },
-      { label: "94.2% Spit Yield", color: "#3A58E8", bg: "#1e3a5f" },
+      { label: "Onboarded ✓", color: "#14B8A6", bg: "#0d3d38" },
+      { label: "3 Projects Active", color: "#3A58E8", bg: "#1e3a5f" },
     ],
     accent: "#5F7EF1",
   },
   {
-    badge: "Operations",
-    title: "Shifts &\nAttendance",
+    badge: "Team",
+    title: "Team &\nAttendance",
     subtitle:
-      "Morning and evening shift closing, cashier cash counts, UPI & aggregator reconciliation, and geofenced attendance logs.",
+      "Log hours, punch in/out, request leave, and assign tasks. Know who's working on what with real-time team visibility.",
     features: [
-      "Daily shift tenders & drawer reconciliation",
-      "Zero-tolerance cash variance tracking",
-      "Kitchen master & carver audit logs",
+      "Daily punch in/out with live status",
+      "Leave approvals & timesheet management",
+      "Task assignment per team member",
     ],
     graphic: "features",
     chips: [
-      { label: "Shift Balanced", color: "#3A58E8", bg: "#1e3a5f" },
-      { label: "FSSAI Verified", color: "#14B8A6", bg: "#0d3d38" },
+      { label: "7 Members Online", color: "#3A58E8", bg: "#1e3a5f" },
+      { label: "Leave Approved", color: "#14B8A6", bg: "#0d3d38" },
     ],
     accent: "#8FA8F7",
   },
   {
     badge: "Finance",
-    title: "Royalties &\nStatements",
+    title: "Finance &\nReporting",
     subtitle:
-      "Automated 6.5% brand royalty, 2.0% marketing fund, central commissary raw meat billing, and dispute management.",
+      "Create invoices, track expenses, approve timesheets, and view profit reports. Your agency's financial pulse at a glance.",
     features: [
-      "Automated monthly franchise statements",
-      "Commissary supplies & credit adjustments",
-      "1-click acknowledgment & remittance",
+      "Invoice creation, tracking & mark-paid",
+      "Expense claims approval workflow",
+      "Profit, MRR & outstanding dashboard",
     ],
     graphic: "finance",
     chips: [
-      { label: "₹3.8L Settled", color: "#14B8A6", bg: "#0d3d38" },
-      { label: "1 In Review", color: "#EF4444", bg: "#3d1414" },
+      { label: "₹45K Collected", color: "#14B8A6", bg: "#0d3d38" },
+      { label: "2 Overdue", color: "#EF4444", bg: "#3d1414" },
     ],
     accent: "#14B8A6",
   },
   {
     badge: "Ready",
-    title: "Your Network,\nOne Dashboard",
+    title: "Your Agency,\nOne Dashboard",
     subtitle:
-      "Sign in and start running your franchise smarter. Irani Koyla OS — built for fast-casual operations that scale.",
+      "Sign in and start running your agency smarter. ThePieCraft CRM — built for agencies that mean business.",
     features: [
       "Set up in under 10 minutes",
-      "All kitchen & HQ modules unlocked",
-      "Built and maintained by Irani Koyla HQ",
+      "All features unlocked from day one",
+      "Built and maintained by ThePieCraft",
     ],
     graphic: "rocket",
     chips: [
-      { label: "Ready to launch 🔥", color: "#14B8A6", bg: "#0d3d38" },
-      { label: "All Outlets Active ✓", color: "#3A58E8", bg: "#1e3a5f" },
+      { label: "Ready to launch 🚀", color: "#14B8A6", bg: "#0d3d38" },
+      { label: "All features ✓", color: "#3A58E8", bg: "#1e3a5f" },
     ],
     accent: "#14B8A6",
   },
@@ -387,12 +387,12 @@ export default function OnboardingPage() {
         <div className="hidden lg:flex lg:w-[48%] xl:w-[45%] flex-col items-center justify-center relative border-r border-white/[0.04] px-12 py-16">
           {/* Logo */}
           <div className="absolute top-8 left-8 flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500 to-rose-600 flex items-center justify-center shadow-lg shadow-amber-500/30">
-              <span className="text-white font-black text-sm">IK</span>
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#3b82f6] to-[#60a5fa] flex items-center justify-center shadow-lg shadow-[#3b82f6]/40">
+              <span className="text-white font-bold text-lg">P</span>
             </div>
             <div>
-              <div className="text-sm font-bold text-white leading-none">Irani Koyla</div>
-              <div className="text-[9px] font-semibold text-amber-500 uppercase tracking-widest mt-0.5">Franchise OS</div>
+              <div className="text-sm font-bold text-white leading-none">ThePieCraft</div>
+              <div className="text-[9px] font-semibold text-[#7b8fc4] uppercase tracking-widest mt-0.5">Agency OS</div>
             </div>
           </div>
 
@@ -453,11 +453,11 @@ export default function OnboardingPage() {
 
           {/* Decorative bottom text */}
           <div className="absolute bottom-8 left-8 right-8 flex items-center gap-3 opacity-25">
-            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-amber-500 to-transparent" />
-            <span className="text-[9px] font-semibold text-amber-500 uppercase tracking-widest whitespace-nowrap">
-              Irani Koyla OS v2.0
+            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[#3b82f6] to-transparent" />
+            <span className="text-[9px] font-semibold text-[#7b8fc4] uppercase tracking-widest whitespace-nowrap">
+              ThePieCraft CRM v2.0
             </span>
-            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-amber-500 to-transparent" />
+            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[#3b82f6] to-transparent" />
           </div>
         </div>
 
@@ -467,10 +467,10 @@ export default function OnboardingPage() {
           {/* Mobile header */}
           <div className="flex items-center justify-between mb-6 lg:hidden">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-500 to-rose-600 flex items-center justify-center shadow-md shadow-amber-500/30">
-                <span className="text-white font-bold text-xs">IK</span>
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#3b82f6] to-[#60a5fa] flex items-center justify-center shadow-md shadow-[#3b82f6]/30">
+                <span className="text-white font-bold text-base">P</span>
               </div>
-              <span className="text-sm font-bold text-white">Irani Koyla OS</span>
+              <span className="text-sm font-bold text-white">ThePieCraft</span>
             </div>
             <span className="text-xs font-medium text-[#7b8fc4]">{current + 1} / {slides.length}</span>
           </div>

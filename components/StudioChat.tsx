@@ -160,7 +160,7 @@ export default function StudioChat() {
           </div>
           <div className="min-w-0">
             <p className="text-sm font-bold text-slate-900 dark:text-white leading-tight">Studio AI</p>
-            <p className="text-[10px] text-slate-400 dark:text-[#5a5a68]">Your Irani Koyla operations assistant</p>
+            <p className="text-[10px] text-slate-400 dark:text-[#5a5a68]">Your ThePieCraft agency assistant</p>
           </div>
           <button onClick={newChat} className="lg:hidden ml-auto h-8 px-2.5 rounded-lg text-xs font-bold text-[#3b82f6] hover:bg-blue-50 dark:hover:bg-blue-500/10 cursor-pointer flex items-center gap-1">
             <Plus className="h-3.5 w-3.5" /> New

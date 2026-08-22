@@ -7,12 +7,17 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace("/admin");
+    const onboardingDone = localStorage.getItem("tpc_onboarding_done");
+    if (onboardingDone === "true") {
+      router.replace("/login");
+    } else {
+      router.replace("/onboarding");
+    }
   }, [router]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#141416]">
-      <div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+    <div className="min-h-screen flex items-center justify-center bg-[#101012]">
+      <div className="w-8 h-8 border-2 border-[#3b82f6] border-t-transparent rounded-full animate-spin" />
     </div>
   );
 }

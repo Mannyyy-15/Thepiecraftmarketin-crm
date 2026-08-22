@@ -28,9 +28,7 @@ const accentFill = {
 } as const;
 
 function parseNumericValue(val: string) {
-  // Remove commas to handle formatted numbers like ₹3,83,647
-  const clean = val.replace(/,/g, "");
-  const m = clean.match(/^([^0-9-]*)(-?[0-9]+(?:\.[0-9]+)?)(.*)$/);
+  const m = val.match(/^([^0-9-]*)(-?[0-9]+(?:\.[0-9]+)?)(.*)$/);
   if (!m) return null;
   return { prefix: m[1], num: parseFloat(m[2]), suffix: m[3] };
 }
@@ -68,25 +66,14 @@ export default function KpiCard({
   const sparkData = spark?.map((v, i) => ({ i, v }));
   const gradId = `kpi-grad-${accent}-${title.replace(/\s+/g, "")}`;
 
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: "0px 0px -40px 0px" });
 
   const parsed = parseNumericValue(value);
   const decimals = parsed ? (parsed.num % 1 !== 0 ? 1 : 0) : 0;
-  const animated = useCountUp(parsed?.num ?? 0, decimals, 1000, isInView && mounted);
-  
-  const formatAnimated = (num: number) => {
-    if (decimals > 0) return num.toFixed(decimals);
-    return Math.round(num).toLocaleString("en-IN");
-  };
-
-  const displayValue = mounted && parsed && isInView
-    ? `${parsed.prefix}${formatAnimated(animated)}${parsed.suffix}`
+  const animated = useCountUp(parsed?.num ?? 0, decimals, 1000, isInView);
+  const displayValue = parsed && isInView
+    ? `${parsed.prefix}${animated}${parsed.suffix}`
     : value;
 
   return (
@@ -98,11 +85,11 @@ export default function KpiCard({
       className={cn(
         "group relative rounded-2xl bg-white dark:bg-[#1f1f1f] p-5 sm:p-6 overflow-hidden transition-all duration-200",
         "shadow-[0_1px_4px_rgba(0,0,0,0.03),_0_6px_20px_rgba(0,0,0,0.05)] hover:shadow-[0_2px_8px_rgba(0,0,0,0.06),_0_10px_28px_rgba(0,0,0,0.09)]",
-        "dark:shadow-none dark:border dark:border-[#303030] dark:hover:border-[#6e2a14]"
+        "dark:shadow-none dark:border dark:border-[#303030] dark:hover:border-[#38383f]"
       )}
     >
       <div className="flex items-start justify-between gap-2 mb-3">
-        <p className="text-xs font-semibold text-slate-600 dark:text-[#b8b8c5]/70 uppercase tracking-wider leading-none">
+        <p className="text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider leading-none">
           {title}
         </p>
         {icon && (
@@ -112,7 +99,7 @@ export default function KpiCard({
         )}
       </div>
 
-      <p suppressHydrationWarning className="text-[28px] font-black text-[#111114] dark:text-white tracking-tight tabular-nums leading-none">
+      <p className="text-[28px] font-black text-[#111114] dark:text-white tracking-tight tabular-nums leading-none">
         {displayValue}
       </p>
 

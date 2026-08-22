@@ -136,8 +136,8 @@ async function establishUserSession(user: AuthenticatedUser) {
 
     if (!defaultOrg) {
       const [newOrg] = await db.insert(schema.organizations).values({
-        name: "Irani Koyla Brand HQ",
-        slug: "irani-koyla",
+        name: "ThePieCraft Marketing",
+        slug: "thepiecraft-marketing",
       });
       defaultOrg = { id: newOrg.insertId };
     }
@@ -333,42 +333,6 @@ export async function login(state: any, formData: FormData) {
       success: false,
       error: error?.message || "An unexpected error occurred during login.",
     };
-  }
-}
-
-/**
- * Mock authentication switch for testing between Super Admin and Franchise Owner
- */
-export async function mockLoginAction(targetRole: "SUPER_ADMIN" | "FRANCHISE_OWNER") {
-  try {
-    const isSuperAdmin = targetRole === "SUPER_ADMIN";
-    const user = {
-      id: isSuperAdmin ? 1 : 2,
-      name: isSuperAdmin ? "Irani Koyla Super Admin" : "Tariq Mansoori (Bandra Flagship)",
-      email: isSuperAdmin ? "admin@iranikoyla.com" : "partner.bandra@iranikoyla.com",
-      role: "admin" as const,
-      avatarUrl: isSuperAdmin ? "/logo.png" : null,
-    };
-
-    const expiresAt = new Date(Date.now() + SESSION_DURATION_SECONDS * 1000);
-    const sessionId = crypto.randomUUID();
-    const token = await encrypt(user, sessionId);
-
-    (await cookies()).set(SESSION_COOKIE_NAME, token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      path: "/",
-      expires: expiresAt,
-      priority: "high",
-    });
-
-    revalidatePath("/");
-    revalidatePath("/admin");
-    return { success: true, user, role: targetRole };
-  } catch (error: any) {
-    console.error("[Auth] mockLoginAction error:", error);
-    return { success: false, error: error?.message || "Mock auth switch failed" };
   }
 }
 

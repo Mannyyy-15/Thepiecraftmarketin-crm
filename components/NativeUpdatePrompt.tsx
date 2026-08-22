@@ -28,7 +28,7 @@ const AppUpdater = registerPlugin<AppUpdaterPlugin>("AppUpdater", {
   addListener: async () => ({ remove: async () => {} }),
 });
 
-const SNOOZE_KEY = "iranikoyla.native-update.snoozed-until";
+const SNOOZE_KEY = "thepiecraft.native-update.snoozed-until";
 
 export default function NativeUpdatePrompt() {
   const [manifest, setManifest] = useState<UpdateManifest | null>(null);
@@ -59,7 +59,7 @@ export default function NativeUpdatePrompt() {
 
       const data = (await response.json()) as UpdateManifest;
       if (data.versionCode > currentVersion) {
-        const snoozedVersionCode = Number(window.localStorage.getItem("iranikoyla.native-update.snoozed-version") || 0);
+        const snoozedVersionCode = Number(window.localStorage.getItem("thepiecraft.native-update.snoozed-version") || 0);
         if (data.versionCode > snoozedVersionCode) {
           window.localStorage.removeItem(SNOOZE_KEY);
         }
@@ -76,9 +76,9 @@ export default function NativeUpdatePrompt() {
             // Ensure high-priority channel exists
             try {
               await LocalNotifications.createChannel({
-                id: "iranikoyla-os",
-                name: "Irani Koyla OS",
-                description: "Kitchen operations, spit yield, and shift notifications",
+                id: "thepiecraft-crm",
+                name: "ThePieCraft CRM",
+                description: "CRM updates, tasks, and attendance notifications",
                 importance: 5,
                 visibility: 1,
                 vibration: true,
@@ -98,10 +98,10 @@ export default function NativeUpdatePrompt() {
                 notifications: [
                   {
                     id: 990000 + data.versionCode,
-                    title: `🔥 Irani Koyla OS Update Available (v${data.versionName})`,
+                    title: `🚀 PieCraft CRM Update Available (v${data.versionName})`,
                     body: `${data.title || "A new update is ready!"} Tap to update your app now.`,
                     extra: { action: "open_update", versionCode: data.versionCode },
-                    channelId: "iranikoyla-os",
+                    channelId: "thepiecraft-crm",
                     schedule: { at: new Date(Date.now() + 500) },
                   },
                 ],
@@ -127,7 +127,7 @@ export default function NativeUpdatePrompt() {
     try {
       const result = await AppUpdater.install({ url: manifest.apkUrl, sha256: manifest.sha256 });
       if (result.status === "permission_required") {
-        setDownloadError("Allow Irani Koyla OS to install unknown apps in the screen that opened, then tap Update Now again.");
+        setDownloadError("Allow ThePieCraft CRM to install unknown apps in the screen that opened, then tap Update Now again.");
       }
     } catch (e: any) {
       setDownloadError(e?.message || "The update failed to download.");
@@ -189,8 +189,8 @@ export default function NativeUpdatePrompt() {
               <RefreshCw className="h-5 w-5 animate-spin" />
             </div>
             <div>
-              <span className="text-[10px] font-extrabold uppercase tracking-widest text-amber-500">
-                Irani Koyla OS Update
+              <span className="text-[10px] font-extrabold uppercase tracking-widest text-brand-400">
+                PieCraft OS Update
               </span>
               <h3 className="text-base font-black text-white">
                 v{manifest.versionName} Available

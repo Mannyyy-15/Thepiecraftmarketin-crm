@@ -4,7 +4,7 @@ export const androidRelease = {
   minimumVersionCode: 13,
   apkUrl: "https://github.com/Mannyyy-15/Thepiecraftmarketin-crm/releases/download/v1.6.1/ThePieCraft-CRM-App-Debug.apk",
   sha256: "2016142CC9B00389CB6FA43BC8D46E5B04B34AE4BE12C308902D18B8EB82A359",
-  title: "Irani Koyla OS v1.6.1 Update Available",
+  title: "PieCraft CRM v1.6.1 Update Available",
   notes: [
     "Removed redundant punch in/out buttons — simplified to slide-to-punch control.",
     "Cleaned up Today Activity timeline & status labels.",

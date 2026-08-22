@@ -7,7 +7,6 @@ import { GlobalSyncProvider } from "@/components/providers/GlobalSyncProvider";
 import AppDeepLinkHandler from "@/components/AppDeepLinkHandler";
 import NativeUpdatePrompt from "@/components/NativeUpdatePrompt";
 import { AppPreloader } from "@/components/AppPreloader";
-import { FranchiseProvider } from "@/lib/franchise-context";
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -17,9 +16,9 @@ const jakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Irani Koyla FranchiseOS — Shawarma Network Operating System",
+  title: "ThePieCraft OS — Agency Operating System",
   description:
-    "The internal operating system for Irani Koyla Shawarma Franchise Network. Manage outlets, meat yield, daily shifts, and royalty statements in one place.",
+    "The operating system for modern digital marketing agencies. Manage clients, projects, ads, and finances in one place.",
 };
 
 export const viewport: Viewport = {
@@ -40,13 +39,11 @@ export default function RootLayout({
       <body className="font-sans antialiased bg-background text-foreground" suppressHydrationWarning>
         <GlobalSyncProvider>
           <ToastProvider>
-            <FranchiseProvider>
-              <AppPreloader />
-              {children}
-              <MobileBackHandler />
-              <AppDeepLinkHandler />
-              <NativeUpdatePrompt />
-            </FranchiseProvider>
+            <AppPreloader />
+            {children}
+            <MobileBackHandler />
+            <AppDeepLinkHandler />
+            <NativeUpdatePrompt />
           </ToastProvider>
         </GlobalSyncProvider>
       </body>

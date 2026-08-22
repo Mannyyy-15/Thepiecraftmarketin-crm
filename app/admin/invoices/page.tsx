@@ -13,13 +13,13 @@ import logoImg from "@/assets/invoice-logo.png";
 
 // Default agency identity — overridden by Settings → Agency Profile when present.
 const COMPANY_FALLBACK = {
-  name: "Irani Koyla Brand HQ",
-  email: "finance@iranikoyla.com",
-  tagline: "Shawarma Franchise Network & Kitchen Operations",
-  phone: "+91 98200 12345",
-  website: "https://iranikoyla.com",
-  address: "Central Commissary Hub, Marol, Mumbai 400059",
-  gst: "27AABCI4920F1ZV",
+  name: "ThePieCraft Marketing",
+  email: "info@thepiecraftmarketing.com",
+  tagline: "Performance Marketing & Web Development",
+  phone: "",
+  website: "",
+  address: "",
+  gst: "",
   logoUrl: "",
 };
 

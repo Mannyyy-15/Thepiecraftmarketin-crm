@@ -90,8 +90,8 @@ export function ensureAdminSeeded() {
         let [org] = await db.select({ id: schema.organizations.id }).from(schema.organizations).limit(1);
         if (!org) {
           const [newOrg] = await db.insert(schema.organizations).values({
-            name: "Irani Koyla Brand HQ",
-            slug: "irani-koyla",
+            name: "ThePieCraft Marketing",
+            slug: "thepiecraft-marketing",
           });
           org = { id: newOrg.insertId };
         }

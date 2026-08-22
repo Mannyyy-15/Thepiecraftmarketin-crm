@@ -4867,7 +4867,7 @@ export async function simulateStripePayment(invoiceId: number) {
     }
 
     await triggerEmailNotification(
-      String(session.email || "partner@iranikoyla.com"),
+      String(session.email || "client@thepiecraft.com"),
       `Payment Receipt: Invoice #${invoice.invoiceNumber}`,
       `<h1>Thank you for your payment!</h1>
        <p>We received your payment of <strong>₹${invoice.amount}</strong> for Invoice #${invoice.invoiceNumber}.</p>
@@ -5223,7 +5223,7 @@ export async function getInvoiceSettings() {
     return {
       success: true,
       data: {
-        agencyName: s.agencyName || "Irani Koyla Brand HQ",
+        agencyName: s.agencyName || "ThePieCraft Marketing",
         agencyEmail: s.agencyEmail || "",
         agencyPhone: s.agencyPhone || "",
         agencyWebsite: s.agencyWebsite || "",
@@ -5516,7 +5516,7 @@ export async function sendInvoiceReminder(invoiceId: number) {
       }
     }
 
-    const msg = `Hello ${clientName}, reminder from Irani Koyla HQ: Invoice #${invoice.invoiceNumber} for ₹${invoice.amount.toLocaleString()} is due on ${invoice.dueDate || "receipt"}. Please make payment promptly. Thank you!`;
+    const msg = `Hello ${clientName}, reminder from ThePieCraft: Invoice #${invoice.invoiceNumber} for ₹${invoice.amount.toLocaleString()} is due on ${invoice.dueDate || "receipt"}. Please make payment promptly. Thank you!`;
 
     const smsRes = await sendSmsWhatsAppNotification({
       to: phone || "+15550000000",

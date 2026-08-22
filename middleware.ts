@@ -21,10 +21,16 @@ export async function middleware(request: NextRequest) {
   const isClientRoute = path.startsWith("/client");
   const isLoginRoute = path === "/login";
 
-  // 2. No session token found or key not set — allow smooth mock design mode
+  // 2. No session token found
   const key = getSessionSecret();
   if (!token || !key) {
-    // In design/mock mode, allow accessing routes freely
+    // If attempting to visit a protected route, redirect to login page
+    if (isAdminRoute || isEmployeeRoute || isClientRoute) {
+      const response = NextResponse.redirect(new URL("/login", request.url));
+      if (token) response.cookies.delete(SESSION_COOKIE_NAME);
+      return response;
+    }
+    // Allow access to public pages (like / or /login)
     return NextResponse.next();
   }
 

@@ -2,8 +2,8 @@ import type { JWTPayload } from "jose";
 
 export const SESSION_COOKIE_NAME = "token";
 export const SESSION_DURATION_SECONDS = 24 * 60 * 60;
-export const SESSION_ISSUER = "iranikoyla-os";
-export const SESSION_AUDIENCE = "iranikoyla-os-users";
+export const SESSION_ISSUER = "thepiecraft-crm";
+export const SESSION_AUDIENCE = "thepiecraft-crm-users";
 
 export type UserRole = "admin" | "employee" | "client";
 

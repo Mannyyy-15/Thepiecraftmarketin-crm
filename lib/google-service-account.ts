@@ -78,7 +78,7 @@ export async function sendFcmMessage(input: {
           token: input.token,
           notification: { title: input.title, body: input.body },
           data: { link: input.link },
-          android: { notification: { channel_id: "iranikoyla-os" } },
+          android: { notification: { channel_id: "thepiecraft-crm" } },
         },
       }),
       cache: "no-store",

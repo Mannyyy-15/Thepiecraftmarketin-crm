@@ -1,552 +1,367 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
+import { useState, useEffect } from "react";
+import { getCurrentUserCached } from "@/lib/currentUserClient";
 import {
-  Flame,
-  Store,
-  Receipt,
-  ShieldCheck,
-  Building,
-  TrendingUp,
-  Clock,
-  CheckCircle2,
-  AlertTriangle,
-  ArrowUpRight,
-  UtensilsCrossed,
-  DollarSign,
-  Banknote,
-  ShoppingBag,
-  Plus,
-  FileText,
-  Search,
-  ExternalLink,
-  ChevronRight,
-  Truck,
-  Layers,
-  Sparkles,
-  UserCheck,
-  Check,
+  Activity,
+  ArrowRight,
+  CircleDollarSign,
+  Globe,
+  MoreHorizontal,
+  Target,
+  Users,
 } from "lucide-react";
 import {
-  AreaChart,
   Area,
+  AreaChart,
+  CartesianGrid,
+  Cell,
+  Legend,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
 } from "recharts";
-import { useFranchise } from "@/lib/franchise-context";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import KpiCard from "@/components/KpiCard";
+import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Avatar, AvatarGroup } from "@/components/ui/Avatar";
 import { Progress } from "@/components/ui/Progress";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/Dialog";
-import { cn } from "@/components/ui/cn";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { ActivityFeedSkeleton, TableRowsSkeleton } from "@/components/ui/Skeleton";
+import { getActivityFeed, getAdminDashboardData } from "@/app/actions/crm";
+import { getProjectStatusVariant, getProjectStatusLabel } from "@/lib/statusHelpers";
+import { useRememberedCount } from "@/hooks/useRememberedCount";
 
-const HOURLY_SALES_DATA = [
-  { hour: "12 PM", sales: 8400 },
-  { hour: "02 PM", sales: 16800 },
-  { hour: "04 PM", sales: 12200 },
-  { hour: "06 PM", sales: 24500 },
-  { hour: "08 PM", sales: 48900 },
-  { hour: "10 PM", sales: 68500 },
-  { hour: "12 AM", sales: 34200 },
-];
+const channelColors = ["#3b82f6", "#14B8A6", "#F59E0B", "#F43F5E"];
 
-const MENU_SHARE_DATA = [
-  { name: "Chicken Shawarma Wraps", value: 52, color: "#f97316" },
-  { name: "Smoked Mutton Rolls", value: 24, color: "#ea580c" },
-  { name: "Loaded Combo Meals", value: 16, color: "#fb923c" },
-  { name: "Platters & Sides", value: 8, color: "#fed7aa" },
-];
+export default function DashboardPage() {
+  const [userName, setUserName] = useState("Admin");
+  const [activities, setActivities] = useState<any[]>([]);
+  const [isActivitiesLoading, setIsActivitiesLoading] = useState(true);
+  const [dashboardData, setDashboardData] = useState<{
+    activeClientsCount: number;
+    monthlyRevenue: number;
+    totalAdSpend: number;
+    activeWebsites: number;
+    recentProjects: any[];
+    revenueData: any[];
+    channelData: any[];
+  } | null>(null);
+  const { skeletonCount: projectRowCount, record: recordProjectRowCount } = useRememberedCount("admin:dashboard:projects", 3);
 
-export default function AdminDashboardPage() {
-  const {
-    role,
-    outlets,
-    activeOutlet,
-    selectedOutletId,
-    setSelectedOutletId,
-    networkTotals,
-    meatBatches,
-    shifts,
-    royalties,
-    complianceList,
-    auditLogs,
-    liveOrders,
-    staffMembers,
-    outletTenderTotals,
-    shipments,
-  } = useFranchise();
+  useEffect(() => {
+    getActivityFeed(10)
+      .then(res => { if (res.success) setActivities(res.data); })
+      .finally(() => setIsActivitiesLoading(false));
 
-  const isSuperAdmin = role === "SUPER_ADMIN" && selectedOutletId === "all";
-  const currentOutlet = activeOutlet || outlets[0];
+    getAdminDashboardData().then(res => {
+      if (res.success) {
+        setDashboardData(res.data);
+        recordProjectRowCount(res.data?.recentProjects?.length ?? 0);
+      }
+    });
+  }, []);
 
-  const [orderSearch, setOrderSearch] = useState("");
-  const [orderChannelFilter, setOrderChannelFilter] = useState<"all" | "Walk-in Counter" | "Zomato" | "Swiggy">("all");
-  const [showDrawerBreakdown, setShowDrawerBreakdown] = useState(false);
-
-  // Filtered live orders for store view
-  const filteredOrders = liveOrders.filter((o) => {
-    const matchesSearch =
-      o.orderNumber.toLowerCase().includes(orderSearch.toLowerCase()) ||
-      (o.customerName && o.customerName.toLowerCase().includes(orderSearch.toLowerCase()));
-    const matchesChannel = orderChannelFilter === "all" || o.channel === orderChannelFilter;
-    return matchesSearch && matchesChannel;
-  });
-
-  const channelChartData = [
-    { name: "Walk-in Counter", value: outletTenderTotals.walkInSales, color: "#f97316" },
-    { name: "Zomato Online", value: outletTenderTotals.zomatoSales, color: "#ea580c" },
-    { name: "Swiggy Delivery", value: outletTenderTotals.swiggySales, color: "#fb923c" },
-  ];
+  useEffect(() => {
+    getCurrentUserCached().then((user) => {
+      if (user && user.name) {
+        const name = user.name;
+        if (typeof name === "string") {
+          const capitalized = name.charAt(0).toUpperCase() + name.slice(1);
+          setUserName(capitalized);
+        }
+      }
+    });
+  }, []);
 
   return (
     <div className="space-y-6">
-      {/* ── TOP HEADER AREA ────────────────────────────────────────────── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <p className="text-[10px] font-bold text-orange-500 uppercase tracking-widest leading-none mb-1.5 flex items-center gap-1.5">
-            <Store className="w-3.5 h-3.5" />
-            <span>
-              {isSuperAdmin
-                ? "Brand HQ Global • Multi-Branch Operations"
-                : `${currentOutlet.name} • ${currentOutlet.code}`}
-            </span>
-          </p>
-          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-            {isSuperAdmin ? "Network Executive Command Center" : "Outlet Operations Dashboard"}
-          </h1>
-          <p className="text-xs sm:text-sm text-[#b8b8c5]/70 mt-0.5">
-            {isSuperAdmin
-              ? `Real-time multi-unit performance across ${outlets.length} franchise locations.`
-              : `Store management, daily cash float reconciliation, spit roasting yield, and KOT queue.`}
-          </p>
-        </div>
+      <PageHeader
+        eyebrow="Dashboard"
+        title={`Good morning, ${userName} 👋`}
+      />
 
-        <div className="flex items-center gap-2">
-          {isSuperAdmin ? (
-            <div className="flex items-center gap-2">
-              <Link href="/admin/outlets">
-                <Button className="bg-orange-600 hover:bg-orange-500 text-white font-black text-xs uppercase tracking-wider rounded-xl gap-2 shadow-lg shadow-orange-600/25 h-11 px-4 cursor-pointer">
-                  <Plus className="w-4 h-4" />
-                  <span>Onboard Franchise Hub</span>
-                </Button>
-              </Link>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2">
-              <Link href="/pos">
-                <Button className="bg-orange-600 hover:bg-orange-500 text-white font-black text-xs uppercase tracking-wider rounded-xl gap-2 shadow-lg shadow-orange-600/25 h-11 px-4 cursor-pointer">
-                  <Flame className="w-4 h-4" />
-                  <span>Open Counter POS</span>
-                </Button>
-              </Link>
-
-              <Link href="/admin/sales">
-                <Button variant="outline" className="h-11 px-3.5 text-xs font-bold border-[#303030] bg-[#1f1f1f] text-zinc-300 rounded-xl gap-1.5 hover:text-white">
-                  <Receipt className="w-4 h-4 text-emerald-400" />
-                  <span>Shift Close</span>
-                </Button>
-              </Link>
-            </div>
-          )}
-        </div>
+      {/* KPI grid */}
+      <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
+        <KpiCard
+          title="Monthly Revenue"
+          value={`₹${(dashboardData?.monthlyRevenue || 0).toLocaleString()}`}
+          accent="brand"
+          icon={<CircleDollarSign className="h-5 w-5" />}
+        />
+        <KpiCard
+          title="Active Clients"
+          value={`${dashboardData?.activeClientsCount || 0}`}
+          accent="emerald"
+          icon={<Users className="h-5 w-5" />}
+        />
+        <KpiCard
+          title="Total Ad Spend"
+          value={`₹${(dashboardData?.totalAdSpend || 0).toLocaleString()}`}
+          accent="amber"
+          icon={<Activity className="h-5 w-5" />}
+        />
+        <KpiCard
+          title="Active Websites"
+          value={`${dashboardData?.activeWebsites ?? 0}`}
+          accent="rose"
+          icon={<Globe className="h-5 w-5" />}
+        />
       </div>
 
-      {/* ── SUPER ADMIN DASHBOARD VIEW ──────────────────────────────────── */}
-      {isSuperAdmin ? (
-        <div className="space-y-6">
-          {/* Top 4 Network KPI Cards */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
-            <Card className="border-[#303030] bg-[#1f1f1f]">
-              <CardContent className="p-4 flex items-center gap-3.5">
-                <div className="w-11 h-11 rounded-xl bg-orange-500/10 border border-orange-500/30 flex items-center justify-center shrink-0">
-                  <Receipt className="w-5 h-5 text-orange-400" />
-                </div>
-                <div>
-                  <span className="text-[10px] font-bold text-[#b8b8c5]/70 uppercase tracking-wider block">Network Gross Sales Today</span>
-                  <p className="text-xl font-black text-emerald-400 font-mono mt-0.5">
-                    ₹{networkTotals.totalSalesToday.toLocaleString("en-IN")}
-                  </p>
-                  <span className="text-[10px] text-[#b8b8c5]/60 block">{networkTotals.totalWrapsToday.toLocaleString()} Wraps Carved Today</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-[#303030] bg-[#1f1f1f]">
-              <CardContent className="p-4 flex items-center gap-3.5">
-                <div className="w-11 h-11 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center shrink-0">
-                  <Store className="w-5 h-5 text-blue-400" />
-                </div>
-                <div>
-                  <span className="text-[10px] font-bold text-[#b8b8c5]/70 uppercase tracking-wider block">Active Franchise Network</span>
-                  <p className="text-xl font-black text-white font-mono mt-0.5">{outlets.length} Hubs</p>
-                  <span className="text-[10px] text-emerald-400 font-semibold block">4 Live & Billing · 1 Launching</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-[#303030] bg-[#1f1f1f]">
-              <CardContent className="p-4 flex items-center gap-3.5">
-                <div className="w-11 h-11 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center shrink-0">
-                  <Flame className="w-5 h-5 text-amber-400" />
-                </div>
-                <div>
-                  <span className="text-[10px] font-bold text-[#b8b8c5]/70 uppercase tracking-wider block">Network Avg Spit Yield</span>
-                  <p className="text-xl font-black text-amber-400 font-mono mt-0.5">{networkTotals.avgSpitEfficiency}%</p>
-                  <span className="text-[10px] text-zinc-400 block">{networkTotals.activeSpitsCount} Live Spit Roasters</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-[#303030] bg-[#1f1f1f]">
-              <CardContent className="p-4 flex items-center gap-3.5">
-                <div className="w-11 h-11 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center shrink-0">
-                  <DollarSign className="w-5 h-5 text-emerald-400" />
-                </div>
-                <div>
-                  <span className="text-[10px] font-bold text-[#b8b8c5]/70 uppercase tracking-wider block">Monthly Royalty Invoiced</span>
-                  <p className="text-xl font-black text-white font-mono mt-0.5">
-                    ₹{(networkTotals.totalRoyaltyCollected / 100000).toFixed(2)}L
-                  </p>
-                  <span className="text-[10px] text-zinc-400 block">Pending: ₹{networkTotals.totalRoyaltyPending.toLocaleString("en-IN")}</span>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Multi-Branch Live Performance Matrix */}
-          <div className="p-5 rounded-2xl bg-[#1f1f1f] border border-[#303030] space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#303030] pb-3">
-              <div>
-                <h2 className="text-base font-black text-white flex items-center gap-2">
-                  <Building className="w-4 h-4 text-orange-500" />
-                  <span>Franchise Branch Performance Comparison Matrix</span>
-                </h2>
-                <p className="text-xs text-zinc-400 mt-0.5">
-                  Live sales velocity, target realization %, spit carving yield, and compliance status across all hubs.
-                </p>
-              </div>
-
-              <Link href="/admin/outlets">
-                <Button size="sm" variant="outline" className="text-xs font-bold border-[#303030] bg-[#161618] text-orange-400 rounded-xl gap-1">
-                  <span>Manage Outlets & Credentials</span>
-                  <ChevronRight className="w-3.5 h-3.5" />
-                </Button>
-              </Link>
+      {/* Chart + side panel */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+        <Card className="xl:col-span-2">
+          <CardHeader>
+            <div>
+              <CardTitle>Revenue & Ad Spend</CardTitle>
             </div>
+            <div className="flex items-center gap-2">
+              <div className="hidden sm:flex items-center gap-3 text-xs">
+                <span className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
+                  <span className="h-2 w-2 rounded-full bg-brand-500" /> Revenue
+                </span>
+                <span className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
+                  <span className="h-2 w-2 rounded-full bg-amber-500" /> Spend
+                </span>
+              </div>
+              <select className="h-8 rounded-xl border border-[#e8e8ed] dark:border-[#303030] bg-[#f7f7f9] dark:bg-[#303030] px-2.5 text-xs font-medium text-[#4b4b5a] dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-[#3b82f6]/40">
+                <option>Last 6 months</option>
+                <option>Last year</option>
+                <option>YTD</option>
+              </select>
+            </div>
+          </CardHeader>
+          <CardContent className="p-2 sm:p-4">
+            <div className="h-72 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={dashboardData?.revenueData || []} margin={{ top: 12, right: 16, left: -4, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.35} />
+                      <stop offset="100%" stopColor="#3b82f6" stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="spendGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#F59E0B" stopOpacity={0.3} />
+                      <stop offset="100%" stopColor="#F59E0B" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid stroke="currentColor" strokeOpacity={0.08} vertical={false} />
+                  <XAxis
+                    dataKey="month"
+                    tickLine={false}
+                    axisLine={false}
+                    tick={{ fill: "currentColor", fontSize: 12, opacity: 0.6 }}
+                  />
+                  <YAxis
+                    tickLine={false}
+                    axisLine={false}
+                    tick={{ fill: "currentColor", fontSize: 12, opacity: 0.6 }}
+                    tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`}
+                  />
+                  <Tooltip
+                    cursor={{ stroke: "#6366F1", strokeOpacity: 0.2, strokeWidth: 2 }}
+                    contentStyle={{
+                      borderRadius: 12,
+                      border: "1px solid rgba(99,102,241,0.2)",
+                      background: "rgba(8,13,30,0.97)",
+                      fontSize: 12,
+                      boxShadow: "0 4px 24px rgba(0,0,0,0.4)",
+                    }}
+                    labelStyle={{ color: "#94a3b8", fontWeight: 500 }}
+                    itemStyle={{ color: "#ffffff", fontWeight: 600 }}
+                    formatter={(value: number) => `₹${value.toLocaleString()}`}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="revenue"
+                    stroke="#3b82f6"
+                    strokeWidth={2.5}
+                    fill="url(#revGrad)"
+                    name="Revenue"
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="spend"
+                    stroke="#F59E0B"
+                    strokeWidth={2.5}
+                    fill="url(#spendGrad)"
+                    name="Spend"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3.5">
-              {outlets.map((outlet) => {
-                const targetPercent = Math.min(100, Math.round((outlet.currentDaySales / outlet.dailyTargetSales) * 100)) || 0;
-                return (
-                  <div
-                    key={outlet.id}
-                    className="p-4 rounded-2xl bg-[#161618] border border-[#303030] hover:border-orange-500/60 transition-all flex flex-col justify-between space-y-3"
+        <Card>
+          <CardHeader>
+            <CardTitle>Project Distribution</CardTitle>
+            <button aria-label="Project distribution options" className="text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 cursor-pointer">
+              <MoreHorizontal className="h-4 w-4" />
+            </button>
+          </CardHeader>
+          <CardContent>
+            <div className="h-40 sm:h-48">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={dashboardData?.channelData || []}
+                    innerRadius={45}
+                    outerRadius={70}
+                    paddingAngle={4}
+                    dataKey="value"
+                    stroke="none"
                   >
-                    <div>
-                      <div className="flex items-center justify-between">
-                        <span className="font-mono text-[10px] font-black text-orange-400 bg-orange-500/10 border border-orange-500/30 px-2 py-0.5 rounded-md">
-                          {outlet.code}
-                        </span>
-                        <span className={cn(
-                          "text-[9px] font-black uppercase px-2 py-0.5 rounded-md border",
-                          outlet.status === "active"
-                            ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
-                            : "bg-amber-500/10 text-amber-400 border-amber-500/30"
-                        )}>
-                          {outlet.status === "active" ? "● Active & Billing" : "Onboarding"}
-                        </span>
+                    {(dashboardData?.channelData || []).map((_, i) => (
+                      <Cell key={i} fill={channelColors[i % channelColors.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{
+                      borderRadius: 12,
+                      border: "1px solid rgba(99,102,241,0.2)",
+                      background: "rgba(8,13,30,0.97)",
+                      fontSize: 12,
+                      boxShadow: "0 4px 24px rgba(0,0,0,0.4)",
+                    }}
+                    labelStyle={{ color: "#94a3b8", fontWeight: 500 }}
+                    itemStyle={{ color: "#ffffff", fontWeight: 600 }}
+                    formatter={(v: number) => `${v}%`}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <ul className="mt-2 space-y-2">
+              {(dashboardData?.channelData || []).map((c: any, i: number) => (
+                <li key={c.name} className="flex items-center justify-between text-sm">
+                  <span className="inline-flex items-center gap-2 text-slate-600 dark:text-slate-300">
+                    <span
+                      className="h-2 w-2 rounded-full"
+                      style={{ background: channelColors[i] }}
+                    />
+                    {c.name}
+                  </span>
+                  <span className="font-semibold text-slate-900 dark:text-white tabular-nums">
+                    {c.value}%
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Projects table + activity */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+        <Card className="xl:col-span-2 overflow-hidden">
+          <CardHeader>
+            <CardTitle>Active Projects</CardTitle>
+            <Button variant="ghost" size="sm" className="text-[#3b82f6] dark:text-[#9999a8]">
+              View all <ArrowRight className="h-3.5 w-3.5" />
+            </Button>
+          </CardHeader>
+          {dashboardData === null ? (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <tbody className="divide-y divide-[#f0f0f2] dark:divide-[#303030]">
+                  <TableRowsSkeleton rows={projectRowCount} cols={5} />
+                </tbody>
+              </table>
+            </div>
+          ) : dashboardData.recentProjects.length === 0 ? (
+            <EmptyState icon={<Target className="h-5 w-5" />} title="No projects yet" description="Create your first project to see it here." />
+          ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="text-xs uppercase tracking-wider text-[#8888a0] dark:text-[#9999a8] bg-[#f7f7f9] dark:bg-[#1f1f1f]">
+                <tr>
+                  <th className="px-5 sm:px-6 py-3 text-left font-semibold">Project</th>
+                  <th className="px-5 sm:px-6 py-3 text-left font-semibold">Team</th>
+                  <th className="px-5 sm:px-6 py-3 text-left font-semibold hidden sm:table-cell">
+                    Progress
+                  </th>
+                  <th className="px-5 sm:px-6 py-3 text-left font-semibold hidden md:table-cell">
+                    Deadline
+                  </th>
+                  <th className="px-5 sm:px-6 py-3 text-left font-semibold">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#f0f0f2] dark:divide-[#303030]">
+                {(dashboardData?.recentProjects || []).map((p: any) => (
+                  <tr
+                    key={p.id}
+                    className="hover:bg-[#f7f7f9] dark:hover:bg-[#28282d]/60 transition-colors duration-150"
+                  >
+                    <td className="px-5 sm:px-6 py-3.5">
+                      <div className="font-medium text-slate-900 dark:text-white">{p.name}</div>
+                      <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 capitalize">
+                        {p.client} • {p.type}
                       </div>
-
-                      <h3 className="text-sm font-black text-white mt-2">{outlet.name}</h3>
-                      <p className="text-xs text-zinc-400">{outlet.area}, {outlet.city}</p>
-
-                      <div className="mt-3 space-y-1">
-                        <div className="flex justify-between items-baseline text-xs font-mono">
-                          <span className="text-emerald-400 font-black text-base">₹{outlet.currentDaySales.toLocaleString("en-IN")}</span>
-                          <span className="text-zinc-400 text-[11px]">Target: ₹{outlet.dailyTargetSales.toLocaleString("en-IN")} ({targetPercent}%)</span>
+                    </td>
+                    <td className="px-5 sm:px-6 py-3.5">
+                      <AvatarGroup people={p.team} size="xs" />
+                    </td>
+                    <td className="px-5 sm:px-6 py-3.5 hidden sm:table-cell">
+                      {typeof p.progress === "number" ? (
+                        <div className="flex items-center gap-2 min-w-[120px]">
+                          <Progress value={p.progress} size="sm" className="w-24" />
+                          <span className="text-xs font-medium text-slate-600 dark:text-slate-300 tabular-nums">{p.progress}%</span>
                         </div>
-                        <Progress value={targetPercent} className="h-1.5 bg-[#1f1f1f]" />
-                      </div>
-                    </div>
-
-                    <div className="pt-2.5 border-t border-[#303030] flex items-center justify-between text-xs">
-                      <div className="flex items-center gap-3 font-mono text-[11px]">
-                        <span className="text-zinc-400">Wraps: <strong className="text-white">{outlet.currentDayWraps}</strong></span>
-                        <span className="text-zinc-400">Yield: <strong className="text-amber-400">{outlet.spitEfficiency}%</strong></span>
-                      </div>
-
-                      <button
-                        onClick={() => setSelectedOutletId(outlet.id)}
-                        className="text-xs font-bold text-orange-400 hover:text-orange-300 flex items-center gap-1 cursor-pointer"
-                      >
-                        <span>Audit Hub</span>
-                        <ArrowUpRight className="w-3 h-3" />
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+                      ) : <span className="text-xs text-slate-500">No tasks</span>}
+                    </td>
+                    <td className="px-5 sm:px-6 py-3.5 hidden md:table-cell text-slate-600 dark:text-slate-300">
+                      {p.deadline}
+                    </td>
+                    <td className="px-5 sm:px-6 py-3.5">
+                      <Badge dot variant={getProjectStatusVariant(p.status)}>
+                        {getProjectStatusLabel(p.status)}
+                      </Badge>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-
-          {/* Hourly Sales Trend & Product Mix */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-            <Card className="lg:col-span-2 border-[#303030] bg-[#1f1f1f]">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-bold text-white flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <TrendingUp className="w-4 h-4 text-orange-500" />
-                    <span>Hourly Network Velocity Curve (Today)</span>
-                  </div>
-                  <span className="text-xs text-zinc-400 font-mono">Peak 08:00 PM - 11:30 PM</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="h-56 w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={HOURLY_SALES_DATA}>
-                      <defs>
-                        <linearGradient id="hqSalesGrad" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#f97316" stopOpacity={0.3} />
-                          <stop offset="95%" stopColor="#f97316" stopOpacity={0.0} />
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#303030" vertical={false} />
-                      <XAxis dataKey="hour" stroke="#b8b8c5" opacity={0.5} fontSize={11} tickLine={false} />
-                      <YAxis stroke="#b8b8c5" opacity={0.5} fontSize={11} tickLine={false} tickFormatter={(val) => `₹${val / 1000}k`} />
-                      <Tooltip
-                        contentStyle={{
-                          backgroundColor: "#161618",
-                          borderColor: "#303030",
-                          borderRadius: "12px",
-                          fontSize: "12px",
-                          color: "#fff",
-                        }}
-                        formatter={(val: any) => [`₹${Number(val).toLocaleString("en-IN")}`, "Gross Sales"]}
-                      />
-                      <Area type="monotone" dataKey="sales" stroke="#f97316" strokeWidth={2.5} fillOpacity={1} fill="url(#hqSalesGrad)" />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-[#303030] bg-[#1f1f1f]">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-bold text-white flex items-center gap-2">
-                  <UtensilsCrossed className="w-4 h-4 text-orange-500" />
-                  <span>Category Revenue Share</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="h-36 w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie data={MENU_SHARE_DATA} cx="50%" cy="50%" innerRadius={38} outerRadius={55} paddingAngle={4} dataKey="value">
-                        {MENU_SHARE_DATA.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip
-                        contentStyle={{ backgroundColor: "#161618", borderColor: "#303030", borderRadius: "12px", fontSize: "12px" }}
-                        formatter={(val: any) => [`${val}%`, "Share"]}
-                      />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-                <div className="space-y-1.5 pt-2 border-t border-[#303030]">
-                  {MENU_SHARE_DATA.map((item) => (
-                    <div key={item.name} className="flex items-center justify-between text-xs">
-                      <div className="flex items-center gap-1.5">
-                        <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
-                        <span className="text-zinc-300 text-[11px] truncate max-w-[140px]">{item.name}</span>
-                      </div>
-                      <span className="font-mono font-bold text-white text-[11px]">{item.value}%</span>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      ) : (
-        /* ── FRANCHISE PARTNER DASHBOARD VIEW ────────────────────────────── */
-        <div className="space-y-6">
-          {/* Top 4 Store KPI Cards */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
-            <Card className="border-[#303030] bg-[#1f1f1f]">
-              <CardContent className="p-4 flex items-center gap-3.5">
-                <div className="w-11 h-11 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center shrink-0">
-                  <Receipt className="w-5 h-5 text-emerald-400" />
-                </div>
-                <div>
-                  <span className="text-[10px] font-bold text-[#b8b8c5]/70 uppercase tracking-wider block">Today's Gross Sales</span>
-                  <p className="text-xl font-black text-emerald-400 font-mono mt-0.5">
-                    ₹{outletTenderTotals.totalGrossRevenue.toLocaleString("en-IN")}
-                  </p>
-                  <span className="text-[10px] text-zinc-400 block">Target: ₹{currentOutlet.dailyTargetSales.toLocaleString("en-IN")}</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card
-              onClick={() => setShowDrawerBreakdown(!showDrawerBreakdown)}
-              className="border-[#303030] bg-[#1f1f1f] hover:border-emerald-500/50 transition-colors cursor-pointer"
-            >
-              <CardContent className="p-4 flex items-center gap-3.5">
-                <div className="w-11 h-11 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center shrink-0">
-                  <Banknote className="w-5 h-5 text-emerald-400" />
-                </div>
-                <div>
-                  <span className="text-[10px] font-bold text-[#b8b8c5]/70 uppercase tracking-wider block">Cash in Drawer</span>
-                  <p className="text-xl font-black text-white font-mono mt-0.5">
-                    ₹{outletTenderTotals.expectedCashInDrawer.toLocaleString("en-IN")}
-                  </p>
-                  <span className="text-[10px] text-orange-400 font-bold block">Float ₹{outletTenderTotals.openingCash.toLocaleString()} &middot; Breakdown</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-[#303030] bg-[#1f1f1f]">
-              <CardContent className="p-4 flex items-center gap-3.5">
-                <div className="w-11 h-11 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center shrink-0">
-                  <ShoppingBag className="w-5 h-5 text-blue-400" />
-                </div>
-                <div>
-                  <span className="text-[10px] font-bold text-[#b8b8c5]/70 uppercase tracking-wider block">Total Orders Today</span>
-                  <p className="text-xl font-black text-white font-mono mt-0.5">{outletTenderTotals.totalOrdersToday}</p>
-                  <span className="text-[10px] text-zinc-400 block">AOV: ₹{Math.round(outletTenderTotals.totalGrossRevenue / (outletTenderTotals.totalOrdersToday || 1))}</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-[#303030] bg-[#1f1f1f]">
-              <CardContent className="p-4 flex items-center gap-3.5">
-                <div className="w-11 h-11 rounded-xl bg-orange-500/10 border border-orange-500/30 flex items-center justify-center shrink-0">
-                  <Flame className="w-5 h-5 text-orange-400" />
-                </div>
-                <div>
-                  <span className="text-[10px] font-bold text-[#b8b8c5]/70 uppercase tracking-wider block">Spit Roasting Yield</span>
-                  <p className="text-xl font-black text-orange-400 font-mono mt-0.5">{currentOutlet.spitEfficiency}%</p>
-                  <span className="text-[10px] text-zinc-400 block">{currentOutlet.activeSpits} Roasters Active</span>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Drawer Float Reconciliation Dropdown */}
-          {showDrawerBreakdown && (
-            <div className="p-4 rounded-2xl bg-[#161618] border border-emerald-500/30 text-xs font-mono space-y-2">
-              <span className="text-xs font-bold text-emerald-300 block font-sans">Physical Register Cash Drawer Breakdown</span>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-zinc-300">
-                <div className="p-2.5 rounded-xl bg-[#1f1f1f] border border-[#303030]">
-                  <span className="text-[10px] text-zinc-500 block font-sans">Opening Float</span>
-                  <span className="font-bold text-white">₹{outletTenderTotals.openingCash.toLocaleString()}</span>
-                </div>
-                <div className="p-2.5 rounded-xl bg-[#1f1f1f] border border-[#303030]">
-                  <span className="text-[10px] text-zinc-500 block font-sans">+ Cash Sales</span>
-                  <span className="font-bold text-emerald-400">₹{outletTenderTotals.cashSales.toLocaleString()}</span>
-                </div>
-                <div className="p-2.5 rounded-xl bg-[#1f1f1f] border border-[#303030]">
-                  <span className="text-[10px] text-zinc-500 block font-sans">- Petty Cash</span>
-                  <span className="font-bold text-rose-400">₹{outletTenderTotals.pettyCashExpenses.toLocaleString()}</span>
-                </div>
-                <div className="p-2.5 rounded-xl bg-[#1f1f1f] border border-[#303030]">
-                  <span className="text-[10px] text-zinc-500 block font-sans">- Safe Drops</span>
-                  <span className="font-bold text-blue-400">₹{outletTenderTotals.safeDropsTotal.toLocaleString()}</span>
-                </div>
-              </div>
-            </div>
           )}
+        </Card>
 
-          {/* Sales Channels Breakdown & Shift Details */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-            <Card className="border-[#303030] bg-[#1f1f1f]">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-bold text-white flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Store className="w-4 h-4 text-orange-500" />
-                    <span>Sales Channels</span>
+        <Card>
+          <CardHeader>
+            <CardTitle>Recent Activity</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {isActivitiesLoading ? (
+              <div className="space-y-3"><ActivityFeedSkeleton count={5} /></div>
+            ) : activities.length === 0 ? (
+              <EmptyState icon={<Activity className="h-5 w-5" />} title="No activity yet" description="Actions from your team will appear here." />
+            ) : (
+              // ~5 rows tall, scroll for the rest — keeps the card compact.
+              <div className="max-h-[20rem] overflow-y-auto space-y-3 pr-1 -mr-1">
+                {activities.map((a: any) => (
+                  <div key={a.id} className="flex items-start gap-3">
+                    <Avatar name={a.user?.name || "U"} size="sm" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm text-slate-700 dark:text-slate-300 leading-snug">
+                        <span className="font-semibold text-slate-900 dark:text-white">{a.user?.name || "System"}</span>{" "}
+                        {a.description}
+                      </p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                        {new Date(a.createdAt).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                      </p>
+                    </div>
                   </div>
-                  <span className="text-xs text-zinc-400 font-mono">{outletTenderTotals.totalOrdersToday} Orders</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="grid grid-cols-3 gap-2 text-center text-xs font-mono">
-                  <div className="p-2.5 rounded-xl bg-[#161618] border border-[#303030]">
-                    <span className="text-[9px] text-orange-400 block font-sans font-bold">Counter</span>
-                    <span className="font-black text-white mt-1 block">₹{outletTenderTotals.walkInSales.toLocaleString()}</span>
-                    <span className="text-[9px] text-zinc-500 font-sans">{outletTenderTotals.walkInOrdersCount} ord</span>
-                  </div>
-                  <div className="p-2.5 rounded-xl bg-[#161618] border border-[#303030]">
-                    <span className="text-[9px] text-rose-400 block font-sans font-bold">Zomato</span>
-                    <span className="font-black text-white mt-1 block">₹{outletTenderTotals.zomatoSales.toLocaleString()}</span>
-                    <span className="text-[9px] text-zinc-500 font-sans">{outletTenderTotals.zomatoOrdersCount} ord</span>
-                  </div>
-                  <div className="p-2.5 rounded-xl bg-[#161618] border border-[#303030]">
-                    <span className="text-[9px] text-amber-400 block font-sans font-bold">Swiggy</span>
-                    <span className="font-black text-white mt-1 block">₹{outletTenderTotals.swiggySales.toLocaleString()}</span>
-                    <span className="text-[9px] text-zinc-500 font-sans">{outletTenderTotals.swiggyOrdersCount} ord</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="lg:col-span-2 border-[#303030] bg-[#1f1f1f]">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-bold text-white flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Receipt className="w-4 h-4 text-orange-500" />
-                    <span>Recent Punched Counter Orders</span>
-                  </div>
-                  <Link href="/pos" className="text-xs text-orange-400 hover:underline font-bold">
-                    Open Full Terminal &rarr;
-                  </Link>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs border-collapse">
-                    <thead>
-                      <tr className="border-b border-[#303030] bg-[#161618] text-zinc-400 font-bold uppercase text-[10px]">
-                        <th className="py-2.5 px-4">Order #</th>
-                        <th className="py-2.5 px-4">Time</th>
-                        <th className="py-2.5 px-4">Channel</th>
-                        <th className="py-2.5 px-4">Payment</th>
-                        <th className="py-2.5 px-4 text-right">Amount</th>
-                        <th className="py-2.5 px-4 text-right">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-[#303030] font-mono text-[11px]">
-                      {filteredOrders.slice(0, 5).map((order) => (
-                        <tr key={order.id} className="hover:bg-[#303030]/40">
-                          <td className="py-2.5 px-4 font-bold text-white">{order.orderNumber}</td>
-                          <td className="py-2.5 px-4 text-zinc-400">{order.time}</td>
-                          <td className="py-2.5 px-4 font-sans text-zinc-300">{order.channel}</td>
-                          <td className="py-2.5 px-4 text-zinc-400 font-sans">{order.paymentMethod}</td>
-                          <td className="py-2.5 px-4 text-right font-black text-emerald-400">₹{order.totalAmount}</td>
-                          <td className="py-2.5 px-4 text-right font-sans">
-                            <span className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 text-[10px] font-bold">
-                              ✓ {order.status}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      )}
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

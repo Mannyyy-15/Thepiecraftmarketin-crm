@@ -162,7 +162,7 @@ export default function EmployeeClientsPage() {
 
   const handleComposeEmail = (clientName: string) => {
     setComposeEmailTo(clientName);
-    setEmailSubject(`Operations & Supply Alignment — Irani Koyla`);
+    setEmailSubject(`Strategy & Planning Alignment — ThePieCraft`);
     setEmailBody(`Hi team,\n\nI'd like to sync on our outstanding deliverables and map out our strategic focus for the upcoming quarter.\n\nBest,\n${myName}`);
   };
 
