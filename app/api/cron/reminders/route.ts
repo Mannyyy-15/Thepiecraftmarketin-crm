@@ -55,7 +55,7 @@ export async function GET(request: Request) {
         } catch {}
 
         if (phone) {
-          const message = `Hello ${client.name || "Client"}, reminder from ThePieCraft: Invoice #${inv.invoiceNumber} (₹${inv.amount.toLocaleString()}) was due on ${inv.dueDate}. Please make payment at your earliest.`;
+          const message = `Hello ${client.name || "Franchise Partner"}, reminder from Irani Koyla HQ: Invoice #${inv.invoiceNumber} (₹${inv.amount.toLocaleString()}) was due on ${inv.dueDate}. Please make payment at your earliest.`;
           await sendSmsWhatsAppNotification({ to: phone, message });
           remindersSent++;
         }

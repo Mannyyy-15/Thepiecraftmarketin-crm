@@ -397,7 +397,7 @@ export type NewFcmToken = typeof fcmTokens.$inferInsert;
 // Agency Settings Table
 export const agencySettings = mysqlTable("agency_settings", {
   id: int("id").primaryKey().autoincrement(),
-  agencyName: varchar("agency_name", { length: 255 }).notNull().default("ThePieCraft"),
+  agencyName: varchar("agency_name", { length: 255 }).notNull().default("Irani Koyla"),
   agencyLogoUrl: text("agency_logo_url"),
   baseCurrency: varchar("base_currency", { length: 10 }).notNull().default("INR"),
   // Business profile (shows on invoices / emails)
@@ -815,3 +815,75 @@ export type AuditEvent = typeof auditEvents.$inferSelect;
 export type ConnectorAccount = typeof connectorAccounts.$inferSelect;
 export type StorageObject = typeof storageObjects.$inferSelect;
 export type ImportJob = typeof importJobs.$inferSelect;
+
+// ── IRANI KOYLA OS FRANCHISE TABLES ──────────────────────────────────────────
+
+export const franchiseOutlets = mysqlTable("franchise_outlets", {
+  id: varchar("id", { length: 100 }).primaryKey(),
+  code: varchar("code", { length: 50 }).notNull().unique(),
+  name: varchar("name", { length: 255 }).notNull(),
+  city: varchar("city", { length: 100 }).notNull(),
+  area: varchar("area", { length: 255 }).notNull(),
+  address: text("address").notNull(),
+  status: mysqlEnum("status", ["active", "onboarding", "suspended"]).notNull().default("active"),
+  dailyTargetSales: int("daily_target_sales").notNull().default(50000),
+  dailyTargetWraps: int("daily_target_wraps").notNull().default(300),
+  spitEfficiency: double("spit_efficiency").notNull().default(92.0),
+  activeSpits: int("active_spits").notNull().default(2),
+  totalSpits: int("total_spits").notNull().default(2),
+  ownerName: varchar("owner_name", { length: 255 }).notNull(),
+  ownerEmail: varchar("owner_email", { length: 255 }).notNull(),
+  ownerPhone: varchar("owner_phone", { length: 50 }).notNull(),
+  whatsappNumber: varchar("whatsapp_number", { length: 50 }),
+  loginEmail: varchar("login_email", { length: 255 }).notNull(),
+  loginPassword: varchar("login_password", { length: 255 }).notNull(),
+  magicLoginToken: varchar("magic_login_token", { length: 255 }),
+  franchiseFeeAmount: int("franchise_fee_amount").notNull().default(1500000),
+  franchiseFeeStatus: mysqlEnum("franchise_fee_status", ["paid", "partial", "pending"]).notNull().default("paid"),
+  securityDepositAmount: int("security_deposit_amount").notNull().default(500000),
+  royaltyRatePercent: double("royalty_rate_percent").notNull().default(6.5),
+  marketingFeePercent: double("marketing_fee_percent").notNull().default(2.0),
+  territoryRadiusKm: double("territory_radius_km").notNull().default(3.0),
+  managerName: varchar("manager_name", { length: 255 }),
+  managerPhone: varchar("manager_phone", { length: 50 }),
+  fssaiNumber: varchar("fssai_number", { length: 100 }),
+  gstin: varchar("gstin", { length: 100 }),
+  openedAt: varchar("opened_at", { length: 50 }).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const liveOrdersDb = mysqlTable("live_orders", {
+  id: varchar("id", { length: 100 }).primaryKey(),
+  orderNumber: varchar("order_number", { length: 50 }).notNull(),
+  outletId: varchar("outlet_id", { length: 100 }).notNull().references(() => franchiseOutlets.id, { onDelete: "cascade" }),
+  customerName: varchar("customer_name", { length: 255 }),
+  channel: mysqlEnum("channel", ["Walk-in Counter", "Zomato", "Swiggy"]).notNull().default("Walk-in Counter"),
+  paymentMethod: varchar("payment_method", { length: 100 }).notNull().default("Cash"),
+  itemsJson: text("items_json").notNull(),
+  totalAmount: int("total_amount").notNull(),
+  status: mysqlEnum("status", ["Completed", "Delivered"]).notNull().default("Completed"),
+  time: varchar("time", { length: 50 }).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const centralShipmentsDb = mysqlTable("central_shipments", {
+  id: varchar("id", { length: 100 }).primaryKey(),
+  shipmentNumber: varchar("shipment_number", { length: 50 }).notNull().unique(),
+  outletId: varchar("outlet_id", { length: 100 }).notNull().references(() => franchiseOutlets.id, { onDelete: "cascade" }),
+  chickenConesCount: int("chicken_cones_count").notNull().default(0),
+  muttonConesCount: int("mutton_cones_count").notNull().default(0),
+  totalMeatWeightKg: double("total_meat_weight_kg").notNull().default(0),
+  vanVehicleNumber: varchar("van_vehicle_number", { length: 100 }),
+  driverName: varchar("driver_name", { length: 255 }),
+  driverPhone: varchar("driver_phone", { length: 50 }),
+  temperatureCelsius: double("temperature_celsius").notNull().default(2.8),
+  securitySealNumber: varchar("security_seal_number", { length: 100 }),
+  status: mysqlEnum("status", ["in_transit", "delivered", "preparing"]).notNull().default("in_transit"),
+  dispatchedAt: varchar("dispatched_at", { length: 100 }).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export type FranchiseOutletDb = typeof franchiseOutlets.$inferSelect;
+export type LiveOrderDb = typeof liveOrdersDb.$inferSelect;
+export type CentralShipmentDb = typeof centralShipmentsDb.$inferSelect;
+

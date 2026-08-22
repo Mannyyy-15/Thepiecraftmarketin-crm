@@ -8,32 +8,36 @@
      Ratios (vs panel): primary 17.7/18.1, secondary 7.7/7.4, muted 4.8/5.6,
      accent 6.6/6.3. No pure black; layered, intentional neutrals.
      ───────────────────────────────────────────────────────────────────────── */
+  /* ─────────────────────────────────────────────────────────────────────────
+     Irani Koyla OS Color System — Charcoal Black, Ember Brown & Shawarma Gold
+     Directly matched from https://irani-koyla-shawarma-franchise.vercel.app/
+     ───────────────────────────────────────────────────────────────────────── */
   :root {
-    /* Canvas layers — warm off-white, ref: dashboard screenshot */
-    --bg-app: #f0f0f2;        /* page canvas — warm light grey */
+    /* Canvas layers — warm spiced ivory on light */
+    --bg-app: #f7f3ee;        /* page canvas — warm off-white */
     --bg-panel: #ffffff;      /* cards / panels */
     --bg-elevated: #ffffff;   /* popovers / menus */
-    --bg-muted: #f7f7f9;      /* inset wells, table headers */
+    --bg-muted: #f0eae1;      /* inset wells, table headers */
 
-    /* Borders — very subtle, mostly replaced by shadow */
-    --border: #e8e8ed;
-    --border-strong: #d1d1d8;
+    /* Borders */
+    --border: #e6dacd;
+    --border-strong: #ccb7a1;
 
     /* Text */
-    --text-primary: #111114;
-    --text-secondary: #4b4b5a;
-    --text-muted: #68687a;
+    --text-primary: #1f1f1f;
+    --text-secondary: #57443d;
+    --text-muted: #8c736a;
 
-    /* Accent — electric blue (matches dark mode) */
-    --accent: #3b82f6;
-    --accent-hover: #2563eb;
-    --accent-solid: #1d4ed8;
+    /* Accent — Irani Koyla Ember Gold & Flame */
+    --accent: #d97706;
+    --accent-hover: #b45309;
+    --accent-solid: #ea580c;
     --accent-fg: #ffffff;
 
-    /* Card shadow — no border, just elevation */
-    --shadow-card: 0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.06);
-    --shadow-card-hover: 0 2px 8px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.10);
-    --shadow-nav: 0 8px 32px rgba(0,0,0,0.10), 0 1px 0 rgba(255,255,255,0.8) inset;
+    /* Card shadow */
+    --shadow-card: 0 1px 3px rgba(45,22,14,0.06), 0 4px 16px rgba(45,22,14,0.08);
+    --shadow-card-hover: 0 2px 8px rgba(45,22,14,0.10), 0 8px 24px rgba(45,22,14,0.14);
+    --shadow-nav: 0 8px 32px rgba(45,22,14,0.12), 0 1px 0 rgba(255,255,255,0.8) inset;
 
     /* Back-compat aliases */
     --background: var(--bg-app);
@@ -48,26 +52,20 @@
   :root,
   .dark {
     color-scheme: dark;
-    /* Canvas layers — deep charcoal, reference: dashboard screenshot */
-    --bg-app: #161618;        /* page canvas — dark but not black */
-    --bg-panel: #1f1f1f;      /* cards / panels — one step lighter */
-    --bg-elevated: #303030;   /* inputs, dropdowns, popovers */
-    --bg-muted: #1f1f1f;      /* table headers, inset wells */
-
-    --border: #303030;        /* subtle card borders */
-    --border-strong: #38383f; /* inputs, interactive */
-
-    --text-primary: #ffffff;  /* pure white — high contrast hero text */
-    --text-secondary: #b8b8c5;/* secondary copy, AA on panel */
-    --text-muted: #a1a1b1;    /* labels and placeholders, AA on panel */
-
-    /* Electric blue accent — replaces neon green from reference */
-    --accent: #3b82f6;        /* blue-500 — vivid on dark */
-    --accent-hover: #60a5fa;  /* blue-400 — hover state */
-    --accent-solid: #2563eb;  /* blue-600 — solid buttons */
+    --bg-app: #161618;
+    --bg-panel: #1f1f1f;
+    --bg-elevated: #303030;
+    --bg-muted: #1f1f1f;
+    --border: #303030;
+    --border-strong: #38383f;
+    --text-primary: #ffffff;
+    --text-secondary: #b8b8c5;
+    --text-muted: #a1a1b1;
+    --accent: #f97316;
+    --accent-hover: #fb923c;
+    --accent-solid: #ea580c;
     --accent-fg: #ffffff;
-    --accent-glow: rgba(59, 130, 246, 0.25); /* glow for KPI cards */
-
+    --accent-glow: rgba(249, 115, 22, 0.25);
     --background: var(--bg-app);
     --foreground: var(--text-primary);
     --card: var(--bg-panel);
@@ -145,7 +143,7 @@
     background: #38383f;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #3b82f6;
+    background: #f97316;
   }
 }
 
@@ -169,15 +167,15 @@
 
 /* Glass card — used in dark mode panels */
 .glass {
-  background: rgba(30, 30, 33, 0.82);
+  background: rgba(31, 31, 31, 0.85);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.07);
 }
 
-/* KPI accent glow card — electric blue inner glow like reference */
+/* KPI accent glow card — orange inner glow */
 .dark .kpi-glow {
-  box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.18), 0 4px 24px rgba(59, 130, 246, 0.12);
+  box-shadow: 0 0 0 1px rgba(249, 115, 22, 0.25), 0 4px 24px rgba(249, 115, 22, 0.15);
 }
 
 /* Gradient text — used only on intentional hero/marketing surfaces */

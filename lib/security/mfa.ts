@@ -139,7 +139,7 @@ export function totpEnrollmentUri(input: {
   email: string;
   issuer?: string;
 }) {
-  const issuer = input.issuer || "ThePieCraft CRM";
+  const issuer = input.issuer || "Irani Koyla OS";
   const label = `${issuer}:${input.email}`;
   const query = new URLSearchParams({
     secret: input.secret,

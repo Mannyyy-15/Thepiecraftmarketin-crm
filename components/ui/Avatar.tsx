@@ -73,7 +73,7 @@ function generateDiceBearUrl(name: string, role?: string) {
 // they upload a real photo — role must be the literal "admin" account role,
 // not a job-title string like "Office Administrator" that happens to
 // contain "admin" (see generateDiceBearUrl's substring matching below).
-const DEFAULT_ADMIN_AVATAR = "/branding/thepiecraft-logo.png";
+const DEFAULT_ADMIN_AVATAR = "/logo.png";
 
 export function Avatar({ name = "", src, size = "md", className, status, interactive, role }: AvatarProps) {
   const finalSrc = src || (role === "admin" ? DEFAULT_ADMIN_AVATAR : generateDiceBearUrl(name, role));

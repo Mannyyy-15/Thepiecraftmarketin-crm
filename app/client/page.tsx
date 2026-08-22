@@ -91,7 +91,7 @@ export default function ClientOverviewPage() {
               Welcome back, {firstName}
             </h1>
             <p className="mt-1.5 text-sm text-white/85 max-w-xl">
-              Here&apos;s how your engagements with ThePieCraft are tracking.
+              Here&apos;s how your franchise outlet operations and statements are tracking with Irani Koyla HQ.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">

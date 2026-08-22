@@ -148,7 +148,7 @@ export default function SecureAccessPage() {
           Continue to your account
         </h1>
         <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
-          Your administrator invited you to ThePieCraft OS. Confirm below to sign in - no
+          Your administrator invited you to Irani Koyla OS. Confirm below to sign in - no
           password is needed for this visit.
         </p>
 

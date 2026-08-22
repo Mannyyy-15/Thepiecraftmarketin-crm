@@ -36,7 +36,7 @@ export function ShareLoginLinkDialog({
 
   const message = useMemo(
     () =>
-      `Hi ${personName}, here is your private one-time link to access ThePieCraft CRM:\n\n${loginLink}\n\nOpen it only on your own device. It expires automatically.`,
+      `Hi ${personName}, here is your private one-time link to access Irani Koyla OS:\n\n${loginLink}\n\nOpen it only on your own device. It expires automatically.`,
     [loginLink, personName]
   );
 
@@ -53,7 +53,7 @@ export function ShareLoginLinkDialog({
   const phoneDigits = phone?.replace(/\D/g, "") ?? "";
   const whatsAppUrl = `https://wa.me/${phoneDigits}?text=${encodeURIComponent(message)}`;
   const emailUrl = `mailto:${email ?? ""}?subject=${encodeURIComponent(
-    "Your secure ThePieCraft CRM access"
+    "Your secure Irani Koyla OS access"
   )}&body=${encodeURIComponent(message)}`;
 
   async function copyLink() {

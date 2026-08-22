@@ -28,13 +28,13 @@ export function AppPreloader() {
         >
           <div className="flex flex-col items-center gap-7">
             {/* Logo mark */}
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-line bg-panel">
-              <span className="text-lg font-bold text-accent-primary">P</span>
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-amber-500/30 bg-amber-500/10">
+              <span className="text-lg font-black text-amber-500">IK</span>
             </div>
 
             {/* Wordmark */}
-            <span className="text-[15px] font-semibold tracking-[-0.01em] text-text-primary">
-              ThePieCraft OS
+            <span className="text-[15px] font-bold tracking-tight text-white">
+              Irani Koyla <span className="text-amber-500">OS</span>
             </span>
 
             {/* Progress line */}

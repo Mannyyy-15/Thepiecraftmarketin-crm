@@ -84,7 +84,7 @@ export async function validateGeofence(organizationId: number, userLat: number, 
     try {
       const insertResult = await db.execute(sql`
         INSERT INTO locations (organization_id, name, latitude, longitude, radius_meters, wifi_public_ip)
-        VALUES (${organizationId}, 'ThePieCraft HQ', ${String(userLat)}, ${String(userLng)}, 500, ${clientIp})
+        VALUES (${organizationId}, 'Irani Koyla Central Hub', ${String(userLat)}, ${String(userLng)}, 500, ${clientIp})
       `);
       const newId = (insertResult as any)?.insertId || 1;
       return { ok: true, message: "ok", locationId: newId, verifiedIp: clientIp === "unknown" ? "dev-local" : clientIp };

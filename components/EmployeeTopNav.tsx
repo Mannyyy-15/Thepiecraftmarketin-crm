@@ -210,7 +210,7 @@ export default function EmployeeTopNav() {
                 <Avatar name={user?.name || "User"} src={user?.avatarUrl || undefined} status="online" size="md" />
                 <div className="min-w-0">
                   <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{user?.name || "Team Member"}</p>
-                  <p className="text-[11px] text-slate-400 truncate">{user?.email || "employee@thepiecraft.com"}</p>
+                  <p className="text-[11px] text-slate-400 truncate">{user?.email || "employee@iranikoyla.com"}</p>
                 </div>
               </div>
 

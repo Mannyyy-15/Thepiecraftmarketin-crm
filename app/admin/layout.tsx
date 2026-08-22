@@ -5,51 +5,36 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
-  FolderKanban,
-  UsersRound,
-  Building2,
-  MoreHorizontal,
-  Sparkles,
-  BarChart3,
-  Target,
-  Code2,
-  FilePieChart,
-  CircleDollarSign,
+  Store,
+  Flame,
   Receipt,
-  Files,
+  WalletCards,
+  ShieldCheck,
+  UtensilsCrossed,
+  FilePieChart,
   Settings,
+  MoreHorizontal,
   X,
   ChevronRight,
-  Workflow,
-  PlugZap,
-  ShieldCheck,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import AdminSidebar from "@/components/AdminSidebar";
 import TopNav from "@/components/TopNav";
-import { useLocalNotifications } from "@/lib/useLocalNotifications";
-import AdminPrefetch from "@/components/AdminPrefetch";
+import { FranchiseProvider } from "@/lib/franchise-context";
 
 const drawerOptions = [
-  { name: "Studio AI", href: "/admin/studio-ai", icon: Sparkles, desc: "AI Assistant" },
-  { name: "Leads", href: "/admin/leads", icon: Target, desc: "Sales Pipeline" },
-  { name: "Meta Ads", href: "/admin/ads", icon: BarChart3, desc: "Ad Campaigns" },
-  { name: "Website Dev", href: "/admin/website-dev", icon: Code2, desc: "Dev Projects" },
-  { name: "Agency Ops", href: "/admin/agency-operations", icon: Workflow, desc: "Delivery Workflows" },
-  { name: "Integrations", href: "/admin/integrations", icon: PlugZap, desc: "Marketing Data" },
-  { name: "Reports", href: "/admin/reports", icon: FilePieChart, desc: "Analytics" },
-  { name: "Finance", href: "/admin/finance", icon: CircleDollarSign, desc: "Billing & Finance" },
-  { name: "Invoices", href: "/admin/invoices", icon: Receipt, desc: "Create & Send Invoices" },
-  { name: "Documents", href: "/admin/documents", icon: Files, desc: "Files & Contracts" },
-  { name: "Settings", href: "/admin/settings", icon: Settings, desc: "System Settings" },
-  { name: "Security", href: "/admin/security", icon: ShieldCheck, desc: "MFA & Devices" },
+  { name: "Royalty & Agreements", href: "/admin/royalties", icon: WalletCards, desc: "Franchise Invoices & Fees" },
+  { name: "Master Recipes & BOM", href: "/admin/menu", icon: UtensilsCrossed, desc: "Portion Standards & Margins" },
+  { name: "Food Safety & Audit", href: "/admin/compliance", icon: ShieldCheck, desc: "Temperature & FSSAI Checks" },
+  { name: "Operational Audit Log", href: "/admin/audit", icon: FilePieChart, desc: "System & Wastage History" },
+  { name: "System Settings", href: "/admin/settings", icon: Settings, desc: "Franchise Rules & Config" },
 ];
 
 const mainNavTabs = [
-  { name: "Team", href: "/admin/team", icon: UsersRound, exact: false },
-  { name: "Clients", href: "/admin/clients", icon: Building2, exact: false },
+  { name: "Outlets", href: "/admin/outlets", icon: Store, exact: false },
+  { name: "Spit Yield", href: "/admin/yield", icon: Flame, exact: false },
   { name: "Overview", href: "/admin", icon: LayoutDashboard, exact: true, isCenter: true },
-  { name: "Projects", href: "/admin/projects", icon: FolderKanban, exact: false },
+  { name: "Sales & Shifts", href: "/admin/sales", icon: Receipt, exact: false },
 ];
 
 export default function DashboardLayout({
@@ -62,14 +47,11 @@ export default function DashboardLayout({
 
   const isOthersActive = drawerOptions.some(opt => pathname.startsWith(opt.href));
 
-  useLocalNotifications();
-
   return (
     <div className="flex h-screen overflow-hidden bg-background">
-      <AdminPrefetch />
-      <AdminSidebar />
-      <div className="flex flex-1 flex-col overflow-hidden relative">
-        <TopNav />
+        <AdminSidebar />
+        <div className="flex flex-1 flex-col overflow-hidden relative">
+          <TopNav />
 
         <main id="main-content" className="mobile-content-safe flex-1 overflow-y-auto lg:pb-0">
           <div className="p-4 sm:p-6 lg:p-6">{children}</div>
@@ -77,7 +59,7 @@ export default function DashboardLayout({
 
         {/* Floating Mobile Bottom Navigation */}
         <div className="mobile-nav-safe lg:hidden fixed left-4 right-4 z-40 select-none">
-          <nav aria-label="Primary navigation" className="bg-white/95 dark:bg-[#1f1f1f]/95 backdrop-blur-2xl border border-[#f0f0f2] dark:border-[#303030] rounded-[28px] shadow-[0_4px_24px_rgba(0,0,0,0.10)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.5)]">
+          <nav aria-label="Primary navigation" className="bg-[#1f1f1f]/95 backdrop-blur-2xl border border-[#303030] rounded-[28px] shadow-[0_4px_24px_rgba(0,0,0,0.6)]">
             <div className="flex items-center justify-around h-16 px-2">
               {mainNavTabs.map((tab) => {
                 const isActive = tab.exact ? pathname === tab.href : pathname.startsWith(tab.href);
@@ -94,13 +76,13 @@ export default function DashboardLayout({
                     >
                       <div className={`relative -mt-8 h-[52px] w-[52px] rounded-full flex items-center justify-center transition-all duration-200 ${
                         isActive
-                          ? "bg-[#3b82f6] shadow-[0_4px_20px_rgba(59,130,246,0.5)] scale-110"
-                          : "bg-gradient-to-br from-[#3b82f6] to-[#2563eb] shadow-[0_4px_14px_rgba(59,130,246,0.35)] group-hover:scale-105 group-active:scale-95"
+                          ? "bg-gradient-to-br from-amber-500 to-orange-600 shadow-[0_4px_20px_rgba(245,158,11,0.5)] scale-110"
+                          : "bg-gradient-to-br from-amber-500 to-orange-700 shadow-[0_4px_14px_rgba(245,158,11,0.35)] group-hover:scale-105 group-active:scale-95"
                       }`}>
                         <IconComp className="h-[22px] w-[22px] text-white" />
                       </div>
                       <span className={`text-[9px] font-extrabold uppercase tracking-wide transition-all duration-200 mt-1.5 ${
-                        isActive ? "text-[#3b82f6] dark:text-[#60a5fa]" : "text-slate-400 dark:text-[#5a5a68]"
+                        isActive ? "text-amber-500" : "text-slate-400 dark:text-[#a1a1b1]"
                       }`}>
                         {tab.name}
                       </span>
@@ -123,18 +105,18 @@ export default function DashboardLayout({
                           animate={{ opacity: 1, scale: 1 }}
                           exit={{ opacity: 0, scale: 0.7 }}
                           transition={{ duration: 0.18, ease: "easeOut" }}
-                          className="absolute inset-x-1 top-1.5 bottom-1.5 bg-[#3b82f6]/10 dark:bg-[#3b82f6]/10 rounded-[18px] pointer-events-none"
+                          className="absolute inset-x-1 top-1.5 bottom-1.5 bg-amber-500/15 rounded-[18px] pointer-events-none"
                         />
                       )}
                     </AnimatePresence>
                     <IconComp
                       className={`h-5 w-5 relative z-10 transition-all duration-200 ${
-                        isActive ? "text-[#3b82f6] dark:text-[#60a5fa] scale-110" : "text-slate-400 dark:text-[#5a5a68]"
+                        isActive ? "text-amber-500 scale-110" : "text-slate-400 dark:text-[#a1a1b1]"
                       }`}
                     />
                     <span
                       className={`text-[9px] font-extrabold uppercase tracking-wide relative z-10 transition-all duration-200 ${
-                        isActive ? "text-[#3b82f6] dark:text-[#60a5fa]" : "text-slate-400 dark:text-[#5a5a68]"
+                        isActive ? "text-amber-500" : "text-slate-400 dark:text-[#a1a1b1]"
                       }`}
                     >
                       {tab.name}

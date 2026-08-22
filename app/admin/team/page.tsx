@@ -582,7 +582,7 @@ export default function TeamPage() {
     e.preventDefault();
     if (isInviting) return;
     const cleanName = newName.trim();
-    const emailPrefix = newEmail.replace("@thepiecraft.com", "").trim();
+    const emailPrefix = newEmail.replace("@iranikoyla.com", "").trim();
     if (!cleanName || !emailPrefix || !newPassword) {
       toast("Enter the employee name, email prefix, and password.", "error");
       return;
@@ -976,11 +976,11 @@ export default function TeamPage() {
                         spellCheck={false}
                         pattern="[A-Za-z0-9._-]+"
                         placeholder="riya"
-                        value={newEmail ? newEmail.replace("@thepiecraft.com", "") : ""}
+                        value={newEmail ? newEmail.replace("@iranikoyla.com", "") : ""}
                         onChange={(e) => {
-                          const val = e.target.value.replace(/@thepiecraft\.com/gi, "").replace(/@/g, "").toLowerCase();
+                          const val = e.target.value.replace(/@iranikoyla\.com/gi, "").replace(/@/g, "").toLowerCase();
                           if (val) {
-                            setNewEmail(val + "@thepiecraft.com");
+                            setNewEmail(val + "@iranikoyla.com");
                           } else {
                             setNewEmail("");
                           }
@@ -989,7 +989,7 @@ export default function TeamPage() {
                         aria-describedby="new-member-email-domain"
                       />
                       <div id="new-member-email-domain" className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 select-none text-xs font-medium text-slate-500 dark:text-slate-400">
-                        @thepiecraft.com
+                        @iranikoyla.com
                       </div>
                     </div>
                   </div>
@@ -1450,7 +1450,7 @@ export default function TeamPage() {
                   return (
                     <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
                       {/* Dark timer card */}
-                      <Card className="lg:col-span-3 border-none bg-gradient-to-b from-[#1c1c20] to-[#101012] text-white shadow-xl rounded-[24px] overflow-hidden relative">
+                      <Card className="lg:col-span-3 border-none bg-gradient-to-b from-[#303030] to-[#101012] text-white shadow-xl rounded-[24px] overflow-hidden relative">
                         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(38,58,167,0.12)_0%,_transparent_70%)] pointer-events-none" />
                         {isPunchedIn && (
                           <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-emerald-400/70 to-transparent" />

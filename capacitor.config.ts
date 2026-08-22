@@ -7,8 +7,8 @@ if (parsedServerUrl.protocol !== 'https:') {
 }
 
 const config: CapacitorConfig = {
-  appId: 'com.thepiecraft.crm',
-  appName: 'ThePieCraft CRM',
+  appId: 'com.iranikoyla.os',
+  appName: 'Irani Koyla OS',
   webDir: 'capacitor-app',
   server: {
     url: parsedServerUrl.toString(),

@@ -76,13 +76,13 @@ function buildProposal(lead: any, type: "email" | "whatsapp") {
   const desc = serviceDesc[lead.service || "other"] || serviceDesc.other;
   if (type === "email") {
     return {
-      subject: `Proposal: ${service.label} Services for ${lead.name} — ThePieCraft`,
-      body: `Dear ${name},\n\nThank you for your interest in ThePieCraft's digital marketing services. We're excited about the opportunity to work with ${lead.name}.\n\nFollowing our conversation, here is our tailored proposal:\n\nSERVICE SCOPE\n${desc}\n\nESTIMATED INVESTMENT\n${value}\n\nWHAT YOU GET\n• Dedicated account manager\n• Monthly strategy calls\n• Transparent reporting dashboard\n• Creative assets & copy included\n• WhatsApp support during business hours\n\nNEXT STEPS\nWe'd love to schedule a 30-minute call to walk you through the proposal in detail and answer any questions.\n\n📞 Reply to this email or WhatsApp us directly to book your call.\n\nLooking forward to growing your business together.\n\nWarm regards,\nThePieCraft Marketing Team\n📧 hello@thepiecraft.com\n🌐 thepiecraft.com`,
+      subject: `Franchise Inquiry: ${service.label} for ${lead.name} — Irani Koyla`,
+      body: `Dear ${name},\n\nThank you for your interest in joining the Irani Koyla Shawarma Franchise Network. We're excited about the opportunity to partner with ${lead.name}.\n\nFollowing our initial conversation, here is our tailored franchise proposal:\n\nSERVICE SCOPE\n${desc}\n\nESTIMATED INVESTMENT\n${value}\n\nWHAT YOU GET\n• Dedicated franchise support manager\n• Central marinated meat supply chain\n• Live spit yield & POS tracking dashboard\n• Kitchen staff training & standard recipes\n• Food safety & FSSAI compliance audits\n\nNEXT STEPS\nWe'd love to schedule a 30-minute discovery call with our Brand HQ to walk you through the details.\n\n📞 Reply to this email or WhatsApp us directly.\n\nLooking forward to building a successful outlet together.\n\nWarm regards,\nIrani Koyla Brand HQ\n📧 operations@iranikoyla.com\n🌐 iranikoyla.com`,
     };
   }
   return {
     subject: "",
-    body: `Hi ${name}! 👋\n\nThank you for your interest in ThePieCraft. Here's a quick overview of what we can do for *${lead.name}*:\n\n*Service:* ${service.label}\n*Investment:* ${value}\n\n*What's included:*\n✅ Dedicated account manager\n✅ Monthly strategy & reporting\n✅ Creative assets included\n✅ WhatsApp support\n\nWould you like to hop on a quick 15-min call to discuss? Just reply here 📲\n\n— ThePieCraft Team\n🌐 thepiecraft.com`,
+    body: `Hi ${name}! 👋\n\nThank you for your interest in Irani Koyla Franchise. Here's a quick overview of our franchise partnership for *${lead.name}*:\n\n*Opportunity:* ${service.label}\n*Estimated Investment:* ${value}\n\n*What's included:*\n✅ Central kitchen marinated meat supply\n✅ Spit yield & POS management software\n✅ Recipe standardization & training\n✅ Dedicated operational support\n\nWould you like to hop on a quick call with our franchise team? Just reply here 📲\n\n— Irani Koyla Team\n🌐 iranikoyla.com`,
   };
 }
 

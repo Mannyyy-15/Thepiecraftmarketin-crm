@@ -38,14 +38,14 @@ export function useLocalNotifications() {
         if (Capacitor.getPlatform() === "android") {
           try {
             await PushNotifications.createChannel({
-              id: "thepiecraft-crm",
-              name: "ThePieCraft CRM",
-              description: "CRM activity updates — clients, leads, expenses, messages",
+              id: "iranikoyla-os",
+              name: "Irani Koyla OS",
+              description: "Franchise activity updates — spit yield, shifts, royalties, messages",
               importance: 4, // HIGH
               visibility: 1, // PUBLIC
               vibration: true,
               lights: true,
-              lightColor: "#3a58e8",
+              lightColor: "#f59e0b",
             });
             console.log("FCM notification channel created successfully.");
           } catch (channelErr) {

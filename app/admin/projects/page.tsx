@@ -61,7 +61,7 @@ const TYPES = {
     ring: "ring-brand-500/20 dark:ring-brand-500/20",
     badgeBg: "bg-brand-50 dark:bg-brand-950/30 text-brand-600 dark:text-brand-400 border-brand-500/20",
     statuses: ["planning", "in_progress", "in_review", "completed"],
-    description: "Internal ThePieCraft projects — our own website, CRM, tools, brand assets, R&D. No client billing.",
+    description: "Internal Irani Koyla projects — our kitchen systems, OS tools, brand assets, R&D. No franchise billing.",
     features: ["No client billing", "Internal team only", "Full task tracking", "Repo & asset links"],
     steps: ["Details", "Technical"],
   },
@@ -207,8 +207,8 @@ function printDocument(project: any, roster: any[], tasks: any[]) {
 <body>
   <div class="header">
     <div>
-      <div class="agency">ThePieCraft</div>
-      <div class="agency-sub">Digital Marketing &amp; Web Development Agency</div>
+      <div class="agency">Irani Koyla</div>
+      <div class="agency-sub">Shawarma Franchise Network &amp; Kitchen Operations</div>
     </div>
     <div class="doc-meta">
       <div class="doc-type">${isMeta ? "Service Agreement" : "Project Proposal"}</div>
@@ -336,12 +336,12 @@ function printDocument(project: any, roster: any[], tasks: any[]) {
 
   <div class="footer">
     <div>
-      <div class="footer-text">ThePieCraft · samashadshaikh78@gmail.com</div>
-      <div class="footer-text" style="margin-top:2px;">This document is confidential and prepared exclusively for ${project.clientName || "the client"}.</div>
+      <div class="footer-text">Irani Koyla Brand HQ · operations@iranikoyla.com</div>
+      <div class="footer-text" style="margin-top:2px;">This document is confidential and prepared exclusively for ${project.clientName || "the franchise partner"}.</div>
     </div>
     <div style="text-align:right;">
       <div class="sig-box"></div>
-      <div class="sig-label">Authorized Signature — ThePieCraft</div>
+      <div class="sig-label">Authorized Signature — Irani Koyla Brand HQ</div>
     </div>
   </div>
 </body></html>`;
@@ -524,7 +524,7 @@ export default function ProjectsPage() {
       const fd = new FormData();
       fd.append("name", form.name);
       fd.append("clientId", isAgency ? "" : (form.clientId === "__agency__" ? "" : form.clientId || ""));
-      fd.append("clientName", isAgency ? "ThePieCraft (Agency)" : form.clientName);
+      fd.append("clientName", isAgency ? "Irani Koyla (HQ)" : form.clientName);
       fd.append("leadId", form.leadId);
       fd.append("projectType", projectType);
       fd.append("startDate", form.startDate);
@@ -1000,7 +1000,7 @@ export default function ProjectsPage() {
                           </div>
                           <div className="min-w-0">
                             <h3 className="text-sm font-bold text-slate-900 dark:text-white truncate">{p.name}</h3>
-                            <p className="text-[11px] text-slate-400 truncate">Internal · ThePieCraft</p>
+                            <p className="text-[11px] text-slate-400 truncate">Internal · Irani Koyla HQ</p>
                           </div>
                         </div>
                         <div className="flex items-center gap-0.5 shrink-0 opacity-60 group-hover:opacity-100 transition-opacity">
@@ -1809,7 +1809,7 @@ export default function ProjectsPage() {
                           <div className="space-y-4">
                             <div>
                               <label className={LABEL}>Project Name *</label>
-                              <input required value={form.name} onChange={e => f({ name: e.target.value })} placeholder="e.g. ThePieCraft CRM v2, New Website" className={INPUT} />
+                              <input required value={form.name} onChange={e => f({ name: e.target.value })} placeholder="e.g. Irani Koyla OS v2, Outlet Expansion" className={INPUT} />
                             </div>
                             <div className="grid grid-cols-2 gap-3">
                               <div>
@@ -1874,7 +1874,7 @@ export default function ProjectsPage() {
                               </div>
                               <div>
                                 <label className={LABEL}>Domain / URL</label>
-                                <input value={form.domain} onChange={e => f({ domain: e.target.value })} placeholder="thepiecraft.com" className={INPUT} />
+                                <input value={form.domain} onChange={e => f({ domain: e.target.value })} placeholder="iranikoyla.com" className={INPUT} />
                               </div>
                             </div>
                             <div>

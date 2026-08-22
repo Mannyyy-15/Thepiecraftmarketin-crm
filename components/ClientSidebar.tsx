@@ -67,15 +67,15 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
     <div className="flex h-full w-full flex-col bg-white dark:bg-[#1f1f1f] lg:rounded-[20px] dark:border dark:border-[#303030] shadow-[0_2px_16px_rgba(0,0,0,0.07)] dark:shadow-none overflow-hidden">
       <div className="flex h-16 shrink-0 items-center px-5 border-b border-slate-200 dark:border-[#303030]">
         <Link href="/client" className="flex items-center gap-2.5" onClick={onNavigate}>
-          <div className="relative w-9 h-9 rounded-xl bg-portal-hero flex items-center justify-center shadow-sm">
-            <span className="text-white font-bold text-lg">P</span>
+          <div className="relative w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500 to-rose-600 flex items-center justify-center shadow-sm">
+            <span className="text-white font-black text-sm">IK</span>
           </div>
           <div className="flex flex-col leading-none">
             <span className="text-sm font-bold text-slate-900 dark:text-white tracking-tight">
-              Client Portal
+              Franchise Portal
             </span>
-            <span className="text-[10px] font-medium text-portal-600 dark:text-portal-400 uppercase tracking-widest mt-0.5">
-              ThePieCraft
+            <span className="text-[10px] font-medium text-amber-500 uppercase tracking-widest mt-0.5">
+              Irani Koyla
             </span>
           </div>
         </Link>
@@ -147,10 +147,10 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
           <Avatar name={user?.name || "Client"} src={user?.avatarUrl || undefined} size="sm" />
           <div className="flex flex-col min-w-0">
             <span className="text-sm font-medium text-slate-900 dark:text-white truncate">
-              {user?.name || "Client Brand"}
+              {user?.name || "Franchise Partner"}
             </span>
             <span className="text-xs text-slate-500 dark:text-slate-400 truncate">
-              {user?.email || "client@thepiecraft.com"}
+              {user?.email || "partner@iranikoyla.com"}
             </span>
           </div>
         </Link>

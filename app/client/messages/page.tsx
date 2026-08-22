@@ -113,7 +113,7 @@ export default function ClientMessagesPage() {
 
   return (
     <div className="space-y-5">
-      <PageHeader eyebrow="Support" title="Messages" description="Chat directly with your ThePieCraft account team." />
+      <PageHeader eyebrow="Support" title="Messages" description="Chat directly with your Irani Koyla operations team." />
 
       <div className="flex gap-4 h-[calc(100vh-15rem)] rounded-2xl border border-slate-200/80 dark:border-[#303030]/80 bg-white dark:bg-[#1f1f1f] overflow-hidden">
         {/* Contacts */}

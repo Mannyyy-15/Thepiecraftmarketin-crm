@@ -102,15 +102,15 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
     <div className="flex h-full w-full flex-col bg-white dark:bg-[#1f1f1f] lg:rounded-[20px] dark:border dark:border-[#303030] shadow-[0_2px_16px_rgba(0,0,0,0.07)] dark:shadow-none overflow-hidden">
       <div className="flex h-16 shrink-0 items-center justify-between px-5 border-b border-[#f0f0f2] dark:border-[#303030]">
         <Link href="/employee" className="flex items-center gap-2.5" onClick={onNavigate}>
-          <div className="relative w-9 h-9 rounded-xl bg-brand-hero flex items-center justify-center shadow-glow">
-            <span className="text-white font-bold text-lg">P</span>
+          <div className="relative w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500 to-rose-600 flex items-center justify-center shadow-[0_0_15px_rgba(245,158,11,0.35)]">
+            <span className="text-white font-black text-sm">IK</span>
           </div>
           <div className="flex flex-col leading-none">
             <span className="text-sm font-bold text-slate-900 dark:text-white tracking-tight">
-              ThePieCraft
+              Irani Koyla
             </span>
             <span className="text-[10px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-widest mt-0.5">
-              Agency OS
+              Staff Portal
             </span>
           </div>
         </Link>
@@ -166,7 +166,7 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
               {user?.name || "Team Member"}
             </span>
             <span className="text-xs text-slate-500 dark:text-slate-400 truncate">
-              {user?.email || "employee@thepiecraft.com"}
+              {user?.email || "employee@iranikoyla.com"}
             </span>
             <span className="inline-block mt-1 text-[9px] font-extrabold text-brand-600 dark:text-brand-400 bg-brand-500/10 px-2 py-0.5 rounded-full w-fit uppercase tracking-wider">
               v1.5.0 (Build 7)
